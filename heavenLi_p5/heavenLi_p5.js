@@ -1209,7 +1209,7 @@ function drawSettingTime(cursor, tc, cMode) {
   drawClock(1+0.5*acbic, 1, 1);
 
   //draw useful tickMarks
-  stroke(164, 128*acbic);
+  stroke(225, 128*acbic);
 
   for (var i = 0; i < 60; i++) {
 	if (i%5 == 0) {
@@ -1231,9 +1231,13 @@ function drawSettingTime(cursor, tc, cMode) {
 	}
   }
 
-  noStroke();
-  fill(255, 255*acbic)
+  stroke(225, 128*acbic);
+  noFill();
+  ellipse(cx, cy, tm40*(1+0.5*acbic)*2);
+  ellipse(cx, cy, tm25*(1+0.5*acbic)*2);
 
+  //noStroke();
+  fill(255, 255*acbic)
   var m = map(tMn, 0, 60, 0, TWO_PI    ) - HALF_PI;
   var h = map(tHr + norm(tMn, 0, 60), 0, 24, 0, TWO_PI * 2) - HALF_PI;
   ellipse(
@@ -1246,9 +1250,9 @@ function drawSettingTime(cursor, tc, cMode) {
 	cy + sin(m)*tm25*(1+0.5*acbic),
 	tm10,
 	tm10);
-
+  //noFill();
   // Watch Clock hands for input
-  //if (watchPoint(cx, cy, dBias);
+  //if (watchPoint(cx, cy, tm40) && !watchPoint(cx, cy, tm25))
 
   strokeWeight(1);
   fill(240);
