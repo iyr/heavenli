@@ -36,10 +36,14 @@ var pt 					= 1;		//currently selected color profile
 var pd					= 0;		//scroll direction
 
 var timeSetMode			= 0;		//determines what mode (time/alarm) the time-setting screen is adjusting
+var tHr					= 0;		//int, current hour		(0-23)
+var tMn					= 0;		//int, current minute	(0-59)
+var aHr					= 0;		//int, alarm hour		(0-23)
+var aMn					= 0;		//int, alarm minute		(0-59)
 
 var diff				= 1;		//stores variable changes with respect to framerate
 
-var numLights 			= 4;		//number of discrete lights
+var numLights 			= 3;		//number of discrete lights
 var bulbsCurrentHSB		= [];		//array of ints that store the current values for each lamp
 var bulbsTargetHSB		= [];		//array of ints that store the target values for animating light changes.
 var savedFavList;
@@ -134,6 +138,20 @@ function windowResized() {
   setup();
 }
 
+// Returns the angle between two points with the first point as the reference
+function getAngFromPoints (jx, jy, kx, ky){
+  if (jx <= kx && jy >= ky)
+	return -degrees(arctan((ky-jy)/(kx-jx)));
+
+  if (jx >= kx && jy >= ky)
+	return 180 - degrees(arctan((ky-jy)/(kx-jx)));
+
+  if (jx >= kx && jy <= ky)
+	return 180 - degrees(arctan((ky-jy)/(kx-jx)));
+
+  if (jx <= kx && jy <= ky)
+	return 360 - degrees(arctan((ky-jy)/(kx-jx)));
+}
 function drawMenu(omx) {
   var acim	= animCurve(frameLimit-mc);
   var acbim = animCurveBounce(frameLimit-mc);
@@ -620,8 +638,12 @@ function drawClock(
   fill(bri*96);
   ellipse(cx, cy, dBias*cs);
   stroke(255*hop);
-  var m = map(minute() + norm(second(), 0, 60), 0, 60, 0, TWO_PI    ) - HALF_PI;
-  var h = map(hour()   + norm(minute(), 0, 60), 0, 24, 0, TWO_PI * 2) - HALF_PI;
+  //var m = map(minute() + norm(second(), 0, 60), 0, 60, 0, TWO_PI    ) - HALF_PI;
+  //var h = map(hour()   + norm(minute(), 0, 60), 0, 24, 0, TWO_PI * 2) - HALF_PI;
+  var m = map(tMn, 0, 60, 0, TWO_PI    ) - HALF_PI;
+  var h = map(tHr + norm(tMn, 0, 60), 0, 24, 0, TWO_PI * 2) - HALF_PI;
+  //var m = tMn;
+  //var h = tHr;
   strokeWeight(dBias*0.02);
   line(cx, cy, cx + cos(m) * (dBias*0.4)*cs, cy + sin(m) * (dBias*0.4)*cs);
   strokeWeight(dBias*0.03);
@@ -662,12 +684,25 @@ function animCurveBounce(c) {
 
 function watchPoint(px, py, pr) {
   var wasMousePressed = false;
-  if (1 >= pow((mouseX-px), 2) / pow(pr/2, 2) + pow((mouseY - py), 2) / pow(pr/2, 2)) 
+  if (1 >= pow((pmouseX-px), 2) / pow(pr/2, 2) + pow((pmouseY - py), 2) / pow(pr/2, 2)) 
   {
     wasMousePressed = isMousePressed;
   }
   return wasMousePressed;
 }
+
+/*
+function touchStarted() {
+  interaction = true;
+  touchHold   = true;
+  return;
+}
+
+function touchEnded() {
+  interaction = false;
+  touchHold   = false;
+}
+*/
 
 function updateColorZones() {
   var colC;
@@ -1146,6 +1181,7 @@ function drawSettingTime(cursor, tc, cMode) {
   var tm08	= dBias*0.08;
   var tm10	= dBias*0.10;
   var tm15	= dBias*0.15;
+  var tm25	= dBias*0.25;
   var tm30	= dBias*0.30;
   var tm40	= dBias*0.40;
 
@@ -1171,7 +1207,49 @@ function drawSettingTime(cursor, tc, cMode) {
   }
 
   drawClock(1+0.5*acbic, 1, 1);
-  
+
+  //draw useful tickMarks
+  stroke(164, 128*acbic);
+
+  for (var i = 0; i < 60; i++) {
+	if (i%5 == 0) {
+	  strokeWeight(2);
+	  line(
+	    cx + cos(radians(i*(360/12)))*dBias*0.63,
+	    cy + sin(radians(i*(360/12)))*dBias*0.63,
+	    cx + cos(radians(i*(360/12)))*dBias*0.73,
+	    cy + sin(radians(i*(360/12)))*dBias*0.73
+	  ); }
+	else {
+	  strokeWeight(1);
+	  line(
+	    cx + cos(radians(i*6))*dBias*0.70,
+	    cy + sin(radians(i*6))*dBias*0.70,
+	    cx + cos(radians(i*6))*dBias*0.74,
+	    cy + sin(radians(i*6))*dBias*0.74
+	  );
+	}
+  }
+
+  noStroke();
+  fill(255, 255*acbic)
+
+  var m = map(tMn, 0, 60, 0, TWO_PI    ) - HALF_PI;
+  var h = map(tHr + norm(tMn, 0, 60), 0, 24, 0, TWO_PI * 2) - HALF_PI;
+  ellipse(
+	cx + cos(m)*tm40*(1+0.5*acbic),
+	cy + sin(m)*tm40*(1+0.5*acbic),
+	tm10,
+	tm10);
+  ellipse(
+	cx + cos(m)*tm25*(1+0.5*acbic),
+	cy + sin(m)*tm25*(1+0.5*acbic),
+	tm10,
+	tm10);
+
+  // Watch Clock hands for input
+  //if (watchPoint(cx, cy, dBias);
+
   strokeWeight(1);
   fill(240);
   noStroke();
