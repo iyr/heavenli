@@ -2,60 +2,62 @@
  * For porting purposes, all 'vars' are floats unless otherwise noted.
  */
 
-var frameLimit			= 65; 		//Length, in frames, of animations
-var dBias				= 0;		//Display bias, the smaller of the screen's dimensions divided by two.
-var timeSettingCursor	= 0;		//animation cursor for home screen / time setting screen transition
-var colrSettingCursor	= 0;		//animation cursor for home screen / color setting screen transition
-var targetScreen		= 0;		//0: Home Screen
-//1: Color Setting Screen
-//2: Time Setting Screen
-var targetBulb;						//which bulb the picker screen is adjusting
-var targetClock;					//distinguishes time setting screen for time / alarm
-var currentHue;						//currently selected hue
-var currentBri;						//currently selected brightness
-var currentSat;						//currently selected saturation
-var prevHue;						//previously set hue before color setting screen
-var prevBri;						//previously set brightness before color setting screen
-var prevSat;						//previously set saturation before color setting screen
-var wereColorsTouched	= false;	// Used for decoupling profile/bulb changes
-var mode				= 1;		// lighting arrangement: 1 = circular, -1 = linear
+var interaction			= false;	//bool, 	coupled "isScreenTouched" + "interaction"
+var frameLimit			= 65; 		//int,  	Length, in frames, of animations
+var dBias				= 0;		//int,  	Display bias, the smaller of the screen's dimensions divided by two.
+var timeSettingCursor	= 0;		//int,  	animation cursor for home screen / time setting screen transition
+var colrSettingCursor	= 0;		//int,		animation cursor for home screen / color setting screen transition
+var targetScreen		= 0;		//int,  	0: Home Screen
+									//1: Color Setting Screen
+									//2: Time Setting Screen
+var targetBulb;						//int,  	which bulb the picker screen is adjusting
+var targetClock;					//int,  	distinguishes time setting screen for time / alarm
+var currentHue;						//int,  	currently selected hue
+var currentBri;						//int,		currently selected brightness
+var currentSat;						//int,		currently selected saturation
+var prevHue;						//int,		previously set hue before color setting screen
+var prevBri;						//int,		previously set brightness before color setting screen
+var prevSat;						//int,		previously set saturation before color setting screen
+var wereColorsTouched	= false;	//bool, 	Used for decoupling profile/bulb changes
+var mode				= 1;		//int (for now), lighting arrangement: 1 = circular, -1 = linear
 
-var angB				= 90;		// float, angular offset for the background
-var cx;								//x-coord of the display's center
-var cy;								//y-coord of the display's center
-var mx;								//x-coord of the menu button (relative)
-var my;								//y-coord of the menu button (relative)
-var mc 					= 0;		//animation cursor for the menu button
+var angB				= 90;		//float,	angular offset for the background
+var cx;								//float,	x-coord of the display's center
+var cy;								//float,	y-coord of the display's center
+var mx;								//float,	x-coord of the menu button (relative)
+var my;								//float,	y-coord of the menu button (relative)
+var mc 					= 0;		//int,		animation cursor for the menu button
 
-var fx;								//x-coord of the favorites button (relative)
-var fy;								//y-coord of the favorites button (relative)
-var fc 					= 0;		//animation cursor for the favorites button
-var fsdc				= 0;		//animation cursor for the save/delete button
-var pc					= 0;		//animation cursor for the profile selection menu
-var pt 					= 1;		//currently selected color profile
-var pd					= 0;		//scroll direction
+var fx;								//float,	x-coord of the favorites button (relative)
+var fy;								//float,	y-coord of the favorites button (relative)
+var fc 					= 0;		//int,		animation cursor for the favorites button
+var fsdc				= 0;		//int,		animation cursor for the save/delete button
+var pc					= 0;		//int,		animation cursor for the profile selection menu
+var pt 					= 1;		//int,		currently selected color profile
+var pd					= 0;		//int,		scroll direction
 
-var timeSetMode			= 0;		//determines what mode (time/alarm) the time-setting screen is adjusting
-var tHr					= 0;		//int, current hour		(0-23)
-var tMn					= 0;		//int, current minute	(0-59)
-var aHr					= 0;		//int, alarm hour		(0-23)
-var aMn					= 0;		//int, alarm minute		(0-59)
+var timeSetMode			= 0;		//int,		determines what mode (time/alarm) the time-setting screen is adjusting
+var tHr					= 0;		//int,		current hour	(0-23)
+var tMn					= 0;		//int,		current minute	(0-59)
+var aHr					= 0;		//int, 		alarm hour		(0-23)
+var aMn					= 0;		//int, 		alarm minute	(0-59)
 
-var diff				= 1;		//stores variable changes with respect to framerate
+var diff				= 1;		//int,		stores variable changes with respect to framerate
 
-var numLights 			= 3;		//number of discrete lights
+var numLights 			= 3;		//int,		number of discrete lights
 var bulbsCurrentHSB		= [];		//array of ints that store the current values for each lamp
 var bulbsTargetHSB		= [];		//array of ints that store the target values for animating light changes.
 var savedFavList;
 
-var touchHold 			= false;	//used for debouncing screen interactions
-var lightOn 			= true;		//indicates if all lights are set to white light (gamma corrected)
-var menuOpen 			= false;	//is the menu open
-var favsOpen 			= false;	//^>favs
+var touchHold 			= false;	//bool,		used for debouncing screen interactions
+var lightOn 			= true;		//bool,		indicates if all lights are set to white light (gamma corrected)
+var menuOpen 			= false;	//bool,		is the menu open
+var favsOpen 			= false;	//bool,		^>favs
 
 function setup() {
   colorMode(HSB, 255);
   frameRate(60);
+  //pixelDensity(0.75);
   //createCanvas(dispWidth, dispHeight);
   createCanvas(windowWidth, windowHeight);
   background(0);
@@ -65,6 +67,8 @@ function setup() {
   currentHue= 0;
   currentBri= 5;
   currentSat= 5;
+  strokeCap(ROUND);
+  strokeJoin(ROUND);
 
   //Configurations for portrait / landscape / square displays
   if (height > width) {
@@ -97,7 +101,13 @@ function setup() {
 }
 
 function draw() {
+  if (touches.length == 0 && !isMousePressed)
+	interaction = false;
+  if (touches.length >= 1 || isMousePressed)
+	interaction = true;
   diff 	= constrain(60/frameRate(), 1, 2.4);
+  //console.log("interaction: " + interaction);
+  //console.log("touchHold: "	  + touchHold);
 
   /* Draw Home Screen */
   switch (targetScreen) {
@@ -130,9 +140,12 @@ function draw() {
   }
 
   updateColorZones();
-  touchHold = isMousePressed;
+  touchHold = interaction;
 }
 
+function touchStarted(){
+  //necessarily empty
+}
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   setup();
@@ -225,13 +238,13 @@ function drawMenu(omx) {
   // Watch Menu Button for input
   if (watchPoint(mx+omx, my, tm40, tm40) && !touchHold) {
 	favsOpen = false;
-    if (menuOpen) {
-      menuOpen = false;
-    } else {
+    if (!menuOpen) {
       menuOpen = true;
+    } else {
+      menuOpen = false;
     }
     touchHold = true;
-  } else if (!isMousePressed) {
+  } else if (!interaction) {
     touchHold = false;
   }
 
@@ -239,10 +252,14 @@ function drawMenu(omx) {
   //if (watchPoint(mx+omx, my+((dBias-my)*acim), tm40))
 
   // Close Menu if open and somewhere else on screen is touched
-  if (!touchHold &&
+  console.log("interaction: " + interaction);
+  console.log("menuOpen: " + menuOpen);
+  console.log("mc == frm: " + (mc == frameLimit));
+  console.log("!touchHold: " + !touchHold);
+  if (interaction &&
     menuOpen &&
     mc == frameLimit &&
-    isMousePressed
+	!touchHold
     ) {
 	if (watchPoint(mx+omx, my+((dBias-my)*0.5*acim), tm40)){
 	  targetScreen = 2;
@@ -351,7 +368,7 @@ function drawFavorites(ofx) {
       favsOpen = false;
     }
     touchHold = true;
-  } else if (!isMousePressed) {
+  } else if (!interaction) {
     touchHold = false;
   }
 
@@ -443,7 +460,7 @@ function drawFavorites(ofx) {
     }
 
     // Close Favorites if open and somewhere else on screen is touched
-    if (isMousePressed &&
+    if (interaction &&
       favsOpen &&
       fc == frameLimit &&
       !touchHold &&
@@ -538,7 +555,7 @@ function drawFavorites(ofx) {
 	}
 
     // Close Favorites if open and somewhere else on screen is touched
-    if (isMousePressed &&
+    if (interaction &&
       favsOpen &&
       fc == frameLimit &&
       !touchHold &&
@@ -598,7 +615,7 @@ function drawFavorites(ofx) {
       );
 
     // Close Favorites if open and somewhere else on screen is touched
-    if (isMousePressed &&
+    if (interaction &&
       favsOpen &&
       fc == frameLimit &&
       !touchHold &&
@@ -666,7 +683,7 @@ function drawClock(
         bulbsTargetHSB[i] = 0;
     }
     touchHold = true;
-  } else if (!isMousePressed) {
+  } else if (!interaction) {
     touchHold = false;
   }
 }
@@ -684,25 +701,21 @@ function animCurveBounce(c) {
 
 function watchPoint(px, py, pr) {
   var wasMousePressed = false;
-  if (1 >= pow((pmouseX-px), 2) / pow(pr/2, 2) + pow((pmouseY - py), 2) / pow(pr/2, 2)) 
+  if (1 >= pow((mouseX-px), 2) / pow(pr/2, 2) + pow((mouseY - py), 2) / pow(pr/2, 2)) 
   {
-    wasMousePressed = isMousePressed;
+	if (touches.length >= 1 || isMousePressed) {
+	  //interaction		= true;
+	  //wasMousePressed	= interaction;
+	  wasMousePressed	= true;
+	} else 
+	if (touches.length == 0 && !isMousePressed) {
+	  //interaction		= false;
+	  //wasMousePressed	= interaction;
+	  wasMousePressed	= false;
+	}
   }
   return wasMousePressed;
 }
-
-/*
-function touchStarted() {
-  interaction = true;
-  touchHold   = true;
-  return;
-}
-
-function touchEnded() {
-  interaction = false;
-  touchHold   = false;
-}
-*/
 
 function updateColorZones() {
   var colC;
@@ -842,23 +855,36 @@ function drawProfile(
     py+tm12*ps		);
 }
 
-function drawZoneBulbButton(bx, by, br) {
+function drawZoneBulbButton(bx, by, br, bid) {
   noStroke();
   var tm02	= br*0.02;
   var tm10	= br*0.1;
   var tm13	= br*0.125;
   fill(96);
   ellipse(bx, by, br);
-  fill(255);
+  fill(color(bulbsCurrentHSB[bid]));
   ellipse(bx, by-tm13, br/2);
+  //ellipse(bx, by-tm13, br/2.5);
   stroke(255);
   strokeWeight(tm13/2);
   for (var i = 1; i < 4; i++)
-    line (bx-tm10, 
+    line (
+	  bx-tm10, 
       by+tm02+tm10*i, 
       bx+tm10, 
       by-tm02+tm10*i);
-  ellipse(bx, by+tm02+3*tm10, tm10);
+	line (
+	  bx-tm10,
+	  by+tm02+tm10*3,
+	  bx,
+	  by+tm02+tm10*3.5
+	  );
+	line (
+	  bx+tm10,
+	  by-tm02+tm10*3,
+	  bx,
+	  by+tm02+tm10*3.5
+	  );
 }
 
 function drawHome() {
@@ -878,7 +904,7 @@ function drawHome() {
       var tbx = cx + cos(tbt)*dBias*0.75;
       var tby = cy + sin(tbt)*dBias*0.75;
     }
-    drawZoneBulbButton(tbx, tby, dBias*0.3); 
+    drawZoneBulbButton(tbx, tby, dBias*0.3, i); 
     if (watchPoint(tbx, tby, dBias*0.3) && 
       mc == 0 && 
       fc == 0 &&
@@ -979,7 +1005,7 @@ function drawSettingColor(cursor, tb) {
       var tbx = cx + cos(tbt)*dBias*0.75;
       var tby = cy + sin(tbt)*dBias*0.75;
     }
-    drawZoneBulbButton(tbx, tby, tm30*(1-acic));
+    drawZoneBulbButton(tbx, tby, tm30*(1-acic), i);
   }
 
   //Draw Clock
@@ -1203,7 +1229,7 @@ function drawSettingTime(cursor, tc, cMode) {
       var tbx = cx + cos(tbt)*dBias*0.75;
       var tby = cy + sin(tbt)*dBias*0.75;
     }
-    drawZoneBulbButton(tbx, tby, tm30*(1-acic));
+    drawZoneBulbButton(tbx, tby, tm30*(1-acic), i);
   }
 
   drawClock(1+0.5*acbic, 1, 1);
