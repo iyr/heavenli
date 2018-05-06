@@ -41,9 +41,14 @@ var tHr					= 0;		//int,		current hour	(0-23)
 var tMn					= 0;		//int,		current minute	(0-59)
 var aHr					= 0;		//int, 		alarm hour		(0-23)
 var aMn					= 0;		//int, 		alarm minute	(0-59)
+var pHr					= 0;		//int,		"previous" variable for tracking changes		
+var pMn					= 0;		//int,		"previous" variable for tracking changes		
+var pta					= 0;		//int,		"previous" variable for tracking changes		
+var meridiem;						//int,		1: PM, -1: AM
+var oldcols = [];
+var alarmDays = [];
 
 var diff				= 1;		//int,		stores variable changes with respect to framerate
-
 var numLights 			= 3;		//int,		number of discrete lights
 var bulbsCurrentHSB		= [];		//array of ints that store the current values for each lamp
 var bulbsTargetHSB		= [];		//array of ints that store the target values for animating light changes.
@@ -69,6 +74,7 @@ function setup() {
   currentSat= 5;
   strokeCap(ROUND);
   strokeJoin(ROUND);
+  meridiem = hour() > 12 ? 1 : -1;		
 
   //Configurations for portrait / landscape / square displays
   if (height > width) {
@@ -91,6 +97,12 @@ function setup() {
     fy		= height - cy/4;
   }
 
+  for (var i = 0; i < 7; i++) {
+	if (i > 0)
+	  alarmDays[i] = false;
+	else
+	  alarmDays[i] = true;
+  }
   // REIMPLEMENT THIS, PREFERABLY WITH LINKED LISTS
   for (var i = 0; i < 6; i++) {
     bulbsCurrentHSB[i] = color(0, 255, 0);
@@ -106,8 +118,6 @@ function draw() {
   if (touches.length >= 1 || isMousePressed)
 	interaction = true;
   diff 	= constrain(60/frameRate(), 1, 2.4);
-  //console.log("interaction: " + interaction);
-  //console.log("touchHold: "	  + touchHold);
 
   /* Draw Home Screen */
   switch (targetScreen) {
@@ -154,16 +164,16 @@ function windowResized() {
 // Returns the angle between two points with the first point as the reference
 function getAngFromPoints (jx, jy, kx, ky){
   if (jx <= kx && jy >= ky)
-	return -degrees(arctan((ky-jy)/(kx-jx)));
+	return -degrees(atan((ky-jy)/(kx-jx)));
 
   if (jx >= kx && jy >= ky)
-	return 180 - degrees(arctan((ky-jy)/(kx-jx)));
+	return 180 - degrees(atan((ky-jy)/(kx-jx)));
 
   if (jx >= kx && jy <= ky)
-	return 180 - degrees(arctan((ky-jy)/(kx-jx)));
+	return 180 - degrees(atan((ky-jy)/(kx-jx)));
 
   if (jx <= kx && jy <= ky)
-	return 360 - degrees(arctan((ky-jy)/(kx-jx)));
+	return 360 - degrees(atan((ky-jy)/(kx-jx)));
 }
 function drawMenu(omx) {
   var acim	= animCurve(frameLimit-mc);
@@ -182,10 +192,16 @@ function drawMenu(omx) {
   fill(240);
 
   noStroke();
+  ellipse(mx+omx, my+((dBias-my)*0.525*acim), tm40, tm40);
+  ellipse(mx+omx, my, tm40, tm40);
+  //noStroke();
+  rect(mx+omx-tm20, my, tm40, ((dBias-my)*.525*acim));
+/*
   ellipse(mx+omx, my+((dBias-my)*1.05*acim), tm40, tm40);
   ellipse(mx+omx, my, tm40, tm40);
   //noStroke();
   rect(mx+omx-tm20, my, tm40, ((dBias-my)*1.05*acim));
+*/
   stroke(96);
   //line(mx+omx-tm20-0.5, my, mx+omx-tm20-0.5, my+((dBias-my)*1.05*acim));
   //line(mx+omx+tm20-0.5, my, mx+omx+tm20-0.5, my+((dBias-my)*1.05*acim));
@@ -204,35 +220,41 @@ function drawMenu(omx) {
   strokeWeight(1);
 
   if (mc > floor(frameLimit*0.25)) {
-    // Draw mini clock
     fill(96+(255-96)*(1-acim));
+/*
+    // Draw mini clock
     //,mc < frameLimit/4 ? 0 : 255);
-    ellipse(mx+omx, my+((dBias-my)*0.5*acim), tm28);
-    stroke(255);
-    line(mx+omx, my+((dBias-my)*0.5*acim), 
-      mx+omx, my+((dBias-my)*(height > width ? 0.32 : 1-0.32)*acim));
-    strokeWeight(2);
-    line(mx+omx, my+((dBias-my)*0.5*acim), 
-      mx+omx+tm08, my+((dBias-my)*0.5*acim));
-
-    // Draw alarm clock
-    noStroke();
     ellipse(mx+omx, my+((dBias-my)*acim), tm28);
-    ellipse(mx+omx-tm08, my+((dBias-my)*(height > width ? 0.85 : 1.15)*acim), tm15);
-    ellipse(mx+omx+tm08, my+((dBias-my)*(height > width ? 0.85 : 1.15)*acim), tm15);
-    triangle(mx+omx, 
-      my+((dBias-my)*(height > width ? 1.1 : 0.9)*acim), 
-      mx+omx-tm12, 
-      my+((dBias-my)*(height > width ? 1.235 : 0.765)*acim), 
-      mx+omx+tm12, 
-      my+((dBias-my)*(height > width ? 1.235 : 0.765)*acim));
-    strokeWeight(1);
     stroke(255);
     line(mx+omx, my+((dBias-my)*acim), 
-      mx+omx, my+((dBias-my)*(height > width ? 0.82 : 1.18)*acim));
+      mx+omx, my+((dBias-my)*(height > width ? 0.85 : 1.15)*acim));
+      //mx+omx, my+((dBias-my)*(height > width ? 0.32 : 1-0.32)*acim));
     strokeWeight(2);
     line(mx+omx, my+((dBias-my)*acim), 
       mx+omx+tm08, my+((dBias-my)*acim));
+*/
+
+    // Draw alarm clock
+    noStroke();
+    ellipse(mx+omx, my+((dBias-my)*0.5*acim), tm28);
+    //ellipse(mx+omx-tm08, my+((dBias-my)*(height > width ? 0.85 : 1.15)*0.5*acim), tm15);
+    ellipse(mx+omx-tm08, my+((dBias-my)*(height > width ? 0.7 : 1+0.32)*0.5*acim), tm15);
+    ellipse(mx+omx+tm08, my+((dBias-my)*(height > width ? 0.7 : 1+0.32)*0.5*acim), tm15);
+/*
+    triangle(mx+omx, 
+      my+((dBias-my)*(height > width ? 1.1 : 0.9)*acim*0.5), 
+      mx+omx-tm12, 
+      my+((dBias-my)*(height > width ? 1.235 : 0.765)*acim*0.5), 
+      mx+omx+tm12, 
+      my+((dBias-my)*(height > width ? 1.235 : 0.765)*acim*0.5));
+*/
+    strokeWeight(1);
+    stroke(255);
+    line(mx+omx, my+((dBias-my)*acim*0.5), 
+      mx+omx, my+((dBias-my)*(height > width ? 0.82 : 1.18)*acim*0.5));
+    strokeWeight(2);
+    line(mx+omx, my+((dBias-my)*acim*0.5), 
+      mx+omx+tm08, my+((dBias-my)*acim*0.5));
   }
 
   // Watch Menu Button for input
@@ -252,35 +274,33 @@ function drawMenu(omx) {
   //if (watchPoint(mx+omx, my+((dBias-my)*acim), tm40))
 
   // Close Menu if open and somewhere else on screen is touched
-  console.log("interaction: " + interaction);
-  console.log("menuOpen: " + menuOpen);
-  console.log("mc == frm: " + (mc == frameLimit));
-  console.log("!touchHold: " + !touchHold);
   if (interaction &&
     menuOpen &&
     mc == frameLimit &&
 	!touchHold
     ) {
 	if (watchPoint(mx+omx, my+((dBias-my)*0.5*acim), tm40)){
-	  targetScreen = 2;
-	  timeSetMode  = 0;
-	  //for (var i = 0; i < 6; i ++) {
-    	//var preCol		= color(bulbsTargetHSB[i]);
-    	//prevHue			= hue(preCol);
-    	//prevBri			= brightness(preCol);
-    	//prevSat			= saturation(preCol);
-	  //}
+	  targetScreen	= 2;
+	  timeSetMode	= 1;
+	  pHr			= tHr;
+	  pMn			= tMn;
+	  for (var i = 0; i < 6; i++) {
+		oldcols[i]			= color(bulbsTargetHSB[i]);
+		bulbsTargetHSB[i]	= color(0,0,0);
+	  }
 	}
-	else if (watchPoint(mx+omx, my+((dBias-my)*acim), tm40)){
-	  targetScreen = 2;
-	  timeSetMode  = 1;
-	  //for (var i = 0; i < 6; i ++) {
-    	//var preCol		= color(bulbsTargetHSB[i]);
-    	//prevHue			= hue(preCol);
-    	//prevBri			= brightness(preCol);
-    	//prevSat			= saturation(preCol);
-	  //}
+	else /*
+	if (watchPoint(mx+omx, my+((dBias-my)*acim), tm40)){
+	  targetScreen	= 2;
+	  timeSetMode	= 0;
+	  pHr			= tHr;
+	  pMn			= tMn;
+	  for (var i = 0; i < numLights; i++) {
+		oldcols[i]			= color(bulbsTargetHSB[i]);
+		bulbsTargetHSB[i]	= color(0,0,0);
+	  }
 	}
+*/
     menuOpen = false;
 	}
 
@@ -655,12 +675,11 @@ function drawClock(
   fill(bri*96);
   ellipse(cx, cy, dBias*cs);
   stroke(255*hop);
-  //var m = map(minute() + norm(second(), 0, 60), 0, 60, 0, TWO_PI    ) - HALF_PI;
-  //var h = map(hour()   + norm(minute(), 0, 60), 0, 24, 0, TWO_PI * 2) - HALF_PI;
-  var m = map(tMn, 0, 60, 0, TWO_PI    ) - HALF_PI;
-  var h = map(tHr + norm(tMn, 0, 60), 0, 24, 0, TWO_PI * 2) - HALF_PI;
-  //var m = tMn;
-  //var h = tHr;
+
+  var m = targetScreen == 2 ? aMn : tMn;
+  var h = targetScreen == 2 ? aHr : tHr;
+  m = (targetScreen == 2 ? map(m, 0, 60, 0, TWO_PI) : map(minute(), 0, 60, 0, TWO_PI)) - HALF_PI;
+  h = (targetScreen == 2 ? map(h, 0, 24, 0, TWO_PI*2) : map(hour(), 0, 24, 0, TWO_PI*2)) - HALF_PI;
   strokeWeight(dBias*0.02);
   line(cx, cy, cx + cos(m) * (dBias*0.4)*cs, cy + sin(m) * (dBias*0.4)*cs);
   strokeWeight(dBias*0.03);
@@ -897,7 +916,7 @@ function drawHome() {
   for (var i = 0; i < numLights; i++) {
     if (mode > 0) {
       var tbt = radians(i*(360/numLights)+(180/numLights)+angB)
-        var tbx = cx + cos(tbt)*dBias*0.75;
+      var tbx = cx + cos(tbt)*dBias*0.75;
       var tby = cy + sin(tbt)*dBias*0.75;
     } else if (mode < 0) {
       var tbt = radians(i*(180/constrain(numLights-1, 1, numLights))+(angB-angB%45));
@@ -1180,7 +1199,6 @@ function drawSettingColor(cursor, tb) {
         }
       }
       savedFavList.add(favs);
-      //console.log(savedFavList.listSize());
     } else if (fsdc == frameLimit) {
       savedFavList.remove(isPro);
     }
@@ -1199,6 +1217,8 @@ function drawSettingColor(cursor, tb) {
 
 
 function drawSettingTime(cursor, tc, cMode) {
+  var mnNew	= aMn*6-90;
+  var hrNew	= aHr*30-90;
   var acbic	= animCurveBounce(frameLimit-cursor);
   var acic	= animCurve(frameLimit-cursor);
   var acbc	= animCurveBounce(cursor);
@@ -1207,8 +1227,10 @@ function drawSettingTime(cursor, tc, cMode) {
   var tm08	= dBias*0.08;
   var tm10	= dBias*0.10;
   var tm15	= dBias*0.15;
+  var tm20	= dBias*0.20;
   var tm25	= dBias*0.25;
   var tm30	= dBias*0.30;
+  var tm35	= dBias*0.35;
   var tm40	= dBias*0.40;
 
   if (mode > 0)
@@ -1218,8 +1240,6 @@ function drawSettingTime(cursor, tc, cMode) {
 
   //Draw Buttons
   for (var i = 0; i < numLights; i++) {
-    //var tbx = cx + cos(radians(i*(360/numLights)+(180/numLights)+angB))*dBias*0.75;
-    //var tby = cy + sin(radians(i*(360/numLights)+(180/numLights)+angB))*dBias*0.75;
     if (mode > 0) {
       var tbt = radians(i*(360/numLights)+(180/numLights)+angB)
       var tbx = cx + cos(tbt)*dBias*0.75;
@@ -1259,56 +1279,179 @@ function drawSettingTime(cursor, tc, cMode) {
 
   stroke(225, 128*acbic);
   noFill();
-  ellipse(cx, cy, tm40*(1+0.5*acbic)*2);
-  ellipse(cx, cy, tm25*(1+0.5*acbic)*2);
+  ellipse(cx, cy, tm25*4);
 
   //noStroke();
   fill(255, 255*acbic)
-  var m = map(tMn, 0, 60, 0, TWO_PI    ) - HALF_PI;
-  var h = map(tHr + norm(tMn, 0, 60), 0, 24, 0, TWO_PI * 2) - HALF_PI;
+  // Watch Clock hands for input
+  if (
+	watchPoint(cx, cy, tm40*4) && 
+	!watchPoint(cx, cy, tm25*4) && 
+	timeSettingCursor == frameLimit &&
+	pta >= 0
+	) {
+	pta = 1;
+    var tma	= 90-floor(getAngFromPoints(cx, cy, mouseX, mouseY));
+	console.log(tma);
+	mnNew = tma-90;
+	aMn = mnNew/6-45;
+  }
+
+  if (
+	watchPoint(cx, cy, tm25*4) && 
+	timeSettingCursor == frameLimit &&
+	pta <= 0
+	) {
+	pta = -1;
+    var tma	= 90-floor(getAngFromPoints(cx, cy, mouseX, mouseY));
+	console.log(tma);
+	hrNew = (tma-90) - (tma-90)%30;
+	aHr = hrNew/30-45;
+  }
+
+  if (!touchHold)
+	pta = 0;
+
   ellipse(
-	cx + cos(m)*tm40*(1+0.5*acbic),
-	cy + sin(m)*tm40*(1+0.5*acbic),
+	cx + cos(radians(mnNew))*tm40*(1+0.5*acbic),
+	cy + sin(radians(mnNew))*tm40*(1+0.5*acbic),
 	tm10,
 	tm10);
   ellipse(
-	cx + cos(m)*tm25*(1+0.5*acbic),
-	cy + sin(m)*tm25*(1+0.5*acbic),
+	cx + cos(radians(hrNew))*tm25*(1+0.5*acbic),
+	cy + sin(radians(hrNew))*tm25*(1+0.5*acbic),
 	tm10,
 	tm10);
   //noFill();
-  // Watch Clock hands for input
-  //if (watchPoint(cx, cy, tm40) && !watchPoint(cx, cy, tm25))
 
   strokeWeight(1);
-  fill(240);
-  noStroke();
 
   // Confirm
+  fill(240);
+  noStroke();
   ellipse(fx, fy+dBias*acbc, tm40);  
   // Cancel
+  fill(0);
+  stroke(240);
   ellipse(cmx, fy+dBias*acbc, tm40);  
 
-  stroke(96);
-  strokeWeight(tm05);
+  // AM/PM slider
+  var tmofy;
+  switch(dBias) {
+  case width/2:
+	tmofy = tm08;
+	break;
+  case height/2:
+	tmofy = tm20	
+	break;
+}
+  if (
+	watchPoint(
+	  cx-tm10, 
+	  fy+dBias*acbc+tmofy,
+	  tm20)
+	)
+	meridiem = -1;
+  if (
+	watchPoint(
+	  cx+tm10, 
+	  fy+dBias*acbc+tmofy,
+	  tm20)
+	)
+	meridiem = 1;
+	
+  if (meridiem < 0) {
+	fill(240);
+	noStroke();
+	ellipse(
+	  cx-tm10, 
+	  fy+dBias*acbc+tmofy,
+	  tm20);
+
+	fill(0);
+	stroke(240);
+	ellipse(
+	  cx+tm10, 
+	  fy+dBias*acbc+tmofy,
+	  tm20);
+  } else {
+	fill(240);
+	noStroke();
+	ellipse(
+	  cx+tm10, 
+	  fy+dBias*acbc+tmofy,
+	  tm20);
+
+	fill(0);
+	stroke(240);
+	ellipse(
+	  cx-tm10, 
+	  fy+dBias*acbc+tmofy,
+	  tm20);
+  } 
+  noStroke();
+  textSize(tm15);
+  fill(96);
+  text('A',
+	cx-tm15, 
+	fy+dBias*acbc+tmofy+tm05
+	);
+  text('P',
+	cx+tm05, 
+	fy+dBias*acbc+tmofy+tm05
+	);
+
+  // Week Days
+  var weekDays = ['S','M','T','w','T','F','S'];
+  for (var i = 0; i < 7; i++) {
+	strokeWeight(2);
+	stroke(240);
+	if (alarmDays[i])
+	  fill(240);
+	else
+	  fill(0);
+	ellipse(
+	  cx-dBias*0.75+tm25*i, 
+	  tm20*acbic-tm10, 
+	  tm20);
+	fill(96);
+	if (!touchHold &&
+	  watchPoint(
+		cx-dBias*0.75+tm25*i, 
+		tm20*acbic-tm10, 
+		tm20)) {
+	  alarmDays[i] = !alarmDays[i];
+	}	
+	
+	noStroke();
+	text(
+	  weekDays[i], 
+	  cx-dBias*0.80+tm25*i, 
+	  tm20*acbic-tm05
+	  );
+  }
 
   // Draw Check mark for confirm button
+  stroke(96);
+  strokeWeight(tm05);
   line (fx-tm10, fy+dBias*acbc, 
     fx, fy+dBias*acbc+tm10);
   line (fx, fy+dBias*acbc+tm10, 
     fx+tm10, fy+dBias*acbc-dBias*0.12);
 
   // Draw Back arrow for cancel button
-  noFill();
+  stroke(240);
+  strokeWeight(tm05);
+  fill(0);
   cmx -= dBias*0.04;
   ellipse(cmx+tm08, fy+dBias*acbc+dBias*0.025, tm15);
   noStroke();
-  fill(240);
+  fill(0);
   if (height > width)
     rect(cmx-tm08, fy+dBias*acbc-dBias*0.025, cmx-dBias*0.06, tm15);
   else if (height <= width)
     rect(cmx-tm08, fy+dBias*acbc-dBias*0.025, tm15, tm15);
-  stroke(96);
+  stroke(240);
   line (cmx-tm05, fy+dBias*acbc+tm10, 
     cmx+tm08, fy+dBias*acbc+tm10);
   line (cmx-tm10, fy+dBias*acbc-tm05, 
@@ -1320,19 +1463,34 @@ function drawSettingTime(cursor, tc, cMode) {
   cmx += dBias*0.04;
 
   noStroke();
-  fill(96);
+  fill(240);
 
   //Watch Confirm button for input
   if (watchPoint(fx, fy+dBias*acbc, tm40) && !touchHold)
   {
+	for (var i = 0; i < 6; i++) {
+	  var tmCol			= color(oldcols[i]);
+	  var tmHue			= hue(tmCol);
+	  var tmSat			= saturation(tmCol);
+	  var tmBri			= brightness(tmCol);
+	  bulbsTargetHSB[i] = color(tmHue, tmSat, tmBri);
+	}
     targetScreen = 0;
   }
 
   //Watch Cancel Button for input
   if (watchPoint(cmx, fy+dBias*acbc, tm40) && !touchHold)
   {
-    //bulbsTargetHSB[tb] = color(prevHue, prevSat, prevBri);
-    targetScreen = 0;
+	for (var i = 0; i < 6; i++) {
+	  var tmCol			= color(oldcols[i]);
+	  var tmHue			= hue(tmCol);
+	  var tmSat			= saturation(tmCol);
+	  var tmBri			= brightness(tmCol);
+	  bulbsTargetHSB[i] = color(tmHue, tmSat, tmBri);
+	}
+    targetScreen 	= 0;
+	aHr				= pHr;
+	aMn				= pMn;
   }
 
   //Draw Menu Button (for animation)
