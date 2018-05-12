@@ -8,8 +8,8 @@ var dBias				= 0;		//int,  	Display bias, the smaller of the screen's dimensions
 var timeSettingCursor	= 0;		//int,  	animation cursor for home screen / time setting screen transition
 var colrSettingCursor	= 0;		//int,		animation cursor for home screen / color setting screen transition
 var targetScreen		= 0;		//int,  	0: Home Screen
-									//1: Color Setting Screen
-									//2: Time Setting Screen
+//1: Color Setting Screen
+//2: Time Setting Screen
 var targetBulb;						//int,  	which bulb the picker screen is adjusting
 var targetClock;					//int,  	distinguishes time setting screen for time / alarm
 var currentHue;						//int,  	currently selected hue
@@ -98,10 +98,10 @@ function setup() {
   }
 
   for (var i = 0; i < 7; i++) {
-	if (i > 0)
-	  alarmDays[i] = false;
-	else
-	  alarmDays[i] = true;
+    if (i > 0)
+      alarmDays[i] = false;
+    else
+      alarmDays[i] = true;
   }
   // REIMPLEMENT THIS, PREFERABLY WITH LINKED LISTS
   for (var i = 0; i < 6; i++) {
@@ -114,9 +114,9 @@ function setup() {
 
 function draw() {
   if (touches.length == 0 && !isMousePressed)
-	interaction = false;
+    interaction = false;
   if (touches.length >= 1 || isMousePressed)
-	interaction = true;
+    interaction = true;
   diff 	= constrain(60/frameRate(), 1, 2.4);
 
   /* Draw Home Screen */
@@ -145,7 +145,7 @@ function draw() {
   case 2:
     if (timeSettingCursor < frameLimit)
       timeSettingCursor = constrain(timeSettingCursor + 3 + diff, 0, frameLimit);
-	  drawSettingTime(timeSettingCursor, targetClock);
+    drawSettingTime(timeSettingCursor, targetClock);
     break;
   }
 
@@ -153,7 +153,7 @@ function draw() {
   touchHold = interaction;
 }
 
-function touchStarted(){
+function touchStarted() {
   //necessarily empty
 }
 function windowResized() {
@@ -162,18 +162,18 @@ function windowResized() {
 }
 
 // Returns the angle between two points with the first point as the reference
-function getAngFromPoints (jx, jy, kx, ky){
+function getAngFromPoints (jx, jy, kx, ky) {
   if (jx <= kx && jy >= ky)
-	return -degrees(atan((ky-jy)/(kx-jx)));
+    return -degrees(atan((ky-jy)/(kx-jx)));
 
   if (jx >= kx && jy >= ky)
-	return 180 - degrees(atan((ky-jy)/(kx-jx)));
+    return 180 - degrees(atan((ky-jy)/(kx-jx)));
 
   if (jx >= kx && jy <= ky)
-	return 180 - degrees(atan((ky-jy)/(kx-jx)));
+    return 180 - degrees(atan((ky-jy)/(kx-jx)));
 
   if (jx <= kx && jy <= ky)
-	return 360 - degrees(atan((ky-jy)/(kx-jx)));
+    return 360 - degrees(atan((ky-jy)/(kx-jx)));
 }
 function drawMenu(omx) {
   var acim	= animCurve(frameLimit-mc);
@@ -196,12 +196,12 @@ function drawMenu(omx) {
   ellipse(mx+omx, my, tm40, tm40);
   //noStroke();
   rect(mx+omx-tm20, my, tm40, ((dBias-my)*.525*acim));
-/*
+  /*
   ellipse(mx+omx, my+((dBias-my)*1.05*acim), tm40, tm40);
-  ellipse(mx+omx, my, tm40, tm40);
-  //noStroke();
-  rect(mx+omx-tm20, my, tm40, ((dBias-my)*1.05*acim));
-*/
+   ellipse(mx+omx, my, tm40, tm40);
+   //noStroke();
+   rect(mx+omx-tm20, my, tm40, ((dBias-my)*1.05*acim));
+   */
   stroke(96);
   //line(mx+omx-tm20-0.5, my, mx+omx-tm20-0.5, my+((dBias-my)*1.05*acim));
   //line(mx+omx+tm20-0.5, my, mx+omx+tm20-0.5, my+((dBias-my)*1.05*acim));
@@ -221,18 +221,18 @@ function drawMenu(omx) {
 
   if (mc > floor(frameLimit*0.25)) {
     fill(96+(255-96)*(1-acim));
-/*
+    /*
     // Draw mini clock
-    //,mc < frameLimit/4 ? 0 : 255);
-    ellipse(mx+omx, my+((dBias-my)*acim), tm28);
-    stroke(255);
-    line(mx+omx, my+((dBias-my)*acim), 
-      mx+omx, my+((dBias-my)*(height > width ? 0.85 : 1.15)*acim));
-      //mx+omx, my+((dBias-my)*(height > width ? 0.32 : 1-0.32)*acim));
-    strokeWeight(2);
-    line(mx+omx, my+((dBias-my)*acim), 
-      mx+omx+tm08, my+((dBias-my)*acim));
-*/
+     //,mc < frameLimit/4 ? 0 : 255);
+     ellipse(mx+omx, my+((dBias-my)*acim), tm28);
+     stroke(255);
+     line(mx+omx, my+((dBias-my)*acim), 
+     mx+omx, my+((dBias-my)*(height > width ? 0.85 : 1.15)*acim));
+     //mx+omx, my+((dBias-my)*(height > width ? 0.32 : 1-0.32)*acim));
+     strokeWeight(2);
+     line(mx+omx, my+((dBias-my)*acim), 
+     mx+omx+tm08, my+((dBias-my)*acim));
+     */
 
     // Draw alarm clock
     noStroke();
@@ -240,14 +240,14 @@ function drawMenu(omx) {
     //ellipse(mx+omx-tm08, my+((dBias-my)*(height > width ? 0.85 : 1.15)*0.5*acim), tm15);
     ellipse(mx+omx-tm08, my+((dBias-my)*(height > width ? 0.7 : 1+0.32)*0.5*acim), tm15);
     ellipse(mx+omx+tm08, my+((dBias-my)*(height > width ? 0.7 : 1+0.32)*0.5*acim), tm15);
-/*
+    /*
     triangle(mx+omx, 
-      my+((dBias-my)*(height > width ? 1.1 : 0.9)*acim*0.5), 
-      mx+omx-tm12, 
-      my+((dBias-my)*(height > width ? 1.235 : 0.765)*acim*0.5), 
-      mx+omx+tm12, 
-      my+((dBias-my)*(height > width ? 1.235 : 0.765)*acim*0.5));
-*/
+     my+((dBias-my)*(height > width ? 1.1 : 0.9)*acim*0.5), 
+     mx+omx-tm12, 
+     my+((dBias-my)*(height > width ? 1.235 : 0.765)*acim*0.5), 
+     mx+omx+tm12, 
+     my+((dBias-my)*(height > width ? 1.235 : 0.765)*acim*0.5));
+     */
     strokeWeight(1);
     stroke(255);
     line(mx+omx, my+((dBias-my)*acim*0.5), 
@@ -259,7 +259,7 @@ function drawMenu(omx) {
 
   // Watch Menu Button for input
   if (watchPoint(mx+omx, my, tm40, tm40) && !touchHold) {
-	favsOpen = false;
+    favsOpen = false;
     if (!menuOpen) {
       menuOpen = true;
     } else {
@@ -277,32 +277,31 @@ function drawMenu(omx) {
   if (interaction &&
     menuOpen &&
     mc == frameLimit &&
-	!touchHold
+    !touchHold
     ) {
-	if (watchPoint(mx+omx, my+((dBias-my)*0.5*acim), tm40)){
-	  targetScreen	= 2;
-	  timeSetMode	= 1;
-	  pHr			= tHr;
-	  pMn			= tMn;
-	  for (var i = 0; i < 6; i++) {
-		oldcols[i]			= color(bulbsTargetHSB[i]);
-		bulbsTargetHSB[i]	= color(0,0,0);
-	  }
-	}
-	else /*
+    if (watchPoint(mx+omx, my+((dBias-my)*0.5*acim), tm40)) {
+      targetScreen	= 2;
+      timeSetMode	= 1;
+      pHr			= tHr;
+      pMn			= tMn;
+      for (var i = 0; i < 6; i++) {
+        oldcols[i]			= color(bulbsTargetHSB[i]);
+        bulbsTargetHSB[i]	= color(0, 0, 0);
+      }
+    } else /*
 	if (watchPoint(mx+omx, my+((dBias-my)*acim), tm40)){
-	  targetScreen	= 2;
-	  timeSetMode	= 0;
-	  pHr			= tHr;
-	  pMn			= tMn;
-	  for (var i = 0; i < numLights; i++) {
-		oldcols[i]			= color(bulbsTargetHSB[i]);
-		bulbsTargetHSB[i]	= color(0,0,0);
-	  }
-	}
-*/
+     	  targetScreen	= 2;
+     	  timeSetMode	= 0;
+     	  pHr			= tHr;
+     	  pMn			= tMn;
+     	  for (var i = 0; i < numLights; i++) {
+     		oldcols[i]			= color(bulbsTargetHSB[i]);
+     		bulbsTargetHSB[i]	= color(0,0,0);
+     	  }
+     	}
+     */
     menuOpen = false;
-	}
+  }
 
   if (menuOpen)
     mc = constrain(mc + 6*diff, 0, frameLimit);
@@ -464,7 +463,7 @@ function drawFavorites(ofx) {
         pt >= savedFavList.listSize() ? 1 : pt + 1, // 4
         pt <= 1 ? savedFavList.listSize() : pt - 1, // 5
         tm13*(1-animCurveBounce(pc)), 				// 6
-        tm13*(0.67+0.33*acibp),						// 7
+        tm13*(0.67+0.33*acibp), 						// 7
         tm13*(0.67+0.33*(1-acibp)) 					// 8
       ];
       if (mode > 0) {
@@ -533,46 +532,45 @@ function drawFavorites(ofx) {
       (o*0.50*acif));
     fill(255, (fc >= floor(frameLimit*0.5) ? 255 : 0));
 
-	if (mode > 0) {
-    drawHomeCircle(
-      fx+ofx, 
-      fy+o*acif, 
-      tm13*0.8*acif, 
-      tm13*0.8*acif, 
-      numLights, 
-      angB, 
-      1
-      );
-    drawHomeCircle(
-      fx+ofx, 
-      fy+o*0.5*acif, 
-      tm13*0.8*acif, 
-      tm13*0.8*acif, 
-      numLights, 
-      angB, 
-      2
-      );
-	} else if (mode < 0) {
-    drawHomeTri(
-      fx+ofx, 
-      fy+o*acif, 
-      tm13*0.8*acif, 
-      tm13*0.8*acif, 
-      numLights, 
-      angB, 
-      1
-      );
-    drawHomeTri(
-      fx+ofx, 
-      fy+o*0.5*acif, 
-      tm13*0.8*acif, 
-      tm13*0.8*acif, 
-      numLights, 
-      angB, 
-      2
-      );
-
-	}
+    if (mode > 0) {
+      drawHomeCircle(
+        fx+ofx, 
+        fy+o*acif, 
+        tm13*0.8*acif, 
+        tm13*0.8*acif, 
+        numLights, 
+        angB, 
+        1
+        );
+      drawHomeCircle(
+        fx+ofx, 
+        fy+o*0.5*acif, 
+        tm13*0.8*acif, 
+        tm13*0.8*acif, 
+        numLights, 
+        angB, 
+        2
+        );
+    } else if (mode < 0) {
+      drawHomeTri(
+        fx+ofx, 
+        fy+o*acif, 
+        tm13*0.8*acif, 
+        tm13*0.8*acif, 
+        numLights, 
+        angB, 
+        1
+        );
+      drawHomeTri(
+        fx+ofx, 
+        fy+o*0.5*acif, 
+        tm13*0.8*acif, 
+        tm13*0.8*acif, 
+        numLights, 
+        angB, 
+        2
+        );
+    }
 
     // Close Favorites if open and somewhere else on screen is touched
     if (interaction &&
@@ -613,26 +611,26 @@ function drawFavorites(ofx) {
   else if (savedFavList.listSize() == 1) {
     ellipse(fx+ofx, fy+(o*acif), tm30);
     fill(255, (fc >= floor(frameLimit*0.5) ? 255 : 0));
-	if (mode > 0)
-    drawHomeCircle(
-      fx+ofx, 
-      fy+(o*acif), 
-      tm13*0.85*acif, 
-      tm13*0.85*acif, 
-      numLights, 
-      angB, 
-      1 
-      );
-	if (mode < 0)
-    drawHomeTri(
-      fx+ofx, 
-      fy+(o*acif), 
-      tm13*0.85*acif, 
-      tm13*0.85*acif, 
-      numLights, 
-      angB, 
-      1 
-      );
+    if (mode > 0)
+      drawHomeCircle(
+        fx+ofx, 
+        fy+(o*acif), 
+        tm13*0.85*acif, 
+        tm13*0.85*acif, 
+        numLights, 
+        angB, 
+        1 
+        );
+    if (mode < 0)
+      drawHomeTri(
+        fx+ofx, 
+        fy+(o*acif), 
+        tm13*0.85*acif, 
+        tm13*0.85*acif, 
+        numLights, 
+        angB, 
+        1 
+        );
 
     // Close Favorites if open and somewhere else on screen is touched
     if (interaction &&
@@ -667,10 +665,10 @@ function drawFavorites(ofx) {
 }
 
 function drawClock(
-	cs, 	// float, clock size scalar
-	hop, 	// int,	  clock-hand opacity
-	bri		// float, clock brightness
-	) {
+  cs, 	// float, clock size scalar
+  hop, 	// int,	  clock-hand opacity
+  bri		// float, clock brightness
+  ) {
   noStroke();
   fill(bri*96);
   ellipse(cx, cy, dBias*cs);
@@ -722,16 +720,16 @@ function watchPoint(px, py, pr) {
   var wasMousePressed = false;
   if (1 >= pow((mouseX-px), 2) / pow(pr/2, 2) + pow((mouseY - py), 2) / pow(pr/2, 2)) 
   {
-	if (touches.length >= 1 || isMousePressed) {
-	  //interaction		= true;
-	  //wasMousePressed	= interaction;
-	  wasMousePressed	= true;
-	} else 
-	if (touches.length == 0 && !isMousePressed) {
-	  //interaction		= false;
-	  //wasMousePressed	= interaction;
-	  wasMousePressed	= false;
-	}
+    if (touches.length >= 1 || isMousePressed) {
+      //interaction		= true;
+      //wasMousePressed	= interaction;
+      wasMousePressed	= true;
+    } else 
+    if (touches.length == 0 && !isMousePressed) {
+      //interaction		= false;
+      //wasMousePressed	= interaction;
+      wasMousePressed	= false;
+    }
   }
   return wasMousePressed;
 }
@@ -888,22 +886,22 @@ function drawZoneBulbButton(bx, by, br, bid) {
   strokeWeight(tm13/2);
   for (var i = 1; i < 4; i++)
     line (
-	  bx-tm10, 
+      bx-tm10, 
       by+tm02+tm10*i, 
       bx+tm10, 
       by-tm02+tm10*i);
-	line (
-	  bx-tm10,
-	  by+tm02+tm10*3,
-	  bx,
-	  by+tm02+tm10*3.5
-	  );
-	line (
-	  bx+tm10,
-	  by-tm02+tm10*3,
-	  bx,
-	  by+tm02+tm10*3.5
-	  );
+  line (
+    bx-tm10, 
+    by+tm02+tm10*3, 
+    bx, 
+    by+tm02+tm10*3.5
+    );
+  line (
+    bx+tm10, 
+    by-tm02+tm10*3, 
+    bx, 
+    by+tm02+tm10*3.5
+    );
 }
 
 function drawHome() {
@@ -916,7 +914,7 @@ function drawHome() {
   for (var i = 0; i < numLights; i++) {
     if (mode > 0) {
       var tbt = radians(i*(360/numLights)+(180/numLights)+angB)
-      var tbx = cx + cos(tbt)*dBias*0.75;
+        var tbx = cx + cos(tbt)*dBias*0.75;
       var tby = cy + sin(tbt)*dBias*0.75;
     } else if (mode < 0) {
       var tbt = radians(i*(180/constrain(numLights-1, 1, numLights))+(angB-angB%45));
@@ -1007,9 +1005,9 @@ function drawSettingColor(cursor, tb) {
     fsdc	= constrain(fsdc-3-diff, 0, frameLimit); // fsdc = 0 if profile does not exist
 
   if (mode > 0)
-	drawHomeCircle(cx, cy, cx, cy, numLights, angB, 0);
+    drawHomeCircle(cx, cy, cx, cy, numLights, angB, 0);
   if (mode < 0)
-	drawHomeTri(cx, cy, cx, cy, numLights, angB, 0);
+    drawHomeTri(cx, cy, cx, cy, numLights, angB, 0);
 
   //Draw Buttons
   for (var i = 0; i < numLights; i++) {
@@ -1017,7 +1015,7 @@ function drawSettingColor(cursor, tb) {
     //var tby = cy + sin(radians(i*(360/numLights)+(180/numLights)+angB))*dBias*0.75;
     if (mode > 0) {
       var tbt = radians(i*(360/numLights)+(180/numLights)+angB)
-      var tbx = cx + cos(tbt)*dBias*0.75;
+        var tbx = cx + cos(tbt)*dBias*0.75;
       var tby = cy + sin(tbt)*dBias*0.75;
     } else if (mode < 0) {
       var tbt = radians(i*(180/constrain(numLights-1, 1, numLights))+(angB-angB%45));
@@ -1234,15 +1232,15 @@ function drawSettingTime(cursor, tc, cMode) {
   var tm40	= dBias*0.40;
 
   if (mode > 0)
-	drawHomeCircle(cx, cy, cx, cy, numLights, angB, 0);
+    drawHomeCircle(cx, cy, cx, cy, numLights, angB, 0);
   if (mode < 0)
-	drawHomeTri(cx, cy, cx, cy, numLights, angB, 0);
+    drawHomeTri(cx, cy, cx, cy, numLights, angB, 0);
 
   //Draw Buttons
   for (var i = 0; i < numLights; i++) {
     if (mode > 0) {
       var tbt = radians(i*(360/numLights)+(180/numLights)+angB)
-      var tbx = cx + cos(tbt)*dBias*0.75;
+        var tbx = cx + cos(tbt)*dBias*0.75;
       var tby = cy + sin(tbt)*dBias*0.75;
     } else if (mode < 0) {
       var tbt = radians(i*(180/constrain(numLights-1, 1, numLights))+(angB-angB%45));
@@ -1258,23 +1256,23 @@ function drawSettingTime(cursor, tc, cMode) {
   stroke(225, 128*acbic);
 
   for (var i = 0; i < 60; i++) {
-	if (i%5 == 0) {
-	  strokeWeight(2);
-	  line(
-	    cx + cos(radians(i*(360/12)))*dBias*0.63,
-	    cy + sin(radians(i*(360/12)))*dBias*0.63,
-	    cx + cos(radians(i*(360/12)))*dBias*0.73,
-	    cy + sin(radians(i*(360/12)))*dBias*0.73
-	  ); }
-	else {
-	  strokeWeight(1);
-	  line(
-	    cx + cos(radians(i*6))*dBias*0.70,
-	    cy + sin(radians(i*6))*dBias*0.70,
-	    cx + cos(radians(i*6))*dBias*0.74,
-	    cy + sin(radians(i*6))*dBias*0.74
-	  );
-	}
+    if (i%5 == 0) {
+      strokeWeight(2);
+      line(
+        cx + cos(radians(i*(360/12)))*dBias*0.63, 
+        cy + sin(radians(i*(360/12)))*dBias*0.63, 
+        cx + cos(radians(i*(360/12)))*dBias*0.73, 
+        cy + sin(radians(i*(360/12)))*dBias*0.73
+        );
+    } else {
+      strokeWeight(1);
+      line(
+        cx + cos(radians(i*6))*dBias*0.70, 
+        cy + sin(radians(i*6))*dBias*0.70, 
+        cx + cos(radians(i*6))*dBias*0.74, 
+        cy + sin(radians(i*6))*dBias*0.74
+        );
+    }
   }
 
   stroke(225, 128*acbic);
@@ -1283,45 +1281,45 @@ function drawSettingTime(cursor, tc, cMode) {
 
   //noStroke();
   fill(255, 255*acbic)
-  // Watch Clock hands for input
-  if (
-	watchPoint(cx, cy, tm40*4) && 
-	!watchPoint(cx, cy, tm25*4) && 
-	timeSettingCursor == frameLimit &&
-	pta >= 0
-	) {
-	pta = 1;
+    // Watch Clock hands for input
+    if (
+    watchPoint(cx, cy, tm40*4) && 
+    !watchPoint(cx, cy, tm25*4) && 
+    timeSettingCursor == frameLimit &&
+    pta >= 0
+    ) {
+    pta = 1;
     var tma	= 90-floor(getAngFromPoints(cx, cy, mouseX, mouseY));
-	console.log(tma);
-	mnNew = tma-90;
-	aMn = mnNew/6-45;
+    console.log(tma);
+    mnNew = tma-90;
+    aMn = mnNew/6-45;
   }
 
   if (
-	watchPoint(cx, cy, tm25*4) && 
-	timeSettingCursor == frameLimit &&
-	pta <= 0
-	) {
-	pta = -1;
+    watchPoint(cx, cy, tm25*4) && 
+    timeSettingCursor == frameLimit &&
+    pta <= 0
+    ) {
+    pta = -1;
     var tma	= 90-floor(getAngFromPoints(cx, cy, mouseX, mouseY));
-	console.log(tma);
-	hrNew = (tma-90) - (tma-90)%30;
-	aHr = hrNew/30-45;
+    console.log(tma);
+    hrNew = (tma-90) - (tma-90)%30;
+    aHr = hrNew/30-45;
   }
 
   if (!touchHold)
-	pta = 0;
+    pta = 0;
 
   ellipse(
-	cx + cos(radians(mnNew))*tm40*(1+0.5*acbic),
-	cy + sin(radians(mnNew))*tm40*(1+0.5*acbic),
-	tm10,
-	tm10);
+    cx + cos(radians(mnNew))*tm40*(1+0.5*acbic), 
+    cy + sin(radians(mnNew))*tm40*(1+0.5*acbic), 
+    tm10, 
+    tm10);
   ellipse(
-	cx + cos(radians(hrNew))*tm25*(1+0.5*acbic),
-	cy + sin(radians(hrNew))*tm25*(1+0.5*acbic),
-	tm10,
-	tm10);
+    cx + cos(radians(hrNew))*tm25*(1+0.5*acbic), 
+    cy + sin(radians(hrNew))*tm25*(1+0.5*acbic), 
+    tm10, 
+    tm10);
   //noFill();
 
   strokeWeight(1);
@@ -1339,96 +1337,96 @@ function drawSettingTime(cursor, tc, cMode) {
   var tmofy;
   switch(dBias) {
   case width/2:
-	tmofy = tm08;
-	break;
+    tmofy = tm08;
+    break;
   case height/2:
-	tmofy = tm20	
-	break;
-}
+    tmofy = tm20	
+      break;
+  }
   if (
-	watchPoint(
-	  cx-tm10, 
-	  fy+dBias*acbc+tmofy,
-	  tm20)
-	)
-	meridiem = -1;
+    watchPoint(
+    cx-tm10, 
+    fy+dBias*acbc+tmofy, 
+    tm20)
+    )
+    meridiem = -1;
   if (
-	watchPoint(
-	  cx+tm10, 
-	  fy+dBias*acbc+tmofy,
-	  tm20)
-	)
-	meridiem = 1;
-	
+    watchPoint(
+    cx+tm10, 
+    fy+dBias*acbc+tmofy, 
+    tm20)
+    )
+    meridiem = 1;
+
   if (meridiem < 0) {
-	fill(240);
-	noStroke();
-	ellipse(
-	  cx-tm10, 
-	  fy+dBias*acbc+tmofy,
-	  tm20);
+    fill(240);
+    noStroke();
+    ellipse(
+      cx-tm10, 
+      fy+dBias*acbc+tmofy, 
+      tm20);
 
-	fill(0);
-	stroke(240);
-	ellipse(
-	  cx+tm10, 
-	  fy+dBias*acbc+tmofy,
-	  tm20);
+    fill(0);
+    stroke(240);
+    ellipse(
+      cx+tm10, 
+      fy+dBias*acbc+tmofy, 
+      tm20);
   } else {
-	fill(240);
-	noStroke();
-	ellipse(
-	  cx+tm10, 
-	  fy+dBias*acbc+tmofy,
-	  tm20);
+    fill(240);
+    noStroke();
+    ellipse(
+      cx+tm10, 
+      fy+dBias*acbc+tmofy, 
+      tm20);
 
-	fill(0);
-	stroke(240);
-	ellipse(
-	  cx-tm10, 
-	  fy+dBias*acbc+tmofy,
-	  tm20);
+    fill(0);
+    stroke(240);
+    ellipse(
+      cx-tm10, 
+      fy+dBias*acbc+tmofy, 
+      tm20);
   } 
   noStroke();
   textSize(tm15);
   fill(96);
-  text('A',
-	cx-tm15, 
-	fy+dBias*acbc+tmofy+tm05
-	);
-  text('P',
-	cx+tm05, 
-	fy+dBias*acbc+tmofy+tm05
-	);
+  text('A', 
+    cx-tm15, 
+    fy+dBias*acbc+tmofy+tm05
+    );
+  text('P', 
+    cx+tm05, 
+    fy+dBias*acbc+tmofy+tm05
+    );
 
   // Week Days
-  var weekDays = ['S','M','T','w','T','F','S'];
+  var weekDays = ['S', 'M', 'T', 'w', 'T', 'F', 'S'];
   for (var i = 0; i < 7; i++) {
-	strokeWeight(2);
-	stroke(240);
-	if (alarmDays[i])
-	  fill(240);
-	else
-	  fill(0);
-	ellipse(
-	  cx-dBias*0.75+tm25*i, 
-	  tm20*acbic-tm10, 
-	  tm20);
-	fill(96);
-	if (!touchHold &&
-	  watchPoint(
-		cx-dBias*0.75+tm25*i, 
-		tm20*acbic-tm10, 
-		tm20)) {
-	  alarmDays[i] = !alarmDays[i];
-	}	
-	
-	noStroke();
-	text(
-	  weekDays[i], 
-	  cx-dBias*0.80+tm25*i, 
-	  tm20*acbic-tm05
-	  );
+    strokeWeight(2);
+    stroke(240);
+    if (alarmDays[i])
+      fill(240);
+    else
+      fill(0);
+    ellipse(
+      cx-dBias*0.75+tm25*i, 
+      tm20*acbic-tm10, 
+      tm20);
+    fill(96);
+    if (!touchHold &&
+      watchPoint(
+      cx-dBias*0.75+tm25*i, 
+      tm20*acbic-tm10, 
+      tm20)) {
+      alarmDays[i] = !alarmDays[i];
+    }	
+
+    noStroke();
+    text(
+      weekDays[i], 
+      cx-dBias*0.80+tm25*i, 
+      tm20*acbic-tm05
+      );
   }
 
   // Draw Check mark for confirm button
@@ -1468,29 +1466,29 @@ function drawSettingTime(cursor, tc, cMode) {
   //Watch Confirm button for input
   if (watchPoint(fx, fy+dBias*acbc, tm40) && !touchHold)
   {
-	for (var i = 0; i < 6; i++) {
-	  var tmCol			= color(oldcols[i]);
-	  var tmHue			= hue(tmCol);
-	  var tmSat			= saturation(tmCol);
-	  var tmBri			= brightness(tmCol);
-	  bulbsTargetHSB[i] = color(tmHue, tmSat, tmBri);
-	}
+    for (var i = 0; i < 6; i++) {
+      var tmCol			= color(oldcols[i]);
+      var tmHue			= hue(tmCol);
+      var tmSat			= saturation(tmCol);
+      var tmBri			= brightness(tmCol);
+      bulbsTargetHSB[i] = color(tmHue, tmSat, tmBri);
+    }
     targetScreen = 0;
   }
 
   //Watch Cancel Button for input
   if (watchPoint(cmx, fy+dBias*acbc, tm40) && !touchHold)
   {
-	for (var i = 0; i < 6; i++) {
-	  var tmCol			= color(oldcols[i]);
-	  var tmHue			= hue(tmCol);
-	  var tmSat			= saturation(tmCol);
-	  var tmBri			= brightness(tmCol);
-	  bulbsTargetHSB[i] = color(tmHue, tmSat, tmBri);
-	}
+    for (var i = 0; i < 6; i++) {
+      var tmCol			= color(oldcols[i]);
+      var tmHue			= hue(tmCol);
+      var tmSat			= saturation(tmCol);
+      var tmBri			= brightness(tmCol);
+      bulbsTargetHSB[i] = color(tmHue, tmSat, tmBri);
+    }
     targetScreen 	= 0;
-	aHr				= pHr;
-	aMn				= pMn;
+    aHr				= pHr;
+    aMn				= pMn;
   }
 
   //Draw Menu Button (for animation)
@@ -1506,23 +1504,36 @@ function drawSettingTime(cursor, tc, cMode) {
 
 function drawHomeCircle(
   gx, 		// float, X-coordinate of where the background (as a shape) is drawn
-  gy, // float, Y-coordinate of where the background (as a shape) is drawn
+  gy,		// float, Y-coordinate of where the background (as a shape) is drawn
   dx, 		// float, width (radius) of draw space
   dy, 		// float, height (radius) of draw space
   nz, 		// int,   number of zones to divide, correlates to number of bulbs
   ao, 		// float, angular offset of the colored zones
   colMode	// int,   0: uses colors of 'bulbsCurrentHSB', 1+: colors of indexed user-saved profile 
   ) {
+  var angOffset = (360/nz);
+  var dxSq		= pow(dx, 2);
+  var dySq		= pow(dy, 2);
+  var dRad		= sqrt(dxSq + dySq);
   for (var i = 0; i < nz; i++) {
     // Green Lines
-    var px = constrain(gx + cos(radians(i*(360/nz)+ao+45))*sqrt(pow(dx, 2) + pow(dy, 2)), gx-dx, gx+dx);
-    var py = constrain(gy + sin(radians(i*(360/nz)+ao+45))*sqrt(pow(dx, 2) + pow(dy, 2)), gy-dy, gy+dy);
+    var px = constrain(gx + cos(radians(i*angOffset+ao+45))*dRad, gx-dx, gx+dx);
+    var py = constrain(gy + sin(radians(i*angOffset+ao+45))*dRad, gy-dy, gy+dy);
     // Blue Lines
-    var qx = constrain(gx + cos(radians(i*(360/nz)+ao))*sqrt(pow(dx, 2) + pow(dy, 2)), gx-dx, gx+dx);
-    var qy = constrain(gy + sin(radians(i*(360/nz)+ao))*sqrt(pow(dx, 2) + pow(dy, 2)), gy-dy, gy+dy);
+    var qx = constrain(gx + cos(radians(i*angOffset+ao))*dRad, gx-dx, gx+dx);
+    var qy = constrain(gy + sin(radians(i*angOffset+ao))*dRad, gy-dy, gy+dy);
     // Next Line in iteration for zoning
-    var rx = constrain(gx + cos(radians((i+1)*(360/nz)+ao))*sqrt(pow(dx, 2) + pow(dy, 2)), gx-dx, gx+dx);
-    var ry = constrain(gy + sin(radians((i+1)*(360/nz)+ao))*sqrt(pow(dx, 2) + pow(dy, 2)), gy-dy, gy+dy);
+    var rx = constrain(gx + cos(radians((i+1)*angOffset+ao))*dRad, gx-dx, gx+dx);
+    var ry = constrain(gy + sin(radians((i+1)*angOffset+ao))*dRad, gy-dy, gy+dy);
+
+	if (ao % 45 == 0 && dRad > dBias) {
+	  //px = round(px);
+	  //py = round(py);
+	  qx = round(qx);
+	  qy = round(qy);
+	  rx = round(rx);
+	  ry = round(ry);
+	}
 
     if (colMode <= 0) {
       fill(bulbsCurrentHSB[i]);
@@ -1546,18 +1557,19 @@ function drawHomeCircle(
       break;
 
     case 2:
-      if (qx == gx-dx && rx == gx+dx) {
-        quad(rx, ry, qx, qy, gx-dx, gy-dy, gx+dx, gy-dy);
-      }
-      if (qy == gy-dy && ry == gy+dy) {
-        quad(rx, ry, qx, qy, gx+dx, gy-dy, gx+dx, gy+dy);
-      }
-      if (qx == gx+dx && rx == gx-dx) {
-        quad(qx, qy, rx, ry, gx-dx, gy+dy, gx+dx, gy+dy);
-      }
-      if (qy == gy+dy && ry == gy-dy) {
-        quad(qx, qy, rx, ry, gx-dx, gy-dy, gx-dx, gy+dy);
-      }
+		//console.log(i + " " + "qx:" + qx + " qy:" + qy + "rx:" + rx + "ry:" + ry);
+        if (qx == gx-dx && rx == gx+dx) {
+          quad(rx, ry, qx, qy, gx-dx, gy-dy, gx+dx, gy-dy);
+        }
+        if (qy == gy-dy && ry == gy+dy) {
+          quad(rx, ry, qx, qy, gx+dx, gy-dy, gx+dx, gy+dy);
+        }
+        if (qx == gx+dx && rx == gx-dx) {
+          quad(qx, qy, rx, ry, gx-dx, gy+dy, gx+dx, gy+dy);
+        }
+        if (qy == gy+dy && ry == gy-dy) {
+          quad(qx, qy, rx, ry, gx-dx, gy-dy, gx-dx, gy+dy);
+        }
       break;
 
     default:
@@ -1691,6 +1703,7 @@ function keyPressed() {
       angB += 360;
 
     //println(ao);
+    console.log(angB);
     break;
 
   case RIGHT_ARROW:
