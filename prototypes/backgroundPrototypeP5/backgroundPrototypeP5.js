@@ -8,12 +8,15 @@ var   nb  = 3;       //number of zones
 var mode  = 1;       //lighting arrangement: 1 = circular, -1 = linear
 
 function setup() {
-  createCanvas(800, 800);
+  createCanvas(windowWidth, windowHeight);
   rectMode(CORNER);
   cx = float(width/2);
   cy = float(height/2);
 
   randomSeed(628);
+
+  wx = width/4;
+  wy = height/4;
 
   if (wy > wx)
     dBias  = wx;
@@ -630,4 +633,8 @@ function drawHomeTri (
     drawHomeCircle(gx, gy, dx, dy, nz, ao);
     break;
   }
+}
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  setup();
 }
