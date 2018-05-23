@@ -1,7 +1,11 @@
 var cx;
 var cy;
 var basicMenu;
+var subMenu1;
+var subMenu2;
 var backgroundColor;
+var numElements = 5;
+var newColors;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -24,45 +28,63 @@ function setup() {
   }
 
   basicMenu = new dropMenu(
-	cx,
-	height-cy/2,
-	1.0,
-	PI,
-	width,
-	height,
-	dBias,
-	65,
-	3,
-	true,
-	'UP',
+	cx,						//x-coordinate of menu
+	height-cy/2,			//y-coordinate of menu
+	1.0,					//size of menu (1.0)
+	PI,						//what degree (and direction) menu icon rotates when opening
+	width,					//width of display
+	height,					//height of display
+	dBias,					//for dpi scaling
+	2665,						//duration, in frames, of animations. 0=animations disabled
+	numElements,			//number of elements (length of list) for the menu to handle
+	true,					//this menu must be clicked to open
+	'UP',					//this menu opens upwards
 	);
   backgroundColor = color(0,0,128);
+  newColors = new SinglyList();
+  for (var i = 0; i < numElements; i++)
+	newColors.add(color(i*(256/numElements), 128, 128));
 }
 
 function draw() {
+  background(backgroundColor);
+  basicMenu.drawMenu();
   if((basicMenu.isOpen())) {
-	for (i = 0; i < 3; i++){
-	  if (basicMenu.selActive(i+1)){
-		backgroundColor = color (i*64, 128, 128);
+	var col;
+	var c;
+	var rs = basicMenu.getRS();
+	if (rs > 0){
+	  col = newColors.searchNodeAt(basicMenu.getR());
+	  c = col.data;
+	  fill(c);
+	  ellipse(
+		basicMenu.getRX(), 
+		basicMenu.getRY(), 
+		basicMenu.getRS()
+	  );
+	}
+	for(var i = 1; i < numElements+1; i++) {
+	  var s = basicMenu.getES(i);
+	  if (s > 0){
+		col = newColors.searchNodeAt(i);
+		c = col.data;
+		fill(c);
+		ellipse(
+		  basicMenu.getEX(i), 
+		  basicMenu.getEY(i), 
+		  basicMenu.getES(i)
+		);
+	  }
+
+	  if (basicMenu.selActive(i)){		//Click selection to apply
+	  //if(basicMenu.getSel() == i){	//Apply selection automatically (3+ elements only)
+		backgroundColor = c;
 	  }
 	}
   }
   else if ((!basicMenu.isOpen())) {
 	backgroundColor = color(0,0,128);
   }
-
-  //console.log((basicMenu.isOpen()));
-  console.log((basicMenu.getSel()));
-  background(backgroundColor);
-/*
-  if (basicMenu.selActive(1))
-	background(255);
-  else if (basicMenu.selActive(2))
-	background(0);
-  else
-	background(128);
-*/
-  basicMenu.drawMenu();
 }
 
 function touchStarted() {

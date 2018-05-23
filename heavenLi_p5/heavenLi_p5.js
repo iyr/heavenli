@@ -28,6 +28,7 @@ var mx;								//float,	x-coord of the menu button (relative)
 var my;								//float,	y-coord of the menu button (relative)
 var mc 					= 0;		//int,		animation cursor for the menu button
 
+/* REFERENCE PROTOTYPE VARIABLES FOR MENU CLASS */
 var fx;								//float,	x-coord of the favorites button (relative)
 var fy;								//float,	y-coord of the favorites button (relative)
 var fc 					= 0;		//int,		animation cursor for the favorites button
@@ -109,7 +110,7 @@ function setup() {
     bulbsTargetHSB[i] = color(255, 0, 255);
   }
   savedFavList = new SinglyList();
-  preloadSampleFavorites(3);
+  //preloadSampleFavorites(3);
 }
 
 function draw() {
@@ -1131,6 +1132,7 @@ function drawSettingColor(cursor, tb) {
 
   noStroke();
   fill(96);
+
   // Draw Heart and +/x iconography
   ellipse (	fx-tm06, 		0.19*dBias-dBias*acbc, tm15);
   ellipse (	fx+tm06, 		0.19*dBias-dBias*acbc, tm15);
@@ -1139,6 +1141,7 @@ function drawSettingColor(cursor, tb) {
     fx, 				0.35*dBias-dBias*acbc);
   stroke(240);
   strokeWeight(0.03*dBias);
+
   // Profile Does Not Exist
   if (fsdc == 0) { 	
     line (fx-tm05, 0.22*dBias-dBias*acbc, 
@@ -1146,8 +1149,9 @@ function drawSettingColor(cursor, tb) {
     line (fx, 0.22*dBias-dBias*acbc-tm05, 
       fx, 0.22*dBias-dBias*acbc+tm05);
   } else 
-  if (fsdc == frameLimit) {  //Profile Exists
-    stroke(0, 240, 255);
+  //Profile Exists
+  if (fsdc == frameLimit) {    
+	stroke(0, 240, 255);
     line (fx-tm04, 0.22*dBias-dBias*acbc-tm04, 
       fx+tm04, 0.22*dBias-dBias*acbc+tm04);
     line (fx+tm04, 0.22*dBias-dBias*acbc-tm04, 
@@ -1190,10 +1194,10 @@ function drawSettingColor(cursor, tb) {
       var favs		= [];
       for (var i = 0; i < 6; i++) {
         try {
-          favs[i]		= color(bulbsTargetHSB[i]);
+          favs[i]	= color(bulbsTargetHSB[i]);
         }
         catch(err) {
-          favs[i]		= color(0, 0, i*60);
+          favs[i]	= color(0, 0, i*60);
         }
       }
       savedFavList.add(favs);
@@ -1540,7 +1544,7 @@ function drawHomeCircle(
       stroke(bulbsCurrentHSB[i]);
     } else if (colMode > 0) {
       var c;
-      var prof = savedFavList.searchNodeAt(colMode);
+      var prof = savedFavList.searchNodeAt(constrain(colMode, 0, savedFavList.listSize()));
       var cols = prof.data;
       c	 = color(cols[i]);
       fill(hue(c), saturation(c), brightness(c));
@@ -1703,7 +1707,6 @@ function keyPressed() {
       angB += 360;
 
     //println(ao);
-    console.log(angB);
     break;
 
   case RIGHT_ARROW:

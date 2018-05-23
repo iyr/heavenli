@@ -2,22 +2,6 @@ function touchStarted() {
   //necessarily empty
 }
 
-/*
-function watchPoint(px, py, pr) {
-  var wasMousePressed = false;
-  if (1 >= pow((mouseX-px), 2) / pow(pr/2, 2) + pow((mouseY - py), 2) / pow(pr/2, 2)) 
-  {
-    if (touches.length >= 1 || isMousePressed) {
-      wasMousePressed	= true;
-    } else 
-    if (touches.length == 0 && !isMousePressed) {
-      wasMousePressed	= false;
-    }
-  }
-  return wasMousePressed;
-}
-*/
-
 class dropMenu {
   constructor(
 	mx,								//float, menu x-coordinate
@@ -39,7 +23,7 @@ class dropMenu {
 	this.width			= dWidth;
 	this.height			= dHeight;
 	this.dBias			= dBias;
-	this.frameLimit		= frameLimit;
+	this.frameLimit		= frameLimit < 4 ? 4 : frameLimit; //render bug occurs if <4
 	this.numElements	= numElements;
 	this.touchOpen		= touchOpen;
 	this.dir			= dir;
@@ -65,17 +49,68 @@ class dropMenu {
 	this.tm30			= this.dBias*0.3;
 	this.tm35			= this.dBias*0.35;
 	this.tm40			= this.dBias*0.4;
+
+	switch(this.numElements) {
+	case 1:
+	  this.het *= 0.333;
+	  break;
+
+	case 2:
+	  this.het *= 0.667;
+	  break;
+
+	default:
+	  break;
+	}
+	
+	this.ox;
+	this.oy;
+
+	if (this.dir == 'UP')	{ this.oy = this.het;   this.ox = 0;	}
+	if (this.dir == 'DOWN')	{ this.oy = -this.het;  this.ox = 0; 	}
+	if (this.dir == 'LEFT') { this.oy = 0;	  this.ox = this.het; }
+	if (this.dir == 'RIGHT'){ this.oy = 0; 	  this.ox = -this.het;}
+
+	/* ~ ~ ~ ~ variables for menu elements ~ ~ ~ ~ */
+    this.utri			= 1;
+    this.mtri			= 0.7;
+    this.ltri			= 0.4;
+	this.utrix			= this.mx+(this.ox*this.utri);
+	this.utriy			= this.my+(this.oy*this.utri);
+	this.mtrix			= this.mx+(this.ox*this.mtri);
+	this.mtriy			= this.my+(this.oy*this.mtri);
+	this.ltrix			= this.mx+(this.ox*this.ltri);
+	this.ltriy			= this.my+(this.oy*this.ltri);
+	this.utris			= this.tm20*0.67;
+	this.mtris			= this.tm20;
+	this.ltris			= this.tm20*0.67;
+
+	/* ~ ~ ~ ~ variables for scroll animation ~ ~ ~ ~ */
+	this.rtris			= 0;
+	this.rtrix			= this.mx+this.ox;
+	this.rtriy			= this.my+this.oy;
+	this.rEle			= 1;
+
+	/* = = = = END OF CONSTRUCTOR = = = = */
   }
 
-  isOpen()	 { return this.menuOpen		}
-  getSel()	 { return this.selection	}
-  getSelX()	 { return 0					}
-  getSelY()	 { return 0					}
-  getSelS()	 { return 1					}
-  getX()	 { return this.mx			}
-  getY()	 { return this.my			}
-  setX(xPos) { this.mx = xPos			}
-  setY(yPos) { this.my = yPos			}
+  isOpen()	 { return this.menuOpen;	}
+  getSel()	 { return this.selection;	}
+	/*
+  getSel(n)	 { 
+	if (n == 0)
+	  return //FILL ME IN
+	else
+	  return this.selection;	
+	}
+*/
+  getRX()	 { return this.rtrix;		}
+  getRY()	 { return this.rtriy;		}
+  getRS()	 { return this.rtris;		}
+  getX()	 { return this.mx;			}
+  getY()	 { return this.my;			}
+  setX(xPos) { this.mx = xPos;			}
+  setY(yPos) { this.my = yPos;			}
 
   //Detect User Input Helper
   watchPoint(px, py, pr) {
@@ -94,7 +129,6 @@ class dropMenu {
 		wasMousePressed	= false;
 	  }
 	}
-	//console.log(wasMousePressed);
 	return wasMousePressed;
   }
 
@@ -111,35 +145,17 @@ class dropMenu {
 	  return -3*pow((c-(this.frameLimit*0.14167))/(this.frameLimit*1.5), 2)+1.02675926;
   }
 
+  //Apply Selection if clicked helper
   selActive(selection){
 	var acif	= this.animCurve(this.frameLimit-this.mc);
-	var tm35	= this.tm35;
-	var het 	= this.het;
-	var oy;
-	var ox;
-	switch(this.numElements) {
-	case 1:
-	  het *= 0.333;
-	  break;
-
-	case 2:
-	  het *= 0.667;
-	  break;
-
-	default:
-	  //oy = het;
-	}
-
-	if (this.dir == 'UP')	{ oy = het;   ox = 0;	}
-	if (this.dir == 'DOWN')	{ oy = -het;  ox = 0; 	}
-	if (this.dir == 'LEFT') { oy = 0;	  ox = het; }
-	if (this.dir == 'RIGHT'){ oy = 0; 	  ox = -het;}
 
 	switch(this.numElements) {
-	  //Apply Selection if clicked
 	  case 1:
 		if (this.mc == this.frameLimit &&
-		  this.watchPoint(this.mx+(ox*acif), this.my+(oy*acif), tm35)) {
+		  this.watchPoint(
+			this.mx+(this.ox*acif), 
+			this.my+(this.oy*acif), 
+			this.tm35)) {
 		  return true;
 		} else { return false; }
 	  break;
@@ -147,103 +163,175 @@ class dropMenu {
 	  case 2:
 		if (this.mc == this.frameLimit) {
 		  if (selection == 1 &&
-		  this.watchPoint(this.mx+(ox*acif), this.my+(oy*acif), tm35))
+		  this.watchPoint(
+			this.mx+(this.ox*acif), 
+			this.my+(this.oy*acif), 
+			this.tm35))
 			return true;
 		  else if (selection == 2 &&
-		  this.watchPoint(this.mx+(ox*0.5*acif), this.my+(oy*0.5*acif), tm35))
+		  this.watchPoint(
+			this.mx+(this.ox*0.5*acif), 
+			this.my+(this.oy*0.5*acif), 
+			this.tm35))
 			return true;
 		  else
 			return false;
 		}
-/*
-		if (this.mc == this.frameLimit &&
-		  this.watchPoint(this.mx+(ox*acif), this.my+(oy*acif), tm35)) {
-		  return true;
-		} else //{ return false; }
-
-		if (this.mc == this.frameLimit &&
-		  this.watchPoint(this.mx+(ox*0.5*acif), this.my+(oy*0.5*acif), tm35)) {
-		  return true;
-		} else { return false; }
-*/
 	  break;
 	
 	  default:
 		if (this.mc == this.frameLimit &&
 		  this.pc == this.frameLimit &&
 		  this.selection == selection &&
-		  this.watchPoint(this.mx+(ox*0.67*acif), this.my+(oy*0.67*acif), tm35)) {
+		  this.watchPoint(
+			this.mx+(this.ox*0.67*acif), 
+			this.my+(this.oy*0.67*acif), 
+			this.tm35)) 
+		{
 		  return true;
 		} else { return false; }
 	}
   }
 
-  drawMenu() {
+  getR() {
+	if (this.scroll < 0) // Scroll up
+	  return this.selection + 2 >= this.numElements ? 
+		this.selection + 2 - this.numElements : 
+		this.selection + 2;
+	else
+	if (this.scroll > 0) // Scroll down
+	  return this.selection - 2 <= 1 ? 
+		this.numElements - this.selection - 2 : 
+		this.selection - 2;
+  }
+
+  getEX(selection) {
+	if (this.numElements >= 3)
+	switch(selection)
+	  {
+		case this.selection:
+		  return this.mtrix;
+		  break;
+
+		case (this.selection >= this.numElements ? 1 : this.selection + 1):
+		  return this.utrix;
+		  break;
+
+		case (this.selection <= 1 ? this.numElements : this.selection - 1):
+		  return this.ltrix;
+		  break;
+		
+		default:
+		  if ((selection >= 1) && (selection < this.selection - 1))
+			return this.ltrix;
+		  else
+		  if ((selection <= numElements) && (selection > this.selection + 1))
+			return this.utrix;
+		  break;
+		}
+	else if (this.numElements == 2)
+	  switch(selection) 
+		{
+		  case 1:
+			return this.utrix
+			break;
+		  case 2:
+			return this.ltrix
+			break;
+		}
+	else if (this.numElements == 1)
+	  return this.utrix
+  }
+
+  getEY(selection){
+	if (this.numElements >= 3)
+	  switch(selection)
+		{
+		case this.selection:
+		  return this.mtriy;
+		  break;
+
+		case (this.selection >= this.numElements ? 1 : this.selection + 1):
+		  return this.utriy;
+		  break;
+
+		case (this.selection <= 1 ? this.numElements : this.selection - 1):
+		  return this.ltriy;
+		  break;
+		
+		default:
+		  if ((selection >= 1) && (selection < this.selection - 1))
+			return this.ltriy;
+		  else
+		  if ((selection <= numElements) && (selection > this.selection + 1))
+			return this.utriy;
+		  break;
+		}
+	else if (this.numElements == 2)
+	  switch(selection) 
+		{
+		  case 1:
+			return this.utriy
+			break;
+		  case 2:
+			return this.ltriy
+			break;
+		}
+	else if (this.numElements == 1)
+	  return this.utriy
+  }
+
+  getES(selection){
+	if (this.numElements >= 3)
+	switch(selection)
+		{
+		case this.selection:
+		  return this.mtris;
+		  break;
+
+		case (this.selection >= this.numElements ? 1 : this.selection + 1):
+		  return this.utris;
+		  break;
+
+		case (this.selection <= 1 ? this.numElements : this.selection - 1):
+		  return this.ltris;
+		  break;
+		
+		default:
+		  return 0;
+		  break;
+		}
+	else if (this.numElements == 2)
+	  switch(selection) 
+		{
+		  case 1:
+			return this.utris
+			break;
+		  case 2:
+			return this.ltris
+			break;
+		}
+	else if (this.numElements == 1)
+	  return this.utris;
+  }
+
+  drawMenu() 
+  {
 	var acibf	= this.animCurveBounce(this.frameLimit-this.mc);
 	var acif	= this.animCurve	  (this.frameLimit-this.mc);
 	var acibp	= this.animCurveBounce(this.frameLimit-this.pc);
 	var acip	= this.animCurve	  (this.frameLimit-this.pc);
-	var het 	= this.het;
-	var tm04	= this.tm04;
-	var tm05	= this.tm05;
-	var tm06 	= this.tm06;
-	var tm08 	= this.tm08;
-	var tm10	= this.tm10;
-	var tm12	= this.tm12;
-	var tm13 	= this.tm13;
-	var tm15 	= this.tm15;
-	var tm20	= this.tm20;
-	var tm25	= this.tm25;
-	var tm30	= this.tm30;
-	var tm35	= this.tm35;
-	var tm40	= this.tm40;
 
-/*
-	var het 	= -this.dBias;
-	var tm04	= this.dBias*0.04;
-	var tm05	= this.dBias*0.05;
-	var tm06 	= this.dBias*0.06;
-	var tm08 	= this.dBias*0.08;
-	var tm10	= this.dBias*0.10;
-	var tm12	= this.dBias*0.12;
-	var tm13 	= this.dBias*0.125;
-	var tm15 	= this.dBias*0.15;
-	var tm20	= this.dBias*0.2;
-	var tm25	= this.dBias*0.25;
-	var tm30	= this.dBias*0.3;
-	var tm35	= this.dBias*0.35;
-	var tm40	= this.dBias*0.4;
-*/
-	var oy;
-	var ox;
 	strokeWeight(1);
 	stroke(96);
 	fill(240);
 	noStroke();
-	ellipse(this.mx, this.my, tm40, tm40);  
-
-	switch(this.numElements) {
-	case 1:
-	  het *= 0.333;
-	  break;
-
-	case 2:
-	  het *= 0.667;
-	  break;
-
-	default:
-	}
-
-	if (this.dir == 'UP')	{ oy = het;   ox = 0;	}
-	if (this.dir == 'DOWN')	{ oy = -het;  ox = 0; 	}
-	if (this.dir == 'LEFT') { oy = 0;	  ox = het; }
-	if (this.dir == 'RIGHT'){ oy = 0; 	  ox = -het;}
-
-	ellipse(this.mx+ox*acif, this.my+oy*acif, tm40);
+	ellipse(this.mx, this.my, this.tm40, this.tm40);  
+	ellipse(this.mx+this.ox*acif, this.my+this.oy*acif, this.tm40);
 	if (this.dir == 'UP'	|| this.dir == 'DOWN')
-	  rect(this.mx-tm20, this.my, tm40, oy*acif);
+	  rect(this.mx-this.tm20, this.my, this.tm40, this.oy*acif);
 	if (this.dir == 'RIGHT' || this.dir == 'LEFT')
-	  rect(this.mx, this.my-tm20, ox*acif, tm40);
+	  rect(this.mx, this.my-this.tm20, this.ox*acif, this.tm40);
 	stroke(96);
 	noStroke();
 
@@ -253,27 +341,27 @@ class dropMenu {
 
 	fill(96);
 	ellipse ( 
-	  this.mx-tm06*xrs, 
-	  this.my+tm06*yrs+tm08*acibf, 
-	  tm15);
+	  this.mx-this.tm06*xrs, 
+	  this.my+this.tm06*yrs+this.tm08*acibf, 
+	  this.tm15);
 
 	ellipse ( 
-	  this.mx+tm06*xrs, 
-	  this.my-tm06*yrs+tm08*acibf, 
-	  tm15);
+	  this.mx+this.tm06*xrs, 
+	  this.my-this.tm06*yrs+this.tm08*acibf, 
+	  this.tm15);
 
 	triangle (
-	  this.mx-tm13*xrs-tm04*yrs, 
-	  this.my+tm13*yrs+tm04*xrs-tm08*xrs+tm08*acibf, 
-	  this.mx+tm13*xrs-tm04*yrs, 
-	  this.my-tm13*yrs+tm04*xrs-tm08*xrs+tm08*acibf, 
-	  this.mx-tm15*yrs, 
-	  this.my-tm13*xrs+tm04*xrs-tm08*xrs+tm08*acibf);
+	  this.mx-this.tm13*xrs-this.tm04*yrs, 
+	  this.my+this.tm13*yrs+this.tm04*xrs-this.tm08*xrs+this.tm08*acibf, 
+	  this.mx+this.tm13*xrs-this.tm04*yrs, 
+	  this.my-this.tm13*yrs+this.tm04*xrs-this.tm08*xrs+this.tm08*acibf, 
+	  this.mx-this.tm15*yrs, 
+	  this.my-this.tm13*xrs+this.tm04*xrs-this.tm08*xrs+this.tm08*acibf);
 
 	fill(96+(255-96)*this.animCurve(this.mc), (this.mc >= floor(this.frameLimit*0.25) ? 255 : 0));
 
 	// Watch Button for input
-	if (this.watchPoint(this.mx, this.my, tm40, tm40) && 
+	if (this.watchPoint(this.mx, this.my, this.tm40, this.tm40) && 
 		!this.touchHold && 
 		this.touchOpen) {
 	  if (!this.menuOpen) {
@@ -288,15 +376,22 @@ class dropMenu {
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~Draw Menu for 1 Element~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 	if (this.numElements == 1) {
-	  ellipse(this.mx+ox*acif, this.my+(oy*acif), tm30);
+		this.utrix = this.mx+this.ox*acif;
+		this.utriy = this.my+this.oy*acif;
+		this.utris = this.tm30;
+	  ellipse(
+		this.utrix,
+		this.utriy, 
+		this.utris);
 	  fill(255, (this.mc >= floor(this.frameLimit*0.5) ? 255 : 0));
+	  
 
 	  // Close Favorites if open and somewhere else on screen is touched
 	  if (this.interaction &&
 		this.menuOpen &&
 		this.mc == this.frameLimit &&
 		!this.touchHold &&
-		!this.watchPoint(this.mx, this.my+(oy*acif), tm35)
+		!this.watchPoint(this.mx, this.my+(this.oy*acif), this.tm35)
       ) {
 		this.menuOpen = false;
 	  }
@@ -304,12 +399,28 @@ class dropMenu {
 
   /*~~~~~~~~~~~~~~~~~~~~~~Draw Favorites for 2 profiles~~~~~~~~~~~~~~~~~~~~~~~~~ */
   else if (this.numElements == 2) {
-    ellipse(this.mx+ox*acif, this.my+(oy*acif), tm30);
-    ellipse(this.mx+ox*0.5*acif, this.my+(oy*0.5*acif), tm30);
+	this.utrix = this.mx+this.ox*acif;
+	this.utriy = this.my+this.oy*acif;
+	this.utris = this.tm30;
+	this.ltrix = this.mx+this.ox*0.5*acif;
+	this.ltriy = this.my+this.oy*0.5*acif;
+	this.ltris = this.tm30;
+	ellipse(
+	  this.utrix,
+	  this.utriy,
+	  this.utris);
+	ellipse(
+	  this.ltrix,
+	  this.ltriy,
+	  this.ltris);
+/*
+    ellipse(this.mx+ox*acif, this.my+(this.oy*acif), this.tm30);
+    ellipse(this.mx+ox*0.5*acif, this.my+(this.oy*0.5*acif), this.tm30);
+*/
 	if (this.dir == 'UP'	|| this.dir == 'DOWN')
-	  rect (this.mx-tm15, this.my+(oy*0.50*acif), tm30, (oy*0.50*acif));
+	  rect (this.mx-this.tm15, this.my+this.oy*0.5*acif, this.tm30, (this.oy*0.50*acif));
 	if (this.dir == 'RIGHT' || this.dir == 'LEFT')
-	  rect (this.mx+ox*0.5*acif, this.my-tm15, (ox*0.50*acif), tm30);
+	  rect (this.mx+ox*0.5*acif, this.my-this.tm15, (this.ox*0.50*acif), this.tm30);
 	
     fill(255, (this.mc >= floor(this.frameLimit*0.5) ? 255 : 0));
 
@@ -318,8 +429,8 @@ class dropMenu {
       this.menuOpen &&
       this.mc == this.frameLimit &&
       !this.touchHold &&
-      !this.watchPoint(this.mx, this.my+(oy*acif), tm35) &&
-      !this.watchPoint(this.mx, this.my+(oy*0.5*acif), tm35)
+      !this.watchPoint(this.mx, this.my+(this.oy*acif), this.tm35) &&
+      !this.watchPoint(this.mx, this.my+(this.oy*0.5*acif), this.tm35)
       ) {
       this.menuOpen = false;
     }
@@ -327,96 +438,128 @@ class dropMenu {
 
   /*~~~~~~~~~~~~~~~~~~~~~~Draw Favorites for 3+ profiles~~~~~~~~~~~~~~~~~~~~~~~~~ */
   if (this.numElements >=3) {
-    var utri	= 1;
-    var mtri	= 0.7;
-    var ltri	= 0.4;
-    ellipse(this.mx+(ox*acif), this.my+(oy*acif), tm30);
-    ellipse(this.mx+(ox*0.4*acif), this.my+(oy*0.4*acif), tm30);
+    ellipse(this.mx+(this.ox*acif), this.my+(this.oy*acif), this.tm30);
+    ellipse(this.mx+(this.ox*0.4*acif), this.my+(this.oy*0.4*acif), this.tm30);
 
 	// UP - DOWN
 	if (this.dir == 'UP' || this.dir == 'DOWN')
 	{
-	  rect (this.mx-tm15, 
-		this.my+(oy*acif), 
+	  rect (this.mx-this.tm15, 
+		this.my+(this.oy*acif), 
 		dBias*.3, 
-		-(oy*0.6*acif));
+		-(this.oy*0.6*acif));
 	  fill(255, (this.mc >= floor(this.frameLimit*0.5) ? 255 : 0));
-	  ellipse(this.mx-tm04, this.my+(oy*mtri*acif), tm20);
+	  ellipse(this.mx-this.tm04, this.my+(this.oy*this.mtri*acif), this.tm20);
 	}
 
 	// LEFT - RIGHT
 	if (this.dir == 'RIGHT' || this.dir == 'LEFT')
 	{
-	  rect (this.mx+(ox*acif), 
-		this.my-tm15, 
-		-(ox*0.6*acif),
+	  rect (this.mx+(this.ox*acif), 
+		this.my-this.tm15, 
+		-(this.ox*0.6*acif),
 		dBias*.3);
 	  fill(255, (this.mc >= floor(this.frameLimit*0.5) ? 255 : 0));
-	  ellipse(this.mx+(ox*mtri*acif), this.my-tm04, tm20);
+	  ellipse(this.mx+(this.ox*this.mtri*acif), this.my-this.tm04, this.tm20);
 	}
 
     if (this.menuOpen && this.pc == this.frameLimit) {
+	  this.utrix = this.mx+(this.ox*this.utri*acif);
+	  this.utriy = this.my+(this.oy*this.utri*acif);
+	  this.mtrix = this.mx+(this.ox*this.mtri*acif);
+	  this.mtriy = this.my+(this.oy*this.mtri*acif);
+	  this.ltrix = this.mx+(this.ox*this.ltri*acif);
+	  this.ltriy = this.my+(this.oy*this.ltri*acif);
+	  this.utris = this.tm20*0.67;
+	  this.mtris = this.tm20;
+	  this.ltris = this.tm20*0.67;
+	  this.rtris = 0;
+	  this.rtrix = this.mx+this.ox;
+	  this.rtriy = this.my+this.oy;
+
 	  fill(0, 64, 255);
 	  ellipse(
-		this.mx+(ox*utri*acif),
-		this.my+(oy*utri*acif),
-		tm20*0.67);
-	  fill(85*0, 64, 255);
+		this.utrix,
+		this.utriy,
+		this.utris);
 	  ellipse(
-		this.mx+(ox*mtri*acif),
-		this.my+(oy*mtri*acif),
-		tm20);
-	  fill(170*0, 64, 255);
+		this.mtrix,
+		this.mtriy,
+		this.mtris);
 	  ellipse(
-		this.mx+(ox*ltri*acif),
-		this.my+(oy*ltri*acif),
-		tm20*0.67);
+		this.ltrix,
+		this.ltriy,
+		this.ltris);
 
     } else if (this.menuOpen && this.pc != this.frameLimit && this.scroll == -1) {
       //Scoll Up
-	  fill(0, 64, 255);
-	  ellipse(
-		this.mx+(ox*utri*acif),
-		this.my+(oy*utri*acif),
-		tm20*0.67*(1-acip));
+	  this.utrix = this.mx+(this.ox*this.utri*acif)-this.ox*0.31*(1-acibp);
+	  this.utriy = this.my+(this.oy*this.utri*acif)-this.oy*0.31*(1-acibp);
+	  this.mtrix = this.mx+(this.ox*this.mtri*acif)-this.ox*0.31*(1-acibp);
+	  this.mtriy = this.my+(this.oy*this.mtri*acif)-this.oy*0.31*(1-acibp);
+	  this.ltrix = this.mx+(this.ox*this.ltri*acif);
+	  this.ltriy = this.my+(this.oy*this.ltri*acif);
+	  this.utris = this.tm20*(0.67+0.33*(1-acibp));
+	  this.mtris = this.tm20*(0.67+0.33*(acibp));
+	  this.ltris = this.tm20*0.67*pow(acibp, 6);
+	  this.rtrix = this.mx+(this.ox*this.utri*acif);
+	  this.rtriy = this.my+(this.oy*this.utri*acif);
+	  this.rtris = this.tm20*0.67*(1-acip);
 
+	  fill(0, 64, 255);
+/*
 	  ellipse(
-		this.mx+(ox*utri*acif)-ox*0.31*(1-acibp),
-		this.my+(oy*utri*acif)-oy*0.31*(1-acibp),
-		tm20*(0.67+0.33*(1-acibp)));
-	  fill(85*0, 64, 255);
+		this.rtrix,
+		this.rtriy,
+		this.rtris);
+*/
 	  ellipse(
-		this.mx+(ox*mtri*acif)-ox*0.31*(1-acibp),
-		this.my+(oy*mtri*acif)-oy*0.31*(1-acibp),
-		tm20*(0.67+0.33*(acibp)));
-	  fill(170*0, 64, 255);
+		this.utrix,
+		this.utriy,
+		this.utris);
 	  ellipse(
-		this.mx+(ox*ltri*acif),
-		this.my+(oy*ltri*acif),
-		tm20*0.67*pow(acibp, 6));
+		this.mtrix,
+		this.mtriy,
+		this.mtris);
+	  ellipse(
+		this.ltrix,
+		this.ltriy,
+		this.ltris);
 
     } else if (this.menuOpen && this.pc != this.frameLimit && this.scroll == 1) {
       //Scroll down
-	  fill(0, 64, 255);
-	  ellipse(
-		this.mx+(ox*ltri*acif),
-		this.my+(oy*ltri*acif),
-		tm20*0.67*(1.0-acip));
+	  this.utrix = this.mx+(this.ox*this.utri*acif);
+	  this.utriy = this.my+(this.oy*this.utri*acif);
+	  this.mtrix = this.mx+(this.ox*this.mtri*acif)+this.ox*0.31*(1-acibp);
+	  this.mtriy = this.my+(this.oy*this.mtri*acif)+this.oy*0.31*(1-acibp);
+	  this.ltrix = this.mx+(this.ox*this.ltri*acif)+this.ox*0.31*(1-acibp);
+	  this.ltriy = this.my+(this.oy*this.ltri*acif)+this.oy*0.31*(1-acibp);
+	  this.utris = this.tm20*0.67*pow(acibp, 6);
+	  this.mtris = this.tm20*(0.67+0.33*(acibp));
+	  this.ltris = this.tm20*(0.67+0.33*(1-acibp));
+	  this.rtrix = this.mx+(this.ox*this.ltri*acif);
+	  this.rtriy = this.my+(this.oy*this.ltri*acif);
+	  this.rtris = this.tm20*0.67*(1.0-acip);
 
+	  fill(0, 64, 255);
+/*
 	  ellipse(
-		this.mx+(ox*ltri*acif)+ox*0.31*(1-acibp),
-		this.my+(oy*ltri*acif)+oy*0.31*(1-acibp),
-		tm20*(0.67+0.33*(1-acibp)));
-	  fill(85*0, 64, 255);
+		this.rtrix,
+		this.rtriy,
+		this.rtris);
+*/
 	  ellipse(
-		this.mx+(ox*mtri*acif)+ox*0.31*(1-acibp),
-		this.my+(oy*mtri*acif)+oy*0.31*(1-acibp),
-		tm20*(0.67+0.33*(acibp)));
-	  fill(170*0, 64, 255);
+		this.ltrix,  
+		this.ltriy,
+		this.ltris);
 	  ellipse(
-		this.mx+(ox*utri*acif),
-		this.my+(oy*utri*acif),
-		tm20*0.67*pow(acibp, 6));
+		this.mtrix,
+		this.mtriy,
+		this.mtris);
+	  ellipse(
+		this.utrix,
+		this.utriy,
+		this.utris);
     }
 
     // Close Favorites if open and somewhere else on screen is touched
@@ -424,14 +567,14 @@ class dropMenu {
       this.menuOpen &&
       this.mc == this.frameLimit &&
       !this.touchHold &&
-      !this.watchPoint(this.mx+(ox*acif), this.my+(oy*acif), tm35) &&
-      !this.watchPoint(this.mx+(ox*0.4*acif), this.my+(oy*0.4*acif), tm35) &&
-      !this.watchPoint(this.mx+(ox*0.7*acif), this.my+(oy*0.7*acif), tm35)
+      !this.watchPoint(this.mx+(this.ox*acif), this.my+(this.oy*acif), this.tm35) &&
+      !this.watchPoint(this.mx+(this.ox*0.4*acif), this.my+(this.oy*0.4*acif), this.tm35) &&
+      !this.watchPoint(this.mx+(this.ox*0.7*acif), this.my+(this.oy*0.7*acif), this.tm35)
       ) {
       this.menuOpen = false;
     }
 
-    if (this.watchPoint(this.mx+(ox*acif), this.my+(oy*acif), tm35) &&
+    if (this.watchPoint(this.mx+(this.ox*acif), this.my+(this.oy*acif), this.tm35) &&
       this.mc == this.frameLimit &&
       !this.touchHold) {
       this.menuOpen = true;
@@ -442,7 +585,7 @@ class dropMenu {
       this.scroll = 1;
     }
 
-    if (this.watchPoint(this.mx+(ox*0.4*acif), this.my+(oy*0.4*acif), tm35) &&
+    if (this.watchPoint(this.mx+(this.ox*0.4*acif), this.my+(this.oy*0.4*acif), this.tm35) &&
       this.mc == this.frameLimit &&
       !this.touchHold) {
       this.menuOpen = true;
@@ -452,7 +595,6 @@ class dropMenu {
       this.pc = 0;
       this.scroll = -1;
     }
-
   }
 	if (this.pc != this.frameLimit) {
 	  this.pc = constrain(this.pc + 6*this.diff, 0, this.frameLimit);
