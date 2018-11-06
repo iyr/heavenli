@@ -41,7 +41,6 @@ def framerate():
     fps = frames/seconds
     if t - t0 >= 1.0:
         print("%.0f frames in %3.1f seconds = %6.3f FPS" % (frames,seconds,fps))
-        print(lamps[0].getBulbRGB(0))
         t0 = t
         frames = 0
     if fps > 60:
@@ -56,17 +55,17 @@ def drawBackground():
          drawHomeCircle(cx, cy, cx, cy, numLights, angB, 0);
 
 def drawCornerMarkers():
-    # RED
+    # YELLOW
     glBegin(GL_TRIANGLE_FAN)
-    glColor(1, 0, 0)
+    glColor(1, 1, 0)
     glVertex3f(-1.0, -1.0, 1)
     for i in range(91):
         glVertex3f(-1.0 + 0.5*cos(radians(i*4)), -1.0 + 0.5*sin(radians(i*4)), 1)
     glEnd()
     
-    # YELLOW
+    # RED
     glBegin(GL_TRIANGLE_FAN)
-    glColor(1, 1, 0)
+    glColor(1, 0, 0)
     glVertex3f( 1.0, -1.0, 1)
     for i in range(91):
         glVertex3f( 1.0 + 0.5*cos(radians(i*4)), -1.0 + 0.5*sin(radians(i*4)), 1)
@@ -106,6 +105,7 @@ def display():
             lamps[0].getNumBulbs(), lamps[0].getAngle(), 
             0, w2h, lamps[0].getBulbsRGB())
     iconSize = 0.2
+    #drawCornerMarkers()
     drawHomeCircle(0.7, 0.7, 
             iconSize, iconSize, 
             lamps[0].getNumBulbs(), lamps[0].getAngle(), 
@@ -128,9 +128,9 @@ def special(k, x, y):
     global angB, nz
 
     if k == GLUT_KEY_LEFT:
-        lamps[0].setAngle(lamps[0].getAngle() + 5)
+        lamps[0].setAngle(lamps[0].getAngle() + 1)
     elif k == GLUT_KEY_RIGHT:
-        lamps[0].setAngle(lamps[0].getAngle() - 5)
+        lamps[0].setAngle(lamps[0].getAngle() - 1)
     elif k == GLUT_KEY_UP:
         lamps[0].setNumBulbs(lamps[0].getNumBulbs()+1)
     elif k == GLUT_KEY_DOWN:
@@ -190,6 +190,7 @@ if __name__ == '__main__':
     glutInitWindowSize(300, 300)
     glutCreateWindow("HeavenLi")
     glutMouseFunc(mouseInteraction)
+    glEnable(GL_LINE_SMOOTH)
 
     init()
 
