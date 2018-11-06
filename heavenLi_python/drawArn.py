@@ -49,6 +49,8 @@ def drawHomeLin(
         glBegin(GL_QUADS)
         for i in range(nz):
             glColor3f(colors[i][0], colors[i][1], colors[i][2])
+
+            # Special case to draw rounded corners for end slice
             if i == 0:
                 if drawMode > 0:
                     glEnd()
@@ -86,6 +88,7 @@ def drawHomeLin(
                     glVertex2f( i*2/nz-2.0, -2.0)
                     glVertex2f( 2.0, -2.0)
 
+            # Special case to draw rounded corners for end slice
             elif i == nz-1:
                 if drawMode > 0:
                     glEnd()
