@@ -45,6 +45,8 @@ def drawHomeLin(
         else:
             glScalef(dx*(w2h), (w2h)*dy/2, 0)
 
+
+
     if nz > 1:
         glBegin(GL_QUADS)
         for i in range(nz):
@@ -133,14 +135,14 @@ def drawHomeLin(
                 glVertex2f( 0.75, -2.0)
         glEnd()
 
-        # Draw Outline
+        # START Draw Outline
         if drawMode > 0:
 
             # Scale line thickness
             if w2h <= 1.0:
-                glLineWidth(w2h*3.0)
+                glLineWidth(w2h*2.0)
             else:
-                glLineWidth((1/w2h)*3.0)
+                glLineWidth((1/w2h)*2.0)
 
             # Draw Outline Straights
             glBegin(GL_LINES)
@@ -187,10 +189,26 @@ def drawHomeLin(
                         1.5 + 0.5*sin(radians(j*7.5+90)))
             glEnd()
 
+            # Draw Bulb Marker
+            if drawMode == 2:
+                for i in range(nz):
+                    glColor3f(0.9, 0.9, 0.9)
+                    glBegin(GL_TRIANGLE_FAN)
+                    xCoord = 1/(nz*2)-((nz*2-1)/(nz*2)) + (2*i)/nz
+                    yCoord = 2.05
+                    glVertex2f( xCoord,  yCoord)
+                    for j in range(13):
+                        glVertex2f(xCoord + 0.16*cos(radians(j*30)), yCoord + 0.32*sin(radians(j*30)))
+                    glEnd()
+
+        # END Draw Outline
+
         glPopMatrix()
+
     else:
         glPopMatrix()
         drawHomeCircle(-gx, gy, dx*1.14285, dy*1.14285, nz, ao, drawMode, w2h, colors)
+
 
 
 
@@ -252,9 +270,9 @@ def drawHomeCircle(
     # Draw Outline
     if drawMode > 0:
         if w2h <= 1.0:
-            glLineWidth(w2h*3.0)
+            glLineWidth(w2h*2.0)
         else:
-            glLineWidth((1/w2h)*3.0)
+            glLineWidth((1/w2h)*2.0)
 
         glColor3f(0.95, 0.95, 0.95)
         glBegin(GL_LINE_STRIP)
@@ -262,5 +280,16 @@ def drawHomeCircle(
             glVertex2f( cos(radians(j*12)), sin(radians(j*12)))
         glEnd()
 
+    # Draw Bulb Marker
+    if drawMode == 2:
+        for i in range(nz):
+            glColor3f(0.9, 0.9, 0.9)
+            glBegin(GL_TRIANGLE_FAN)
+            xCoord = cos(radians(-90+ao - i*(360.0/float(nz)) + 180/nz))
+            yCoord = sin(radians(-90+ao - i*(360.0/float(nz)) + 180/nz))
+            glVertex2f( xCoord,  yCoord)
+            for j in range(13):
+                glVertex2f(xCoord + 0.16*cos(radians(j*30)), yCoord + 0.16*sin(radians(j*30)))
+            glEnd()
     glPopMatrix()
 

@@ -109,11 +109,11 @@ def display():
     drawHomeCircle(0.7, 0.7, 
             iconSize, iconSize, 
             lamps[0].getNumBulbs(), lamps[0].getAngle(), 
-            1, w2h, lamps[0].getBulbsRGB())
+            2, w2h, lamps[0].getBulbsRGB())
     drawHomeLin(-0.7, -0.7, 
             iconSize*0.875, iconSize*0.875, 
             lamps[0].getNumBulbs(), lamps[0].getAngle(), 
-            1, w2h, lamps[0].getBulbsRGB())
+            2, w2h, lamps[0].getBulbsRGB())
     glFlush()
     glutSwapBuffers()
 
@@ -128,9 +128,9 @@ def special(k, x, y):
     global angB, nz
 
     if k == GLUT_KEY_LEFT:
-        lamps[0].setAngle(lamps[0].getAngle() + 1)
+        lamps[0].setAngle(lamps[0].getAngle() + 5)
     elif k == GLUT_KEY_RIGHT:
-        lamps[0].setAngle(lamps[0].getAngle() - 1)
+        lamps[0].setAngle(lamps[0].getAngle() - 5)
     elif k == GLUT_KEY_UP:
         lamps[0].setNumBulbs(lamps[0].getNumBulbs()+1)
     elif k == GLUT_KEY_DOWN:
@@ -171,10 +171,6 @@ def visible(vis):
     # Enfore Minimum WindowSize
     width = glutGet(GLUT_WINDOW_WIDTH)
     height = glutGet(GLUT_WINDOW_HEIGHT)
-    if width < 200:
-        glutReshapeWindow(200, height)
-    if height < 200:
-        glutReshapeWindow(width, 200)
 
     if vis == GLUT_VISIBLE:
         glutIdleFunc(idle)
@@ -184,7 +180,7 @@ def visible(vis):
 # Equivalent to "main()" in C/C++
 if __name__ == '__main__':
     glutInit(sys.argv)
-    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH)
+    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE)
 
     glutInitWindowPosition(0, 0)
     glutInitWindowSize(300, 300)

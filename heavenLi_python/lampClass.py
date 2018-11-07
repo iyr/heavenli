@@ -41,7 +41,6 @@ class Lamp:
         if n > len(self.bulbsCurrentHSV):
             self.bulbsCurrentHSV.append((32*n, 255, 32*n))
         self.numBulbs = n
-        print(self.numBulbs)
 
     def getNumBulbs(self):
         return self.numBulbs
