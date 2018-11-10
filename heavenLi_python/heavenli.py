@@ -5,7 +5,10 @@ from OpenGL.GLUT import *
 import sys, time
 from math import sin,cos,sqrt,pi,radians
 from OpenGL.constants import GLfloat
+
 from drawArn import *
+from drawButtons import *
+from drawUtils import *
 from lampClass import *
 vec4 = GLfloat_4
 
@@ -49,43 +52,25 @@ def framerate():
 def constrain(val, min_val, max_val):
     return min(max_val, max(min_val, val))
 
-def drawBackground():
-    global mode
-    if (mode > 0):
-         drawHomeCircle(cx, cy, cx, cy, numLights, angB, 0);
+def drawBackground(Light = 0 # Currently Selected Lamp, Space, or *
+        ):
+    if (lamps[Light].getArn() == 0):
+         drawHomeCircle(0.0, 0.0, 
+                 1.0, 1.0, 
+                 lamps[Light].getNumBulbs(), 
+                 lamps[Light].getAngle(), 
+                 0,
+                 w2h,
+                 lamps[Light].getBulbsRGB());
 
-def drawCornerMarkers():
-    # YELLOW
-    glBegin(GL_TRIANGLE_FAN)
-    glColor(1, 1, 0)
-    glVertex3f(-1.0, -1.0, 1)
-    for i in range(91):
-        glVertex3f(-1.0 + 0.5*cos(radians(i*4)), -1.0 + 0.5*sin(radians(i*4)), 1)
-    glEnd()
-    
-    # RED
-    glBegin(GL_TRIANGLE_FAN)
-    glColor(1, 0, 0)
-    glVertex3f( 1.0, -1.0, 1)
-    for i in range(91):
-        glVertex3f( 1.0 + 0.5*cos(radians(i*4)), -1.0 + 0.5*sin(radians(i*4)), 1)
-    glEnd()
-
-    # GREEN
-    glBegin(GL_TRIANGLE_FAN)
-    glColor(0, 1, 0)
-    glVertex3f( 1.0,  1.0, 1)
-    for i in range(91):
-        glVertex3f( 1.0 + 0.5*cos(radians(i*4)),  1.0 + 0.5*sin(radians(i*4)), 1)
-    glEnd()
-
-    # BLUE
-    glBegin(GL_TRIANGLE_FAN)
-    glColor(0, 0, 1)
-    glVertex3f(-1.0,  1.0, 1)
-    for i in range(91):
-        glVertex3f(-1.0 + 0.5*cos(radians(i*4)),  1.0 + 0.5*sin(radians(i*4)), 1)
-    glEnd()
+    elif (lamps[Light].getArn() == 1):
+         drawHomeLin(0.0, 0.0, 
+                 1.0, 1.0, 
+                 lamps[Light].getNumBulbs(), 
+                 lamps[Light].getAngle(), 
+                 0,
+                 w2h,
+                 lamps[Light].getBulbsRGB());
 
         
 def mouseInteraction(button, state, mouseX, mouseY):
@@ -99,11 +84,14 @@ def display():
     glLoadIdentity()
 
     glDisable(GL_LIGHTING)
+    #drawBackground(0)
+    #drawClock(1.0, (0.3, 0.3, 0.3), (0.95, 0.95, 0.95), w2h)
+    drawClock(w2h=w2h)
     #drawHomeCircle(0, 0, 1, 1, nz, angB, 0, w2h)
-    drawHomeLin(0, 0, 
-            1.0, 1.0, 
-            lamps[0].getNumBulbs(), lamps[0].getAngle(), 
-            0, w2h, lamps[0].getBulbsRGB())
+    #drawHomeLin(0, 0, 
+            #1.0, 1.0, 
+            #lamps[0].getNumBulbs(), lamps[0].getAngle(), 
+            #0, w2h, lamps[0].getBulbsRGB())
     iconSize = 0.2
     #drawCornerMarkers()
     drawHomeCircle(0.7, 0.7, 
@@ -144,6 +132,13 @@ def key(ch, x, y):
         sys.exit(0)
     if ord(ch) == 27: # ESC
         sys.exit(0)
+
+    if ch == as_8_bit('a'):
+        if lamps[0].getArn() == 0:
+            lamps[0].setArn(1)
+        elif lamps[0].getArn() == 1:
+            lamps[0].setArn(0)
+        print(lamps[0].getArn())
 
 # new window size or exposure
 # this function is called everytime the window is resized
