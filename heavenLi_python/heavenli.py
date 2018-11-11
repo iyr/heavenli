@@ -10,19 +10,18 @@ from drawArn import *
 from drawButtons import *
 from drawUtils import *
 from lampClass import *
+from rangeUtils import *
 vec4 = GLfloat_4
 
 tStart = t0 = time.time()
 frames = 0
 angB = 00
 nz = 3
-cx = 0.0
-cy = 0.0
-wx = 0.0
-wy = 0.0
 w2h = 0
-dBias = 0
 lamps = []
+screen = 0
+lightOn = False
+fps = 60
 #demo = Lamp()
 
 def init():
@@ -37,20 +36,17 @@ def init():
     lamps.append(demo)
 
 def framerate():
-    global t0, frames, angB, dBias, wx, wy, w2h, demo
+    global t0, frames, w2h, fps
     t = time.time()
     frames += 1
     seconds = t - t0
     fps = frames/seconds
     if t - t0 >= 1.0:
-        print("%.0f frames in %3.1f seconds = %6.3f FPS" % (frames,seconds,fps))
+        #print("%.0f frames in %3.1f seconds = %6.3f FPS" % (frames,seconds,fps))
         t0 = t
         frames = 0
     if fps > 60:
         time.sleep(fps/10000.0)
-
-def constrain(val, min_val, max_val):
-    return min(max_val, max(min_val, val))
 
 def drawBackground(Light = 0 # Currently Selected Lamp, Space, or *
         ):
@@ -74,7 +70,27 @@ def drawBackground(Light = 0 # Currently Selected Lamp, Space, or *
 
         
 def mouseInteraction(button, state, mouseX, mouseY):
-    return
+    global lightOn
+
+    # We are at the home screen
+    if (screen == 0) and (state == 1):
+        wx = glutGet(GLUT_WINDOW_WIDTH)
+        wy = glutGet(GLUT_WINDOW_HEIGHT)
+        dBias = min(wx, wy)/2
+        #if (1.0 >= pow((mouseX-wx/2), 2) / pow(dBias/2, 2) + pow(mouseY-wy/2, 2) / pow(dBias/2, 2)):
+        if watchPoint(mouseX, mouseY, wx, wy, dBias):
+            #print("Clock Touched", lamps[0].getMainLight())
+            lightOn = not lightOn
+            for i in range(len(lamps)):
+                lamps[i].setMainLight(lightOn)
+    #print(button, state, mouseX, mouseY)
+    return 
+
+def watchPoint(mouseX, mouseY, px, py, pr):
+    if (1.0 >= pow((mouseX-px/2), 2) / pow(pr/2, 2) + pow((mouseY-py/2), 2) / pow(pr/2, 2)):
+        return True
+    else:
+        return False
 
 # Main screen drawing routine
 # Passed to glutDisplayFunc()
@@ -84,7 +100,7 @@ def display():
     glLoadIdentity()
 
     glDisable(GL_LIGHTING)
-    #drawBackground(0)
+    drawBackground(0)
     #drawClock(1.0, (0.3, 0.3, 0.3), (0.95, 0.95, 0.95), w2h)
     drawClock(w2h=w2h)
     #drawHomeCircle(0, 0, 1, 1, nz, angB, 0, w2h)
@@ -92,13 +108,15 @@ def display():
             #1.0, 1.0, 
             #lamps[0].getNumBulbs(), lamps[0].getAngle(), 
             #0, w2h, lamps[0].getBulbsRGB())
-    iconSize = 0.2
+    iconSize = 0.15
     #drawCornerMarkers()
-    drawHomeCircle(0.7, 0.7, 
+    for i in range(len(lamps)):
+        lamps[i].updateBulbs(1.0/fps)
+    drawHomeCircle(0.75, 0.75, 
             iconSize, iconSize, 
             lamps[0].getNumBulbs(), lamps[0].getAngle(), 
             2, w2h, lamps[0].getBulbsRGB())
-    drawHomeLin(-0.7, -0.7, 
+    drawHomeLin(-0.75, -0.75, 
             iconSize*0.875, iconSize*0.875, 
             lamps[0].getNumBulbs(), lamps[0].getAngle(), 
             2, w2h, lamps[0].getBulbsRGB())
@@ -108,6 +126,7 @@ def display():
     framerate()
 
 def idle():
+    #lamps[0].updateBulbs(constrain(60.0/fps, 1, 2.4))
     glutPostRedisplay()
 
 # change view angle
