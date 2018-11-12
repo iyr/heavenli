@@ -59,10 +59,11 @@ class Lamp:
         self.arn = n
 
     def getBulbRGB(self, n):
-        return colorsys.hsv_to_rgb(
+        tmp = colorsys.hsv_to_rgb(
                 self.bulbsCurrentHSV[n][0],
                 self.bulbsCurrentHSV[n][1],
                 self.bulbsCurrentHSV[n][2])
+        return tmp
 
     def getBulbsRGB(self):
         tmp = []

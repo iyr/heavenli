@@ -103,12 +103,39 @@ def display():
     drawBackground(0)
     #drawClock(1.0, (0.3, 0.3, 0.3), (0.95, 0.95, 0.95), w2h)
     drawClock(w2h=w2h)
+
+    iconSize = 0.15
+
+    # Draw circularly arranged bulb buttons
+    if lamps[0].getArn() == 0:
+        tmn = lamps[0].getNumBulbs()
+        for i in range(tmn):
+            tmx = 0.75*cos(radians(+i*360/tmn - 90 + lamps[0].getAngle() + 180/tmn))
+            tmy = 0.75*sin(radians(+i*360/tmn - 90 + lamps[0].getAngle() + 180/tmn))
+            if w2h >= 1:
+                tmx *= w2h
+            else:
+                tmy /= w2h
+            drawBulbButton(gx=tmx, gy=tmy, scale=iconSize*1.05, bulbColor=lamps[0].getBulbRGB(i), w2h=w2h)
+    elif lamps[0].getArn() == 1:
+        tmn = lamps[0].getNumBulbs()
+        for i in range(tmn):
+            ang = radians(+i*180/constrain(tmn-1, 1, 5) + lamps[0].getAngle() + 180)
+            if tmn == 1:
+                ang -= 0.5*3.14159265
+            tmx = 0.75*cos(ang)
+            tmy = 0.75*sin(ang)
+            if w2h >= 1:
+                tmx *= w2h
+            else:
+                tmy /= w2h
+            #print(lamps[0].getBulbRGB(i))
+            drawBulbButton(gx=tmx, gy=tmy, scale=iconSize*1.05, bulbColor=lamps[0].getBulbRGB(tmn-i-1), w2h=w2h)
     #drawHomeCircle(0, 0, 1, 1, nz, angB, 0, w2h)
     #drawHomeLin(0, 0, 
             #1.0, 1.0, 
             #lamps[0].getNumBulbs(), lamps[0].getAngle(), 
             #0, w2h, lamps[0].getBulbsRGB())
-    iconSize = 0.15
     #drawCornerMarkers()
     for i in range(len(lamps)):
         lamps[i].updateBulbs(1.0/fps)
