@@ -36,13 +36,14 @@ def init():
     lamps.append(demo)
 
 def framerate():
-    global t0, frames, w2h, fps
+    global t0, frames, w2h, fps, derp
     t = time.time()
     frames += 1
     seconds = t - t0
     fps = frames/seconds
     if t - t0 >= 1.0:
-        #print("%.0f frames in %3.1f seconds = %6.3f FPS" % (frames,seconds,fps))
+        print(derp)
+        print("%.0f frames in %3.1f seconds = %6.3f FPS" % (frames,seconds,fps))
         t0 = t
         frames = 0
     if fps > 60:
@@ -79,11 +80,9 @@ def mouseInteraction(button, state, mouseX, mouseY):
         dBias = min(wx, wy)/2
         #if (1.0 >= pow((mouseX-wx/2), 2) / pow(dBias/2, 2) + pow(mouseY-wy/2, 2) / pow(dBias/2, 2)):
         if watchPoint(mouseX, mouseY, wx, wy, dBias):
-            #print("Clock Touched", lamps[0].getMainLight())
             lightOn = not lightOn
             for i in range(len(lamps)):
                 lamps[i].setMainLight(lightOn)
-    #print(button, state, mouseX, mouseY)
     return 
 
 def watchPoint(mouseX, mouseY, px, py, pr):
@@ -129,7 +128,6 @@ def display():
                 tmx *= w2h
             else:
                 tmy /= w2h
-            #print(lamps[0].getBulbRGB(i))
             drawBulbButton(gx=tmx, gy=tmy, scale=iconSize*1.05, bulbColor=lamps[0].getBulbRGB(tmn-i-1), w2h=w2h)
     #drawHomeCircle(0, 0, 1, 1, nz, angB, 0, w2h)
     #drawHomeLin(0, 0, 
@@ -184,7 +182,6 @@ def key(ch, x, y):
             lamps[0].setArn(1)
         elif lamps[0].getArn() == 1:
             lamps[0].setArn(0)
-        print(lamps[0].getArn())
 
 # new window size or exposure
 # this function is called everytime the window is resized

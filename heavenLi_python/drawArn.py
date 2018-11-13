@@ -2,7 +2,13 @@ import OpenGL
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from math import sin,cos,sqrt,radians,hypot
+import numpy as np
 
+__HomeCir = []
+__HomeLin = []
+
+__IconCir = []
+__IconLin = []
 def drawHomeLin(
         gx,
         gy,
@@ -45,7 +51,7 @@ def drawHomeLin(
         else:
             glScalef(dx*(w2h), (w2h)*dy/2, 0)
 
-
+    glEnableClientState(GL_VERTEX_ARRAY)
 
     if nz > 1:
         glBegin(GL_QUADS)
@@ -209,9 +215,6 @@ def drawHomeLin(
         glPopMatrix()
         drawHomeCircle(-gx, gy, dx*1.14285, dy*1.14285, nz, ao, drawMode, w2h, colors)
 
-
-
-
 def drawHomeCircle(
         gx,
         gy,
@@ -223,7 +226,6 @@ def drawHomeCircle(
         w2h,
         colors
         ):
-
     wx = glutGet(GLUT_WINDOW_WIDTH)
     wy = glutGet(GLUT_WINDOW_HEIGHT)
     mode = 1
@@ -249,23 +251,30 @@ def drawHomeCircle(
         squashH = sqrt((wy/wx))*hypot(wx, wy)
 
     for j in range(nz):
-        glBegin(GL_TRIANGLE_FAN)
+        tmp = []
         glColor3f(colors[j][0], colors[j][1], colors[j][2])
         if (nz == 3) and (drawMode == 0):
-            glVertex2f(
-                    ( cos(radians(ao*nz+90))*0.333)*((cos(radians(ao*nz*4))+1)/2), 
-                    (-sin(radians(ao*nz+90))*0.333)*((cos(radians(ao*nz*4))+1)/2)
-                    )
+            tmx = ( cos(radians(ao*nz+90))*0.333)*((cos(radians(ao*nz*4))+1)/2)
+            tmy = (-sin(radians(ao*nz+90))*0.333)*((cos(radians(ao*nz*4))+1)/2)
+            tmp.append(tmx)
+            tmp.append(tmy)
+
         else:
-            glVertex2f(0, 0)
+            tmp.append(0)
+            tmp.append(0)
     
         for i in range(0, int(360/nz)+1):
+            tmx = cos(radians(i+ao+j*(360/nz)-90))*squashW
+            tmy = sin(radians(i+ao+j*(360/nz)-90))*squashH
+            tmp.append(tmx)
+            tmp.append(tmy)
             glColor3f(colors[j][0], colors[j][1], colors[j][2])
-            glVertex2f(
-                    cos(radians(i+ao+j*(360/nz)-90))*squashW,
-                    sin(radians(i+ao+j*(360/nz)-90))*squashH
-                    )
-        glEnd()
+
+        points = np.array(tmp, 'f').reshape(-1,2)
+        indices = np.arange(len(tmp)/2)
+        glVertexPointerf( points )
+        glDrawElementsui(GL_TRIANGLE_FAN, indices)
+        #glEnd()
 
     # Draw Outline
     if drawMode > 0:
@@ -275,21 +284,36 @@ def drawHomeCircle(
             glLineWidth((1/w2h)*2.0)
 
         glColor3f(0.95, 0.95, 0.95)
-        glBegin(GL_LINE_STRIP)
+        tmp = []
         for j in range(31):
-            glVertex2f( cos(radians(j*12)), sin(radians(j*12)))
-        glEnd()
+            tmx = cos(radians(j*12))
+            tmy = sin(radians(j*12))
+            tmp.append(tmx)
+            tmp.append(tmy)
+
+        points = np.array(tmp, 'f').reshape(-1, 2)
+        indices = np.arange(len(tmp)/2)
+        glVertexPointerf( points )
+        glDrawElementsui(GL_LINE_STRIP, indices)
 
     # Draw Bulb Marker
     if drawMode == 2:
         for i in range(nz):
             glColor3f(0.9, 0.9, 0.9)
-            glBegin(GL_TRIANGLE_FAN)
+            #glBegin(GL_TRIANGLE_FAN)
             xCoord = cos(radians(-90+ao - i*(360.0/float(nz)) + 180/nz))
             yCoord = sin(radians(-90+ao - i*(360.0/float(nz)) + 180/nz))
-            glVertex2f( xCoord,  yCoord)
+            tmp = []
+            tmp.append(xCoord)
+            tmp.append(yCoord)
             for j in range(13):
-                glVertex2f(xCoord + 0.16*cos(radians(j*30)), yCoord + 0.16*sin(radians(j*30)))
-            glEnd()
+                tmp.append(xCoord + 0.16*cos(radians(j*30)))
+                tmp.append(yCoord + 0.16*sin(radians(j*30)))
+
+            points = np.array(tmp, 'f').reshape(-1, 2)
+            indices = np.arange(len(tmp)/2)
+            glVertexPointerf( points )
+            glDrawElementsui(GL_TRIANGLE_FAN, indices)
+
     glPopMatrix()
 
