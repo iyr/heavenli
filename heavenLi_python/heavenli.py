@@ -36,13 +36,12 @@ def init():
     lamps.append(demo)
 
 def framerate():
-    global t0, frames, w2h, fps, derp
+    global t0, frames, w2h, fps
     t = time.time()
     frames += 1
     seconds = t - t0
     fps = frames/seconds
     if t - t0 >= 1.0:
-        print(derp)
         print("%.0f frames in %3.1f seconds = %6.3f FPS" % (frames,seconds,fps))
         t0 = t
         frames = 0

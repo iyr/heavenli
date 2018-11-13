@@ -4,11 +4,6 @@ from OpenGL.GLUT import *
 from math import sin,cos,sqrt,radians,hypot
 import numpy as np
 
-__HomeCir = []
-__HomeLin = []
-
-__IconCir = []
-__IconLin = []
 def drawHomeLin(
         gx,
         gy,
