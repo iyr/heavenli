@@ -84,7 +84,7 @@ class HeavenLiWindow(QGLWidget):
         #sys.exit(app.exec_())
 
     # default window size
-    width, height = 2400, 600
+    width, height = 600, 600
 
     def initializeGL(self):
         glEnable(GL_POLYGON_SMOOTH)

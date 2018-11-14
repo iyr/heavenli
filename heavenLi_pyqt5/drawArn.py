@@ -25,11 +25,11 @@ def drawHomeLin(self,
 
     if drawMode == 0:
         glScalef(w2h, 1, 1)
-        glRotatef(ao+90, 0, 0, 1)
+        glRotatef(ao+180, 0, 0, 1)
 
     elif drawMode != 0:
         glTranslatef(gx*w2h, gy, 0)
-        glRotatef(ao+90, 0, 0, 1)
+        glRotatef(ao+180, 0, 0, 1)
 
         if (w2h) >= 1:
             glScalef(dx, (dy/2), 0)
@@ -197,7 +197,7 @@ def drawHomeLin(self,
 
     else:
         glPopMatrix()
-        drawHomeCircle(-gx, gy, dx*1.14285, dy*1.14285, nz, ao, drawMode, w2h, colors)
+        drawHomeCircle(self, gx, gy, dx*1.14285, dy*1.14285, nz, ao, drawMode, w2h, colors)
 
 def drawHomeCircle(self,
         gx,
