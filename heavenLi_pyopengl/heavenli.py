@@ -4,20 +4,15 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 import sys, time
 from math import sin,cos,sqrt,pi,radians
-from OpenGL.constants import GLfloat
 
 from drawArn import *
 from drawButtons import *
 from drawUtils import *
 from lampClass import *
 from rangeUtils import *
-vec4 = GLfloat_4
 
 tStart = t0 = time.time()
 frames = 0
-angB = 00
-nz = 3
-w2h = 0
 lamps = []
 screen = 0
 lightOn = False
@@ -181,6 +176,9 @@ def key(ch, x, y):
             lamps[0].setArn(1)
         elif lamps[0].getArn() == 1:
             lamps[0].setArn(0)
+
+    #if ch == as_8_bit('m'):
+        #glutIconifyWindow()
 
 # new window size or exposure
 # this function is called everytime the window is resized
