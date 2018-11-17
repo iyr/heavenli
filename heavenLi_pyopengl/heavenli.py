@@ -17,16 +17,20 @@ lamps = []
 screen = 0
 lightOn = False
 fps = 60
+windowPosX = 0
+windowPosY = 0
+windowDimW = 300
+windowDimH = 300
+isFullScreen = False
+wx = 0
+wy = 0
 #demo = Lamp()
 
 def init():
-    global wx, wy, dBias, w2h, lamps
-    dWidth = glutGet(GLUT_WINDOW_WIDTH)
-    dHeight = glutGet(GLUT_WINDOW_HEIGHT)
-    wx = dWidth/4.0
-    wy = dHeight/4.0
+    global wx, wy, w2h, lamps
+    wx = glutGet(GLUT_WINDOW_WIDTH)
+    wy = glutGet(GLUT_WINDOW_HEIGHT)
     w2h = wx/wy
-    dBias = min(dWidth, dHeight)
     demo = Lamp()
     lamps.append(demo)
 
@@ -151,7 +155,7 @@ def idle():
 # change view angle
 # Respond to user input from "special" keys
 def special(k, x, y):
-    global angB, nz
+    global angB, nz, windowPosX, windowPosY, windowDimW, windowDimH, isFullScreen
 
     if k == GLUT_KEY_LEFT:
         lamps[0].setAngle(lamps[0].getAngle() + 5)
@@ -161,6 +165,20 @@ def special(k, x, y):
         lamps[0].setNumBulbs(lamps[0].getNumBulbs()+1)
     elif k == GLUT_KEY_DOWN:
         lamps[0].setNumBulbs(lamps[0].getNumBulbs()-1)
+    elif k == GLUT_KEY_F11:
+        if isFullScreen == False:
+            windowPosX = glutGet(GLUT_WINDOW_X)
+            windowPosY = glutGet(GLUT_WINDOW_Y)
+            windowDimW = glutGet(GLUT_WINDOW_WIDTH)
+            windowDimH = glutGet(GLUT_WINDOW_HEIGHT)
+            isFullScreen = True
+            glutFullScreen()
+        elif isFullScreen == True:
+            glutPositionWindow(windowPosX, windowPosY)
+            glutReshapeWindow(windowDimW, windowDimH)
+            isFullScreen = False
+
+
     else:
         return
     glutPostRedisplay()
@@ -189,11 +207,12 @@ def reshape(width, height):
         w2h = width/height
     else:
         w2h = 1
-    #wx = dWidth/4.0
-    #wy = dHeight/4.0
     wx = width
     wy = height
-    dBias = min(width, height)
+    windowDimW = width
+    windowDimH = height
+    windowPosX = glutGet(GLUT_WINDOW_X)
+    windowPosY = glutGet(GLUT_WINDOW_Y)
     glViewport(0, 0, width, height)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
@@ -214,11 +233,13 @@ def visible(vis):
 
 # Equivalent to "main()" in C/C++
 if __name__ == '__main__':
+    #global windowDimW, windowDimH, windowPosX, windowPosY
     glutInit(sys.argv)
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE)
 
-    glutInitWindowPosition(0, 0)
-    glutInitWindowSize(300, 300)
+    glutInitWindowPosition(windowPosX, windowPosY)
+    glutInitWindowSize(windowDimW, windowDimH)
+
     glutCreateWindow("HeavenLi")
     glutMouseFunc(mouseInteraction)
     glEnable(GL_LINE_SMOOTH)
