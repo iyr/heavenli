@@ -22,12 +22,17 @@ windowPosY = 0
 windowDimW = 300
 windowDimH = 300
 isFullScreen = False
+isAnimating = False
 wx = 0
 wy = 0
 #demo = Lamp()
 
 def init():
     global wx, wy, w2h, lamps
+
+    glEnableClientState(GL_VERTEX_ARRAY)
+    glEnableClientState(GL_COLOR_ARRAY)
+
     wx = glutGet(GLUT_WINDOW_WIDTH)
     wy = glutGet(GLUT_WINDOW_HEIGHT)
     w2h = wx/wy

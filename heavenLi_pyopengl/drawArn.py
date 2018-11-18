@@ -3,6 +3,7 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from math import sin,cos,sqrt,radians,hypot
 import numpy as np
+from ctypes import *
 
 def drawHomeLin(
         gx,
@@ -46,17 +47,16 @@ def drawHomeLin(
         else:
             glScalef(dx*(w2h), (w2h)*dy/2, 0)
 
-    glEnableClientState(GL_VERTEX_ARRAY)
-
     if nz > 1:
-        glBegin(GL_QUADS)
+        #glBegin(GL_QUADS)
         for i in range(nz):
-            glColor3f(colors[i][0], colors[i][1], colors[i][2])
+            tmp = []
+            tmc = []
 
             # Special case to draw rounded corners for end slice
             if i == 0:
                 if drawMode > 0:
-                    glEnd()
+                    #glEnd()
                     # Rounded Corner
                     glBegin(GL_TRIANGLE_FAN)
                     glVertex2f(-0.74, -1.4)
@@ -75,26 +75,37 @@ def drawHomeLin(
                                 1.5 + 0.5*sin(radians(j*7.5+90)))
                     glEnd()
 
-                    glBegin(GL_QUADS)
-                    glVertex2f( 0.50,  2.0)
-                    glVertex2f( i*2/nz-0.75,  2.0)
-                    glVertex2f( i*2/nz-0.75, -2.0)
-                    glVertex2f( 0.50, -2.0)
+                    tmp.append(( 0.50,  2.0))
+                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                    tmp.append(( i*2/nz-0.75,  2.0))
+                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                    tmp.append(( i*2/nz-0.75, -2.0))
+                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                    tmp.append(( 0.50, -2.0))
+                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
 
-                    glVertex2f( 0.01,  1.5)
-                    glVertex2f(-1.01,  1.5)
-                    glVertex2f(-1.01, -1.5)
-                    glVertex2f( 0.01, -1.5)
+                    tmp.append(( 0.01,  1.5))
+                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                    tmp.append((-1.01,  1.5))
+                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                    tmp.append((-1.01, -1.5))
+                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                    tmp.append(( 0.01, -1.5))
+                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
                 else:
-                    glVertex2f( 2.0,  2.0)
-                    glVertex2f( i*2/nz-2.0,  2.0)
-                    glVertex2f( i*2/nz-2.0, -2.0)
-                    glVertex2f( 2.0, -2.0)
+                    tmp.append(( 2.0,  2.0))
+                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                    tmp.append(( i*2/nz-2.0,  2.0))
+                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                    tmp.append(( i*2/nz-2.0, -2.0))
+                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                    tmp.append(( 2.0, -2.0))
+                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
 
             # Special case to draw rounded corners for end slice
             elif i == nz-1:
                 if drawMode > 0:
-                    glEnd()
+                    #glEnd()
                     # Rounded Corner
                     glBegin(GL_TRIANGLE_FAN)
                     glVertex3f( 0.74, -1.4, 0)
@@ -113,82 +124,95 @@ def drawHomeLin(
                                 1.5 + 0.5*sin(radians(j*7.5+90)))
                     glEnd()
 
-                    glBegin(GL_QUADS)
-                    glVertex2f( 0.75,  2.0)
-                    glVertex2f( i*2/nz-1.0, 2.0)
-                    glVertex2f( i*2/nz-1.0,-2.0)
-                    glVertex2f( 0.75, -2.0)
+                    tmp.append(( 0.75,  2.0))
+                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                    tmp.append(( i*2/nz-1.0, 2.0))
+                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                    tmp.append(( i*2/nz-1.0,-2.0))
+                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                    tmp.append(( 0.75, -2.0))
+                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
 
-                    glVertex2f( 0.74,  1.5)
-                    glVertex2f( 1.01,  1.5)
-                    glVertex2f( 1.01, -1.5)
-                    glVertex2f( 0.74, -1.5)
+                    tmp.append(( 0.74,  1.5))
+                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                    tmp.append(( 1.01,  1.5))
+                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                    tmp.append(( 1.01, -1.5))
+                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                    tmp.append(( 0.74, -1.5))
+                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
                 else:
-                    glVertex2f( 2.0,  2.0)
-                    glVertex2f( i*2/nz-1.0,  2.0)
-                    glVertex2f( i*2/nz-1.0, -2.0)
-                    glVertex2f( 2.0, -2.0)
+                    tmp.append(( 2.0,  2.0))
+                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                    tmp.append(( i*2/nz-1.0,  2.0))
+                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                    tmp.append(( i*2/nz-1.0, -2.0))
+                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                    tmp.append(( 2.0, -2.0))
+                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
 
             else:
-                glVertex2f( 0.75,  2.0)
-                glVertex2f( i*2/nz-1.0, 2.0)
-                glVertex2f( i*2/nz-1.0,-2.0)
-                glVertex2f( 0.75, -2.0)
-        glEnd()
+                tmp.append(( 0.75,  2.0))
+                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                tmp.append(( i*2/nz-1.0, 2.0))
+                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                tmp.append(( i*2/nz-1.0,-2.0))
+                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                tmp.append(( 0.75, -2.0))
+                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+
+            ptc = np.array(tmc, 'f').reshape(-1,3)
+            pnt = np.array(tmp, 'f').reshape(-1,2)
+            indices = np.arange(len(tmp))
+            glColorPointerf( ptc )
+            glVertexPointerf( pnt )
+            glDrawElementsui(GL_QUADS, indices)
 
         # START Draw Outline
         if drawMode > 0:
-
             # Scale line thickness
             if w2h <= 1.0:
                 glLineWidth(w2h*2.0)
             else:
                 glLineWidth((1/w2h)*2.0)
 
-            # Draw Outline Straights
-            glBegin(GL_LINES)
-            glColor3f(0.95, 0.95, 0.95)
-            glVertex2f( 1.00,  1.5)
-            glVertex2f( 1.00, -1.5)
-
-            glVertex2f(-1.00,  1.5)
-            glVertex2f(-1.00, -1.5)
-
-            glVertex2f( 0.75, -2.0)
-            glVertex2f(-0.75, -2.0)
-
-            glVertex2f( 0.75,  2.0)
-            glVertex2f(-0.75,  2.0)
-            glEnd()
-
-            # Draw Outline Rounded Corners
-            glBegin(GL_LINE_STRIP)
+            tmp = []
+            tmc = []
             for j in range(13):
-                glVertex2f(
-                        -0.75 + 0.25*cos(-radians(j*7.5+90)), 
-                        -1.5 + 0.5*sin(-radians(j*7.5+90)))
-            glEnd()
-
-            glBegin(GL_LINE_STRIP)
-            for j in range(13):
-                glVertex2f(
-                        -0.75 + 0.25*cos(radians(j*7.5+90)), 
-                        1.5 + 0.5*sin(radians(j*7.5+90)))
-            glEnd()
-
-            glBegin(GL_LINE_STRIP)
-            for j in range(13):
-                glVertex2f(
-                        0.75 - 0.25*cos(-radians(j*7.5+90)), 
-                        -1.5 + 0.5*sin(-radians(j*7.5+90)))
-            glEnd()
-
-            glBegin(GL_LINE_STRIP)
-            for j in range(13):
-                glVertex2f(
+                tmc.append((0.95, 0.95, 0.95))
+                tmp.append((
                         0.75 - 0.25*cos(radians(j*7.5+90)), 
-                        1.5 + 0.5*sin(radians(j*7.5+90)))
-            glEnd()
+                        1.50 + 0.5*sin(radians(j*7.5+90))))
+
+            for j in range(13):
+                tmc.append((0.95, 0.95, 0.95))
+                tmp.append((
+                        0.75 - 0.25*cos(+radians(j*7.5+180)), 
+                        -1.5 + 0.50*sin(+radians(j*7.5+180))))
+
+            for j in range(13):
+                tmc.append((0.95, 0.95, 0.95))
+                tmp.append((
+                        -0.75 + 0.25*cos(-radians(j*7.5+90)), 
+                        -1.5 + 0.5*sin(-radians(j*7.5+90))))
+
+            for j in range(13):
+                tmc.append((0.95, 0.95, 0.95))
+                tmp.append((
+                        -0.75 + 0.25*cos(-radians(j*7.5+180)), 
+                        1.5 + 0.5*sin(-radians(j*7.5+180))))
+
+            tmc.append((0.95, 0.95, 0.95))
+            tmp.append((
+                0.75 - 0.25*cos(radians(90)),
+                1.50 + 0.50*sin(radians(90))))
+
+            ptc = np.array(tmc, 'f').reshape(-1,3)
+            pnt = np.array(tmp, 'f').reshape(-1,2)
+            indices = np.arange(len(tmp))
+            glColorPointerf( ptc )
+            glVertexPointerf( pnt )
+            glDrawElementsui(GL_LINE_STRIP, indices)
 
             # Draw Bulb Marker
             if drawMode == 2:
@@ -223,9 +247,7 @@ def drawHomeCircle(
         ):
     wx = glutGet(GLUT_WINDOW_WIDTH)
     wy = glutGet(GLUT_WINDOW_HEIGHT)
-    mode = 1
-    angOffset = 360/nz
-
+    angOffset = 360/float(nz)
     glPushMatrix()
     if drawMode > 0:
         glTranslatef(gx*(w2h), gy, 0)
@@ -245,31 +267,38 @@ def drawHomeCircle(
         squashW = sqrt((w2h))*hypot(wx, wy)
         squashH = sqrt((wy/wx))*hypot(wx, wy)
 
+    tmp = []
+    tmc = []
     for j in range(nz):
-        tmp = []
-        glColor3f(colors[j][0], colors[j][1], colors[j][2])
-        if (nz == 3) and (drawMode == 0):
-            tmx = ( cos(radians(ao*nz+90))*0.333)*((cos(radians(ao*nz*4))+1)/2)
-            tmy = (-sin(radians(ao*nz+90))*0.333)*((cos(radians(ao*nz*4))+1)/2)
-            tmp.append(tmx)
-            tmp.append(tmy)
-
-        else:
-            tmp.append(0)
-            tmp.append(0)
+        tmc.append((colors[j][0], colors[j][1], colors[j][2]))
+        for i in range(0, int(angOffset)+1):
+            if (nz == 3) and (drawMode == 0):
+                tmx = ( cos(radians(ao*nz+90))*0.333)*((cos(radians(ao*nz*4))+1)/2)
+                tmy = (-sin(radians(ao*nz+90))*0.333)*((cos(radians(ao*nz*4))+1)/2)
+                tmp.append(tmx)
+                tmp.append(tmy)
+                tmc.append((colors[j][0], colors[j][1], colors[j][2]))
+            else:
+                tmp.append(0)
+                tmp.append(0)
+                tmc.append((colors[j][0], colors[j][1], colors[j][2]))
     
-        for i in range(0, int(360/nz)+1):
-            tmx = cos(radians(i+ao+j*(360/nz)-90))*squashW
-            tmy = sin(radians(i+ao+j*(360/nz)-90))*squashH
+            tmx = cos(radians(i+ao+j*(angOffset)-90))*squashW
+            tmy = sin(radians(i+ao+j*(angOffset)-90))*squashH
             tmp.append(tmx)
             tmp.append(tmy)
-            glColor3f(colors[j][0], colors[j][1], colors[j][2])
+            tmc.append((colors[j][0], colors[j][1], colors[j][2]))
 
-        points = np.array(tmp, 'f').reshape(-1,2)
-        indices = np.arange(len(tmp)/2)
-        glVertexPointerf( points )
-        glDrawElementsui(GL_TRIANGLE_FAN, indices)
-        #glEnd()
+    pntcols = np.array(tmc, 'f').reshape(-1,3)
+    points = np.array(tmp, 'f').reshape(-1,2)
+    indices = np.arange(len(tmp)/2)
+    glVertexPointerf( points )
+    glColorPointerf( pntcols )
+    glDrawElementsui(GL_TRIANGLE_STRIP, indices)
+
+    #buffers = glGenBuffers(2, (len(pntcols)+len(points))*4)
+    #glBindBuffer(GL_ARRAY_BUFFER, points)
+    #glBufferData(GL_ARRAY_BUFFER, len(points)*4, 4, GL_STATIC_DRAW)
 
     # Draw Outline
     if drawMode > 0:
@@ -278,35 +307,44 @@ def drawHomeCircle(
         else:
             glLineWidth((1/w2h)*2.0)
 
-        glColor3f(0.95, 0.95, 0.95)
+        #glColor3f(0.95, 0.95, 0.95)
         tmp = []
+        tmc = []
         for j in range(31):
             tmx = cos(radians(j*12))
             tmy = sin(radians(j*12))
             tmp.append(tmx)
             tmp.append(tmy)
+            tmc.append((0.95, 0.95, 0.95))
 
+        pntcol = np.array(tmc, 'f').reshape(-1, 3)
         points = np.array(tmp, 'f').reshape(-1, 2)
         indices = np.arange(len(tmp)/2)
+        glColorPointerf( pntcol )
         glVertexPointerf( points )
-        glDrawElementsui(GL_LINE_STRIP, indices)
+        glDrawElementsub(GL_LINE_STRIP, indices)
 
     # Draw Bulb Marker
     if drawMode == 2:
         for i in range(nz):
-            glColor3f(0.9, 0.9, 0.9)
+            #glColor3f(0.9, 0.9, 0.9)
             #glBegin(GL_TRIANGLE_FAN)
-            xCoord = cos(radians(-90+ao - i*(360.0/float(nz)) + 180/nz))
-            yCoord = sin(radians(-90+ao - i*(360.0/float(nz)) + 180/nz))
+            xCoord = cos(radians(-90+ao - i*(angOffset) + 180/nz))
+            yCoord = sin(radians(-90+ao - i*(angOffset) + 180/nz))
             tmp = []
+            tmc = []
             tmp.append(xCoord)
             tmp.append(yCoord)
+            tmc.append((0.9, 0.9, 0.9))
             for j in range(13):
                 tmp.append(xCoord + 0.16*cos(radians(j*30)))
                 tmp.append(yCoord + 0.16*sin(radians(j*30)))
+                tmc.append((0.9, 0.9, 0.9))
 
+            pntcol = np.array(tmc, 'f').reshape(-1, 3)
             points = np.array(tmp, 'f').reshape(-1, 2)
             indices = np.arange(len(tmp)/2)
+            glColorPointerf( pntcol )
             glVertexPointerf( points )
             glDrawElementsui(GL_TRIANGLE_FAN, indices)
 
