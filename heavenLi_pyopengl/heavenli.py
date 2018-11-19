@@ -59,16 +59,14 @@ def drawBackground(Light = 0 # Currently Selected Lamp, Space, or *
                  1.0, 1.0, 
                  lamps[Light].getNumBulbs(), 
                  lamps[Light].getAngle(), 
-                 0,
                  w2h,
                  lamps[Light].getBulbsRGB());
 
     elif (lamps[Light].getArn() == 1):
-         drawHomeLin(0.0, 0.0, 
+         drawHomeLinear(0.0, 0.0, 
                  1.0, 1.0, 
                  lamps[Light].getNumBulbs(), 
                  lamps[Light].getAngle(), 
-                 0,
                  w2h,
                  lamps[Light].getBulbsRGB());
 
@@ -140,14 +138,14 @@ def display():
     #drawCornerMarkers()
     for i in range(len(lamps)):
         lamps[i].updateBulbs(1.0/fps)
-    drawHomeCircle(0.75, 0.75, 
+    drawIconCircle(0.75, 0.75, 
             iconSize, iconSize, 
             lamps[0].getNumBulbs(), lamps[0].getAngle(), 
-            2, w2h, lamps[0].getBulbsRGB())
-    drawHomeLin(-0.75, -0.75, 
+            w2h, lamps[0].getBulbsRGB())
+    drawIconLinear(-0.75, -0.75, 
             iconSize*0.875, iconSize*0.875, 
             lamps[0].getNumBulbs(), lamps[0].getAngle(), 
-            2, w2h, lamps[0].getBulbsRGB())
+            w2h, lamps[0].getBulbsRGB())
     glFlush()
     glutSwapBuffers()
 
