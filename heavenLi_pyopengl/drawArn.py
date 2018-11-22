@@ -364,7 +364,6 @@ def drawHomeCircle(
         __prvHomeCircleAO = __curHomeCircleAO
         for j in range(nz):
             for i in range(31):
-            #for i in range(0, int(angOffset)+1):
                 if (nz == 3):
                     #tmx = ( cos(radians(ao*nz+90))*0.333)*((cos(radians(ao*nz*4))+1)/2)
                     #tmy = (-sin(radians(ao*nz+90))*0.333)*((cos(radians(ao*nz*4))+1)/2)
@@ -378,9 +377,7 @@ def drawHomeCircle(
                     __homeCircleVerts.append(0)
                     __homeCircleVerts.append(0)
     
-                #tmx = cos(radians(i+ao+j*(angOffset)-90))*squashW
-                #tmy = sin(radians(i+ao+j*(angOffset)-90))*squashH
-                tma = radians(i*12/nz+ao+j*(angOffset)-90)
+                tma = radians(i*12.0/nz+ao+j*(angOffset)-90)
                 tmx = cos(tma)#*squashW
                 tmy = sin(tma)#*squashH
                 __homeCircleVerts.append(tmx)
@@ -391,7 +388,6 @@ def drawHomeCircle(
         __prvHomeCircleCols = __curHomeCircleCols
         __prvHomeCircleNZ = __curHomeCircleNZ
         for j in range(nz):
-            __homeCircleColrs.append((colors[j][0], colors[j][1], colors[j][2]))
             for i in range(31):
                 __homeCircleColrs.append((colors[j][0], colors[j][1], colors[j][2]))
                 __homeCircleColrs.append((colors[j][0], colors[j][1], colors[j][2]))

@@ -3,6 +3,14 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from math import sin,cos,sqrt,radians,hypot
 from datetime import datetime
+import numpy as np
+
+__bulbVerts = []
+__bulbColrs = []
+__prvBlbClr = []
+__curBlbClr = []
+__lineVerts = []
+__lineColrs = []
 
 def drawBulbButton(
         gx=0.0,
@@ -13,92 +21,126 @@ def drawBulbButton(
         bulbColor=(0.5, 0.5, 0.5),
         w2h=1.0):
 
-    glColor3f(
-            faceColor[0],
-            faceColor[1],
-            faceColor[2])
-    
+    global __bulbVerts, __bulbColrs, __prvBlbClr, __curBlbClr, __lineVerts, __lineColrs
+
+    __curBlbClr = bulbColor
     glPushMatrix()
+    glTranslatef(gx, gy, 0)
     if w2h <= 1.0:
-        glScalef(w2h, w2h, 1)
+        glScalef(w2h*scale, w2h*scale, 1)
         glLineWidth(w2h*3.0)
         squash = w2h
     else:
-        glScalef(1, 1, 1)
+        glScalef(scale, scale, 1)
         glLineWidth(pow(1/w2h, 0.5)*3.0)
         squash = 1.0
 
-    glTranslatef(gx, gy, 0)
+    if (not __bulbVerts):
+        # Define Verts for button face
+        for i in range(31):
+            __bulbVerts.append((0.0, 0.0))
+            __bulbVerts.append((
+                scale*cos(radians(i*12)),
+                scale*sin(radians(i*12))))
+            __bulbVerts.append((
+                scale*cos(radians((i+1)*12)),
+                scale*sin(radians((i+1)*12))))
+            __bulbVerts.append((0.0, 0.0))
 
-    # Draw Button Face
-    glBegin(GL_TRIANGLE_FAN)
-    glVertex2f(0.0, 0.0)
-    for i in range(73):
-        glVertex2f(
-                scale*cos(radians(i*5)),
-                scale*sin(radians(i*5))
-                )
-    glEnd()
+        # Define Verts for Bulb Icon
+        for i in range(31):
+            __bulbVerts.append((0.0, 0.05))
+            __bulbVerts.append((
+                0.5*scale*cos(radians(i*12)),
+                0.5*scale*sin(radians(i*12))+0.25*scale))
+            __bulbVerts.append((
+                0.5*scale*cos(radians((i+1)*12)),
+                0.5*scale*sin(radians((i+1)*12))+0.25*scale))
+            __bulbVerts.append((0.0, 0.05))
 
-    # Draw Bulb with color
-    glColor3f(
-            bulbColor[0],
-            bulbColor[1],
-            bulbColor[2])
+        # Define verts for bulb screw base
+        scale *= 4.25
+        __bulbVerts.append((-0.05*scale, -0.05*scale))
+        __bulbVerts.append((+0.05*scale, -0.05*scale))
+        __bulbVerts.append((+0.05*scale, -0.07*scale))
+        __bulbVerts.append((-0.05*scale, -0.07*scale))
 
-    glBegin(GL_TRIANGLE_FAN)
-    glVertex2f(0.0, 0.05)
-    for i in range(73):
-        glVertex2f(
-                0.5*scale*cos(radians(i*5)),
-                0.5*scale*sin(radians(i*5))+0.25*scale
-                )
-    glEnd()
+        __bulbVerts.append((+0.05*scale, -0.05*scale))
+        __bulbVerts.append((-0.05*scale, -0.07*scale))
+        __bulbVerts.append((-0.05*scale, -0.09*scale))
+        __bulbVerts.append((+0.05*scale, -0.07*scale))
 
-    glColor3f(
-            lineColor[0],
-            lineColor[1],
-            lineColor[2])
+        __bulbVerts.append((+0.05*scale, -0.08*scale))
+        __bulbVerts.append((-0.05*scale, -0.10*scale))
+        __bulbVerts.append((-0.05*scale, -0.12*scale))
+        __bulbVerts.append((+0.05*scale, -0.10*scale))
 
-    glBegin(GL_LINE_STRIP)
-    for i in range(73):
-        glVertex2f(
-                0.5*scale*cos(radians(i*5)),
-                0.5*scale*sin(radians(i*5))+0.25*scale
-                )
-    glEnd()
+        __bulbVerts.append((+0.05*scale, -0.11*scale))
+        __bulbVerts.append((-0.05*scale, -0.13*scale))
+        __bulbVerts.append((-0.05*scale, -0.15*scale))
+        __bulbVerts.append((+0.05*scale, -0.13*scale))
 
-    scale *= 4.25
+        __bulbVerts.append((+0.05*scale, -0.14*scale))
+        __bulbVerts.append((-0.05*scale, -0.16*scale))
+        __bulbVerts.append((-0.03*scale, -0.18*scale))
+        __bulbVerts.append((+0.03*scale, -0.18*scale))
+        scale /= 4.25
 
-    glBegin(GL_QUADS)
-    glVertex2f(-0.05*scale, -0.05*scale)
-    glVertex2f( 0.05*scale, -0.05*scale)
-    glVertex2f( 0.05*scale, -0.07*scale)
-    glVertex2f(-0.05*scale, -0.07*scale)
+    if (not __bulbColrs) or (__curBlbClr != __prvClkColr):
+        __prvBlbClr = __curBlbClr
+        __bulbColrs = []
+        for i in range(31):
+            __bulbColrs.append(faceColor)
+            __bulbColrs.append(faceColor)
+            __bulbColrs.append(faceColor)
+            __bulbColrs.append(faceColor)
 
-    glVertex2f( 0.05*scale, -0.05*scale)
-    glVertex2f(-0.05*scale, -0.07*scale)
-    glVertex2f(-0.05*scale, -0.09*scale)
-    glVertex2f( 0.05*scale, -0.07*scale)
+        for i in range(31):
+            __bulbColrs.append(bulbColor)
+            __bulbColrs.append(bulbColor)
+            __bulbColrs.append(bulbColor)
+            __bulbColrs.append(bulbColor)
 
-    glVertex2f( 0.05*scale, -0.08*scale)
-    glVertex2f(-0.05*scale, -0.10*scale)
-    glVertex2f(-0.05*scale, -0.12*scale)
-    glVertex2f( 0.05*scale, -0.10*scale)
+        for i in range(20):
+            __bulbColrs.append(lineColor)
 
-    glVertex2f( 0.05*scale, -0.11*scale)
-    glVertex2f(-0.05*scale, -0.13*scale)
-    glVertex2f(-0.05*scale, -0.15*scale)
-    glVertex2f( 0.05*scale, -0.13*scale)
+    ptc = np.array(__bulbColrs, 'f').reshape(-1, 3)
+    pnt = np.array(__bulbVerts, 'f').reshape(-1, 2)
+    indices = np.arange(len(__bulbVerts))
+    glColorPointerf(ptc)
+    glVertexPointerf(pnt)
+    glDrawElementsui(GL_QUADS, indices)
 
-    glVertex2f( 0.05*scale, -0.14*scale)
-    glVertex2f(-0.05*scale, -0.16*scale)
-    glVertex2f(-0.03*scale, -0.18*scale)
-    glVertex2f( 0.03*scale, -0.18*scale)
-    glEnd()
+    # Define Verts for Bulb Button Outline
+    if (not __lineVerts):
+        for i in range(31):
+            __lineVerts.append((
+                scale*cos(radians(i*12)),
+                scale*sin(radians(i*12))
+                ))
+
+
+    # Define Outline Color for Bulb Button
+    if True: #(not __lineColrs):
+        __lineColrs = []
+        __lineColrs.append(bulbColor)
+        for i in range(10):
+            __lineColrs.append(bulbColor)
+            __lineColrs.append(bulbColor)
+            __lineColrs.append(bulbColor)
+
+    ptc = np.array(__lineColrs, 'f').reshape(-1,3)
+    pnt = np.array(__lineVerts, 'f').reshape(-1,2)
+    indices = np.arange(len(__lineVerts))
+    glColorPointerf( ptc )
+    glVertexPointerf( pnt )
+    glDrawElementsui(GL_LINE_STRIP, indices)
 
     glPopMatrix()
 
+__clockVerts = []
+__clockColrs = []
+__prvClkColr = []
 
 def drawClock(
         scale=1.0,      # Scale of the central clock button
@@ -106,6 +148,8 @@ def drawClock(
         handColor=(0.9, 0.9, 0.9),   # Color or the clock hands
         w2h=1.0):
 
+    global __clockVerts, __clockColrs, __prvClkColr
+
     glColor3f(
             faceColor[0],
             faceColor[1],
@@ -113,25 +157,28 @@ def drawClock(
 
     glPushMatrix()
     if w2h <= 1.0:
-        glScalef(w2h, w2h, 1)
+        glScalef(w2h*scale, w2h*scale, 1)
         glLineWidth(w2h*3.0)
         squash = w2h
     else:
-        glScalef(1, 1, 1)
+        glScalef(scale, scale, 1)
         glLineWidth(pow(1/w2h, 0.5)*3.0)
         squash = 1.0
 
-    #if w2h <= 1.0:
-    #else:
+    if (not __prvClkColr) or (faceColor != __prvClkColr):
+        __prvClkColr = faceColor
+        __clockColrs = np.array([faceColor for i in range(74)], 'f').reshape(-1, 3)
 
-    glBegin(GL_TRIANGLE_FAN)
-    glVertex2f(0.0, 0.0)
-    for i in range(73):
-        glVertex2f(
-                0.5*cos(radians(i*5)),
-                0.5*sin(radians(i*5))
-                )
-    glEnd()
+    if (not __clockVerts):
+        __clockVerts.append((0, 0))
+        for i in range(73):
+            __clockVerts.append((0.5*cos(radians(i*5)), 0.5*sin(radians(i*5))))
+
+    pnts = np.array(__clockVerts, 'f').reshape(-1, 2)
+    indices = np.arange(len(__clockVerts))
+    glColorPointerf( __clockColrs )
+    glVertexPointerf( pnts )
+    glDrawElementsui(GL_TRIANGLE_FAN, indices)
 
     glLoadIdentity()
     curHour = -(datetime.now().time().hour-12)*30+90
@@ -142,7 +189,7 @@ def drawClock(
     glVertex2f( squash*0.333*cos(radians(curScnd+curMint)), squash*0.333*sin(radians(curScnd+curMint)) )
     glVertex2f(0.0, 0.0)
 
-    glVertex2f( squash*0.25*cos(radians(curHour)), squash*0.25*sin(radians(curHour)) )
+    glVertex2f(squash*0.25*cos(radians(curHour)), squash*0.25*sin(radians(curHour)))
     glVertex2f(0.0, 0.0)
     glEnd()
 

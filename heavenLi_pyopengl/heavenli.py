@@ -4,6 +4,7 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 import sys, time
 from math import sin,cos,sqrt,pi,radians
+import os
 
 from drawArn import *
 from drawButtons import *
@@ -21,10 +22,16 @@ windowPosX = 0
 windowPosY = 0
 windowDimW = 300
 windowDimH = 300
+cursorX = 0
+cursorY = 0
 isFullScreen = False
 isAnimating = False
 wx = 0
 wy = 0
+colrSettingCursor = 0
+targetScreen = 0
+touchState = 0
+targetBulb = 0
 #demo = Lamp()
 
 def init():
@@ -46,7 +53,7 @@ def framerate():
     seconds = t - t0
     fps = frames/seconds
     if t - t0 >= 1.0:
-        print("%.0f frames in %3.1f seconds = %6.3f FPS" % (frames,seconds,fps))
+        #print("%.0f frames in %3.1f seconds = %6.3f FPS" % (frames,seconds,fps))
         t0 = t
         frames = 0
     if fps > 60:
@@ -70,41 +77,21 @@ def drawBackground(Light = 0 # Currently Selected Lamp, Space, or *
                  w2h,
                  lamps[Light].getBulbsRGB());
 
-        
-def mouseInteraction(button, state, mouseX, mouseY):
-    global lightOn
+prvState = touchState
+
+def drawHome():
+    global lamps, wx, wy, w2h, screen, touchState, lightOn, prvState, targetScreen, targetBulb, colrSettingCursor
+    iconSize = 0.15
 
     # We are at the home screen
-    if (screen == 0) and (state == 1):
-        wx = glutGet(GLUT_WINDOW_WIDTH)
-        wy = glutGet(GLUT_WINDOW_HEIGHT)
+    if (screen == 0) and (touchState != prvState):
+        #wx = glutGet(GLUT_WINDOW_WIDTH)
+        #wy = glutGet(GLUT_WINDOW_HEIGHT)
         dBias = min(wx, wy)/2
-        #if (1.0 >= pow((mouseX-wx/2), 2) / pow(dBias/2, 2) + pow(mouseY-wy/2, 2) / pow(dBias/2, 2)):
-        if watchPoint(mouseX, mouseY, wx, wy, dBias):
+        if watchPoint(wx, wy, dBias):
             lightOn = not lightOn
             for i in range(len(lamps)):
                 lamps[i].setMainLight(lightOn)
-    return 
-
-def watchPoint(mouseX, mouseY, px, py, pr):
-    if (1.0 >= pow((mouseX-px/2), 2) / pow(pr/2, 2) + pow((mouseY-py/2), 2) / pow(pr/2, 2)):
-        return True
-    else:
-        return False
-
-# Main screen drawing routine
-# Passed to glutDisplayFunc()
-# Called with glutPostRedisplay()
-def display():
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    glLoadIdentity()
-
-    glDisable(GL_LIGHTING)
-    drawBackground(0)
-    #drawClock(1.0, (0.3, 0.3, 0.3), (0.95, 0.95, 0.95), w2h)
-    drawClock(w2h=w2h)
-
-    iconSize = 0.15
 
     # Draw circularly arranged bulb buttons
     if lamps[0].getArn() == 0:
@@ -113,10 +100,25 @@ def display():
             tmx = 0.75*cos(radians(+i*360/tmn - 90 + lamps[0].getAngle() + 180/tmn))
             tmy = 0.75*sin(radians(+i*360/tmn - 90 + lamps[0].getAngle() + 180/tmn))
             if w2h >= 1:
-                tmx *= w2h
+                tmx *= pow(w2h, 0.5)
             else:
-                tmy /= w2h
-            drawBulbButton(gx=tmx, gy=tmy, scale=iconSize*1.05, bulbColor=lamps[0].getBulbRGB(i), w2h=w2h)
+                tmy /= pow(w2h, 0.5)
+            drawBulbButton(
+                    gx=tmx, 
+                    gy=tmy, 
+                    scale=iconSize*2.66,
+                    bulbColor=lamps[0].getBulbRGB(i), 
+                    w2h=w2h)
+            if (screen == 0) and (touchState != prvState):
+                if (watchPoint(
+                    mapRanges(tmx, -1.0*w2h, 1.0*w2h, 0, wx*2), 
+                    mapRanges(tmy, 1.0, -1.0, 0, wy*2),
+                    min(wx, wy)*0.5*0.3)):
+                    #drawSettingColor(colrSettingCursor, 0, i)
+                    targetScreen = 1
+                    targetBulb = i
+
+    # Draw Linearly arranged bulb buttons
     elif lamps[0].getArn() == 1:
         tmn = lamps[0].getNumBulbs()
         for i in range(tmn):
@@ -126,18 +128,24 @@ def display():
             tmx = 0.75*cos(ang)
             tmy = 0.75*sin(ang)
             if w2h >= 1:
-                tmx *= w2h
+                tmx *= pow(w2h, 0.5)
             else:
-                tmy /= w2h
-            drawBulbButton(gx=tmx, gy=tmy, scale=iconSize*1.05, bulbColor=lamps[0].getBulbRGB(tmn-i-1), w2h=w2h)
-    #drawHomeCircle(0, 0, 1, 1, nz, angB, 0, w2h)
-    #drawHomeLin(0, 0, 
-            #1.0, 1.0, 
-            #lamps[0].getNumBulbs(), lamps[0].getAngle(), 
-            #0, w2h, lamps[0].getBulbsRGB())
-    #drawCornerMarkers()
-    for i in range(len(lamps)):
-        lamps[i].updateBulbs(1.0/fps)
+                tmy /= pow(w2h, 0.5)
+            drawBulbButton(
+                    gx=tmx, 
+                    gy=tmy, 
+                    scale=iconSize*2.66,
+                    bulbColor=lamps[0].getBulbRGB(tmn-i-1), 
+                    w2h=w2h)
+            if (screen == 0) and (touchState != prvState):
+                if (watchPoint(
+                    mapRanges(tmx, -1.0*w2h, 1.0*w2h, 0, wx*2), 
+                    mapRanges(tmy, 1.0, -1.0, 0, wy*2),
+                    min(wx, wy)*0.5*0.3)):
+                    #drawSettingColor(colrSettingCursor, 0, i)
+                    targetScreen = 1
+                    targetBulb = i
+
     drawIconCircle(0.75, 0.75, 
             iconSize, iconSize, 
             lamps[0].getNumBulbs(), lamps[0].getAngle(), 
@@ -146,6 +154,148 @@ def display():
             iconSize*0.875, iconSize*0.875, 
             lamps[0].getNumBulbs(), lamps[0].getAngle(), 
             w2h, lamps[0].getBulbsRGB())
+
+
+def watchPoint(px, py, pr):
+    global cursorX, cursorY, touchState, prvState
+    if (1.0 >= pow((cursorX-px/2), 2) / pow(pr/2, 2) + pow((cursorY-py/2), 2) / pow(pr/2, 2)):
+        #os.system('cls' if os.name == 'nt' else "printf '\033c'")
+        #print("cursorX: {}, cursorY: {}, px: {:.3f}, py: {:.3f}, pr: {:.3f}, touchState: {}".format(cursorX, cursorY, px, py, pr, touchState))
+        if prvState == 0:
+            prvState = touchState
+            return True
+        else:
+            prvState = touchState
+            return False
+
+def animCurve(c):
+    return -2.25*pow(float(c)/(1.5), 2) + 1.0
+
+def animCurveBounce(c):
+    if (c >= 1.0):
+        return 0
+    else:
+        return -3.0*pow((float(c)-(0.14167))/(1.5), 2)+1.02675926
+
+def mousePassive(mouseX, mouseY):
+    global cursorX, cursorY
+    cursorX = mouseX
+    cursorY = mouseY
+        
+def mouseInteraction(button, state, mouseX, mouseY):
+    global lightOn, lamps, cursorX, cursorY, wx, wy, touchState, prvState
+    cursorX = mouseX
+    cursorY = mouseY
+    if (touchState == 1) and (state != 1) and (prvState == 1):
+        #glutPostRedisplay()
+        #touchState = not touchState
+        prvState = not touchState
+        return
+    elif (touchState == 0) and (state != 0) and (prvState == 0):
+        #glutPostRedisplay()
+        touchState = not touchState
+        prvState = not touchState
+        return
+        
+def drawSettingColor(cursor, targetLamp, targetBulb):
+    acbic = animCurveBounce(1.0-cursor)
+    acic = animCurve(1.0-cursor)
+    acbc = animCurveBounce(cursor)
+    acc = animCurve(cursor)
+    #cmx = (width >= height ? mx : cx/4)
+    global wx, wy
+    cmx = 0.15
+    tm04 = 0.04
+    tm05 = 0.05
+    tm06 = 0.06
+    tm08 = 0.08
+    tm10 = 0.1
+    tm13 = 0.13
+    tm15 = 0.15
+    tm17 = 0.17
+    tm20 = 0.2
+    tm23 = 0.23
+    tm37 = 0.37
+    tm30 = 0.3
+    tm40 = 0.4
+    tm50 = 0.5
+    tm70 = 0.7
+    if (cursor != 0.0) and (cursor != 1.0):
+        pass
+
+    iconSize = 0.15
+    # Draw circularly arranged bulb buttons
+    if lamps[0].getArn() == 0:
+        tmn = lamps[0].getNumBulbs()
+        for i in range(tmn):
+            tmx = 0.75*cos(radians(+i*360/tmn - 90 + lamps[0].getAngle() + 180/tmn))
+            tmy = 0.75*sin(radians(+i*360/tmn - 90 + lamps[0].getAngle() + 180/tmn))
+            if w2h >= 1:
+                tmx *= pow(w2h, 0.5)
+            else:
+                tmy /= pow(w2h, 0.5)
+            drawBulbButton(
+                    gx=tmx, 
+                    gy=tmy, 
+                    scale=iconSize*2.66*pow(acc, 4), 
+                    bulbColor=lamps[0].getBulbRGB(i), 
+                    w2h=w2h)
+
+    # Draw Linearly arranged bulb buttons
+    elif lamps[0].getArn() == 1:
+        tmn = lamps[0].getNumBulbs()
+        for i in range(tmn):
+            ang = radians(+i*180/constrain(tmn-1, 1, 5) + lamps[0].getAngle() + 180)
+            if tmn == 1:
+                ang -= 0.5*3.14159265
+            tmx = 0.75*cos(ang)
+            tmy = 0.75*sin(ang)
+            if w2h >= 1:
+                tmx *= pow(w2h, 0.5)
+            else:
+                tmy /= pow(w2h, 0.5)
+            drawBulbButton(
+                    gx=tmx, 
+                    gy=tmy, 
+                    scale=iconSize*2.66*pow(acc, 4),
+                    bulbColor=lamps[0].getBulbRGB(tmn-i-1), 
+                    w2h=w2h)
+            
+    drawClock(
+            scale=acic*1.4, 
+            w2h=w2h, 
+            handColor=(0.9*acc, 0.9*acc, 0.9*acc), 
+            faceColor=(0.3*acc, 0.3*acc, 0.3*acc))
+    #isPro = isProfile()
+
+# Main screen drawing routine
+# Passed to glutDisplayFunc()
+# Called with glutPostRedisplay()
+def display():
+    global colrSettingCursor, targetScreen, targetBulb, fps
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    glLoadIdentity()
+
+    glDisable(GL_LIGHTING)
+    drawBackground(0)
+    #drawClock(1.0, (0.3, 0.3, 0.3), (0.95, 0.95, 0.95), w2h)
+    drawClock(w2h=w2h)
+
+    if (targetScreen == 0):
+        if (colrSettingCursor > 0):
+            colrSettingCursor = constrain(colrSettingCursor-3/fps, 0, 1)
+            #drawSettingColor(colrSettingCursor, targetLamp, targetBulb)
+        if (targetScreen == 0) and (colrSettingCursor == 0):
+            drawHome()
+
+    elif (targetScreen == 1):
+        if (colrSettingCursor < 1):
+            colrSettingCursor = constrain(colrSettingCursor+3/fps, 0, 1)
+        drawSettingColor(colrSettingCursor, 0, targetBulb)
+
+    for i in range(len(lamps)):
+        lamps[i].updateBulbs(1.0/fps)
+
     glFlush()
     glutSwapBuffers()
 
@@ -245,6 +395,7 @@ if __name__ == '__main__':
 
     glutCreateWindow("HeavenLi")
     glutMouseFunc(mouseInteraction)
+    glutPassiveMotionFunc(mousePassive)
     glEnable(GL_LINE_SMOOTH)
 
     init()
