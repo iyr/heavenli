@@ -5,7 +5,9 @@ from OpenGL.GLUT import *
 import sys, time
 from math import sin,cos,sqrt,pi,radians
 import os
+import colorsys
 
+from animUtils import *
 from drawArn import *
 from drawButtons import *
 from drawUtils import *
@@ -102,7 +104,8 @@ def drawHome():
             if w2h >= 1:
                 tmx *= pow(w2h, 0.5)
             else:
-                tmy /= pow(w2h, 0.5)
+                tmx *= w2h
+                tmy *= pow(w2h, 0.5)
             drawBulbButton(
                     gx=tmx, 
                     gy=tmy, 
@@ -114,7 +117,6 @@ def drawHome():
                     mapRanges(tmx, -1.0*w2h, 1.0*w2h, 0, wx*2), 
                     mapRanges(tmy, 1.0, -1.0, 0, wy*2),
                     min(wx, wy)*0.5*0.3)):
-                    #drawSettingColor(colrSettingCursor, 0, i)
                     targetScreen = 1
                     targetBulb = i
 
@@ -122,7 +124,7 @@ def drawHome():
     elif lamps[0].getArn() == 1:
         tmn = lamps[0].getNumBulbs()
         for i in range(tmn):
-            ang = radians(+i*180/constrain(tmn-1, 1, 5) + lamps[0].getAngle() + 180)
+            ang = radians(+i*180/constrain(tmn-1, 1, 5) + lamps[0].getAngle())
             if tmn == 1:
                 ang -= 0.5*3.14159265
             tmx = 0.75*cos(ang)
@@ -130,19 +132,27 @@ def drawHome():
             if w2h >= 1:
                 tmx *= pow(w2h, 0.5)
             else:
-                tmy /= pow(w2h, 0.5)
+                tmx *= w2h
+                tmy *= pow(w2h, 0.5)
             drawBulbButton(
                     gx=tmx, 
                     gy=tmy, 
                     scale=iconSize*2.66,
-                    bulbColor=lamps[0].getBulbRGB(tmn-i-1), 
+                    #bulbColor=lamps[0].getBulbRGB(tmn-i-1), 
+                    bulbColor=lamps[0].getBulbRGB(i), 
                     w2h=w2h)
             if (screen == 0) and (touchState != prvState):
+                tmx = 0.75*cos(-ang)
+                tmy = 0.75*sin(-ang)
+                if w2h >= 1:
+                    tmx *= pow(w2h, 0.5)
+                else:
+                    tmx *= w2h
+                    tmy *= pow(w2h, 0.5)
                 if (watchPoint(
                     mapRanges(tmx, -1.0*w2h, 1.0*w2h, 0, wx*2), 
-                    mapRanges(tmy, 1.0, -1.0, 0, wy*2),
+                    mapRanges(tmy, -1.0, 1.0, 0, wy*2),
                     min(wx, wy)*0.5*0.3)):
-                    #drawSettingColor(colrSettingCursor, 0, i)
                     targetScreen = 1
                     targetBulb = i
 
@@ -155,55 +165,27 @@ def drawHome():
             lamps[0].getNumBulbs(), lamps[0].getAngle(), 
             w2h, lamps[0].getBulbsRGB())
 
-
-def watchPoint(px, py, pr):
-    global cursorX, cursorY, touchState, prvState
-    if (1.0 >= pow((cursorX-px/2), 2) / pow(pr/2, 2) + pow((cursorY-py/2), 2) / pow(pr/2, 2)):
-        #os.system('cls' if os.name == 'nt' else "printf '\033c'")
-        #print("cursorX: {}, cursorY: {}, px: {:.3f}, py: {:.3f}, pr: {:.3f}, touchState: {}".format(cursorX, cursorY, px, py, pr, touchState))
-        if prvState == 0:
-            prvState = touchState
-            return True
-        else:
-            prvState = touchState
-            return False
-
-def animCurve(c):
-    return -2.25*pow(float(c)/(1.5), 2) + 1.0
-
-def animCurveBounce(c):
-    if (c >= 1.0):
-        return 0
-    else:
-        return -3.0*pow((float(c)-(0.14167))/(1.5), 2)+1.02675926
-
-def mousePassive(mouseX, mouseY):
-    global cursorX, cursorY
-    cursorX = mouseX
-    cursorY = mouseY
+__bulbsCurrentHSB = []
+__pickerVerts = []
+__pickerColrs = []
+currentHue = 0
+currentBri = 0
+currentSat = 0
+wereColorsTouched = False
         
-def mouseInteraction(button, state, mouseX, mouseY):
-    global lightOn, lamps, cursorX, cursorY, wx, wy, touchState, prvState
-    cursorX = mouseX
-    cursorY = mouseY
-    if (touchState == 1) and (state != 1) and (prvState == 1):
-        #glutPostRedisplay()
-        #touchState = not touchState
-        prvState = not touchState
-        return
-    elif (touchState == 0) and (state != 0) and (prvState == 0):
-        #glutPostRedisplay()
-        touchState = not touchState
-        prvState = not touchState
-        return
-        
-def drawSettingColor(cursor, targetLamp, targetBulb):
+def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
+    global currentBri, currentSat, currentHue
+    tmc = targetLamp.getBulbRGB(targetBulb)
+    tmc = colorsys.rgb_to_hsv(tmc[0], tmc[1], tmc[2])
+    currentBri = tmc[2]
+    currentSat = tmc[1]
+    #currentHue = tmc[0]
     acbic = animCurveBounce(1.0-cursor)
     acic = animCurve(1.0-cursor)
     acbc = animCurveBounce(cursor)
     acc = animCurve(cursor)
     #cmx = (width >= height ? mx : cx/4)
-    global wx, wy
+    #global wx, wy, __bulbsCurrentHSB
     cmx = 0.15
     tm04 = 0.04
     tm05 = 0.05
@@ -220,16 +202,17 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
     tm40 = 0.4
     tm50 = 0.5
     tm70 = 0.7
+
     if (cursor != 0.0) and (cursor != 1.0):
         pass
 
     iconSize = 0.15
     # Draw circularly arranged bulb buttons
-    if lamps[0].getArn() == 0:
-        tmn = lamps[0].getNumBulbs()
+    if targetLamp.getArn() == 0:
+        tmn = targetLamp.getNumBulbs()
         for i in range(tmn):
-            tmx = 0.75*cos(radians(+i*360/tmn - 90 + lamps[0].getAngle() + 180/tmn))
-            tmy = 0.75*sin(radians(+i*360/tmn - 90 + lamps[0].getAngle() + 180/tmn))
+            tmx = 0.75*cos(radians(+i*360/tmn - 90 + targetLamp.getAngle() + 180/tmn))
+            tmy = 0.75*sin(radians(+i*360/tmn - 90 + targetLamp.getAngle() + 180/tmn))
             if w2h >= 1:
                 tmx *= pow(w2h, 0.5)
             else:
@@ -238,14 +221,14 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
                     gx=tmx, 
                     gy=tmy, 
                     scale=iconSize*2.66*pow(acc, 4), 
-                    bulbColor=lamps[0].getBulbRGB(i), 
+                    bulbColor=targetLamp.getBulbRGB(i), 
                     w2h=w2h)
 
     # Draw Linearly arranged bulb buttons
-    elif lamps[0].getArn() == 1:
-        tmn = lamps[0].getNumBulbs()
+    elif targetLamp.getArn() == 1:
+        tmn = targetLamp.getNumBulbs()
         for i in range(tmn):
-            ang = radians(+i*180/constrain(tmn-1, 1, 5) + lamps[0].getAngle() + 180)
+            ang = radians(+i*180/constrain(tmn-1, 1, 5) + targetLamp.getAngle())
             if tmn == 1:
                 ang -= 0.5*3.14159265
             tmx = 0.75*cos(ang)
@@ -258,21 +241,119 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
                     gx=tmx, 
                     gy=tmy, 
                     scale=iconSize*2.66*pow(acc, 4),
-                    bulbColor=lamps[0].getBulbRGB(tmn-i-1), 
+                    bulbColor=targetLamp.getBulbRGB(i), 
                     w2h=w2h)
             
     drawClock(
-            scale=acic*1.4, 
+            scale=acic*1.7, 
             w2h=w2h, 
             handColor=(0.9*acc, 0.9*acc, 0.9*acc), 
             faceColor=(0.3*acc, 0.3*acc, 0.3*acc))
+
+    glPushMatrix()
+    glScalef(acbic, acbic, 1)
+    # Draw Ring of Dots with different hues
+    tmr = 0.15
+    if w2h <= 1.0:
+        tmr *= w2h
+    for i in range(12):
+        ang = i*(360/12)+90
+        tmx = cos(radians(ang))*0.67#*acbic
+        tmy = sin(radians(ang))*0.67#*acbic
+        if w2h <= 1.0:
+            tmx *= w2h
+            tmy *= w2h
+        #tmc = colorsys.hsv_to_rgb(currentHue, acic, 1)
+        tmc = colorsys.hsv_to_rgb(i/12, acic, 1)
+        glColor3f(tmc[0], tmc[1], tmc[2])
+        glBegin(GL_TRIANGLE_STRIP)
+        for j in range(31):
+            ttmx = tmx+cos(radians(j*12))*tmr
+            ttmy = tmy+sin(radians(j*12))*tmr
+            glVertex2f(tmx, tmy)
+            glVertex2f(ttmx, ttmy)
+        glEnd()
+        if (watchPoint(
+            mapRanges(tmx, -1.0*w2h, 1.0*w2h, 0, wx*2),
+            mapRanges(tmy, 1.0, -1.0, 0, wy*2),
+            min(wx, wy)*tmr+0.05)):
+            wereColorsTouched = True
+            targetLamp.setBulbRGB(targetBulb, tmc)
+            currentHue = i/12.0
+
+    # Draw Triangle of Dots with different brightness/saturation
+    tmr = 0.05
+    if w2h <= 1.0:
+        tmr *= w2h
+    for i in range(6):
+        for j in range(6-i):
+            tmx = -0.23+(i*0.13)
+            tmy = +0.37-(i*0.075+j*0.15)
+            #if (j == currentBri) and (i == currentSat):
+                #if wereColorsTouched == True:
+            tmc = colorsys.hsv_to_rgb(currentHue, i/6.0, 1-j/5.0)
+            glColor3f(tmc[0], tmc[1], tmc[2])
+            glBegin(GL_TRIANGLE_STRIP)
+            for k in range(31):
+                ttmx = tmx+cos(radians(k*12))*tmr
+                ttmy = tmy+sin(radians(k*12))*tmr
+                glVertex2f(tmx, tmy)
+                glVertex2f(ttmx, ttmy)
+            glEnd()
+            if (watchPoint(
+                mapRanges(tmx, -1.0*w2h, 1.0*w2h, 0, wx*2),
+                mapRanges(tmy, 1.0, -1.0, 0, wy*2),
+                min(wx, wy)*0.5*(tmr+0.05))):
+                wereColorsTouched = True
+                targetLamp.setBulbRGB(targetBulb, tmc)
+                currentBri = j/6.0
+                currentSat = i/6.0
+
+    glPopMatrix()
     #isPro = isProfile()
+    
+def watchPoint(px, py, pr):
+    global cursorX, cursorY, touchState, prvState
+    if (1.0 >= pow((cursorX-px/2), 2) / pow(pr/2, 2) + pow((cursorY-py/2), 2) / pow(pr/2, 2)):
+        #os.system('cls' if os.name == 'nt' else "printf '\033c'")
+        #print("cursorX: {}, cursorY: {}, px: {:.3f}, py: {:.3f}, pr: {:.3f}, touchState: {}".format(cursorX, cursorY, px, py, pr, touchState))
+        if prvState == 0:
+            prvState = touchState
+            return True
+        else:
+            prvState = touchState
+            return False
+
+def mousePassive(mouseX, mouseY):
+    global cursorX, cursorY, touchState
+    if (touchState == 0):
+        cursorX = mouseX
+        cursorY = mouseY
+        
+def mouseInteraction(button, state, mouseX, mouseY):
+    global lightOn, lamps, cursorX, cursorY, wx, wy, touchState, prvState
+    # State = 0: button is depressed
+    # State = 1: button is released, high
+    print(state)
+    if (state == 0):
+        cursorX = mouseX
+        cursorY = mouseY
+    if (touchState == 1) and (state != 1) and (prvState == 1):
+        #glutPostRedisplay()
+        #touchState = not touchState
+        prvState = not touchState
+        return
+    elif (touchState == 0) and (state != 0) and (prvState == 0):
+        #glutPostRedisplay()
+        touchState = not touchState
+        prvState = not touchState
+        return
 
 # Main screen drawing routine
 # Passed to glutDisplayFunc()
 # Called with glutPostRedisplay()
 def display():
-    global colrSettingCursor, targetScreen, targetBulb, fps
+    global colrSettingCursor, targetScreen, targetBulb, fps, lamps
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
 
@@ -284,14 +365,14 @@ def display():
     if (targetScreen == 0):
         if (colrSettingCursor > 0):
             colrSettingCursor = constrain(colrSettingCursor-3/fps, 0, 1)
-            #drawSettingColor(colrSettingCursor, targetLamp, targetBulb)
+            drawSettingColor(colrSettingCursor, lamps[0], targetBulb, w2h)
         if (targetScreen == 0) and (colrSettingCursor == 0):
             drawHome()
 
     elif (targetScreen == 1):
         if (colrSettingCursor < 1):
             colrSettingCursor = constrain(colrSettingCursor+3/fps, 0, 1)
-        drawSettingColor(colrSettingCursor, 0, targetBulb)
+        drawSettingColor(colrSettingCursor, lamps[0], targetBulb, w2h)
 
     for i in range(len(lamps)):
         lamps[i].updateBulbs(1.0/fps)
@@ -331,12 +412,12 @@ def special(k, x, y):
             glutReshapeWindow(windowDimW, windowDimH)
             isFullScreen = False
 
-
     else:
         return
     glutPostRedisplay()
 
 def key(ch, x, y):
+    global targetScreen
     if ch == as_8_bit('q'):
         sys.exit(0)
     if ord(ch) == 27: # ESC
@@ -347,6 +428,9 @@ def key(ch, x, y):
             lamps[0].setArn(1)
         elif lamps[0].getArn() == 1:
             lamps[0].setArn(0)
+
+    if ch == as_8_bit('h'):
+        targetScreen = 0
 
     #if ch == as_8_bit('m'):
         #glutIconifyWindow()

@@ -306,9 +306,12 @@ def drawIconLinear(
         __prvIconLinearNZ = __curIconLinearNZ
         __iconBlbMkLVerts = []
         __iconBlbMkLColrs = []
+        if nz > 1:
+            yCoord = -2.05
+        else:
+            yCoord = 2.05
         for i in range(nz):
             xCoord = 1/(nz*2)-((nz*2-1)/(nz*2)) + (2*i)/nz
-            yCoord = 2.05
             for j in range(13):
                 __iconBlbMkLColrs.append((0.9, 0.9, 0.9))
                 __iconBlbMkLVerts.append((xCoord,  yCoord))
