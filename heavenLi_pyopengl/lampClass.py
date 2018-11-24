@@ -65,6 +65,12 @@ class Lamp:
                 self.bulbsCurrentHSV[n][2])
         return tmp
 
+    def getBulbtHSV(self, n):
+        return self.bulbsTargetHSV[n]
+
+    def getBulbHSV(self, n):
+        return self.bulbsCurrentHSV[n]
+
     def getBulbsRGB(self):
         tmp = []
         for i in range(self.numBulbs):

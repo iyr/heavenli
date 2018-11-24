@@ -119,6 +119,9 @@ def drawHome():
                     min(wx, wy)*0.5*0.3)):
                     targetScreen = 1
                     targetBulb = i
+                    prevHue = lamps[0].getBulbHSV(i)[0]
+                    prevSat = lamps[0].getBulbHSV(i)[1]
+                    prevBri = lamps[0].getBulbHSV(i)[2]
 
     # Draw Linearly arranged bulb buttons
     elif lamps[0].getArn() == 1:
@@ -155,6 +158,10 @@ def drawHome():
                     min(wx, wy)*0.5*0.3)):
                     targetScreen = 1
                     targetBulb = i
+                    prevHue = lamps[0].getBulbHSV(i)[0]
+                    prevSat = lamps[0].getBulbHSV(i)[1]
+                    prevBri = lamps[0].getBulbHSV(i)[2]
+
 
     drawIconCircle(0.75, 0.75, 
             iconSize, iconSize, 
@@ -170,16 +177,16 @@ __pickerVerts = []
 __pickerColrs = []
 currentHue = 0
 currentBri = 0
-currentSat = 0
+currentSat = 1
+prevHue = None
+prevBri = None
+prevSat = None
 wereColorsTouched = False
         
 def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
-    global currentBri, currentSat, currentHue
-    tmc = targetLamp.getBulbRGB(targetBulb)
-    tmc = colorsys.rgb_to_hsv(tmc[0], tmc[1], tmc[2])
-    currentBri = tmc[2]
-    currentSat = tmc[1]
-    #currentHue = tmc[0]
+    global currentBri, currentSat, currentHue, wereColorsTouched, __pickerVerts, __pickerColrs
+    tmcl = targetLamp.getBulbRGB(targetBulb)
+    tmc = colorsys.rgb_to_hsv(tmcl[0], tmcl[1], tmcl[2])
     acbic = animCurveBounce(1.0-cursor)
     acic = animCurve(1.0-cursor)
     acbc = animCurveBounce(cursor)
@@ -252,63 +259,132 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
 
     glPushMatrix()
     glScalef(acbic, acbic, 1)
+
     # Draw Ring of Dots with different hues
     tmr = 0.15
     if w2h <= 1.0:
         tmr *= w2h
     for i in range(12):
-        ang = i*(360/12)+90
+        tmf = i/12.0
+        #ang = i*(360/12)+90
+        ang = 360*tmf + 90
         tmx = cos(radians(ang))*0.67#*acbic
         tmy = sin(radians(ang))*0.67#*acbic
         if w2h <= 1.0:
             tmx *= w2h
             tmy *= w2h
         #tmc = colorsys.hsv_to_rgb(currentHue, acic, 1)
-        tmc = colorsys.hsv_to_rgb(i/12, acic, 1)
+        tmc = colorsys.hsv_to_rgb(tmf, acic, 1)
         glColor3f(tmc[0], tmc[1], tmc[2])
         glBegin(GL_TRIANGLE_STRIP)
-        for j in range(31):
-            ttmx = tmx+cos(radians(j*12))*tmr
-            ttmy = tmy+sin(radians(j*12))*tmr
+        for k in range(31):
+            ttmx = tmx+cos(radians(k*12))*tmr
+            ttmy = tmy+sin(radians(k*12))*tmr
             glVertex2f(tmx, tmy)
             glVertex2f(ttmx, ttmy)
         glEnd()
+        if (currentHue == tmf):
+            if (wereColorsTouched == True):
+                glColor3f(1.0, 1.0, 1.0)
+            else:
+                glColor3f(0.5, 0.5, 0.5)
+            glBegin(GL_LINE_STRIP)
+            for k in range(31):
+                ttmx = tmx+cos(radians(k*12))*tmr*1.1
+                ttmy = tmy+sin(radians(k*12))*tmr*1.1
+                glVertex2f(ttmx, ttmy)
+            glEnd()
+
         if (watchPoint(
             mapRanges(tmx, -1.0*w2h, 1.0*w2h, 0, wx*2),
             mapRanges(tmy, 1.0, -1.0, 0, wy*2),
             min(wx, wy)*tmr+0.05)):
             wereColorsTouched = True
+            currentHue = tmf
+            tmc = colorsys.hsv_to_rgb(tmf, currentSat, 1.0-currentBri)
             targetLamp.setBulbRGB(targetBulb, tmc)
-            currentHue = i/12.0
+            tmh = targetLamp.getBulbHSV(targetBulb)
+            __pickerColrs = []
+            #print("Caching Color Picker Vert Colors")
+            #print(currentHue, tmh[0])
+            for i in range(6):
+                for j in range(6-i):
+                    tmc = colorsys.hsv_to_rgb(currentHue, (i+1)/6.0 - 1/6.0, 1.0-(j)/5.0)
+                    for k in range(31):
+                        __pickerColrs.append(tmc)
+                        __pickerColrs.append(tmc)
+                        __pickerColrs.append(tmc)
+                        __pickerColrs.append(tmc)
 
     # Draw Triangle of Dots with different brightness/saturation
+    glPushMatrix()
     tmr = 0.05
     if w2h <= 1.0:
+        glScalef(w2h, w2h, 0)
         tmr *= w2h
+
+    if (not __pickerVerts):
+        #print("Caching Color Picker Vertices")
+        for i in range(6):
+            for j in range(6-i):
+                tmx = -0.23+(i*0.13)
+                tmy = +0.37-(i*0.075+j*0.15)
+                for k in range(31):
+                    __pickerVerts.append((tmx, tmy))
+                    __pickerVerts.append((tmx+cos(radians(k*12))*tmr,tmy+sin(radians(k*12))*tmr))
+                    __pickerVerts.append((tmx+cos(radians((k+1)*12))*tmr,tmy+sin(radians((k+1)*12))*tmr))
+                    __pickerVerts.append((tmx, tmy))
+
+    tmh = targetLamp.getBulbHSV(targetBulb)
+    if (not __pickerColrs):
+        __pickerColrs = []
+        #print("Caching Color Picker Vert Colors")
+        #print(currentHue, tmh[0])
+        for i in range(6):
+            for j in range(6-i):
+                tmc = colorsys.hsv_to_rgb(currentHue, (i+1)/6.0 - 1/6.0, 1.0-(j)/5.0)
+                for k in range(31):
+                    __pickerColrs.append(tmc)
+                    __pickerColrs.append(tmc)
+                    __pickerColrs.append(tmc)
+                    __pickerColrs.append(tmc)
+
     for i in range(6):
         for j in range(6-i):
             tmx = -0.23+(i*0.13)
             tmy = +0.37-(i*0.075+j*0.15)
-            #if (j == currentBri) and (i == currentSat):
-                #if wereColorsTouched == True:
-            tmc = colorsys.hsv_to_rgb(currentHue, i/6.0, 1-j/5.0)
-            glColor3f(tmc[0], tmc[1], tmc[2])
-            glBegin(GL_TRIANGLE_STRIP)
-            for k in range(31):
-                ttmx = tmx+cos(radians(k*12))*tmr
-                ttmy = tmy+sin(radians(k*12))*tmr
-                glVertex2f(tmx, tmy)
-                glVertex2f(ttmx, ttmy)
-            glEnd()
+            tmc = colorsys.hsv_to_rgb(currentHue, (i+1)/6.0 - 1/6.0, 1.0-(j)/5.0)
+
+            if (currentBri == (j)/5.0) and (currentSat == ((i+1)/6.0 - 1/6.0)):
+                if (wereColorsTouched == True):
+                    glColor3f(1.0, 1.0, 1.0)
+                else:
+                    glColor3f(0.5, 0.5, 0.5)
+
+                glBegin(GL_LINE_STRIP)
+                for k in range(31):
+                    ttmx = tmx+cos(radians(k*12))*tmr*1.1
+                    ttmy = tmy+sin(radians(k*12))*tmr*1.1
+                    glVertex2f(ttmx, ttmy)
+                glEnd()
             if (watchPoint(
                 mapRanges(tmx, -1.0*w2h, 1.0*w2h, 0, wx*2),
                 mapRanges(tmy, 1.0, -1.0, 0, wy*2),
-                min(wx, wy)*0.5*(tmr+0.05))):
+                min(wx, wy)*0.5*(tmr+0.1))):
                 wereColorsTouched = True
                 targetLamp.setBulbRGB(targetBulb, tmc)
-                currentBri = j/6.0
-                currentSat = i/6.0
+                currentBri = (j)/5.0
+                currentSat = (i+1)/6.0 - 1/6.0
+                #print("currentBri: {:.3f}, (j)/5.0: {:.3f}, currentSat: {:.3f}, i/6.0: {:.3f}".format(currentBri, (j)/5.0, currentSat, i/6.0))
 
+    ptc = np.array(__pickerColrs, 'f').reshape(-1, 3)
+    pnt = np.array(__pickerVerts, 'f').reshape(-1, 2)
+    indices = np.arange(len(__pickerVerts))
+    glColorPointerf(ptc)
+    glVertexPointerf(pnt)
+    glDrawElementsui(GL_QUADS, indices)
+
+    glPopMatrix()
     glPopMatrix()
     #isPro = isProfile()
     
@@ -332,9 +408,8 @@ def mousePassive(mouseX, mouseY):
         
 def mouseInteraction(button, state, mouseX, mouseY):
     global lightOn, lamps, cursorX, cursorY, wx, wy, touchState, prvState
-    # State = 0: button is depressed
+    # State = 0: button is depressed, low
     # State = 1: button is released, high
-    print(state)
     if (state == 0):
         cursorX = mouseX
         cursorY = mouseY
@@ -417,7 +492,7 @@ def special(k, x, y):
     glutPostRedisplay()
 
 def key(ch, x, y):
-    global targetScreen
+    global targetScreen, wereColorsTouched
     if ch == as_8_bit('q'):
         sys.exit(0)
     if ord(ch) == 27: # ESC
@@ -430,6 +505,7 @@ def key(ch, x, y):
             lamps[0].setArn(0)
 
     if ch == as_8_bit('h'):
+        wereColorsTouched = False
         targetScreen = 0
 
     #if ch == as_8_bit('m'):
