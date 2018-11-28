@@ -55,7 +55,7 @@ def framerate():
     seconds = t - t0
     fps = frames/seconds
     if t - t0 >= 1.0:
-        #print("%.0f frames in %3.1f seconds = %6.3f FPS" % (frames,seconds,fps))
+        print("%.0f frames in %3.1f seconds = %6.3f FPS" % (frames,seconds,fps))
         t0 = t
         frames = 0
     if fps > 60:
@@ -175,6 +175,9 @@ def drawHome():
 __bulbsCurrentHSB = []
 __pickerVerts = []
 __pickerColrs = []
+__ringVerts = []
+__ringColrs = []
+__ringPoints = []
 currentHue = 0
 currentBri = 0
 currentSat = 1
@@ -184,7 +187,7 @@ prevSat = None
 wereColorsTouched = False
         
 def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
-    global currentBri, currentSat, currentHue, wereColorsTouched, __pickerVerts, __pickerColrs
+    global currentBri, currentSat, currentHue, wereColorsTouched, __pickerVerts, __pickerColrs, __ringVerts, __ringColrs, __ringPoints
     tmcl = targetLamp.getBulbRGB(targetBulb)
     tmc = colorsys.rgb_to_hsv(tmcl[0], tmcl[1], tmcl[2])
     acbic = animCurveBounce(1.0-cursor)
@@ -258,43 +261,78 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
             faceColor=(0.3*acc, 0.3*acc, 0.3*acc))
 
     glPushMatrix()
-    glScalef(acbic, acbic, 1)
 
     # Draw Ring of Dots with different hues
     tmr = 0.15
     if w2h <= 1.0:
-        tmr *= w2h
+        glScalef(acbic*w2h, acbic*w2h, 1)
+    else:
+        glScalef(acbic, acbic, 1)
+
+    if (not __ringPoints):
+        for i in range(12):
+            tmf = i/12.0
+            ang = 360*tmf + 90
+            tmx = cos(radians(ang))*0.67#*acbic
+            tmy = sin(radians(ang))*0.67#*acbic
+            __ringPoints.append((tmx, tmy))
+
+    if (not __ringVerts):
+        for i in range(12):
+            tmx = __ringPoints[i][0]
+            tmy = __ringPoints[i][1]
+            if w2h <= 1.0:
+                tmx *= w2h
+                tmy *= w2h
+            for k in range(45):
+                __ringVerts.append((tmx, tmy))
+                __ringVerts.append((tmx+cos(radians(k*8))*tmr, tmy+sin(radians(k*8))*tmr))
+                __ringVerts.append((tmx+cos(radians((k+1)*8))*tmr, tmy+sin(radians((k+1)*8))*tmr))
+                __ringVerts.append((tmx, tmy))
+            print(len(__ringVerts))
+
+    #__ringColrs = []
     for i in range(12):
+        tmx = __ringPoints[i][0]
+        tmy = __ringPoints[i][1]
         tmf = i/12.0
-        #ang = i*(360/12)+90
-        ang = 360*tmf + 90
-        tmx = cos(radians(ang))*0.67#*acbic
-        tmy = sin(radians(ang))*0.67#*acbic
-        if w2h <= 1.0:
-            tmx *= w2h
-            tmy *= w2h
-        #tmc = colorsys.hsv_to_rgb(currentHue, acic, 1)
         tmc = colorsys.hsv_to_rgb(tmf, acic, 1)
-        glColor3f(tmc[0], tmc[1], tmc[2])
-        glBegin(GL_TRIANGLE_STRIP)
-        for k in range(31):
-            ttmx = tmx+cos(radians(k*12))*tmr
-            ttmy = tmy+sin(radians(k*12))*tmr
-            glVertex2f(tmx, tmy)
-            glVertex2f(ttmx, ttmy)
-        glEnd()
+        if (len(__ringColrs) != len(__ringVerts)):
+            for k in range(45):
+                __ringColrs.append((tmc[0], tmc[1], tmc[2]))
+                __ringColrs.append((tmc[0], tmc[1], tmc[2]))
+                __ringColrs.append((tmc[0], tmc[1], tmc[2]))
+                __ringColrs.append((tmc[0], tmc[1], tmc[2]))
+        else:
+            for k in range(45):
+                __ringColrs[i*180  +k  ] = (tmc[0], tmc[1], tmc[2])
+                __ringColrs[i*180  +k*2] = (tmc[0], tmc[1], tmc[2])
+                __ringColrs[i*180  +k*3] = (tmc[0], tmc[1], tmc[2])
+                __ringColrs[i*180  +k*4] = (tmc[0], tmc[1], tmc[2])
+                __ringColrs[i*180+1+k  ] = (tmc[0], tmc[1], tmc[2])
+                __ringColrs[i*180+1+k*2] = (tmc[0], tmc[1], tmc[2])
+                __ringColrs[i*180+1+k*3] = (tmc[0], tmc[1], tmc[2])
+                __ringColrs[i*180+1+k*4] = (tmc[0], tmc[1], tmc[2])
+                __ringColrs[i*180+2+k  ] = (tmc[0], tmc[1], tmc[2])
+                __ringColrs[i*180+2+k*2] = (tmc[0], tmc[1], tmc[2])
+                __ringColrs[i*180+2+k*3] = (tmc[0], tmc[1], tmc[2])
+                __ringColrs[i*180+2+k*4] = (tmc[0], tmc[1], tmc[2])
+                __ringColrs[i*180+3+k  ] = (tmc[0], tmc[1], tmc[2])
+                __ringColrs[i*180+3+k*2] = (tmc[0], tmc[1], tmc[2])
+                __ringColrs[i*180+3+k*3] = (tmc[0], tmc[1], tmc[2])
+                __ringColrs[i*180+3+k*4] = (tmc[0], tmc[1], tmc[2])
+
         if (currentHue == tmf):
             if (wereColorsTouched == True):
-                glColor3f(1.0, 1.0, 1.0)
+                glColor3f(1,1,1)
             else:
-                glColor3f(0.5, 0.5, 0.5)
+                glColor3f(0.5,0.5,0.5)
             glBegin(GL_LINE_STRIP)
-            for k in range(31):
-                ttmx = tmx+cos(radians(k*12))*tmr*1.1
-                ttmy = tmy+sin(radians(k*12))*tmr*1.1
+            for k in range(46):
+                ttmx = tmx+cos(radians(k*8))*tmr*1.1
+                ttmy = tmy+sin(radians(k*8))*tmr*1.1
                 glVertex2f(ttmx, ttmy)
             glEnd()
-
         if (watchPoint(
             mapRanges(tmx, -1.0*w2h, 1.0*w2h, 0, wx*2),
             mapRanges(tmy, 1.0, -1.0, 0, wy*2),
@@ -305,8 +343,6 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
             targetLamp.setBulbRGB(targetBulb, tmc)
             tmh = targetLamp.getBulbHSV(targetBulb)
             __pickerColrs = []
-            #print("Caching Color Picker Vert Colors")
-            #print(currentHue, tmh[0])
             for i in range(6):
                 for j in range(6-i):
                     tmc = colorsys.hsv_to_rgb(currentHue, (i+1)/6.0 - 1/6.0, 1.0-(j)/5.0)
@@ -315,13 +351,17 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
                         __pickerColrs.append(tmc)
                         __pickerColrs.append(tmc)
                         __pickerColrs.append(tmc)
+    
+    ptc = np.array(__ringColrs, 'f').reshape(-1, 3)
+    pnt = np.array(__ringVerts, 'f').reshape(-1, 2)
+    indices = np.arange(len(__ringVerts))
+    glColorPointerf(ptc)
+    glVertexPointerf(pnt)
+    glDrawElementsui(GL_QUADS, indices)
 
     # Draw Triangle of Dots with different brightness/saturation
     glPushMatrix()
     tmr = 0.05
-    if w2h <= 1.0:
-        glScalef(w2h, w2h, 0)
-        tmr *= w2h
 
     if (not __pickerVerts):
         #print("Caching Color Picker Vertices")
