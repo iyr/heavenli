@@ -288,8 +288,7 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
                 __ringVerts.append((tmx, tmy))
                 __ringVerts.append((tmx+cos(radians(k*8))*tmr, tmy+sin(radians(k*8))*tmr))
                 __ringVerts.append((tmx+cos(radians((k+1)*8))*tmr, tmy+sin(radians((k+1)*8))*tmr))
-                __ringVerts.append((tmx, tmy))
-            print(len(__ringVerts))
+                #__ringVerts.append((tmx, tmy))
 
     #__ringColrs = []
     for i in range(12):
@@ -302,25 +301,18 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
                 __ringColrs.append((tmc[0], tmc[1], tmc[2]))
                 __ringColrs.append((tmc[0], tmc[1], tmc[2]))
                 __ringColrs.append((tmc[0], tmc[1], tmc[2]))
-                __ringColrs.append((tmc[0], tmc[1], tmc[2]))
+                #__ringColrs.append((tmc[0], tmc[1], tmc[2]))
         else:
             for k in range(45):
-                __ringColrs[i*180  +k  ] = (tmc[0], tmc[1], tmc[2])
-                __ringColrs[i*180  +k*2] = (tmc[0], tmc[1], tmc[2])
-                __ringColrs[i*180  +k*3] = (tmc[0], tmc[1], tmc[2])
-                __ringColrs[i*180  +k*4] = (tmc[0], tmc[1], tmc[2])
-                __ringColrs[i*180+1+k  ] = (tmc[0], tmc[1], tmc[2])
-                __ringColrs[i*180+1+k*2] = (tmc[0], tmc[1], tmc[2])
-                __ringColrs[i*180+1+k*3] = (tmc[0], tmc[1], tmc[2])
-                __ringColrs[i*180+1+k*4] = (tmc[0], tmc[1], tmc[2])
-                __ringColrs[i*180+2+k  ] = (tmc[0], tmc[1], tmc[2])
-                __ringColrs[i*180+2+k*2] = (tmc[0], tmc[1], tmc[2])
-                __ringColrs[i*180+2+k*3] = (tmc[0], tmc[1], tmc[2])
-                __ringColrs[i*180+2+k*4] = (tmc[0], tmc[1], tmc[2])
-                __ringColrs[i*180+3+k  ] = (tmc[0], tmc[1], tmc[2])
-                __ringColrs[i*180+3+k*2] = (tmc[0], tmc[1], tmc[2])
-                __ringColrs[i*180+3+k*3] = (tmc[0], tmc[1], tmc[2])
-                __ringColrs[i*180+3+k*4] = (tmc[0], tmc[1], tmc[2])
+                __ringColrs[i*135  +k  ] = (tmc[0], tmc[1], tmc[2])
+                __ringColrs[i*135  +k*2] = (tmc[0], tmc[1], tmc[2])
+                __ringColrs[i*135  +k*3] = (tmc[0], tmc[1], tmc[2])
+                __ringColrs[i*135+1+k  ] = (tmc[0], tmc[1], tmc[2])
+                __ringColrs[i*135+1+k*2] = (tmc[0], tmc[1], tmc[2])
+                __ringColrs[i*135+1+k*3] = (tmc[0], tmc[1], tmc[2])
+                __ringColrs[i*135+2+k  ] = (tmc[0], tmc[1], tmc[2])
+                __ringColrs[i*135+2+k*2] = (tmc[0], tmc[1], tmc[2])
+                __ringColrs[i*135+2+k*3] = (tmc[0], tmc[1], tmc[2])
 
         if (currentHue == tmf):
             if (wereColorsTouched == True):
@@ -357,7 +349,7 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
     indices = np.arange(len(__ringVerts))
     glColorPointerf(ptc)
     glVertexPointerf(pnt)
-    glDrawElementsui(GL_QUADS, indices)
+    glDrawElementsui(GL_TRIANGLES, indices)
 
     # Draw Triangle of Dots with different brightness/saturation
     glPushMatrix()
@@ -373,10 +365,11 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
                     __pickerVerts.append((tmx, tmy))
                     __pickerVerts.append((tmx+cos(radians(k*12))*tmr,tmy+sin(radians(k*12))*tmr))
                     __pickerVerts.append((tmx+cos(radians((k+1)*12))*tmr,tmy+sin(radians((k+1)*12))*tmr))
-                    __pickerVerts.append((tmx, tmy))
+                    #__pickerVerts.append((tmx, tmy))
 
     tmh = targetLamp.getBulbHSV(targetBulb)
-    if (not __pickerColrs):
+    #if (not __pickerColrs):
+    if True:
         __pickerColrs = []
         #print("Caching Color Picker Vert Colors")
         #print(currentHue, tmh[0])
@@ -384,7 +377,6 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
             for j in range(6-i):
                 tmc = colorsys.hsv_to_rgb(currentHue, (i+1)/6.0 - 1/6.0, 1.0-(j)/5.0)
                 for k in range(31):
-                    __pickerColrs.append(tmc)
                     __pickerColrs.append(tmc)
                     __pickerColrs.append(tmc)
                     __pickerColrs.append(tmc)
@@ -422,7 +414,7 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
     indices = np.arange(len(__pickerVerts))
     glColorPointerf(ptc)
     glVertexPointerf(pnt)
-    glDrawElementsui(GL_QUADS, indices)
+    glDrawElementsui(GL_TRIANGLES, indices)
 
     glPopMatrix()
     glPopMatrix()
