@@ -40,51 +40,54 @@ def drawBulbButton(
         for i in range(31):
             __bulbVerts.append((0.0, 0.0))
             __bulbVerts.append((
-                scale*cos(radians(i*12)),
-                scale*sin(radians(i*12))))
+                0.4*cos(radians(i*12)),
+                0.4*sin(radians(i*12))))
             __bulbVerts.append((
-                scale*cos(radians((i+1)*12)),
-                scale*sin(radians((i+1)*12))))
-            __bulbVerts.append((0.0, 0.0))
+                0.4*cos(radians((i+1)*12)),
+                0.4*sin(radians((i+1)*12))))
 
         # Define Verts for Bulb Icon
         for i in range(31):
             __bulbVerts.append((0.0, 0.05))
             __bulbVerts.append((
-                0.5*scale*cos(radians(i*12)),
-                0.5*scale*sin(radians(i*12))+0.25*scale))
+                0.2*cos(radians(i*12)),
+                0.2*sin(radians(i*12))+0.1))
             __bulbVerts.append((
-                0.5*scale*cos(radians((i+1)*12)),
-                0.5*scale*sin(radians((i+1)*12))+0.25*scale))
-            __bulbVerts.append((0.0, 0.05))
+                0.2*cos(radians((i+1)*12)),
+                0.2*sin(radians((i+1)*12))+0.1))
 
         # Define verts for bulb screw base
-        scale *= 4.25
-        __bulbVerts.append((-0.05*scale, -0.05*scale))
-        __bulbVerts.append((+0.05*scale, -0.05*scale))
-        __bulbVerts.append((+0.05*scale, -0.07*scale))
-        __bulbVerts.append((-0.05*scale, -0.07*scale))
+        __bulbVerts.append((-0.085, -0.085))
+        __bulbVerts.append((+0.085, -0.085))
+        __bulbVerts.append((+0.085, -0.119))
+        __bulbVerts.append((-0.085, -0.085))
+        __bulbVerts.append((+0.085, -0.119))
+        __bulbVerts.append((-0.085, -0.119))
 
-        __bulbVerts.append((+0.05*scale, -0.05*scale))
-        __bulbVerts.append((-0.05*scale, -0.07*scale))
-        __bulbVerts.append((-0.05*scale, -0.09*scale))
-        __bulbVerts.append((+0.05*scale, -0.07*scale))
+        __bulbVerts.append((+0.085, -0.119))
+        __bulbVerts.append((-0.085, -0.119))
+        __bulbVerts.append((-0.085, -0.153))
 
-        __bulbVerts.append((+0.05*scale, -0.08*scale))
-        __bulbVerts.append((-0.05*scale, -0.10*scale))
-        __bulbVerts.append((-0.05*scale, -0.12*scale))
-        __bulbVerts.append((+0.05*scale, -0.10*scale))
+        __bulbVerts.append((+0.085, -0.136))
+        __bulbVerts.append((-0.085, -0.170))
+        __bulbVerts.append((-0.085, -0.204))
+        __bulbVerts.append((+0.085, -0.136))
+        __bulbVerts.append((+0.085, -0.170))
+        __bulbVerts.append((-0.085, -0.204))
 
-        __bulbVerts.append((+0.05*scale, -0.11*scale))
-        __bulbVerts.append((-0.05*scale, -0.13*scale))
-        __bulbVerts.append((-0.05*scale, -0.15*scale))
-        __bulbVerts.append((+0.05*scale, -0.13*scale))
+        __bulbVerts.append((+0.085, -0.187))
+        __bulbVerts.append((-0.085, -0.221))
+        __bulbVerts.append((-0.085, -0.255))
+        __bulbVerts.append((+0.085, -0.187))
+        __bulbVerts.append((+0.085, -0.221))
+        __bulbVerts.append((-0.085, -0.255))
 
-        __bulbVerts.append((+0.05*scale, -0.14*scale))
-        __bulbVerts.append((-0.05*scale, -0.16*scale))
-        __bulbVerts.append((-0.03*scale, -0.18*scale))
-        __bulbVerts.append((+0.03*scale, -0.18*scale))
-        scale /= 4.25
+        __bulbVerts.append((+0.085, -0.238))
+        __bulbVerts.append((-0.085, -0.272))
+        __bulbVerts.append((-0.051, -0.306))
+        __bulbVerts.append((+0.085, -0.238))
+        __bulbVerts.append((+0.051, -0.306))
+        __bulbVerts.append((-0.051, -0.306))
 
     if (not __bulbColrs) or (__curBlbClr != __prvClkColr):
         __prvBlbClr = __curBlbClr
@@ -93,15 +96,13 @@ def drawBulbButton(
             __bulbColrs.append(faceColor)
             __bulbColrs.append(faceColor)
             __bulbColrs.append(faceColor)
-            __bulbColrs.append(faceColor)
 
         for i in range(31):
             __bulbColrs.append(bulbColor)
             __bulbColrs.append(bulbColor)
             __bulbColrs.append(bulbColor)
-            __bulbColrs.append(bulbColor)
 
-        for i in range(20):
+        for i in range(27):
             __bulbColrs.append(lineColor)
 
     ptc = np.array(__bulbColrs, 'f').reshape(-1, 3)
@@ -109,7 +110,7 @@ def drawBulbButton(
     indices = np.arange(len(__bulbVerts))
     glColorPointerf(ptc)
     glVertexPointerf(pnt)
-    glDrawElementsui(GL_QUADS, indices)
+    glDrawElementsui(GL_TRIANGLES, indices)
 
     # Define Verts for Bulb Button Outline
     if (not __lineVerts):

@@ -58,8 +58,8 @@ def framerate():
         print("%.0f frames in %3.1f seconds = %6.3f FPS" % (frames,seconds,fps))
         t0 = t
         frames = 0
-    if fps > 60:
-        time.sleep(fps/10000.0)
+    #if fps > 60:
+        #time.sleep(fps/10000.0)
 
 def drawBackground(Light = 0 # Currently Selected Lamp, Space, or *
         ):
