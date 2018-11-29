@@ -37,22 +37,31 @@ def drawHomeLinear(
         __homeLinearVerts = []
         for i in range(nz):
             if i == 0:
-                __homeLinearVerts.append(( 2.0,  2.0))
+                __homeLinearVerts.append(( i*2/nz+2.0, -2.0))
                 __homeLinearVerts.append(( i*2/nz-2.0,  2.0))
                 __homeLinearVerts.append(( i*2/nz-2.0, -2.0))
-                __homeLinearVerts.append(( 2.0, -2.0))
+
+                __homeLinearVerts.append(( i*2/nz+2.0, -2.0))
+                __homeLinearVerts.append(( i*2/nz-2.0,  2.0))
+                __homeLinearVerts.append(( i*2/nz+2.0,  2.0))
 
             elif i == nz-1:
-                __homeLinearVerts.append(( 2.0,  2.0))
+                __homeLinearVerts.append(( i*2/nz+1.0, -2.0))
                 __homeLinearVerts.append(( i*2/nz-1.0,  2.0))
                 __homeLinearVerts.append(( i*2/nz-1.0, -2.0))
-                __homeLinearVerts.append(( 2.0, -2.0))
+
+                __homeLinearVerts.append(( i*2/nz+1.0, -2.0))
+                __homeLinearVerts.append(( i*2/nz-1.0,  2.0))
+                __homeLinearVerts.append(( i*2/nz+1.0,  2.0))
 
             else:
-                __homeLinearVerts.append(( 0.75,  2.0))
-                __homeLinearVerts.append(( i*2/nz-1.0, 2.0))
-                __homeLinearVerts.append(( i*2/nz-1.0,-2.0))
-                __homeLinearVerts.append(( 0.75, -2.0))
+                __homeLinearVerts.append(( i*2/nz+0.75, -2.0))
+                __homeLinearVerts.append(( i*2/nz-1.0,   2.0))
+                __homeLinearVerts.append(( i*2/nz-1.0,  -2.0))
+
+                __homeLinearVerts.append(( i*2/nz+0.75, -2.0))
+                __homeLinearVerts.append(( i*2/nz-1.0,   2.0))
+                __homeLinearVerts.append(( i*2/nz+1.0,   2.0))
 
 
     if (not __homeLinearColrs) or (__prvHomeLinearCols != __curHomeLinearCols):
@@ -60,6 +69,8 @@ def drawHomeLinear(
         __homeLinearColrs = []
         if nz > 1:
             for i in range(nz):
+                __homeLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
+                __homeLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                 __homeLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                 __homeLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                 __homeLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
@@ -72,7 +83,7 @@ def drawHomeLinear(
         indices = np.arange(len(__homeLinearVerts))
         glColorPointerf( ptc )
         glVertexPointerf( pnt )
-        glDrawElementsui(GL_QUADS, indices)
+        glDrawElementsui(GL_TRIANGLES, indices)
     else:
         drawHomeCircle(-gx, gy, dx*1.14285, dy*1.14285, nz, ao, w2h, colors)
 
@@ -129,7 +140,6 @@ def drawIconLinear(
                     __iconLinearVerts.append((
                             -0.75 + 0.25*cos(-radians((j+1)*7.5+90)), 
                             -1.5 + 0.5*sin(-radians((j+1)*7.5+90))))
-                    __iconLinearVerts.append((-0.74, -1.4))
 
                 # Rounded Corner
                 for j in range(13):
@@ -140,17 +150,22 @@ def drawIconLinear(
                     __iconLinearVerts.append((
                             -0.75 + 0.25*cos(radians((j+1)*7.5+90)), 
                             1.5 + 0.5*sin(radians((j+1)*7.5+90))))
-                    __iconLinearVerts.append((-0.74, 1.4))
     
                 __iconLinearVerts.append(( 0.50,  2.0))
                 __iconLinearVerts.append(( i*2/nz-0.75,  2.0))
                 __iconLinearVerts.append(( i*2/nz-0.75, -2.0))
-                __iconLinearVerts.append(( 0.50, -2.0))
+
+                __iconLinearVerts.append(( i*2/nz-0.75, -2.0))
+                __iconLinearVerts.append(( i*2/nz+0.75, -2.0))
+                __iconLinearVerts.append(( 0.50,  2.0))
 
                 __iconLinearVerts.append(( 0.01,  1.5))
                 __iconLinearVerts.append((-1.01,  1.5))
                 __iconLinearVerts.append((-1.01, -1.5))
+
+                __iconLinearVerts.append((-1.01, -1.5))
                 __iconLinearVerts.append(( 0.01, -1.5))
+                __iconLinearVerts.append(( 0.01,  1.5))
 
             # Special case to draw rounded corners for end slice
             elif i == nz-1:
@@ -163,7 +178,7 @@ def drawIconLinear(
                     __iconLinearVerts.append((
                         0.75 - 0.25*cos(-radians((j+1)*7.5+90)), 
                         -1.5 + 0.5*sin(-radians((j+1)*7.5+90))))
-                    __iconLinearVerts.append(( 0.74, -1.4))
+                    #__iconLinearVerts.append(( 0.74, -1.4))
                 # Rounded Corner
                 for j in range(13):
                     __iconLinearVerts.append(( 0.740, 1.4))
@@ -173,21 +188,32 @@ def drawIconLinear(
                     __iconLinearVerts.append((
                             0.75 - 0.25*cos(radians((j+1)*7.5+90)), 
                             1.5 + 0.5*sin(radians((j+1)*7.5+90))))
-                    __iconLinearVerts.append(( 0.740, 1.4))
+                    #__iconLinearVerts.append(( 0.740, 1.4))
 
                 __iconLinearVerts.append(( 0.75,  2.0))
                 __iconLinearVerts.append(( i*2/nz-1.0, 2.0))
                 __iconLinearVerts.append(( i*2/nz-1.0,-2.0))
-                __iconLinearVerts.append(( 0.75, -2.0))
+
+                __iconLinearVerts.append(( 0.75,  -2.0))
+                __iconLinearVerts.append(( 0.75,   2.0))
+                __iconLinearVerts.append(( i*2/nz-1.0, -2.0))
+
                 __iconLinearVerts.append(( 0.74,  1.5))
                 __iconLinearVerts.append(( 1.01,  1.5))
                 __iconLinearVerts.append(( 1.01, -1.5))
+
+                __iconLinearVerts.append(( 0.74,  1.5))
+                __iconLinearVerts.append(( 1.01, -1.5))
                 __iconLinearVerts.append(( 0.74, -1.5))
+
             else:
                 __iconLinearVerts.append(( 0.75,  2.0))
                 __iconLinearVerts.append(( i*2/nz-1.0, 2.0))
                 __iconLinearVerts.append(( i*2/nz-1.0,-2.0))
-                __iconLinearVerts.append(( 0.75, -2.0))
+
+                __iconLinearVerts.append(( 0.75,  2.0))
+                __iconLinearVerts.append(( i*0/nz+0.75, -2.0))
+                __iconLinearVerts.append(( i*2/nz-1.0, -2.0))
 
     # Update / Cache Colors
     if (not __iconLinearColrs) or (__prvIconLinearCols != __curIconLinearCols):
@@ -201,11 +227,9 @@ def drawIconLinear(
                     __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                     __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                     __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
-                    __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
 
                 # Rounded Corner
                 for j in range(13):
-                    __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                     __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                     __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                     __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
@@ -213,9 +237,15 @@ def drawIconLinear(
                 __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                 __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                 __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
+
+                __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
+                __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                 __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
 
                 __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
+                __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
+                __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
+
                 __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                 __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                 __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
@@ -227,10 +257,8 @@ def drawIconLinear(
                     __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                     __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                     __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
-                    __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                 # Rounded Corner
                 for j in range(13):
-                    __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                     __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                     __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                     __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
@@ -238,8 +266,15 @@ def drawIconLinear(
                 __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                 __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                 __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
+                
                 __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                 __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
+                __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
+                
+                __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
+                __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
+                __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
+
                 __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                 __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                 __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
@@ -247,14 +282,18 @@ def drawIconLinear(
                 __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                 __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
                 __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
+
                 __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
+                __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
+                __iconLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
+
 
     ptc = np.array(__iconLinearColrs, 'f').reshape(-1,3)
     pnt = np.array(__iconLinearVerts, 'f').reshape(-1,2)
     indices = np.arange(len(__iconLinearVerts))
     glColorPointerf( ptc )
     glVertexPointerf( pnt )
-    glDrawElementsui(GL_QUADS, indices)
+    glDrawElementsui(GL_TRIANGLES, indices)
 
     # START Draw Outline
     # Scale line thickness
@@ -319,15 +358,13 @@ def drawIconLinear(
                 __iconBlbMkLVerts.append((xCoord + 0.16*cos(radians(j*30)), yCoord + 0.32*sin(radians(j*30))))
                 __iconBlbMkLColrs.append((0.9, 0.9, 0.9))
                 __iconBlbMkLVerts.append((xCoord + 0.16*cos(radians((j+1)*30)), yCoord + 0.32*sin(radians((j+1)*30))))
-                __iconBlbMkLColrs.append((0.9, 0.9, 0.9))
-                __iconBlbMkLVerts.append((xCoord,  yCoord))
 
     ptc = np.array(__iconBlbMkLColrs, 'f').reshape(-1,3)
     pnt = np.array(__iconBlbMkLVerts, 'f').reshape(-1,2)
     indices = np.arange(len(__iconBlbMkLVerts))
     glColorPointerf( ptc )
     glVertexPointerf( pnt )
-    glDrawElementsui(GL_QUADS, indices)
+    glDrawElementsui(GL_TRIANGLES, indices)
     # END Draw Outline
 
     glPopMatrix()
@@ -515,8 +552,6 @@ def drawIconCircle(
                     xCoord + 0.16*cos(radians((j+1)*30)), 
                     yCoord + 0.16*sin(radians((j+1)*30))))
 
-                __iconBlbMkCVerts.append((xCoord, yCoord))
-
     if (not __iconBlbMkCColrs):
         __iconBlbMkCColrs = []
         for i in range(nz):
@@ -526,13 +561,12 @@ def drawIconCircle(
                 __iconBlbMkCColrs.append((0.9, 0.9, 0.9))
                 __iconBlbMkCColrs.append((0.9, 0.9, 0.9))
                 __iconBlbMkCColrs.append((0.9, 0.9, 0.9))
-                __iconBlbMkCColrs.append((0.9, 0.9, 0.9))
 
     pntcol = np.array(__iconBlbMkCColrs, 'f').reshape(-1, 3)
     points = np.array(__iconBlbMkCVerts, 'f').reshape(-1, 2)
     indices = np.arange(len(__iconBlbMkCVerts))
     glColorPointerf( pntcol )
     glVertexPointerf( points )
-    glDrawElementsui(GL_QUADS, indices)
+    glDrawElementsui(GL_TRIANGLES, indices)
 
     glPopMatrix()
