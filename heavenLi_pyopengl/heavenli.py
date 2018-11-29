@@ -496,7 +496,7 @@ def idle():
 # change view angle
 # Respond to user input from "special" keys
 def special(k, x, y):
-    global angB, nz, windowPosX, windowPosY, windowDimW, windowDimH, isFullScreen
+    global angB, nz, windowPosX, windowPosY, windowDimW, windowDimH, isFullScreen, targetScreen, targetBulb
 
     if k == GLUT_KEY_LEFT:
         lamps[0].setAngle(lamps[0].getAngle() + 5)
@@ -518,6 +518,12 @@ def special(k, x, y):
             glutPositionWindow(windowPosX, windowPosY)
             glutReshapeWindow(windowDimW, windowDimH)
             isFullScreen = False
+    elif k == GLUT_KEY_F1:
+        if targetScreen == 0:
+            targetScreen = 1
+            targetBulb = 0
+        elif targetScreen == 1:
+            targetScreen = 0
 
     else:
         return
