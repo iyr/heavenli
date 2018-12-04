@@ -43,6 +43,10 @@ class Lamp:
         self.bulbsTargetHSV = self.bulbsCurrentHSV.copy()
 
     def getAngle(self):
+        #if (self.numBulbs == 1) and (self.arn == 1):
+            #return self.angularOffset + 180
+        #else:
+            #return self.angularOffset
         return self.angularOffset
 
     def setAngle(self, ang):
@@ -50,6 +54,10 @@ class Lamp:
             ang -= 360
         if ang <= 0:
             ang += 360
+        #if (self.numBulbs == 1) and (self.arn == 1):
+            #self.angularOffset = ang + 180
+        #else:
+            #self.angularOffset = ang
         self.angularOffset = ang
 
     def getArn(self):

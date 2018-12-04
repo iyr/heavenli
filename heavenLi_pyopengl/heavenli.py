@@ -36,6 +36,7 @@ colrSettingCursor = 0
 targetScreen = 0
 touchState = 0
 targetBulb = 0
+frameLimit = False
 #demo = Lamp()
 
 def init():
@@ -60,8 +61,8 @@ def framerate():
         print("%.0f frames in %3.1f seconds = %6.3f FPS" % (frames,seconds,fps))
         t0 = t
         frames = 0
-    #if fps > 60:
-        #time.sleep(fps/10000.0)
+    if frameLimit and (fps > 60):
+        time.sleep(2*float(fps)/10000.0)
 
 def drawBackground(Light = 0 # Currently Selected Lamp, Space, or *
         ):
@@ -507,7 +508,7 @@ def idle():
 # change view angle
 # Respond to user input from "special" keys
 def special(k, x, y):
-    global angB, nz, windowPosX, windowPosY, windowDimW, windowDimH, isFullScreen, targetScreen, targetBulb
+    global angB, frameLimit, nz, windowPosX, windowPosY, windowDimW, windowDimH, isFullScreen, targetScreen, targetBulb
 
     if k == GLUT_KEY_LEFT:
         lamps[0].setAngle(lamps[0].getAngle() + 5)
@@ -535,6 +536,10 @@ def special(k, x, y):
             targetBulb = 0
         elif targetScreen == 1:
             targetScreen = 0
+    
+    if k == GLUT_KEY_F12:
+        frameLimit = not frameLimit
+        print("frameLimit is now {}".format("ON" if frameLimit else "OFF"))
 
     else:
         return
