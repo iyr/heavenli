@@ -1,5 +1,7 @@
 #! /usr/bin/env python
+import cProfile
 import OpenGL
+OpenGL.ERROR_CHECKING = False
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 import sys, time
@@ -83,6 +85,7 @@ prvState = touchState
 
 def drawHome():
     global lamps, wx, wy, w2h, screen, touchState, lightOn, prvState, targetScreen, targetBulb, colrSettingCursor
+
     iconSize = 0.15
 
     # We are at the home screen
@@ -162,15 +165,19 @@ def drawHome():
                     prevSat = lamps[0].getBulbHSV(i)[1]
                     prevBri = lamps[0].getBulbHSV(i)[2]
 
-
     drawIconCircle(0.75, 0.75, 
             iconSize, iconSize, 
             lamps[0].getNumBulbs(), lamps[0].getAngle(), 
             w2h, lamps[0].getBulbsRGB())
+
+    #cProfile.run('drawIconCircle(0.75, 0.75, 0.15, 0.15, lamps[0].getNumBulbs(), lamps[0].getAngle(), w2h, lamps[0].getBulbsRGB())')
+
     drawIconLinear(-0.75, -0.75, 
             iconSize*0.875, iconSize*0.875, 
             lamps[0].getNumBulbs(), lamps[0].getAngle(), 
             w2h, lamps[0].getBulbsRGB())
+
+    #cProfile.run('drawIconLinear(-0.75, -0.75, 0.15*0.875, 0.15*0.875, lamps[0].getNumBulbs(), lamps[0].getAngle(), w2h, lamps[0].getBulbsRGB())')
 
 __bulbsCurrentHSB = []
 __pickerVerts = []
@@ -465,13 +472,16 @@ def display():
     glLoadIdentity()
 
     glDisable(GL_LIGHTING)
+    #cProfile.run('drawBackground(0)')
     drawBackground(0)
     #drawClock(1.0, (0.3, 0.3, 0.3), (0.95, 0.95, 0.95), w2h)
+    #cProfile.run('drawClock(w2h=w2h)')
     drawClock(w2h=w2h)
 
     if (targetScreen == 0):
         if (colrSettingCursor > 0):
             colrSettingCursor = constrain(colrSettingCursor-3/fps, 0, 1)
+            #cProfile.run('drawSettingColor(colrSettingCursor, lamps[0], targetBulb, w2h)')
             drawSettingColor(colrSettingCursor, lamps[0], targetBulb, w2h)
         if (targetScreen == 0) and (colrSettingCursor == 0):
             drawHome()
@@ -479,6 +489,7 @@ def display():
     elif (targetScreen == 1):
         if (colrSettingCursor < 1):
             colrSettingCursor = constrain(colrSettingCursor+3/fps, 0, 1)
+        #cProfile.run('drawSettingColor(colrSettingCursor, lamps[0], targetBulb, w2h)')
         drawSettingColor(colrSettingCursor, lamps[0], targetBulb, w2h)
 
     for i in range(len(lamps)):

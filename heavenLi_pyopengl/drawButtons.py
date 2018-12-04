@@ -5,12 +5,14 @@ from math import sin,cos,sqrt,radians,hypot
 from datetime import datetime
 import numpy as np
 
-__bulbVerts = []
-__bulbColrs = []
+__bulbVerts = np.array([], 'f')
+__bulbColrs = np.array([], 'f')
+__bulbIndcs = np.array([], 'f')
 __prvBlbClr = []
 __curBlbClr = []
-__lineVerts = []
-__lineColrs = []
+__lineVerts = np.array([], 'f')
+__lineColrs = np.array([], 'f')
+__lineIndcs = np.array([], 'f')
 
 def drawBulbButton(
         gx=0.0,
@@ -21,7 +23,7 @@ def drawBulbButton(
         bulbColor=(0.5, 0.5, 0.5),
         w2h=1.0):
 
-    global __bulbVerts, __bulbColrs, __prvBlbClr, __curBlbClr, __lineVerts, __lineColrs
+    global __bulbVerts, __bulbColrs, __bulbIndcs, __prvBlbClr, __curBlbClr, __lineVerts, __lineColrs, __lineIndcs
 
     __curBlbClr = bulbColor
     glPushMatrix()
@@ -35,107 +37,117 @@ def drawBulbButton(
         glLineWidth(pow(1/w2h, 0.5)*3.0)
         squash = 1.0
 
-    if (not __bulbVerts):
+    if (__bulbVerts.size == 0):
+        tmp = []
         # Define Verts for button face
         for i in range(31):
-            __bulbVerts.append((0.0, 0.0))
-            __bulbVerts.append((
+            tmp.append((0.0, 0.0))
+            tmp.append((
                 0.4*cos(radians(i*12)),
                 0.4*sin(radians(i*12))))
-            __bulbVerts.append((
+            tmp.append((
                 0.4*cos(radians((i+1)*12)),
                 0.4*sin(radians((i+1)*12))))
 
         # Define Verts for Bulb Icon
         for i in range(31):
-            __bulbVerts.append((0.0, 0.05))
-            __bulbVerts.append((
+            tmp.append((0.0, 0.05))
+            tmp.append((
                 0.2*cos(radians(i*12)),
                 0.2*sin(radians(i*12))+0.1))
-            __bulbVerts.append((
+            tmp.append((
                 0.2*cos(radians((i+1)*12)),
                 0.2*sin(radians((i+1)*12))+0.1))
 
         # Define verts for bulb screw base
-        __bulbVerts.append((-0.085, -0.085))
-        __bulbVerts.append((+0.085, -0.085))
-        __bulbVerts.append((+0.085, -0.119))
-        __bulbVerts.append((-0.085, -0.085))
-        __bulbVerts.append((+0.085, -0.119))
-        __bulbVerts.append((-0.085, -0.119))
+        tmp.append((-0.085, -0.085))
+        tmp.append((+0.085, -0.085))
+        tmp.append((+0.085, -0.119))
+        tmp.append((-0.085, -0.085))
+        tmp.append((+0.085, -0.119))
+        tmp.append((-0.085, -0.119))
 
-        __bulbVerts.append((+0.085, -0.119))
-        __bulbVerts.append((-0.085, -0.119))
-        __bulbVerts.append((-0.085, -0.153))
+        tmp.append((+0.085, -0.119))
+        tmp.append((-0.085, -0.119))
+        tmp.append((-0.085, -0.153))
 
-        __bulbVerts.append((+0.085, -0.136))
-        __bulbVerts.append((-0.085, -0.170))
-        __bulbVerts.append((-0.085, -0.204))
-        __bulbVerts.append((+0.085, -0.136))
-        __bulbVerts.append((+0.085, -0.170))
-        __bulbVerts.append((-0.085, -0.204))
+        tmp.append((+0.085, -0.136))
+        tmp.append((-0.085, -0.170))
+        tmp.append((-0.085, -0.204))
+        tmp.append((+0.085, -0.136))
+        tmp.append((+0.085, -0.170))
+        tmp.append((-0.085, -0.204))
 
-        __bulbVerts.append((+0.085, -0.187))
-        __bulbVerts.append((-0.085, -0.221))
-        __bulbVerts.append((-0.085, -0.255))
-        __bulbVerts.append((+0.085, -0.187))
-        __bulbVerts.append((+0.085, -0.221))
-        __bulbVerts.append((-0.085, -0.255))
+        tmp.append((+0.085, -0.187))
+        tmp.append((-0.085, -0.221))
+        tmp.append((-0.085, -0.255))
+        tmp.append((+0.085, -0.187))
+        tmp.append((+0.085, -0.221))
+        tmp.append((-0.085, -0.255))
 
-        __bulbVerts.append((+0.085, -0.238))
-        __bulbVerts.append((-0.085, -0.272))
-        __bulbVerts.append((-0.051, -0.306))
-        __bulbVerts.append((+0.085, -0.238))
-        __bulbVerts.append((+0.051, -0.306))
-        __bulbVerts.append((-0.051, -0.306))
+        tmp.append((+0.085, -0.238))
+        tmp.append((-0.085, -0.272))
+        tmp.append((-0.051, -0.306))
+        tmp.append((+0.085, -0.238))
+        tmp.append((+0.051, -0.306))
+        tmp.append((-0.051, -0.306))
 
-    if (not __bulbColrs) or (__curBlbClr != __prvClkColr):
+        __bulbVerts = np.array(tmp, 'f')
+        __bulbIndcs = np.arange(len(__bulbVerts))
+
+    if (__bulbColrs.size == 0) or (__curBlbClr != __prvClkColr):
         __prvBlbClr = __curBlbClr
-        __bulbColrs = []
+        tmc = []
         for i in range(31):
-            __bulbColrs.append(faceColor)
-            __bulbColrs.append(faceColor)
-            __bulbColrs.append(faceColor)
+            tmc.append(faceColor)
+            tmc.append(faceColor)
+            tmc.append(faceColor)
 
         for i in range(31):
-            __bulbColrs.append(bulbColor)
-            __bulbColrs.append(bulbColor)
-            __bulbColrs.append(bulbColor)
+            tmc.append(bulbColor)
+            tmc.append(bulbColor)
+            tmc.append(bulbColor)
 
         for i in range(27):
-            __bulbColrs.append(lineColor)
+            tmc.append(lineColor)
 
-    ptc = np.array(__bulbColrs, 'f').reshape(-1, 3)
-    pnt = np.array(__bulbVerts, 'f').reshape(-1, 2)
-    indices = np.arange(len(__bulbVerts))
-    glColorPointerf(ptc)
-    glVertexPointerf(pnt)
-    glDrawElementsui(GL_TRIANGLES, indices)
+        __bulbColrs = np.array(tmc, 'f')
+
+    glColorPointerf( __bulbColrs )
+    glVertexPointerf( __bulbVerts )
+    glDrawElementsui(GL_TRIANGLES, __bulbIndcs)
 
     # Define Verts for Bulb Button Outline
-    if (not __lineVerts):
+    if (__lineVerts.size == 0):
+        tmp = []
         for i in range(31):
-            __lineVerts.append((
+            tmp.append((
                 scale*cos(radians(i*12)),
                 scale*sin(radians(i*12))
                 ))
+        __lineVerts = np.array(tmp, 'f')
+        __lineIndcs = np.arange(len(__lineVerts))
 
 
     # Define Outline Color for Bulb Button
-    if True: #(not __lineColrs):
-        __lineColrs = []
-        __lineColrs.append(bulbColor)
+    if (__lineColrs.size == 0):
+        tmc = []
+        tmc.append(bulbColor)
         for i in range(10):
-            __lineColrs.append(bulbColor)
-            __lineColrs.append(bulbColor)
-            __lineColrs.append(bulbColor)
+            tmc.append(bulbColor)
+            tmc.append(bulbColor)
+            tmc.append(bulbColor)
+        __lineColrs = np.array(tmc, 'f')
+    else:
+        __lineColrs[0] = bulbColor
+        for i in range(10):
+            __lineColrs[i*3+1] = bulbColor
+            __lineColrs[i*3+2] = bulbColor
+            __lineColrs[i*3+3] = bulbColor
 
-    ptc = np.array(__lineColrs, 'f').reshape(-1,3)
-    pnt = np.array(__lineVerts, 'f').reshape(-1,2)
-    indices = np.arange(len(__lineVerts))
-    glColorPointerf( ptc )
-    glVertexPointerf( pnt )
-    glDrawElementsui(GL_LINE_STRIP, indices)
+    glColorPointerf( __lineColrs)
+    glVertexPointerf( __lineVerts)
+    glDrawElementsui(GL_LINE_STRIP, __lineIndcs)
 
     glPopMatrix()
 

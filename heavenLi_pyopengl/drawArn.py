@@ -6,8 +6,9 @@ import numpy as np
 from rangeUtils import constrain
 
 # Arrays for caching 
-__homeLinearVerts = []
-__homeLinearColrs = []
+__homeLinearVerts = np.array([])
+__homeLinearColrs = np.array([])
+__homeLinearIndcs = np.array([])
 __curHomeLinearNZ = 0
 __prvHomeLinearNZ = 0
 __curHomeLinearCols = [(0.5, 0.5, 0.5)]
@@ -24,7 +25,7 @@ def drawHomeLinear(
         colors
         ):
 
-    global __homeLinearVerts, __homeLinearColrs, __curHomeLinearNZ, __prvHomeLinearNZ, __prvHomeLinearCols, __curHomeLinearCols
+    global __homeLinearVerts, __homeLinearColrs, __homeLinearIndcs, __curHomeLinearNZ, __prvHomeLinearNZ, __prvHomeLinearCols, __curHomeLinearCols
     __curHomeLinearNZ = nz
     __curHomeLinearCols = colors
     glPushMatrix()
@@ -32,58 +33,67 @@ def drawHomeLinear(
     glScalef(1, w2h, 1)
     glRotatef(ao+90, 0, 0, 1)
 
-    if (not __homeLinearVerts) or (__prvHomeLinearNZ != __curHomeLinearNZ):
-        __prvHomeLinearNZ = __curHomeLinearNZ
-        __homeLinearVerts = []
+    if (__homeLinearVerts.size == 0) or (__prvHomeLinearNZ != __curHomeLinearNZ):
+        tmp = []
         for i in range(nz):
             if i == 0:
-                __homeLinearVerts.append(( i*2/nz+2.0, -2.0))
-                __homeLinearVerts.append(( i*2/nz-2.0,  2.0))
-                __homeLinearVerts.append(( i*2/nz-2.0, -2.0))
+                tmp.append(( i*2/nz+2.0, -2.0))
+                tmp.append(( i*2/nz-2.0,  2.0))
+                tmp.append(( i*2/nz-2.0, -2.0))
 
-                __homeLinearVerts.append(( i*2/nz+2.0, -2.0))
-                __homeLinearVerts.append(( i*2/nz-2.0,  2.0))
-                __homeLinearVerts.append(( i*2/nz+2.0,  2.0))
+                tmp.append(( i*2/nz+2.0, -2.0))
+                tmp.append(( i*2/nz-2.0,  2.0))
+                tmp.append(( i*2/nz+2.0,  2.0))
 
             elif i == nz-1:
-                __homeLinearVerts.append(( i*2/nz+1.0, -2.0))
-                __homeLinearVerts.append(( i*2/nz-1.0,  2.0))
-                __homeLinearVerts.append(( i*2/nz-1.0, -2.0))
+                tmp.append(( i*2/nz+1.0, -2.0))
+                tmp.append(( i*2/nz-1.0,  2.0))
+                tmp.append(( i*2/nz-1.0, -2.0))
 
-                __homeLinearVerts.append(( i*2/nz+1.0, -2.0))
-                __homeLinearVerts.append(( i*2/nz-1.0,  2.0))
-                __homeLinearVerts.append(( i*2/nz+1.0,  2.0))
+                tmp.append(( i*2/nz+1.0, -2.0))
+                tmp.append(( i*2/nz-1.0,  2.0))
+                tmp.append(( i*2/nz+1.0,  2.0))
 
             else:
-                __homeLinearVerts.append(( i*2/nz+0.75, -2.0))
-                __homeLinearVerts.append(( i*2/nz-1.0,   2.0))
-                __homeLinearVerts.append(( i*2/nz-1.0,  -2.0))
+                tmp.append(( i*2/nz+0.75, -2.0))
+                tmp.append(( i*2/nz-1.0,   2.0))
+                tmp.append(( i*2/nz-1.0,  -2.0))
 
-                __homeLinearVerts.append(( i*2/nz+0.75, -2.0))
-                __homeLinearVerts.append(( i*2/nz-1.0,   2.0))
-                __homeLinearVerts.append(( i*2/nz+1.0,   2.0))
+                tmp.append(( i*2/nz+0.75, -2.0))
+                tmp.append(( i*2/nz-1.0,   2.0))
+                tmp.append(( i*2/nz+1.0,   2.0))
+        __homeLinearVerts = np.array(tmp, 'f')
+        __homeLinearIndcs = np.arange(len(__homeLinearVerts))
 
 
-    if (not __homeLinearColrs) or (__prvHomeLinearCols != __curHomeLinearCols):
+    if (__homeLinearColrs.size == 0) or (__prvHomeLinearNZ != __curHomeLinearNZ):
+        __prvHomeLinearNZ = __curHomeLinearNZ
         __prvHomeLinearCols = __curHomeLinearCols
-        __homeLinearColrs = []
+        tmc = []
         if nz > 1:
             for i in range(nz):
-                __homeLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
-                __homeLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
-                __homeLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
-                __homeLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
-                __homeLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
-                __homeLinearColrs.append((colors[i][0], colors[i][1], colors[i][2]))
+                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+        __homeLinearColrs = np.array(tmc, 'f')
 
+    if (__prvHomeLinearCols != __curHomeLinearCols):
+        __prvHomeLinearCols = __curHomeLinearCols
+        for i in range(nz):
+            __homeLinearColrs[i*6+0] = (colors[i][0], colors[i][1], colors[i][2]) 
+            __homeLinearColrs[i*6+1] = (colors[i][0], colors[i][1], colors[i][2]) 
+            __homeLinearColrs[i*6+2] = (colors[i][0], colors[i][1], colors[i][2]) 
+            __homeLinearColrs[i*6+3] = (colors[i][0], colors[i][1], colors[i][2]) 
+            __homeLinearColrs[i*6+4] = (colors[i][0], colors[i][1], colors[i][2]) 
+            __homeLinearColrs[i*6+5] = (colors[i][0], colors[i][1], colors[i][2]) 
 
     if nz > 1:
-        ptc = np.array(__homeLinearColrs, 'f').reshape(-1,3)
-        pnt = np.array(__homeLinearVerts, 'f').reshape(-1,2)
-        indices = np.arange(len(__homeLinearVerts))
-        glColorPointerf( ptc )
-        glVertexPointerf( pnt )
-        glDrawElementsui(GL_TRIANGLES, indices)
+        glColorPointerf( __homeLinearColrs)
+        glVertexPointerf( __homeLinearVerts)
+        glDrawElementsui(GL_TRIANGLES, __homeLinearIndcs)
     else:
         drawHomeCircle(-gx, gy, dx*1.14285, dy*1.14285, nz, ao, w2h, colors)
 
@@ -423,7 +433,16 @@ def drawHomeCircle(
                 __homeCircleVerts.append(tmx)
                 __homeCircleVerts.append(tmy)
 
-    if (not __homeCircleColrs) or (__curHomeCircleNZ != __prvHomeCircleNZ) or (__prvHomeCircleAO != __curHomeCircleCols):
+    if (not __homeCircleColrs):
+        __homeCircleColrs = []
+        __prvHomeCircleCols = __curHomeCircleCols
+        __prvHomeCircleNZ = __curHomeCircleNZ
+        for j in range(nz):
+            for i in range(31):
+                __homeCircleColrs.append((colors[j][0], colors[j][1], colors[j][2]))
+                __homeCircleColrs.append((colors[j][0], colors[j][1], colors[j][2]))
+
+    if (__curHomeCircleNZ != __prvHomeCircleNZ) or (__prvHomeCircleCols != __curHomeCircleCols):
         __homeCircleColrs = []
         __prvHomeCircleCols = __curHomeCircleCols
         __prvHomeCircleNZ = __curHomeCircleNZ
