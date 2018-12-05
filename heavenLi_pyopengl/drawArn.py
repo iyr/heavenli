@@ -97,8 +97,9 @@ def drawHomeLinear(
 __iconLinearVerts = np.array([])
 __iconLinearColrs = np.array([])
 __iconLinearIndcs = np.array([])
-__iconOLLineVerts = []
-__iconOLLineColrs = []
+__iconOLLineVerts = np.array([])
+__iconOLLineColrs = np.array([])
+__iconOLLineIndcs = np.array([])
 __iconBlbMkLVerts = np.array([])
 __iconBlbMkLColrs = np.array([])
 __iconBlbMkLIndcs = np.array([])
@@ -119,7 +120,7 @@ def drawIconLinear(
         colors
         ):
 
-    global __iconLinearVerts, __iconLinearColrs, __iconLinearIndcs, __prvIconLinearNZ, __curIconLinearNZ, __prvIconLinearCols, __curIconLinearCols, __iconOLLineVerts, __iconOLLineColrs, __iconBlbMkLVerts, __iconBlbMkLColrs, __iconBlbMkLIndcs
+    global __iconLinearVerts, __iconLinearColrs, __iconLinearIndcs, __prvIconLinearNZ, __curIconLinearNZ, __prvIconLinearCols, __curIconLinearCols, __iconOLLineVerts, __iconOLLineColrs, __iconOLLineIndcs, __iconBlbMkLVerts, __iconBlbMkLColrs, __iconBlbMkLIndcs
     glPushMatrix()
     glRotatef(90, 0, 0, 1)
     glTranslatef(gx, gy*(w2h), 0)
@@ -132,7 +133,7 @@ def drawIconLinear(
     __curIconLinearNZ = nz
     __curIconLinearCols = colors
 
-    # Update / Cache Icon vertices
+    # Initialize / Update Icon Vertices
     if (__iconLinearVerts.size == 0) or (__prvIconLinearNZ != __curIconLinearNZ):
         tmp = []
         for i in range(nz):
@@ -185,7 +186,6 @@ def drawIconLinear(
                     tmp.append((
                         0.75 - 0.25*cos(-radians((j+1)*7.5+90)), 
                         -1.5 + 0.5*sin(-radians((j+1)*7.5+90))))
-                    #__iconLinearVerts.append(( 0.74, -1.4))
                 # Rounded Corner
                 for j in range(13):
                     tmp.append(( 0.740, 1.4))
@@ -195,7 +195,6 @@ def drawIconLinear(
                     tmp.append((
                             0.75 - 0.25*cos(radians((j+1)*7.5+90)), 
                             1.5 + 0.5*sin(radians((j+1)*7.5+90))))
-                    #__iconLinearVerts.append(( 0.740, 1.4))
 
                 tmp.append(( 0.75,  2.0))
                 tmp.append(( i*2/nz-1.0, 2.0))
@@ -224,78 +223,39 @@ def drawIconLinear(
         __iconLinearIndcs = np.arange(len(tmp))
         __iconLinearVerts = np.array(tmp, 'f')
 
-    # Update / Cache Colors
-    if (__iconLinearColrs.size == 0) or (__prvIconLinearCols != __curIconLinearCols):
+    # Initialize Colors
+    if (__iconLinearColrs.size == 0) or (__prvIconLinearNZ != __curIconLinearNZ):
         __prvIconLinearCols = __curIconLinearCols
         tmc = []
         for i in range(nz):
             # Special case to draw rounded corners for end slice
             if i == 0:
-                # Rounded Corner
-                for j in range(13):
-                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-
-                # Rounded Corner
-                for j in range(13):
-                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-    
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                for j in range(90):
+                    tmc.append(colors[i])
 
             # Special case to draw rounded corners for end slice
             elif i == nz-1:
-                # Rounded Corner
-                for j in range(13):
-                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                # Rounded Corner
-                for j in range(13):
-                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                    tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                for j in range(90):
+                    tmc.append(colors[i])
             else:
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
-                tmc.append((colors[i][0], colors[i][1], colors[i][2]))
+                for j in range(6):
+                    tmc.append(colors[i])
         __iconLinearColrs = np.array(tmc, 'f')
+
+    # Update Colors
+    if (__prvIconLinearCols != __curIconLinearCols):
+        __prvIconLinearCols = __curIconLinearCols
+        for i in range(nz):
+            # Special case to draw rounded corners for end slice
+            if i == 0:
+                __iconLinearColrs[:90] = colors[i]
+
+            # Special case to draw rounded corners for end slice
+            elif i == nz-1:
+                __iconLinearColrs[-90:] = colors[i]
+
+            else:
+                __iconLinearColrs[i*6+90-6:(i+6)*6+90-6] = colors[i]
 
     glColorPointerf( __iconLinearColrs )
     glVertexPointerf( __iconLinearVerts )
@@ -328,49 +288,50 @@ def drawIconLinear(
     glDrawElementsui(GL_TRIANGLES, __iconBlbMkLIndcs)
 
     # START Draw Outline
-    if (not __iconOLLineVerts) or (not __iconOLLineColrs):
-        __iconOLLineVerts = []
-        __iconOLLineColrs = []
+    if (__iconOLLineVerts.size == 0):
+        tmp = []
+        tmc = []
         # Scale line thickness
         if w2h <= 1.0:
             glLineWidth(w2h*2.0)
         else:
             glLineWidth((1/w2h)*2.0)
         for j in range(13):
-            __iconOLLineColrs.append((0.95, 0.95, 0.95))
-            __iconOLLineVerts.append((
+            tmc.append((0.95, 0.95, 0.95))
+            tmp.append((
                     0.75 - 0.25*cos(radians(j*7.5+90)), 
                     1.50 + 0.5*sin(radians(j*7.5+90))))
 
         for j in range(13):
-            __iconOLLineColrs.append((0.95, 0.95, 0.95))
-            __iconOLLineVerts.append((
+            tmc.append((0.95, 0.95, 0.95))
+            tmp.append((
                     0.75 - 0.25*cos(+radians(j*7.5+180)), 
                     -1.5 + 0.50*sin(+radians(j*7.5+180))))
 
         for j in range(13):
-            __iconOLLineColrs.append((0.95, 0.95, 0.95))
-            __iconOLLineVerts.append((
+            tmc.append((0.95, 0.95, 0.95))
+            tmp.append((
                     -0.75 + 0.25*cos(-radians(j*7.5+90)), 
                     -1.5 + 0.5*sin(-radians(j*7.5+90))))
 
         for j in range(13):
-            __iconOLLineColrs.append((0.95, 0.95, 0.95))
-            __iconOLLineVerts.append((
+            tmc.append((0.95, 0.95, 0.95))
+            tmp.append((
                     -0.75 + 0.25*cos(-radians(j*7.5+180)), 
                     1.5 + 0.5*sin(-radians(j*7.5+180))))
 
-        __iconOLLineColrs.append((0.95, 0.95, 0.95))
-        __iconOLLineVerts.append((
+        tmc.append((0.95, 0.95, 0.95))
+        tmp.append((
             0.75 - 0.25*cos(radians(90)),
             1.50 + 0.50*sin(radians(90))))
 
-    ptc = np.array(__iconOLLineColrs, 'f').reshape(-1,3)
-    pnt = np.array(__iconOLLineVerts, 'f').reshape(-1,2)
-    indices = np.arange(len(__iconOLLineVerts))
-    glColorPointerf( ptc )
-    glVertexPointerf( pnt )
-    glDrawElementsui(GL_LINE_STRIP, indices)
+        __iconOLLineVerts = np.array(tmp, 'f')
+        __iconOLLineIndcs = np.arange(len(__iconOLLineVerts))
+        __iconOLLineColrs = np.array(tmc, 'f')
+
+    glColorPointerf( __iconOLLineColrs )
+    glVertexPointerf( __iconOLLineVerts )
+    glDrawElementsui(GL_LINE_STRIP, __iconOLLineIndcs)
     # END Draw Outline
 
     glPopMatrix()
@@ -456,12 +417,18 @@ def drawHomeCircle(
 
     glPopMatrix()
 
-__iconCircleVerts = []
-__iconCircleColrs = []
-__iconOLCircVerts = []
-__iconOLCircColrs = []
-__iconBlbMkCVerts = []
-__iconBlbMkCColrs = []
+__iconCircleVerts = np.array([])
+__iconCircleColrs = np.array([])
+__iconCircleIndcs = np.array([])
+
+__iconOLCircVerts = np.array([])
+__iconOLCircColrs = np.array([])
+__iconOLCircIndcs = np.array([])
+
+__iconBlbMkCVerts = np.array([])
+__iconBlbMkCColrs = np.array([])
+__iconBlbMkCIndcs = np.array([])
+
 __curIconCircleNZ = 0
 __prvIconCircleNZ = 0
 __curIconCircleAO = 0
@@ -479,7 +446,7 @@ def drawIconCircle(
         w2h,
         colors
         ):
-    global __iconCircleVerts, __iconCircleColrs, __iconOLCircVerts, __iconOLCircColrs, __iconBlbMkCVerts, __iconBlbMkCColrs, __prvIconCircleNZ, __curIconCircleNZ, __prvIconCircleCols, __curIconCircleCols, __prvIconCircleAO, __curIconCircleAO
+    global __iconCircleVerts, __iconCircleColrs, __iconCircleIndcs, __iconOLCircVerts, __iconOLCircColrs, __iconBlbMkCVerts, __iconOLCircIndcs,  __iconBlbMkCColrs, __iconBlbMkCIndcs, __prvIconCircleNZ, __curIconCircleNZ, __prvIconCircleCols, __curIconCircleCols, __prvIconCircleAO, __curIconCircleAO
     angOffset = 360/float(nz)
     glPushMatrix()
     glTranslatef(gx*(w2h), gy, 0)
@@ -493,36 +460,81 @@ def drawIconCircle(
     __curIconCircleCols = colors
     __curIconCircleAO = ao
 
-    if (not __iconCircleVerts) or (__prvIconCircleNZ != __curIconCircleNZ) or (__prvIconCircleAO != __curIconCircleAO):
-        __iconCircleVerts = []
+    # Initiailize Vertices
+    if (__iconCircleVerts.size == 0) or (__prvIconCircleNZ != __curIconCircleNZ) or (__prvIconCircleAO != __curIconCircleAO):
+        tmp = []
         for j in range(nz):
-            #for i in range(int(angOffset)+1):
-            for i in range(31):
-                __iconCircleVerts.append(0)
-                __iconCircleVerts.append(0)
+            for i in range(30):
+                tmp.append((0, 0))
     
                 tma = radians(i*12/nz+ao+j*(angOffset)-90)
                 tmx = cos(tma)
                 tmy = sin(tma)
-                __iconCircleVerts.append(tmx)
-                __iconCircleVerts.append(tmy)
+                tmp.append((tmx, tmy))
 
-    if (not __iconCircleColrs) or (__curIconCircleNZ != __prvIconCircleNZ) or (__prvIconCircleCols != __curIconCircleCols):
-        __iconCircleColrs = []
-        #__prvIconCircleNZ = __curIconCircleNZ
+                tma = radians((i+1)*12/nz+ao+j*(angOffset)-90)
+                tmx = cos(tma)
+                tmy = sin(tma)
+                tmp.append((tmx, tmy))
+
+        __iconCircleVerts = np.array(tmp, 'f')
+        __iconCircleIndcs = np.arange(len(__iconCircleVerts))
+
+    # Initialize Colors
+    if (__iconCircleColrs.size == 0) or (__curIconCircleNZ != __prvIconCircleNZ):
+        tmc = []
+        __prvIconCircleNZ = __curIconCircleNZ
+        for j in range(nz):
+            for i in range(30):
+                tmc.append(colors[j])
+                tmc.append(colors[j])
+                tmc.append(colors[j])
+        __iconCircleColrs = np.array(tmc, 'f')
+
+    # Update Colors
+    if (__prvIconCircleCols != __curIconCircleCols):
         __prvIconCircleCols = __curIconCircleCols
         for j in range(nz):
-            __iconCircleColrs.append((colors[j][0], colors[j][1], colors[j][2]))
-            for i in range(31):
-                __iconCircleColrs.append((colors[j][0], colors[j][1], colors[j][2]))
-                __iconCircleColrs.append((colors[j][0], colors[j][1], colors[j][2]))
+            __iconCircleColrs[j*90:j*90+90] = colors[j]
 
-    pntcols = np.array(__iconCircleColrs, 'f').reshape(-1,3)
-    points = np.array(__iconCircleVerts, 'f').reshape(-1,2)
-    indices = np.arange(len(__iconCircleVerts)/2)
-    glVertexPointerf( points )
-    glColorPointerf( pntcols )
-    glDrawElementsui(GL_TRIANGLE_STRIP, indices)
+    glVertexPointerf( __iconCircleVerts )
+    glColorPointerf( __iconCircleColrs )
+    glDrawElementsui(GL_TRIANGLES, __iconCircleIndcs)
+
+    # Initialize Bulb Marker Vertices
+    if (__iconBlbMkCVerts.size == 0) or (__prvIconLinearNZ != __curIconCircleNZ) or (__prvIconCircleAO != __curIconCircleAO):
+        __prvIconCircleAO = __curIconCircleAO
+        tmp = []
+        for i in range(nz):
+            xCoord = cos(radians(-90+ao - i*(angOffset) + 180/nz))
+            yCoord = sin(radians(-90+ao - i*(angOffset) + 180/nz))
+            for j in range(13):
+                tmp.append((xCoord, yCoord))
+
+                tmp.append((
+                    xCoord + 0.16*cos(radians(j*30)), 
+                    yCoord + 0.16*sin(radians(j*30))))
+
+                tmp.append((
+                    xCoord + 0.16*cos(radians((j+1)*30)), 
+                    yCoord + 0.16*sin(radians((j+1)*30))))
+        __iconBlbMkCVerts = np.array(tmp, 'f')
+        __iconBlbMkCIndcs = np.arange(len(__iconBlbMkCVerts))
+
+    # Initialize Draw Bulb Marker Colors
+    if (__iconBlbMkCColrs.size == 0) or (__prvIconLinearNZ != __curIconCircleNZ):
+        __prvIconCircleNZ = __curIconCircleNZ
+        tmc = []
+        for i in range(nz):
+            for j in range(13):
+                tmc.append((0.95, 0.95, 0.95))
+                tmc.append((0.95, 0.95, 0.95))
+                tmc.append((0.95, 0.95, 0.95))
+        __iconBlbMkCColrs = np.array(tmc, 'f')
+
+    glColorPointerf( __iconBlbMkCColrs)
+    glVertexPointerf( __iconBlbMkCVerts)
+    glDrawElementsui(GL_TRIANGLES, __iconBlbMkCIndcs)
 
     # Draw Outline
     if w2h <= 1.0:
@@ -530,56 +542,21 @@ def drawIconCircle(
     else:
         glLineWidth((1/w2h)*2.0)
 
-    if (not __iconOLCircVerts) or (not __iconOLCircColrs):
+    # Initialize Outline vertices and colors
+    if (__iconOLCircVerts.size == 0) or (__iconOLCircColrs.size == 0):
+        tmp = []
+        tmc = []
         for j in range(31):
             tmx = cos(radians(j*12))
             tmy = sin(radians(j*12))
-            __iconOLCircColrs.append((0.95, 0.95, 0.95))
-            __iconOLCircVerts.append((tmx, tmy))
+            tmc.append((0.95, 0.95, 0.95))
+            tmp.append((tmx, tmy))
+        __iconOLCircVerts = np.array(tmp, 'f')
+        __iconOLCircColrs = np.array(tmc, 'f')
+        __iconOLCircIndcs = np.arange(len(__iconOLCircVerts))
 
-    pntcol = np.array(__iconOLCircColrs, 'f').reshape(-1, 3)
-    points = np.array(__iconOLCircVerts, 'f').reshape(-1, 2)
-    indices = np.arange(len(__iconOLCircVerts))
-    glColorPointerf( pntcol )
-    glVertexPointerf( points )
-    glDrawElementsub(GL_LINE_STRIP, indices)
-
-    #glRotatef(ao, 0, 0, 1)
-    # Draw Bulb Markers
-    if (not __iconBlbMkCVerts) or (__prvIconLinearNZ != __curIconCircleNZ) or (__prvIconCircleAO != __curIconCircleAO):
-        __prvIconCircleNZ = __curIconCircleNZ
-        __prvIconCircleAO = __curIconCircleAO
-        __iconBlbMkCColrs = []
-        __iconBlbMkCVerts = []
-        for i in range(nz):
-            xCoord = cos(radians(-90+ao - i*(angOffset) + 180/nz))
-            yCoord = sin(radians(-90+ao - i*(angOffset) + 180/nz))
-            for j in range(13):
-                __iconBlbMkCVerts.append((xCoord, yCoord))
-
-                __iconBlbMkCVerts.append((
-                    xCoord + 0.16*cos(radians(j*30)), 
-                    yCoord + 0.16*sin(radians(j*30))))
-
-                __iconBlbMkCVerts.append((
-                    xCoord + 0.16*cos(radians((j+1)*30)), 
-                    yCoord + 0.16*sin(radians((j+1)*30))))
-
-    if (not __iconBlbMkCColrs):
-        __iconBlbMkCColrs = []
-        for i in range(nz):
-            xCoord = cos(radians(-90+ao - i*(angOffset) + 180/nz))
-            yCoord = sin(radians(-90+ao - i*(angOffset) + 180/nz))
-            for j in range(13):
-                __iconBlbMkCColrs.append((0.95, 0.95, 0.95))
-                __iconBlbMkCColrs.append((0.95, 0.95, 0.95))
-                __iconBlbMkCColrs.append((0.95, 0.95, 0.95))
-
-    pntcol = np.array(__iconBlbMkCColrs, 'f').reshape(-1, 3)
-    points = np.array(__iconBlbMkCVerts, 'f').reshape(-1, 2)
-    indices = np.arange(len(__iconBlbMkCVerts))
-    glColorPointerf( pntcol )
-    glVertexPointerf( points )
-    glDrawElementsui(GL_TRIANGLES, indices)
+    glColorPointerf( __iconOLCircColrs )
+    glVertexPointerf( __iconOLCircVerts )
+    glDrawElementsub(GL_LINE_STRIP, __iconOLCircIndcs )
 
     glPopMatrix()
