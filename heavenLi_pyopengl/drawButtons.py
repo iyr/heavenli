@@ -38,6 +38,7 @@ def drawBulbButton(
         glLineWidth(pow(1/w2h, 0.5)*3.0)
         squash = 1.0
 
+    # Initialize Vertices
     if (__bulbVerts.size == 0):
         tmp = []
         # Define Verts for button face
@@ -96,6 +97,7 @@ def drawBulbButton(
         __bulbVerts = np.array(tmp, 'f')
         __bulbIndcs = np.arange(len(__bulbVerts))
 
+    # Initialize Colors
     if (__bulbColrs.size == 0) or (__curBlbClr != __prvClkColr):
         __prvBlbClr = __curBlbClr
         tmc = []
@@ -118,7 +120,7 @@ def drawBulbButton(
     glVertexPointerf( __bulbVerts )
     glDrawElementsui(GL_TRIANGLES, __bulbIndcs)
 
-    # Define Verts for Bulb Button Outline
+    # Initialize Verts for Bulb Button Outline
     if (__lineVerts.size == 0):
         tmp = []
         for i in range(31):
@@ -130,7 +132,7 @@ def drawBulbButton(
         __lineIndcs = np.arange(len(__lineVerts))
 
 
-    # Define Outline Color for Bulb Button
+    # Initialize Outline Color for Bulb Button
     if (__lineColrs.size == 0):
         tmc = []
         tmc.append(bulbColor)
