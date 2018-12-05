@@ -1,4 +1,5 @@
 import OpenGL
+OpenGL.ERROR_CHECKING = False
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from math import sin,cos,sqrt,radians,hypot
