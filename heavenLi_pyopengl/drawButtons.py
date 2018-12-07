@@ -1,4 +1,6 @@
 import OpenGL
+OpenGL.ERROR_ON_COPY = True
+OpenGL.ERROR_LOGGING = False
 OpenGL.ERROR_CHECKING = False
 from OpenGL.GL import *
 from OpenGL.GLUT import *
@@ -95,7 +97,7 @@ def drawBulbButton(
         tmp.append((-0.051, -0.306))
 
         __bulbVerts = np.array(tmp, 'f')
-        __bulbIndcs = np.arange(len(__bulbVerts))
+        __bulbIndcs = np.array(np.arange(len(__bulbVerts)), 'I')
 
     # Initialize Colors
     if (__bulbColrs.size == 0) or (__curBlbClr != __prvClkColr):
@@ -129,8 +131,7 @@ def drawBulbButton(
                 scale*sin(radians(i*12))
                 ))
         __lineVerts = np.array(tmp, 'f')
-        __lineIndcs = np.arange(len(__lineVerts))
-
+        __lineIndcs = np.array(np.arange(len(__lineVerts)), 'I')
 
     # Initialize Outline Color for Bulb Button
     if (__lineColrs.size == 0):
@@ -191,7 +192,7 @@ def drawClock(
             __clockVerts.append((0.5*cos(radians(i*5)), 0.5*sin(radians(i*5))))
 
     pnts = np.array(__clockVerts, 'f').reshape(-1, 2)
-    indices = np.arange(len(__clockVerts))
+    indices = np.array(np.arange(len(__clockVerts)), 'I')
     glColorPointerf( __clockColrs )
     glVertexPointerf( pnts )
     glDrawElementsui(GL_TRIANGLE_FAN, indices)

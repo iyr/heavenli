@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 import cProfile
 import OpenGL
+OpenGL.ERROR_ON_COPY = True
+OpenGL.ERROR_LOGGING = False
 OpenGL.ERROR_CHECKING = False
 from OpenGL.GL import *
 from OpenGL.GLUT import *
@@ -354,7 +356,7 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
     
     ptc = np.array(__ringColrs, 'f').reshape(-1, 3)
     pnt = np.array(__ringVerts, 'f').reshape(-1, 2)
-    indices = np.arange(len(__ringVerts))
+    indices = np.array(np.arange(len(__ringVerts)), 'I')
     glColorPointerf(ptc)
     glVertexPointerf(pnt)
     glDrawElementsui(GL_TRIANGLES, indices)
@@ -419,7 +421,7 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
 
     ptc = np.array(__pickerColrs, 'f').reshape(-1, 3)
     pnt = np.array(__pickerVerts, 'f').reshape(-1, 2)
-    indices = np.arange(len(__pickerVerts))
+    indices = np.array(np.arange(len(__pickerVerts)), 'I')
     glColorPointerf(ptc)
     glVertexPointerf(pnt)
     glDrawElementsui(GL_TRIANGLES, indices)

@@ -1,4 +1,6 @@
 import OpenGL
+OpenGL.ERROR_ON_COPY = True
+OpenGL.ERROR_LOGGING = False
 OpenGL.ERROR_CHECKING = False
 from OpenGL.GL import *
 from OpenGL.GLUT import *
@@ -64,7 +66,7 @@ def drawHomeLinear(
                 tmp.append(( i*2/nz-1.0,   2.0))
                 tmp.append(( i*2/nz+1.0,   2.0))
         __homeLinearVerts = np.array(tmp, 'f')
-        __homeLinearIndcs = np.arange(len(__homeLinearVerts))
+        __homeLinearIndcs = np.array(np.arange(len(__homeLinearVerts)), 'I')
 
 
     if (__homeLinearColrs.size == 0) or (__prvHomeLinearNZ != __curHomeLinearNZ):
@@ -221,7 +223,7 @@ def drawIconLinear(
                 tmp.append(( 0.75,  2.0))
                 tmp.append(( i*0/nz+0.75, -2.0))
                 tmp.append(( i*2/nz-1.0, -2.0))
-        __iconLinearIndcs = np.arange(len(tmp))
+        __iconLinearIndcs = np.array(np.arange(len(tmp)), 'I')
         __iconLinearVerts = np.array(tmp, 'f')
 
     # Initialize Colors
@@ -281,7 +283,7 @@ def drawIconLinear(
                 tmc.append((0.95, 0.95, 0.95))
                 tmp.append((xCoord + 0.16*cos(radians((j+1)*30)), yCoord + 0.32*sin(radians((j+1)*30))))
         __iconBlbMkLVerts = np.array(tmp, 'f')
-        __iconBlbMkLIndcs = np.arange(len(__iconBlbMkLVerts))
+        __iconBlbMkLIndcs = np.array(np.arange(len(__iconBlbMkLVerts)), 'I')
         __iconBlbMkLColrs = np.array(tmc, 'f')
 
     glColorPointerf( __iconBlbMkLColrs)
@@ -327,7 +329,7 @@ def drawIconLinear(
             1.50 + 0.50*sin(radians(90))))
 
         __iconOLLineVerts = np.array(tmp, 'f')
-        __iconOLLineIndcs = np.arange(len(__iconOLLineVerts))
+        __iconOLLineIndcs = np.array(np.arange(len(__iconOLLineVerts)), 'I')
         __iconOLLineColrs = np.array(tmc, 'f')
 
     glColorPointerf( __iconOLLineColrs )
@@ -393,7 +395,7 @@ def drawHomeCircle(
                 tmy = sin(tma)
                 tmp.append((tmx, tmy))
         __homeCircleVerts = np.array(tmp, 'f')
-        __homeCircleIndcs = np.arange(len(__homeCircleVerts))
+        __homeCircleIndcs = np.array(np.arange(len(__homeCircleVerts)), 'I')
 
     # Initialize Colors
     if (__curHomeCircleNZ != __prvHomeCircleNZ) or (__homeCircleColrs.size == 0):
@@ -479,7 +481,7 @@ def drawIconCircle(
                 tmp.append((tmx, tmy))
 
         __iconCircleVerts = np.array(tmp, 'f')
-        __iconCircleIndcs = np.arange(len(__iconCircleVerts))
+        __iconCircleIndcs = np.array(np.arange(len(__iconCircleVerts)), 'I')
 
     # Initialize Colors
     if (__iconCircleColrs.size == 0) or (__curIconCircleNZ != __prvIconCircleNZ):
@@ -520,7 +522,7 @@ def drawIconCircle(
                     xCoord + 0.16*cos(radians((j+1)*30)), 
                     yCoord + 0.16*sin(radians((j+1)*30))))
         __iconBlbMkCVerts = np.array(tmp, 'f')
-        __iconBlbMkCIndcs = np.arange(len(__iconBlbMkCVerts))
+        __iconBlbMkCIndcs = np.array(np.arange(len(__iconBlbMkCVerts)), 'I')
 
     # Initialize Draw Bulb Marker Colors
     if (__iconBlbMkCColrs.size == 0) or (__prvIconLinearNZ != __curIconCircleNZ):
@@ -554,10 +556,10 @@ def drawIconCircle(
             tmp.append((tmx, tmy))
         __iconOLCircVerts = np.array(tmp, 'f')
         __iconOLCircColrs = np.array(tmc, 'f')
-        __iconOLCircIndcs = np.arange(len(__iconOLCircVerts))
+        __iconOLCircIndcs = np.array(np.arange(len(__iconOLCircVerts)), 'I')
 
     glColorPointerf( __iconOLCircColrs )
     glVertexPointerf( __iconOLCircVerts )
-    glDrawElementsub(GL_LINE_STRIP, __iconOLCircIndcs )
+    glDrawElementsui(GL_LINE_STRIP, __iconOLCircIndcs )
 
     glPopMatrix()
