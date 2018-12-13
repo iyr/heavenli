@@ -1,6 +1,7 @@
 //#include "pch.h"
 #include <Python.h>
 #include <math.h>
+#include <stdlib.h>
 
 /*
 static char module_docstring[] =
@@ -10,9 +11,10 @@ static char animCurveBounce_docstring[] =
 static char animCurve_docstring[] =
 "Quadratic curve with no bounce (0-1)";
 */
+
 PyObject* animCurveBounce_animUtils(PyObject *self, PyObject *o)
 {
-	float c = PyFloat_AsDouble(o);
+	double c = PyFloat_AsDouble(o);
 	if (c >= 1.0) {
 		return PyFloat_FromDouble(0);
 	}
@@ -23,7 +25,7 @@ PyObject* animCurveBounce_animUtils(PyObject *self, PyObject *o)
 
 PyObject* animCurve_animUtils(PyObject *self, PyObject *o)
 {
-	float c = PyFloat_AsDouble(o);
+	double c = PyFloat_AsDouble(o);
 	return PyFloat_FromDouble(-2.25*pow(c / 1.5, 2) + 1.0);
 }
 

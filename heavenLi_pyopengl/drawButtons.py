@@ -44,24 +44,24 @@ def drawBulbButton(
     if (__bulbVerts.size == 0):
         tmp = []
         # Define Verts for button face
-        for i in range(31):
+        for i in range(46):
             tmp.append((0.0, 0.0))
             tmp.append((
-                0.4*cos(radians(i*12)),
-                0.4*sin(radians(i*12))))
+                0.4*cos(radians(i*8)),
+                0.4*sin(radians(i*8))))
             tmp.append((
-                0.4*cos(radians((i+1)*12)),
-                0.4*sin(radians((i+1)*12))))
+                0.4*cos(radians((i+1)*8)),
+                0.4*sin(radians((i+1)*8))))
 
         # Define Verts for Bulb Icon
-        for i in range(31):
+        for i in range(46):
             tmp.append((0.0, 0.05))
             tmp.append((
-                0.2*cos(radians(i*12)),
-                0.2*sin(radians(i*12))+0.1))
+                0.2*cos(radians(i*8)),
+                0.2*sin(radians(i*8))+0.1))
             tmp.append((
-                0.2*cos(radians((i+1)*12)),
-                0.2*sin(radians((i+1)*12))+0.1))
+                0.2*cos(radians((i+1)*8)),
+                0.2*sin(radians((i+1)*8))+0.1))
 
         # Define verts for bulb screw base
         tmp.append((-0.085, -0.085))
@@ -98,17 +98,18 @@ def drawBulbButton(
 
         __bulbVerts = np.array(tmp, 'f')
         __bulbIndcs = np.array(np.arange(len(__bulbVerts)), 'I')
+        print("number of verts in bulbicon: {}".format(len(__bulbVerts)))
 
     # Initialize Colors
     if (__bulbColrs.size == 0) or (__curBlbClr != __prvClkColr):
         __prvBlbClr = __curBlbClr
         tmc = []
-        for i in range(31):
+        for i in range(46):
             tmc.append(faceColor)
             tmc.append(faceColor)
             tmc.append(faceColor)
 
-        for i in range(31):
+        for i in range(46):
             tmc.append(bulbColor)
             tmc.append(bulbColor)
             tmc.append(bulbColor)
@@ -125,10 +126,10 @@ def drawBulbButton(
     # Initialize Verts for Bulb Button Outline
     if (__lineVerts.size == 0):
         tmp = []
-        for i in range(31):
+        for i in range(46):
             tmp.append((
-                scale*cos(radians(i*12)),
-                scale*sin(radians(i*12))
+                scale*cos(radians(i*8)),
+                scale*sin(radians(i*8))
                 ))
         __lineVerts = np.array(tmp, 'f')
         __lineIndcs = np.array(np.arange(len(__lineVerts)), 'I')
@@ -137,14 +138,14 @@ def drawBulbButton(
     if (__lineColrs.size == 0):
         tmc = []
         tmc.append(bulbColor)
-        for i in range(10):
+        for i in range(15):
             tmc.append(bulbColor)
             tmc.append(bulbColor)
             tmc.append(bulbColor)
         __lineColrs = np.array(tmc, 'f')
     else:
         __lineColrs[0] = bulbColor
-        for i in range(10):
+        for i in range(15):
             __lineColrs[i*3+1] = bulbColor
             __lineColrs[i*3+2] = bulbColor
             __lineColrs[i*3+3] = bulbColor
