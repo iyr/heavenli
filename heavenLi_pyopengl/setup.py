@@ -18,9 +18,9 @@ setup(name='drawButtons', version = '0.1',
         ext_modules = [sfc_module]
         )
 
-#sfc_module = Extension('animUtils', sources = ['animUtils.c'])
+sfc_module = Extension('animUtils', sources = ['animUtils.c'])
 
-#setup(name='animUtils', version = '0.1',
-        #description = 'Animation Curves implemented in c',
-        #ext_modules = [sfc_module]
-        #)
+setup(name='animUtils', version = '0.1',
+        description = 'Animation Curves implemented in c',
+        ext_modules = [sfc_module]
+        )
