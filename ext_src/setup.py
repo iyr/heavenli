@@ -2,7 +2,7 @@ from distutils.core import setup, Extension
 
 sfc_module = Extension(
         'drawButtons', 
-        sources = ['drawButtons.c'],
+        sources = ['drawButtons.cpp'],
         extra_link_args=['opengl32.lib'])
 
 setup(name='drawButtons', version = '0.1',

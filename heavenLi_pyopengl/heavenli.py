@@ -112,12 +112,20 @@ def drawHome():
             else:
                 tmx *= w2h
                 tmy *= pow(w2h, 0.5)
+            #drawBulbButton(
+                    #gx=tmx, 
+                    #gy=tmy, 
+                    #scale=iconSize*2.66,
+                    #bulbColor=lamps[0].getBulbRGB(i), 
+                    #w2h=w2h)
             drawBulbButton(
-                    gx=tmx, 
-                    gy=tmy, 
-                    scale=iconSize*2.66,
-                    bulbColor=lamps[0].getBulbRGB(i), 
-                    w2h=w2h)
+                    tmx, tmy, 
+                    iconSize*2.66, 
+                    (0.3, 0.3, 0.3), 
+                    (0.9, 0.9, 0.9), 
+                    lamps[0].getBulbRGB(i), 
+                    w2h)
+
             if (screen == 0) and (touchState != prvState):
                 if (watchPoint(
                     mapRanges(tmx, -1.0*w2h, 1.0*w2h, 0, wx*2), 
@@ -264,11 +272,11 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
                     bulbColor=targetLamp.getBulbRGB(i), 
                     w2h=w2h)
             
-    drawClock(
-            scale=acic*1.7, 
-            w2h=w2h, 
-            handColor=(0.9*acc, 0.9*acc, 0.9*acc), 
-            faceColor=(0.3*acc, 0.3*acc, 0.3*acc))
+    #drawClock(
+            #scale=acic*1.7, 
+            #w2h=w2h, 
+            #handColor=(0.9*acc, 0.9*acc, 0.9*acc), 
+            #faceColor=(0.3*acc, 0.3*acc, 0.3*acc))
 
     glPushMatrix()
 
@@ -479,7 +487,7 @@ def display():
     drawBackground(0)
     #drawClock(1.0, (0.3, 0.3, 0.3), (0.95, 0.95, 0.95), w2h)
     #cProfile.run('drawClock(w2h=w2h)')
-    drawClock(w2h=w2h)
+    #drawClock(w2h=w2h)
 
     if (targetScreen == 0):
         if (colrSettingCursor > 0):
@@ -613,6 +621,7 @@ if __name__ == '__main__':
     glutMouseFunc(mouseInteraction)
     glutPassiveMotionFunc(mousePassive)
     glEnable(GL_LINE_SMOOTH)
+    print(glutGetWindow())
 
     init()
 
