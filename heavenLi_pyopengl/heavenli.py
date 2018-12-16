@@ -58,7 +58,10 @@ def framerate():
     t = time.time()
     frames += 1
     seconds = t - t0
-    fps = frames/seconds
+    try:
+        fps = frames/seconds
+    except:
+        print("Too Fast, Too Quick!!")
     if t - t0 >= 1.0:
         print("%.0f frames in %3.1f seconds = %6.3f FPS" % (frames,seconds,fps))
         t0 = t
@@ -483,7 +486,6 @@ def display():
     glLoadIdentity()
 
     glDisable(GL_LIGHTING)
-    #cProfile.run('drawBackground(0)')
     drawBackground(0)
     #drawClock(1.0, (0.3, 0.3, 0.3), (0.95, 0.95, 0.95), w2h)
     #cProfile.run('drawClock(w2h=w2h)')
