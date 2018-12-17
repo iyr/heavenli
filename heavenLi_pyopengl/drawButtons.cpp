@@ -18,11 +18,9 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
    double lineColor[3]; 
    double bulbColor[3];
    float gx, gy, scale, w2h, squash;
-   //float bulbVerts[606];
-   //GLfloat bulbVerts[270][2];
-   //vector< tuple<GLfloat, GLfloat> verts;
-   GLfloat bulbVerts[141][2];
+   //GLfloat bulbVerts[141][2];
    GLfloat bulbColrs[141][3];
+   vector<GLfloat> verts;
 
    // Parse input arguments
    if (!PyArg_ParseTuple(args, 
@@ -82,52 +80,32 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
    glEnableClientState(GL_COLOR_ARRAY );
    glColor3f(faceColor[0], faceColor[1], faceColor[2]);
    for (int i = 0; i < 46; i++){
-      /*
-      verts.push_back({0.0, 0.0});
-      verts.push_back({0.4*cos(degToRad(i*8)), 0.4*sin(degToRad(i*8))});
-      verts.push_back({0.4*cos(degToRad((i+1)*8)), 0.4*sin(degToRad((i+1)*8))});
-      */
-
-      /*
       verts.push_back(0.0);
       verts.push_back(0.0);
       verts.push_back(0.4*cos(degToRad(i*8)));
       verts.push_back(0.4*sin(degToRad(i*8)));
       verts.push_back(0.4*cos(degToRad((i+1)*8)));
       verts.push_back(0.4*sin(degToRad((i+1)*8)));
-      */
-
-      bulbVerts[i*3][0] = 0.0;
-      bulbVerts[i*3][1] = 0.0;
-      bulbVerts[i*3+1][0] = 0.4*cos(degToRad(i*8));
-      bulbVerts[i*3+1][1] = 0.4*sin(degToRad(i*8));
-      bulbVerts[i*3+2][0] = 0.4*cos(degToRad((i+1)*8)); 
-      bulbVerts[i*3+2][1] = 0.4*sin(degToRad((i+1)*8));
    }
-   //GLfloat *bulbVerts = &verts[0];
-   /*
-   float** bulbVerts = new float*[verts.size()/2];
+   int numVerts = verts.size()/2;
+   GLfloat *bulbVerts = new GLfloat[verts.size()];
+   GLushort * indices = new GLushort [numVerts];
    for (int i = 0; i < verts.size()/2; i++){
-      bulbVerts[i] = new float[2];
-      bulbVerts[i][0] = verts[i*2];
-      bulbVerts[i][1] = verts[i*2+1];
-   }
-   */
-   
-   //int * indices = new int [verts.size()/2];
-   GLubyte indices[141];
-   for (int i = 0; i < 141; i++){
+      bulbVerts[i*2] = verts[i*2];
+      bulbVerts[i*2+1] = verts[i*2+1];
       indices[i] = i;
       bulbColrs[i][0] = faceColor[0];
       bulbColrs[i][1] = faceColor[1];
       bulbColrs[i][2] = faceColor[2];
    }
-
+   
    glColorPointer(3, GL_FLOAT, 0, bulbColrs);
    glVertexPointer(2, GL_FLOAT, 0, bulbVerts);
-   glDrawElements( GL_TRIANGLES, 135, GL_UNSIGNED_BYTE, indices);
+   glDrawElements( GL_TRIANGLES, 137, GL_UNSIGNED_SHORT, indices);
    glPopMatrix();
-
+   
+   delete [] bulbVerts;
+   delete [] indices;
    Py_RETURN_NONE;
 }
 
