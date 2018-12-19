@@ -2,7 +2,7 @@
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
    #include <windows.h>
 #endif
-#include <gl/GL.h>
+#include <GL/gl.h>
 #include <vector>
 #include <math.h>
 #define degToRad(angleInDegrees) ((angleInDegrees) * 3.1415926535 / 180.0)

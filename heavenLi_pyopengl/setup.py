@@ -10,7 +10,7 @@ else:
     sfc_module = Extension(
             'drawButtons', 
             sources = ['drawButtons.cpp'],
-            extra_link_args=['lGL'])
+            extra_link_args=['-lGL'])
 
 
 setup(name='drawButtons', version = '0.1',
