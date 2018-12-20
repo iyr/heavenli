@@ -8,6 +8,8 @@
 #define degToRad(angleInDegrees) ((angleInDegrees) * 3.1415926535 / 180.0)
 using namespace std;
 
+GLfloat *vertexBuffer = NULL;
+GLfloat *colahbuffah = NULL;
 PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
 //void drawBulbButton_drawButtons(PyObject *self, PyObject *args)
 {
@@ -18,9 +20,13 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
    double lineColor[3]; 
    double bulbColor[3];
    float gx, gy, scale, w2h, squash;
-   //GLfloat bulbVerts[141][2];
-   GLfloat bulbColrs[141][3];
    vector<GLfloat> verts;
+
+   if (vertexBuffer == NULL){
+      //printf("quack\n");
+   } else {
+      //printf("moo\n");
+   }
 
    // Parse input arguments
    if (!PyArg_ParseTuple(args, 
@@ -53,58 +59,50 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
    if (w2h <= 1.0)
    {
       glScalef(w2h*scale, w2h*scale, 1);
-      glLineWidth(w2h*3.0);
+      //glLineWidth(w2h*3.0);
       //squash = w2h*scale;
    }
    else
    {
       glScalef(scale, scale, 1);
-      glLineWidth(pow(1.0/w2h, 0.5)*3.0);
+      //glLineWidth(pow(1.0/w2h, 0.5)*3.0);
       //squash = scale;
    }
 
-   /*
-   glBegin(GL_TRIANGLES);
-   glColor3f(faceColor[0], faceColor[1], faceColor[2]);
-   for (int i = 0; i < 46; i++){
-      	//glVertex2f(gx + 0.0, gy + 0.0);
-      	//glVertex2f(gx + squash*0.4*cos(degToRad(i*8)), gy + squash*0.4*sin(degToRad(i*8)));
-      	//glVertex2f(gx + squash*0.4*cos(degToRad((i+1)*8)), gy + squash*0.4*sin(degToRad((i+1)*8)));
-      	glVertex2f(0.0, 0.0);
-      	glVertex2f(0.4*cos(degToRad(i*8)), 0.4*sin(degToRad(i*8)));
-      	glVertex2f(0.4*cos(degToRad((i+1)*8)), 0.4*sin(degToRad((i+1)*8)));
-   }
-   glEnd();
-   */
    glEnableClientState(GL_VERTEX_ARRAY);
    glEnableClientState(GL_COLOR_ARRAY );
-   glColor3f(faceColor[0], faceColor[1], faceColor[2]);
-   for (int i = 0; i < 46; i++){
+
+   char circleSegments = 60;
+   char degSegment = 360 / circleSegments;
+   for (int i = 0; i < circleSegments+1; i++){
       verts.push_back(0.0);
       verts.push_back(0.0);
-      verts.push_back(0.4*cos(degToRad(i*8)));
-      verts.push_back(0.4*sin(degToRad(i*8)));
-      verts.push_back(0.4*cos(degToRad((i+1)*8)));
-      verts.push_back(0.4*sin(degToRad((i+1)*8)));
+      verts.push_back(float(0.4*cos(degToRad(i*degSegment))));
+      verts.push_back(float(0.4*sin(degToRad(i*degSegment))));
+      verts.push_back(float(0.4*cos(degToRad((i+1)*degSegment))));
+      verts.push_back(float(0.4*sin(degToRad((i+1)*degSegment))));
    }
+
+
+
    int numVerts = verts.size()/2;
-   GLfloat *bulbVerts = new GLfloat[verts.size()];
+   vertexBuffer = new GLfloat[verts.size()];
+   GLfloat *bulbColrs = new GLfloat[verts.size()*3];
    GLushort * indices = new GLushort [numVerts];
-   for (int i = 0; i < verts.size()/2; i++){
-      bulbVerts[i*2] = verts[i*2];
-      bulbVerts[i*2+1] = verts[i*2+1];
+   for (int i = 0; i < numVerts; i++){
+      vertexBuffer[i*2] = verts[i*2];
+      vertexBuffer[i*2+1] = verts[i*2+1];
       indices[i] = i;
-      bulbColrs[i][0] = faceColor[0];
-      bulbColrs[i][1] = faceColor[1];
-      bulbColrs[i][2] = faceColor[2];
+      bulbColrs[i*3+0] = float(faceColor[0]);
+      bulbColrs[i*3+1] = float(faceColor[1]);
+      bulbColrs[i*3+2] = float(faceColor[2]);
    }
    
    glColorPointer(3, GL_FLOAT, 0, bulbColrs);
-   glVertexPointer(2, GL_FLOAT, 0, bulbVerts);
-   glDrawElements( GL_TRIANGLES, 137, GL_UNSIGNED_SHORT, indices);
+   glVertexPointer(2, GL_FLOAT, 0, vertexBuffer);
+   glDrawElements( GL_TRIANGLES, circleSegments*3, GL_UNSIGNED_SHORT, indices);
    glPopMatrix();
-   
-   delete [] bulbVerts;
+   delete [] bulbColrs;
    delete [] indices;
    Py_RETURN_NONE;
 }
