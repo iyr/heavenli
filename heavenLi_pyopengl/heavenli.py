@@ -105,79 +105,99 @@ def drawHome():
                 lamps[i].setMainLight(lightOn)
 
     # Draw circularly arranged bulb buttons
-    if lamps[0].getArn() == 0:
-        tmn = lamps[0].getNumBulbs()
-        for i in range(tmn):
-            tmx = 0.75*cos(radians(+i*360/tmn - 90 + lamps[0].getAngle() + 180/tmn))
-            tmy = 0.75*sin(radians(+i*360/tmn - 90 + lamps[0].getAngle() + 180/tmn))
-            if w2h >= 1:
-                tmx *= pow(w2h, 0.5)
-            else:
-                tmx *= w2h
-                tmy *= pow(w2h, 0.5)
+    #if lamps[0].getArn() == 0:
+        #tmn = lamps[0].getNumBulbs()
+        #for i in range(tmn):
+            #tmx = 0.75*cos(radians(+i*360/tmn - 90 + lamps[0].getAngle() + 180/tmn))
+            #tmy = 0.75*sin(radians(+i*360/tmn - 90 + lamps[0].getAngle() + 180/tmn))
+            #if w2h >= 1:
+                #tmx *= pow(w2h, 0.5)
+            #else:
+                #tmx *= w2h
+                #tmy *= pow(w2h, 0.5)
             #drawBulbButton(
                     #gx=tmx, 
                     #gy=tmy, 
                     #scale=iconSize*2.66,
                     #bulbColor=lamps[0].getBulbRGB(i), 
                     #w2h=w2h)
-            drawBulbButton(
-                    tmx, tmy, 
-                    iconSize*2.66, 
-                    (0.3, 0.3, 0.3), 
-                    (0.9, 0.9, 0.9), 
-                    lamps[0].getBulbRGB(i), 
-                    w2h)
+            #drawBulbButton(
+                    #tmx, tmy, 
+                    #iconSize*2.66, 
+                    #(0.3, 0.3, 0.3), 
+                    #(0.9, 0.9, 0.9), 
+                    #lamps[0].getBulbRGB(i), 
+                    #w2h)
+            #if (screen == 0) and (touchState != prvState):
+                #if (watchPoint(
+                    #mapRanges(tmx, -1.0*w2h, 1.0*w2h, 0, wx*2), 
+                    #mapRanges(tmy, 1.0, -1.0, 0, wy*2),
+                    #min(wx, wy)*0.5*0.3)):
+                    #targetScreen = 1
+                    #targetBulb = i
+                    #prevHue = lamps[0].getBulbHSV(i)[0]
+                    #prevSat = lamps[0].getBulbHSV(i)[1]
+                    #prevBri = lamps[0].getBulbHSV(i)[2]
 
-            if (screen == 0) and (touchState != prvState):
-                if (watchPoint(
-                    mapRanges(tmx, -1.0*w2h, 1.0*w2h, 0, wx*2), 
-                    mapRanges(tmy, 1.0, -1.0, 0, wy*2),
-                    min(wx, wy)*0.5*0.3)):
-                    targetScreen = 1
-                    targetBulb = i
-                    prevHue = lamps[0].getBulbHSV(i)[0]
-                    prevSat = lamps[0].getBulbHSV(i)[1]
-                    prevBri = lamps[0].getBulbHSV(i)[2]
+    drawBulbButton(
+            lamps[0].getArn(),
+            lamps[0].getNumBulbs(),
+            lamps[0].getAngle(),
+            iconSize*2.66,
+            (0.3, 0.3, 0.3),
+            (0.8, 0.8, 0.8),
+            lamps[0].getBulbsRGB(),
+            w2h)
+
+    #if (screen == 0) and (touchState != prvState):
+        #if (watchPoint(
+            #mapRanges(tmx, -1.0*w2h, 1.0*w2h, 0, wx*2), 
+            #mapRanges(tmy, 1.0, -1.0, 0, wy*2),
+            #min(wx, wy)*0.5*0.3)):
+            #targetScreen = 1
+            #targetBulb = i
+            #prevHue = lamps[0].getBulbHSV(i)[0]
+            #prevSat = lamps[0].getBulbHSV(i)[1]
+            #prevBri = lamps[0].getBulbHSV(i)[2]
 
     # Draw Linearly arranged bulb buttons
-    elif lamps[0].getArn() == 1:
-        tmn = lamps[0].getNumBulbs()
-        for i in range(tmn):
-            ang = radians(+i*180/constrain(tmn-1, 1, 5) + lamps[0].getAngle())
-            if tmn == 1:
-                ang -= 0.5*3.14159265
-            tmx = 0.75*cos(ang)
-            tmy = 0.75*sin(ang)
-            if w2h >= 1:
-                tmx *= pow(w2h, 0.5)
-            else:
-                tmx *= w2h
-                tmy *= pow(w2h, 0.5)
-            drawBulbButton(
-                    gx=tmx, 
-                    gy=tmy, 
-                    scale=iconSize*2.66,
-                    #bulbColor=lamps[0].getBulbRGB(tmn-i-1), 
-                    bulbColor=lamps[0].getBulbRGB(i), 
-                    w2h=w2h)
-            if (screen == 0) and (touchState != prvState):
-                tmx = 0.75*cos(-ang)
-                tmy = 0.75*sin(-ang)
-                if w2h >= 1:
-                    tmx *= pow(w2h, 0.5)
-                else:
-                    tmx *= w2h
-                    tmy *= pow(w2h, 0.5)
-                if (watchPoint(
-                    mapRanges(tmx, -1.0*w2h, 1.0*w2h, 0, wx*2), 
-                    mapRanges(tmy, -1.0, 1.0, 0, wy*2),
-                    min(wx, wy)*0.5*0.3)):
-                    targetScreen = 1
-                    targetBulb = i
-                    prevHue = lamps[0].getBulbHSV(i)[0]
-                    prevSat = lamps[0].getBulbHSV(i)[1]
-                    prevBri = lamps[0].getBulbHSV(i)[2]
+    #elif lamps[0].getArn() == 1:
+        #tmn = lamps[0].getNumBulbs()
+        #for i in range(tmn):
+            #ang = radians(+i*180/constrain(tmn-1, 1, 5) + lamps[0].getAngle())
+            #if tmn == 1:
+                #ang -= 0.5*3.14159265
+            #tmx = 0.75*cos(ang)
+            #tmy = 0.75*sin(ang)
+            #if w2h >= 1:
+                #tmx *= pow(w2h, 0.5)
+            #else:
+                #tmx *= w2h
+                #tmy *= pow(w2h, 0.5)
+            #drawBulbButton(
+                    #gx=tmx, 
+                    #gy=tmy, 
+                    #scale=iconSize*2.66,
+                    ##bulbColor=lamps[0].getBulbRGB(tmn-i-1), 
+                    #bulbColor=lamps[0].getBulbRGB(i), 
+                    #w2h=w2h)
+            #if (screen == 0) and (touchState != prvState):
+                #tmx = 0.75*cos(-ang)
+                #tmy = 0.75*sin(-ang)
+                #if w2h >= 1:
+                    #tmx *= pow(w2h, 0.5)
+                #else:
+                    #tmx *= w2h
+                    #tmy *= pow(w2h, 0.5)
+                #if (watchPoint(
+                    #mapRanges(tmx, -1.0*w2h, 1.0*w2h, 0, wx*2), 
+                    #mapRanges(tmy, -1.0, 1.0, 0, wy*2),
+                    #min(wx, wy)*0.5*0.3)):
+                    #targetScreen = 1
+                    #targetBulb = i
+                    #prevHue = lamps[0].getBulbHSV(i)[0]
+                    #prevSat = lamps[0].getBulbHSV(i)[1]
+                    #prevBri = lamps[0].getBulbHSV(i)[2]
 
     drawIconCircle(0.75, 0.75, 
             iconSize, iconSize, 

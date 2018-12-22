@@ -197,6 +197,9 @@ class Lamp:
                     self.bulbsTargetHSV[i] = (0.0, 0.0, 0.0)
         self.mainLightOn = lightOn
 
+    def getNumBulbs(self):
+        return self.numBulbs
+
     def setNumBulbs(self, n):
         if n < 1:
             n = 1
@@ -206,7 +209,4 @@ class Lamp:
             self.bulbsCurrentHSV.append((n*(1/self.numBulbs), 1.0, n/self.numBulbs))
             self.bulbsTargetHSV.append((n*(1/self.numBulbs), 1.0, n/self.numBulbs))
         self.numBulbs = n
-
-    def getNumBulbs(self):
-        return self.numBulbs
 
