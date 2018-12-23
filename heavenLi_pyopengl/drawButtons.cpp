@@ -14,13 +14,16 @@ GLfloat  *prevColors   = NULL;
 GLfloat  *curnColors   = NULL;
 GLushort *indices      = NULL;
 GLuint   numVerts      = NULL;
+GLuint   bulbVerts     = NULL;
 int      colorsStart   = NULL;
 int      colorsEnd     = NULL;
+int      prevNumBulbs  = NULL;
+float    prevAngOffset = NULL;
+float    prevW2H       = NULL;
 PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
 {
    PyObject* faceColorPyTup;
    PyObject* lineColorPyTup;
-   PyObject* bulbColorPyTup;
    PyObject* py_list;
    PyObject* py_tuple;
    PyObject* py_float;
@@ -28,7 +31,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
    double lineColor[3]; 
    double *bulbColors;
    //double bulbColor[3];
-   float angularOffset, scale, w2h, squash;
+   float angularOffset, scale, w2h;
    int arn, numBulbs;
 
    // Parse input arguments
@@ -61,45 +64,43 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
    for (int i = 0; i < 3; i++){
       faceColor[i] = PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, i));
       lineColor[i] = PyFloat_AsDouble(PyTuple_GetItem(lineColorPyTup, i));
-      //bulbColor[i] = PyFloat_AsDouble(PyTuple_GetItem(bulbColorPyTup, i));
    }
-
-   // Setup Transformations
-   //glPushMatrix();
-   //glTranslatef(gx, gy, 0);
-   if (w2h <= 1.0)
-   {
-      //glScalef(w2h*scale, w2h*scale, 1);
-      //glLineWidth(w2h*3.0);
-      squash = w2h*scale;
-   }
-   else
-   {
-      //glScalef(scale, scale, 1);
-      //glLineWidth(pow(1.0/w2h, 0.5)*3.0);
-      squash = scale;
-   }
-
-   //glEnableClientState(GL_VERTEX_ARRAY);
-   //glEnableClientState(GL_COLOR_ARRAY );
-
-   // Set Number of edges on circles
-   char circleSegments = 60;
 
    // Initialize / Update Vertex Geometry and Colors
-   if (vertexBuffer == NULL || colahbuffah == NULL || indices == NULL){
+   if (  vertexBuffer == NULL || 
+         colahbuffah == NULL || 
+         indices == NULL || 
+         prevNumBulbs != numBulbs ||
+         prevAngOffset != angularOffset ||
+         prevW2H != w2h){
+      printf("Recalculating bulb button geometry\n");
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
+      prevNumBulbs = numBulbs;
+      prevAngOffset = angularOffset;
+      prevW2H = w2h;
+
+      // Set Number of edges on circles
+      char circleSegments = 60;
       char degSegment = 360 / circleSegments;
 
+      // Setup Transformations
+      if (w2h <= 1.0)
+      {
+         scale = w2h*scale;
+      }
+
+      float tmx, tmy;
+      // Define verts / colors for each bulb button
+#     pragma omp parallel for
       for (int j = 0; j < numBulbs; j++) {
-         float tmx = 0.75*cos(degToRad(j*360/numBulbs - 90 + angularOffset + 180/numBulbs));
-         float tmy = 0.75*sin(degToRad(j*360/numBulbs - 90 + angularOffset + 180/numBulbs));
+         tmx = float(0.75*cos(degToRad(j*360/numBulbs - 90 + angularOffset + 180/numBulbs)));
+         tmy = float(0.75*sin(degToRad(j*360/numBulbs - 90 + angularOffset + 180/numBulbs)));
          if (w2h >= 1.0) {
-            tmx *= pow(w2h, 0.5);
+            tmx *= float(pow(w2h, 0.5));
          } else {
-            tmx *= w2h;
-            tmy *= pow(w2h, 0.5);
+            tmx *= float(w2h);
+            tmy *= float(pow(w2h, 0.5));
          }
          // Define Vertices / Colors for Button Face
          for (int i = 0; i < circleSegments+1; i++){
@@ -109,77 +110,79 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
             /* G */ colrs.push_back(float(faceColor[1]));
             /* B */ colrs.push_back(float(faceColor[2]));
 
-            /* X */ verts.push_back(float(tmx+0.4*cos(degToRad(i*degSegment))));
-            /* Y */ verts.push_back(float(tmy+0.4*sin(degToRad(i*degSegment))));
+            /* X */ verts.push_back(float(tmx+0.4*cos(degToRad(i*degSegment))*scale));
+            /* Y */ verts.push_back(float(tmy+0.4*sin(degToRad(i*degSegment))*scale));
             /* R */ colrs.push_back(float(faceColor[0]));
             /* G */ colrs.push_back(float(faceColor[1]));
             /* B */ colrs.push_back(float(faceColor[2]));
 
-            /* X */ verts.push_back(float(tmx+0.4*cos(degToRad((i+1)*degSegment))));
-            /* Y */ verts.push_back(float(tmy+0.4*sin(degToRad((i+1)*degSegment))));
+            /* X */ verts.push_back(float(tmx+0.4*cos(degToRad((i+1)*degSegment))*scale));
+            /* Y */ verts.push_back(float(tmy+0.4*sin(degToRad((i+1)*degSegment))*scale));
             /* R */ colrs.push_back(float(faceColor[0]));
             /* G */ colrs.push_back(float(faceColor[1]));
             /* B */ colrs.push_back(float(faceColor[2]));
          }
 
+         if (j == 0) {
+            colorsStart = colrs.size();
+         }
          // Define Vertices for Bulb Icon
-         colorsStart = colrs.size();
-         printf("%.1i\n", colorsStart);
          for (int i = 0; i < circleSegments+1; i++){
-            /* X */ verts.push_back(float(tmx+0.0));
-            /* Y */ verts.push_back(float(tmy+0.1));
-            /* R */ colrs.push_back(float(bulbColors[0]));
-            /* G */ colrs.push_back(float(bulbColors[1]));
-            /* B */ colrs.push_back(float(bulbColors[2]));
+            /* X */ verts.push_back(float(tmx+0.0*scale));
+            /* Y */ verts.push_back(float(tmy+0.1*scale));
+            /* R */ colrs.push_back(float(bulbColors[j*numBulbs+0]));
+            /* G */ colrs.push_back(float(bulbColors[j*numBulbs+1]));
+            /* B */ colrs.push_back(float(bulbColors[j*numBulbs+2]));
 
-            /* X */ verts.push_back(float(tmx+0.2*cos(degToRad(i*degSegment))));
-            /* Y */ verts.push_back(float(tmy+0.1+0.2*sin(degToRad(i*degSegment))));
-            /* R */ colrs.push_back(float(bulbColors[0]));
-            /* G */ colrs.push_back(float(bulbColors[1]));
-            /* B */ colrs.push_back(float(bulbColors[2]));
+            /* X */ verts.push_back(float(tmx+0.2*cos(degToRad(i*degSegment))*scale));
+            /* Y */ verts.push_back(float(tmy+(0.1+0.2*sin(degToRad(i*degSegment)))*scale));
+            /* R */ colrs.push_back(float(bulbColors[j*numBulbs+0]));
+            /* G */ colrs.push_back(float(bulbColors[j*numBulbs+1]));
+            /* B */ colrs.push_back(float(bulbColors[j*numBulbs+2]));
 
-            /* X */ verts.push_back(float(tmx+0.2*cos(degToRad((i+1)*degSegment))));
-            /* Y */ verts.push_back(float(tmy+0.1+0.2*sin(degToRad((i+1)*degSegment))));
-            /* R */ colrs.push_back(float(bulbColors[0]));
-            /* G */ colrs.push_back(float(bulbColors[1]));
-            /* B */ colrs.push_back(float(bulbColors[2]));
+            /* X */ verts.push_back(float(tmx+0.2*cos(degToRad((i+1)*degSegment))*scale));
+            /* Y */ verts.push_back(float(tmy+(0.1+0.2*sin(degToRad((i+1)*degSegment)))*scale));
+            /* R */ colrs.push_back(float(bulbColors[j*numBulbs+0]));
+            /* G */ colrs.push_back(float(bulbColors[j*numBulbs+1]));
+            /* B */ colrs.push_back(float(bulbColors[j*numBulbs+2]));
          }
-         colorsEnd = colrs.size();
-         printf("%.1i\n", colorsEnd);
+         if (j == 0) {
+            colorsEnd = colrs.size();
+         }
 
          // Define Verts for bulb screw base
          GLfloat tmp[54] = {
-            tmx-0.085, tmy-0.085,
-            tmx+0.085, tmy-0.085,
-            tmx+0.085, tmy-0.119,
-            tmx-0.085, tmy-0.085,
-            tmx+0.085, tmy-0.119,
-            tmx-0.085, tmy-0.119,
+            float(tmx-0.085*scale), float(tmy-0.085*scale),
+            float(tmx+0.085*scale), float(tmy-0.085*scale),
+            float(tmx+0.085*scale), float(tmy-0.119*scale),
+            float(tmx-0.085*scale), float(tmy-0.085*scale),
+            float(tmx+0.085*scale), float(tmy-0.119*scale),
+            float(tmx-0.085*scale), float(tmy-0.119*scale),
    
-            tmx+0.085, tmy-0.119,
-            tmx-0.085, tmy-0.119,
-            tmx-0.085, tmy-0.153,
+            float(tmx+0.085*scale), float(tmy-0.119*scale),
+            float(tmx-0.085*scale), float(tmy-0.119*scale),
+            float(tmx-0.085*scale), float(tmy-0.153*scale),
    
-            tmx+0.085, tmy-0.136,
-            tmx-0.085, tmy-0.170,
-            tmx-0.085, tmy-0.204,
-            tmx+0.085, tmy-0.136,
-            tmx+0.085, tmy-0.170,
-            tmx-0.085, tmy-0.204,
+            float(tmx+0.085*scale), float(tmy-0.136*scale),
+            float(tmx-0.085*scale), float(tmy-0.170*scale),
+            float(tmx-0.085*scale), float(tmy-0.204*scale),
+            float(tmx+0.085*scale), float(tmy-0.136*scale),
+            float(tmx+0.085*scale), float(tmy-0.170*scale),
+            float(tmx-0.085*scale), float(tmy-0.204*scale),
    
-            tmx+0.085, tmy-0.187,
-            tmx-0.085, tmy-0.221,
-            tmx-0.085, tmy-0.255,
-            tmx+0.085, tmy-0.187,
-            tmx+0.085, tmy-0.221,
-            tmx-0.085, tmy-0.255,
+            float(tmx+0.085*scale), float(tmy-0.187*scale),
+            float(tmx-0.085*scale), float(tmy-0.221*scale),
+            float(tmx-0.085*scale), float(tmy-0.255*scale),
+            float(tmx+0.085*scale), float(tmy-0.187*scale),
+            float(tmx+0.085*scale), float(tmy-0.221*scale),
+            float(tmx-0.085*scale), float(tmy-0.255*scale),
    
-            tmx+0.085, tmy-0.238,
-            tmx-0.085, tmy-0.272,
-            tmx-0.051, tmy-0.306,
-            tmx+0.085, tmy-0.238,
-            tmx+0.051, tmy-0.306,
-            tmx-0.051, tmy-0.306,
+            float(tmx+0.085*scale), float(tmy-0.238*scale),
+            float(tmx-0.085*scale), float(tmy-0.272*scale),
+            float(tmx-0.051*scale), float(tmy-0.306*scale),
+            float(tmx+0.085*scale), float(tmy-0.238*scale),
+            float(tmx+0.051*scale), float(tmy-0.306*scale),
+            float(tmx-0.051*scale), float(tmy-0.306*scale),
          };
    
          for (int i = 0; i < 27; i++) {
@@ -189,79 +192,138 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
             colrs.push_back(float(lineColor[1]));
             colrs.push_back(float(lineColor[2]));
          }
-   
-         // Pack Vertices / Colors into global array buffers
-         numVerts = verts.size()/2;
-         vertexBuffer = new GLfloat[verts.size()];
+
+         if (j == 0) {
+            bulbVerts = verts.size()/2;
+         }
+      }
+      // Pack Vertices / Colors into global array buffers
+      numVerts = verts.size()/2;
+
+      // (Re)allocate vertex buffer
+      if (vertexBuffer == NULL) {
+         vertexBuffer = new GLfloat[numVerts*2];
+      } else {
+         delete [] vertexBuffer;
+         vertexBuffer = new GLfloat[numVerts*2];
+      }
+
+      // (Re)allocate color buffer
+      if (colahbuffah == NULL) {
          colahbuffah  = new GLfloat[verts.size()*3];
+      } else {
+         delete [] colahbuffah;
+         colahbuffah = new GLfloat[verts.size()*3];
+      }
+
+      // (Re)allocate index array
+      if (indices == NULL) {
          indices = new GLushort[numVerts];
-         for (int i = 0; i < numVerts; i++){
-            vertexBuffer[i*2] = verts[i*2];
-            vertexBuffer[i*2+1] = verts[i*2+1];
-            indices[i] = i;
-            colahbuffah[i*3+0] = colrs[i*3+0];
-            colahbuffah[i*3+1] = colrs[i*3+1];
-            colahbuffah[i*3+2] = colrs[i*3+2];
-         }
-         prevColors   = new GLfloat[9];
-         curnColors   = new GLfloat[9];
-         for (int i = 0; i < 3; i++){
-            prevColors[0+i] = float(faceColor[i]);
-            prevColors[3+i] = float(bulbColors[i]);
-            prevColors[6+i] = float(lineColor[i]);
-   
-            curnColors[0+i] = float(faceColor[i]);
-            curnColors[3+i] = float(bulbColors[i]);
-            curnColors[6+i] = float(lineColor[i]);
-         }
-      } 
-      else
-      {
-         for (int i = 0; i < 3; i++){
-            curnColors[0+i] = float(faceColor[i]);
-            curnColors[3+i] = float(bulbColors[i]);
-            curnColors[6+i] = float(lineColor[i]);
-         }
+      } else {
+         delete [] indices;
+         indices = new GLushort[numVerts];
+      }
 
-         // Update Color(s) of Button Face 
-         if (curnColors[0] != prevColors[0] &&
-            curnColors[1] != prevColors[1] &&
-            curnColors[2] != prevColors[2] ){
+      // Pack indices, vertex and color bufferes
+      for (unsigned int i = 0; i < numVerts; i++){
+         vertexBuffer[i*2] = verts[i*2];
+         vertexBuffer[i*2+1] = verts[i*2+1];
+         indices[i] = i;
+         colahbuffah[i*3+0] = colrs[i*3+0];
+         colahbuffah[i*3+1] = colrs[i*3+1];
+         colahbuffah[i*3+2] = colrs[i*3+2];
+      }
 
-            for (int i = 0; i < colorsStart/3; i++){
-               colahbuffah[i*3+0] = float(bulbColors[0]);
-               colahbuffah[i*3+1] = float(bulbColors[1]);
-               colahbuffah[i*3+2] = float(bulbColors[2]);
+      // (Re)allocate button colors
+      if (prevColors == NULL) {
+         prevColors   = new GLfloat[3*numBulbs+6];
+      } else {
+         delete [] prevColors;
+         prevColors   = new GLfloat[3*numBulbs+6];
+      }
+
+      if (curnColors == NULL) {
+         curnColors   = new GLfloat[3*numBulbs+6];
+      } else {
+         delete [] curnColors;
+         curnColors   = new GLfloat[3*numBulbs+6];
+      }
+
+      for (int i = 0; i < 3; i++) {
+         curnColors[0+i] = float(faceColor[i]);
+         curnColors[3+i] = float(lineColor[i]);
+
+         prevColors[0+i] = float(faceColor[i]);
+         prevColors[3+i] = float(lineColor[i]);
+      }
+      for (int i = 0; i < 3*numBulbs; i++){
+         curnColors[6+i] = float(bulbColors[i]);
+
+         prevColors[6+i] = float(bulbColors[i]);
+      }
+      
+   } 
+   // Vertices / Geometry already calculated
+   // Check if colors need to be updated
+   else
+   {
+      /* Update current palate of colors
+       * First 3 elements are face color
+       * Next 3 elements are line color
+       * Remaining elements are bulb colors
+       */
+      curnColors[0] = float(faceColor[0]);
+      curnColors[1] = float(faceColor[1]);
+      curnColors[2] = float(faceColor[2]);
+      curnColors[3] = float(lineColor[0]);
+      curnColors[4] = float(lineColor[1]);
+      curnColors[5] = float(lineColor[2]);
+
+      for (int i = 0; i < 3*numBulbs; i++){
+         curnColors[6+i] = float(bulbColors[i]);
+      }
+
+      // See if any bulb colors need to be updated
+#     pragma omp parallel for
+      for (int i = 0; i < 3; i++) {
+         for (int j = 0; j < numBulbs; j++) {
+            if (curnColors[6+i+j*3] != prevColors[6+i+j*3]) {
+               for (int k = 0; k < (colorsEnd-colorsStart)/3; k++) {
+                  colahbuffah[ j*bulbVerts*3 + colorsStart + i + k*3 ] = curnColors[6+i+j*3];
+               }
             }
-
-            prevColors[0] = float(bulbColors[0]);
-            prevColors[1] = float(bulbColors[1]);
-            prevColors[2] = float(bulbColors[2]);
          }
+      }
 
-         // Update Color(s) of Bulb Icon
-         //if ((curnColors[3] != prevColors[3]) &&
-            //(curnColors[4] != prevColors[4]) &&
-            //(curnColors[5] != prevColors[5]) ){
+      prevColors[0] = curnColors[0];
+      prevColors[1] = curnColors[1];
+      prevColors[2] = curnColors[2];
+      prevColors[3] = curnColors[3];
+      prevColors[4] = curnColors[4];
+      prevColors[5] = curnColors[5];
+      /*
+      prevColors[0] = float(faceColor[0]);
+      prevColors[1] = float(faceColor[1]);
+      prevColors[2] = float(faceColor[2]);
 
-            for (int i = colorsStart/3; i < colorsEnd/3; i++){
-               colahbuffah[i*3+0] = float(bulbColors[0]);
-               colahbuffah[i*3+1] = float(bulbColors[1]);
-               colahbuffah[i*3+2] = float(bulbColors[2]);
-            }
+      prevColors[3] = float(lineColor[0]);
+      prevColors[4] = float(lineColor[1]);
+      prevColors[5] = float(lineColor[2]);
+      */
 
-            prevColors[3] = curnColors[3];
-            prevColors[4] = curnColors[4];
-            prevColors[5] = curnColors[5];
-            //printf("%.2f, %.2f, %.2f\n", float(bulbColor[0]), float(bulbColor[1]), float(bulbColor[2]));
-         //}
-      } 
+      for (int i = 0; i < 3*numBulbs; i++){
+         prevColors[6+i] = curnColors[6+i];
+         //prevColors[6+i] = float(bulbColors[i]);
+      }
+   } 
+
+   // Cleanup
+   delete [] bulbColors;
    
    // Copy Vertex / Color Array Bufferes to GPU, draw
    glColorPointer(3, GL_FLOAT, 0, colahbuffah);
    glVertexPointer(2, GL_FLOAT, 0, vertexBuffer);
    glDrawElements( GL_TRIANGLES, numVerts, GL_UNSIGNED_SHORT, indices);
-   //glPopMatrix();
 
    Py_RETURN_NONE;
 }
