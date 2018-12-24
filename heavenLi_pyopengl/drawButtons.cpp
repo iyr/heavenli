@@ -18,6 +18,7 @@ GLuint   bulbVerts     = NULL;
 int      colorsStart   = NULL;
 int      colorsEnd     = NULL;
 int      prevNumBulbs  = NULL;
+int      prevArn       = NULL;
 float    prevAngOffset = NULL;
 float    prevW2H       = NULL;
 PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
@@ -72,14 +73,12 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
          indices == NULL || 
          prevNumBulbs != numBulbs ||
          prevAngOffset != angularOffset ||
-         prevW2H != w2h){
-      printf("Recalculating bulb button geometry\n");
+         prevW2H != w2h ||
+         prevArn != arn) {
+
+      printf("(Re)Calculating bulb button geometry\n");
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
-      prevNumBulbs = numBulbs;
-      prevAngOffset = angularOffset;
-      prevW2H = w2h;
-
       // Set Number of edges on circles
       char circleSegments = 60;
       char degSegment = 360 / circleSegments;
@@ -90,12 +89,23 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
          scale = w2h*scale;
       }
 
-      float tmx, tmy;
+      float tmx, tmy, ang;
       // Define verts / colors for each bulb button
 #     pragma omp parallel for
       for (int j = 0; j < numBulbs; j++) {
-         tmx = float(0.75*cos(degToRad(j*360/numBulbs - 90 + angularOffset + 180/numBulbs)));
-         tmy = float(0.75*sin(degToRad(j*360/numBulbs - 90 + angularOffset + 180/numBulbs)));
+         if (arn == 0) {
+            ang = degToRad(j*360/numBulbs - 90 + angularOffset + 180/numBulbs);
+         } else if (arn == 1) {
+            ang = degToRad(
+                  (j*180)/(numBulbs-1 < 1 ? 1 : numBulbs-1) + 
+                  angularOffset + 
+                  (numBulbs == 1 ? -90 : 0)
+                  );
+         }
+
+         // Relative coordinates of each button (from the center of the circle)
+         tmx = float(0.75*cos(ang));
+         tmy = float(0.75*sin(ang));
          if (w2h >= 1.0) {
             tmx *= float(pow(w2h, 0.5));
          } else {
@@ -229,9 +239,11 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
          vertexBuffer[i*2] = verts[i*2];
          vertexBuffer[i*2+1] = verts[i*2+1];
          indices[i] = i;
-         colahbuffah[i*3+0] = colrs[i*3+0];
-         colahbuffah[i*3+1] = colrs[i*3+1];
-         colahbuffah[i*3+2] = colrs[i*3+2];
+         for (int j = 0; j < numBulbs; j++) {
+            colahbuffah[i*3+0] = colrs[i*3+0];
+            colahbuffah[i*3+1] = colrs[i*3+1];
+            colahbuffah[i*3+2] = colrs[i*3+2];
+         }
       }
 
       // (Re)allocate button colors
@@ -252,16 +264,19 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
       for (int i = 0; i < 3; i++) {
          curnColors[0+i] = float(faceColor[i]);
          curnColors[3+i] = float(lineColor[i]);
-
-         prevColors[0+i] = float(faceColor[i]);
-         prevColors[3+i] = float(lineColor[i]);
+         prevColors[0+i] = float(faceColor[i]*0.5);
+         prevColors[3+i] = float(lineColor[i]*0.5);
       }
       for (int i = 0; i < 3*numBulbs; i++){
          curnColors[6+i] = float(bulbColors[i]);
-
-         prevColors[6+i] = float(bulbColors[i]);
+         prevColors[6+i] = float(bulbColors[i]*0.5);
       }
       
+      prevNumBulbs = numBulbs;
+      prevAngOffset = angularOffset;
+      prevW2H = w2h;
+      prevArn = arn;
+
    } 
    // Vertices / Geometry already calculated
    // Check if colors need to be updated
@@ -301,15 +316,6 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
       prevColors[3] = curnColors[3];
       prevColors[4] = curnColors[4];
       prevColors[5] = curnColors[5];
-      /*
-      prevColors[0] = float(faceColor[0]);
-      prevColors[1] = float(faceColor[1]);
-      prevColors[2] = float(faceColor[2]);
-
-      prevColors[3] = float(lineColor[0]);
-      prevColors[4] = float(lineColor[1]);
-      prevColors[5] = float(lineColor[2]);
-      */
 
       for (int i = 0; i < 3*numBulbs; i++){
          prevColors[6+i] = curnColors[6+i];
