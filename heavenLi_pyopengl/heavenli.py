@@ -39,6 +39,8 @@ targetScreen = 0
 touchState = 0
 targetBulb = 0
 frameLimit = False
+someVar = 0
+someInc = 1
 #demo = Lamp()
 
 def init():
@@ -54,10 +56,14 @@ def init():
     lamps.append(demo)
 
 def framerate():
-    global t0, frames, w2h, fps
+    global t0, frames, w2h, fps, someVar, someInc
     t = time.time()
     frames += 1
     seconds = t - t0
+    someVar += someInc
+    if (someVar >= 100) or (someVar <= 0):
+        someInc = -someInc
+
     try:
         fps = frames/seconds
     except:
@@ -123,6 +129,8 @@ def drawHome():
             iconSize*2.66,
             (0.3, 0.3, 0.3),
             (0.8, 0.8, 0.8),
+            #(0.3*(1-someVar/100), 0.3*(1-someVar/100), 0.3*(1-someVar/100)),
+            #(0.8*(someVar/100), 0.8*(someVar/100), 0.8*(someVar/100)),
             lamps[0].getBulbsRGB(),
             w2h)
 

@@ -17,6 +17,7 @@ GLuint   numVerts      = NULL;
 GLuint   bulbVerts     = NULL;
 int      colorsStart   = NULL;
 int      colorsEnd     = NULL;
+int      lineEnd       = NULL;
 int      prevNumBulbs  = NULL;
 int      prevArn       = NULL;
 float    prevAngOffset = NULL;
@@ -207,6 +208,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
 
          if (j == 0) {
             bulbVerts = verts.size()/2;
+            lineEnd = colrs.size();
          }
       }
       // Pack Vertices / Colors into global array buffers
@@ -241,16 +243,10 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
          vertexBuffer[i*2] = verts[i*2];
          vertexBuffer[i*2+1] = verts[i*2+1];
          indices[i] = i;
-         /*
-         for (int j = 0; j < numBulbs; j++) {
-            colahbuffah[i*3+0] = colrs[i*3+0];
-            colahbuffah[i*3+1] = colrs[i*3+1];
-            colahbuffah[i*3+2] = colrs[i*3+2];
-         }
-         */
+         colahbuffah[i*3+0] = colrs[i*3+0];
+         colahbuffah[i*3+1] = colrs[i*3+1];
+         colahbuffah[i*3+2] = colrs[i*3+2];
       }
-      for (unsigned int i = 0; i < numVerts*3; i++)
-         colahbuffah[i] = colrs[i];
 
       prevNumBulbs = numBulbs;
       prevAngOffset = angularOffset;
@@ -262,7 +258,29 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
    // Check if colors need to be updated
    else
    {
-      // See if any bulb colors need to be updated
+      for (int i = 0; i < 3; i++) {
+         // Update face color, if needed
+         if (float(faceColor[i]) != colahbuffah[i]) {
+            //printf("Updating Face color\n");
+            for (int j = 0; j < numBulbs; j++) {
+               for (int k = 0; k < colorsStart/3; k++) {
+                  colahbuffah[ j*bulbVerts*3 + k*3 + i ] = float(faceColor[i]);
+               }
+            }
+         }
+
+         // Update Line Color, if needed
+         if (float(lineColor[i]) != colahbuffah[colorsEnd+i]) {
+            //printf("Updating Line Color\n");
+            for (int j = 0; j < numBulbs; j++) {
+               for (int k = 0; k < (lineEnd - colorsEnd)/3; k++) {
+                  colahbuffah[ colorsEnd + j*bulbVerts*3 + k*3 + i ] = float(lineColor[i]);
+               }
+            }
+         }
+      }
+      
+      // Update any bulb colors, if needed
 #     pragma omp parallel for
       // Iterate through colors (R0, G1, B2)
       for (int i = 0; i < 3; i++) {
