@@ -15,12 +15,14 @@ GLfloat  *curnColors   = NULL;
 GLushort *indices      = NULL;
 GLuint   numVerts      = NULL;
 GLuint   bulbVerts     = NULL;
+float*   buttonCoords  = NULL;
 int      colorsStart   = NULL;
 int      colorsEnd     = NULL;
 int      lineEnd       = NULL;
 int      prevNumBulbs  = NULL;
 int      prevArn       = NULL;
 float    prevAngOffset = NULL;
+float    prevScale     = NULL;
 float    prevW2H       = NULL;
 PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
 {
@@ -60,7 +62,6 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
          py_float = PyTuple_GetItem(py_tuple, j);
          bulbColors[i*3+j] = double(PyFloat_AsDouble(py_float));
       }
-      //printf("BulbColor %.i: ( %.2f, %.2f, %.2f )\n", i, bulbColors[i*3], bulbColors[i*3+1], bulbColors[i*3+2]);
    }
 
    // Parse RGB tuples
@@ -73,13 +74,10 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
    if (  vertexBuffer == NULL || 
          colahbuffah == NULL || 
          indices == NULL || 
-         prevNumBulbs != numBulbs ||
-         prevAngOffset != angularOffset ||
-         prevW2H != w2h ||
-         prevArn != arn) {
+         buttonCoords == NULL ||
+         prevNumBulbs != numBulbs
+         ) {
 
-      printf("(Re)Calculating bulb button geometry\n");
-      printf("Number Of Bulbs: %.i\n", numBulbs);
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
       // Set Number of edges on circles
@@ -90,6 +88,13 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
       if (w2h <= 1.0)
       {
          scale = w2h*scale;
+      }
+
+      if (buttonCoords == NULL) {
+         buttonCoords = new float[2*numBulbs];
+      } else {
+         delete [] buttonCoords;
+         buttonCoords = new float[2*numBulbs];
       }
 
       float tmx, tmy, ang;
@@ -115,6 +120,10 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
             tmx *= float(w2h);
             tmy *= float(pow(w2h, 0.5));
          }
+
+         buttonCoords[j*2+0] = tmx;
+         buttonCoords[j*2+1] = tmy;
+
          // Define Vertices / Colors for Button Face
          for (int i = 0; i < circleSegments+1; i++){
             /* X */ verts.push_back(float(tmx+0.0));
@@ -252,8 +261,123 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
       prevAngOffset = angularOffset;
       prevW2H = w2h;
       prevArn = arn;
+      prevScale = scale;
 
    } 
+   // Recalculate vertex geometry without expensieve reallocation
+   else if (
+         prevW2H != w2h ||
+         prevArn != arn ||
+         prevAngOffset != angularOffset ||
+         prevScale != scale
+         ) {
+      // Set Number of edges on circles
+      char circleSegments = 60;
+      char degSegment = 360 / circleSegments;
+
+      // Setup Transformations
+      if (w2h <= 1.0)
+      {
+         scale = w2h*scale;
+      }
+
+      float tmx, tmy, ang;
+      // Define verts / colors for each bulb button
+#     pragma omp parallel for
+      for (int j = 0; j < numBulbs; j++) {
+         if (arn == 0) {
+            ang = float(degToRad(j*360/numBulbs - 90 + angularOffset + 180/numBulbs));
+         } else if (arn == 1) {
+            ang = float(degToRad(
+                  (j*180)/(numBulbs-1 < 1 ? 1 : numBulbs-1) + 
+                  angularOffset + 
+                  (numBulbs == 1 ? -90 : 0)
+                  ));
+         }
+
+         // Relative coordinates of each button (from the center of the circle)
+         tmx = float(0.75*cos(ang));
+         tmy = float(0.75*sin(ang));
+         if (w2h >= 1.0) {
+            tmx *= float(pow(w2h, 0.5));
+         } else {
+            tmx *= float(w2h);
+            tmy *= float(pow(w2h, 0.5));
+         }
+
+         buttonCoords[j*2+0] = tmx;
+         buttonCoords[j*2+1] = tmy;
+
+         // Define Vertices / Colors for Button Face
+         for (int i = 0; i < circleSegments+1; i++){
+            /* X */ vertexBuffer[j*bulbVerts*2+i*6+0] = (float(tmx+0.0));
+            /* Y */ vertexBuffer[j*bulbVerts*2+i*6+1] = (float(tmy+0.0));
+
+            /* X */ vertexBuffer[j*bulbVerts*2+i*6+2] = (float(tmx+0.4*cos(degToRad(i*degSegment))*scale));
+            /* Y */ vertexBuffer[j*bulbVerts*2+i*6+3] = (float(tmy+0.4*sin(degToRad(i*degSegment))*scale));
+
+            /* X */ vertexBuffer[j*bulbVerts*2+i*6+4] = (float(tmx+0.4*cos(degToRad((i+1)*degSegment))*scale));
+            /* Y */ vertexBuffer[j*bulbVerts*2+i*6+5] = (float(tmy+0.4*sin(degToRad((i+1)*degSegment))*scale));
+         }
+
+         // Define Vertices for Bulb Icon
+         for (int i = 0; i < circleSegments+1; i++){
+            /* X */ vertexBuffer[j*bulbVerts*2+(circleSegments+1)*6+i*6+0] = (float(tmx+0.0*scale));
+            /* Y */ vertexBuffer[j*bulbVerts*2+(circleSegments+1)*6+i*6+1] = (float(tmy+0.1*scale));
+
+            /* X */ vertexBuffer[j*bulbVerts*2+(circleSegments+1)*6+i*6+2] = (float(tmx+0.2*cos(degToRad(i*degSegment))*scale));
+            /* Y */ vertexBuffer[j*bulbVerts*2+(circleSegments+1)*6+i*6+3] = (float(tmy+(0.1+0.2*sin(degToRad(i*degSegment)))*scale));
+
+            /* X */ vertexBuffer[j*bulbVerts*2+(circleSegments+1)*6+i*6+4] = (float(tmx+0.2*cos(degToRad((i+1)*degSegment))*scale));
+            /* Y */ vertexBuffer[j*bulbVerts*2+(circleSegments+1)*6+i*6+5] = (float(tmy+(0.1+0.2*sin(degToRad((i+1)*degSegment)))*scale));
+         }
+
+         // Define Verts for bulb screw base
+         GLfloat tmp[54] = {
+            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.085*scale),
+            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.085*scale),
+            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.119*scale),
+            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.085*scale),
+            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.119*scale),
+            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.119*scale),
+   
+            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.119*scale),
+            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.119*scale),
+            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.153*scale),
+   
+            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.136*scale),
+            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.170*scale),
+            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.204*scale),
+            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.136*scale),
+            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.170*scale),
+            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.204*scale),
+   
+            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.187*scale),
+            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.221*scale),
+            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.255*scale),
+            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.187*scale),
+            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.221*scale),
+            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.255*scale),
+   
+            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.238*scale),
+            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.272*scale),
+            /* X, Y */ float(tmx-0.051*scale), float(tmy-0.306*scale),
+            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.238*scale),
+            /* X, Y */ float(tmx+0.051*scale), float(tmy-0.306*scale),
+            /* X, Y */ float(tmx-0.051*scale), float(tmy-0.306*scale),
+         };
+   
+         for (int i = 0; i < 27; i++) {
+            /* X */ vertexBuffer[j*bulbVerts*2+i*2+(circleSegments+1)*12+0] = (float(tmp[i*2+0]));
+            /* Y */ vertexBuffer[j*bulbVerts*2+i*2+(circleSegments+1)*12+1] = (float(tmp[i*2+1]));
+         }
+      }
+
+      prevAngOffset = angularOffset;
+      prevW2H = w2h;
+      prevArn = arn;
+      prevScale = scale;
+   }
    // Vertices / Geometry already calculated
    // Check if colors need to be updated
    else
@@ -299,6 +423,16 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
       }
    } 
 
+   PyList_ClearFreeList();
+   py_list = PyList_New(numBulbs);
+   for (int i = 0; i < numBulbs; i++) {
+      py_tuple = PyTuple_New(2);
+      PyTuple_SetItem(py_tuple, 0, PyFloat_FromDouble(buttonCoords[i*2+0]));
+      PyTuple_SetItem(py_tuple, 1, PyFloat_FromDouble(buttonCoords[i*2+1]));
+      PyList_SetItem(py_list, i, py_tuple);
+      //PyList_Append(py_list, py_tuple);
+   }
+
    // Cleanup
    delete [] bulbColors;
    
@@ -307,7 +441,8 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
    glVertexPointer(2, GL_FLOAT, 0, vertexBuffer);
    glDrawElements( GL_TRIANGLES, numVerts, GL_UNSIGNED_SHORT, indices);
 
-   Py_RETURN_NONE;
+   return py_list;
+   //Py_RETURN_NONE;
 }
 
 static PyMethodDef drawButtons_methods[] = {
