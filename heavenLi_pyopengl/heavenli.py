@@ -1,22 +1,34 @@
 #! /usr/bin/env python
-import cProfile
+#import cProfile
+print("Now Loading...")
+
+print("Loading OpenGL...")
 import OpenGL
 OpenGL.ERROR_ON_COPY = True
 OpenGL.ERROR_LOGGING = False
 OpenGL.ERROR_CHECKING = False
 from OpenGL.GL import *
+print("Done!")
+
+print("Loading GLUT...")
 from OpenGL.GLUT import *
+print("Done!")
+
+print("Loading System Utilities...")
 import sys, time
 from math import sin,cos,sqrt,pi,radians
 import os
-import colorsys
+print("Done!")
 
+print("Loading heavenLi Utilities...")
+import colorsys
 from animUtils import *
 from drawArn import *
 from drawButtons import *
 from drawUtils import *
 from lampClass import *
 from rangeUtils import *
+print("Done!")
 
 tStart = t0 = time.time()
 frames = 0
@@ -99,6 +111,7 @@ def drawHome():
     global lamps, wx, wy, w2h, screen, touchState, lightOn, prvState, targetScreen, targetBulb, colrSettingCursor
 
     iconSize = 0.15
+    drawClock(1.0, w2h, (0.95, 0.95, 0.95), (0.3, 0.3, 0.3))
 
     # We are at the home screen
     if (screen == 0) and (touchState != prvState):
@@ -204,11 +217,11 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
             targetLamp.getBulbsRGB(),
             w2h)
 
-    #drawClock(
-            #scale=acic*1.7, 
-            #w2h=w2h, 
-            #handColor=(0.9*acc, 0.9*acc, 0.9*acc), 
-            #faceColor=(0.3*acc, 0.3*acc, 0.3*acc))
+    drawClock(
+            1.0+acic*0.75, 
+            w2h, 
+            (0.9*acc, 0.9*acc, 0.9*acc), 
+            (0.3*acc, 0.3*acc, 0.3*acc))
 
     glPushMatrix()
 
@@ -416,9 +429,6 @@ def display():
 
     glDisable(GL_LIGHTING)
     drawBackground(0)
-    #drawClock(1.0, (0.3, 0.3, 0.3), (0.95, 0.95, 0.95), w2h)
-    #cProfile.run('drawClock(w2h=w2h)')
-    #drawClock(w2h=w2h)
 
     if (targetScreen == 0):
         if (colrSettingCursor > 0):
@@ -542,6 +552,7 @@ def visible(vis):
 # Equivalent to "main()" in C/C++
 if __name__ == '__main__':
     #global windowDimW, windowDimH, windowPosX, windowPosY
+    print("Initializing...")
     glutInit(sys.argv)
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE)
 

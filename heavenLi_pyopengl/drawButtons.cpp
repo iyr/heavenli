@@ -8,31 +8,29 @@
 #define degToRad(angleInDegrees) ((angleInDegrees) * 3.1415926535 / 180.0)
 using namespace std;
 
-GLfloat  *vertexBuffer = NULL;
-GLfloat  *colahbuffah  = NULL;
-GLfloat  *prevColors   = NULL;
-GLfloat  *curnColors   = NULL;
-GLushort *indices      = NULL;
-GLuint   numVerts      = NULL;
-GLuint   bulbVerts     = NULL;
-float*   buttonCoords  = NULL;
-int      colorsStart   = NULL;
-int      colorsEnd     = NULL;
-int      lineEnd       = NULL;
-int      prevNumBulbs  = NULL;
-int      prevArn       = NULL;
-float    prevAngOffset = NULL;
-float    prevScale     = NULL;
-float    prevW2H       = NULL;
+GLfloat  *bulbButtonVertexBuffer = NULL;
+GLfloat  *bulbButtonColorBuffer  = NULL;
+GLushort *bulbButtonIndices      = NULL;
+GLuint   bulbButtonsVerts        = NULL;
+GLuint   vertsPerBulb            = NULL;
+float*   buttonCoords            = NULL;
+int      colorsStart             = NULL;
+int      colorsEnd               = NULL;
+int      detailEnd               = NULL;
+int      prevNumBulbs            = NULL;
+int      prevArn                 = NULL;
+float    prevAngOffset           = NULL;
+float    prevBulbButtonScale     = NULL;
+float    prevBulbButtonW2H       = NULL;
 PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
 {
    PyObject* faceColorPyTup;
-   PyObject* lineColorPyTup;
+   PyObject* detailColorPyTup;
    PyObject* py_list;
    PyObject* py_tuple;
    PyObject* py_float;
    double faceColor[3];
-   double lineColor[3]; 
+   double detailColor[3]; 
    double *bulbColors;
    //double bulbColor[3];
    float angularOffset, scale, w2h;
@@ -46,14 +44,14 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
             &angularOffset,
             &scale,
             &faceColorPyTup,
-            &lineColorPyTup,
+            &detailColorPyTup,
             &py_list,
             &w2h))
    {
       Py_RETURN_NONE;
    }
 
-   //py_tuple = PyList_GetItem(py_list, 0)
+   // Parse array of tuples containing RGB Colors of bulbs
    bulbColors = new double[numBulbs*3];
    for (int i = 0; i < numBulbs; i++){
       py_tuple = PyList_GetItem(py_list, i);
@@ -64,16 +62,16 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
       }
    }
 
-   // Parse RGB tuples
+   // Parse RGB color tuples of face and detail colors
    for (int i = 0; i < 3; i++){
       faceColor[i] = PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, i));
-      lineColor[i] = PyFloat_AsDouble(PyTuple_GetItem(lineColorPyTup, i));
+      detailColor[i] = PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, i));
    }
 
    // Initialize / Update Vertex Geometry and Colors
-   if (  vertexBuffer == NULL || 
-         colahbuffah == NULL || 
-         indices == NULL || 
+   if (  bulbButtonVertexBuffer == NULL || 
+         bulbButtonColorBuffer == NULL || 
+         bulbButtonIndices == NULL || 
          buttonCoords == NULL ||
          prevNumBulbs != numBulbs
          ) {
@@ -99,7 +97,6 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
 
       float tmx, tmy, ang;
       // Define verts / colors for each bulb button
-#     pragma omp parallel for
       for (int j = 0; j < numBulbs; j++) {
          if (arn == 0) {
             ang = float(degToRad(j*360/numBulbs - 90 + angularOffset + 180/numBulbs));
@@ -125,6 +122,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
          buttonCoords[j*2+1] = tmy;
 
          // Define Vertices / Colors for Button Face
+#        pragma omp parallel for
          for (int i = 0; i < circleSegments+1; i++){
             /* X */ verts.push_back(float(tmx+0.0));
             /* Y */ verts.push_back(float(tmy+0.0));
@@ -149,6 +147,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
             colorsStart = colrs.size();
          }
          // Define Vertices for Bulb Icon
+#        pragma omp parallel for
          for (int i = 0; i < circleSegments+1; i++){
             /* X */ verts.push_back(float(tmx+0.0*scale));
             /* Y */ verts.push_back(float(tmy+0.1*scale));
@@ -210,66 +209,67 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
          for (int i = 0; i < 27; i++) {
             /* X */ verts.push_back(float(tmp[i*2+0]));
             /* Y */ verts.push_back(float(tmp[i*2+1]));
-            /* R */ colrs.push_back(float(lineColor[0]));
-            /* G */ colrs.push_back(float(lineColor[1]));
-            /* B */ colrs.push_back(float(lineColor[2]));
+            /* R */ colrs.push_back(float(detailColor[0]));
+            /* G */ colrs.push_back(float(detailColor[1]));
+            /* B */ colrs.push_back(float(detailColor[2]));
          }
 
          if (j == 0) {
-            bulbVerts = verts.size()/2;
-            lineEnd = colrs.size();
+            vertsPerBulb = verts.size()/2;
+            detailEnd = colrs.size();
          }
       }
       // Pack Vertices / Colors into global array buffers
-      numVerts = verts.size()/2;
+      bulbButtonsVerts = verts.size()/2;
 
       // (Re)allocate vertex buffer
-      if (vertexBuffer == NULL) {
-         vertexBuffer = new GLfloat[numVerts*2];
+      if (bulbButtonVertexBuffer == NULL) {
+         bulbButtonVertexBuffer = new GLfloat[bulbButtonsVerts*2];
       } else {
-         delete [] vertexBuffer;
-         vertexBuffer = new GLfloat[numVerts*2];
+         delete [] bulbButtonVertexBuffer;
+         bulbButtonVertexBuffer = new GLfloat[bulbButtonsVerts*2];
       }
 
       // (Re)allocate color buffer
-      if (colahbuffah == NULL) {
-         colahbuffah = new GLfloat[numVerts*3];
+      if (bulbButtonColorBuffer == NULL) {
+         bulbButtonColorBuffer = new GLfloat[bulbButtonsVerts*3];
       } else {
-         delete [] colahbuffah;
-         colahbuffah = new GLfloat[numVerts*3];
+         delete [] bulbButtonColorBuffer;
+         bulbButtonColorBuffer = new GLfloat[bulbButtonsVerts*3];
       }
 
       // (Re)allocate index array
-      if (indices == NULL) {
-         indices = new GLushort[numVerts];
+      if (bulbButtonIndices == NULL) {
+         bulbButtonIndices = new GLushort[bulbButtonsVerts];
       } else {
-         delete [] indices;
-         indices = new GLushort[numVerts];
+         delete [] bulbButtonIndices;
+         bulbButtonIndices = new GLushort[bulbButtonsVerts];
       }
 
-      // Pack indices, vertex and color bufferes
-      for (unsigned int i = 0; i < numVerts; i++){
-         vertexBuffer[i*2] = verts[i*2];
-         vertexBuffer[i*2+1] = verts[i*2+1];
-         indices[i] = i;
-         colahbuffah[i*3+0] = colrs[i*3+0];
-         colahbuffah[i*3+1] = colrs[i*3+1];
-         colahbuffah[i*3+2] = colrs[i*3+2];
+      // Pack bulbButtonIndices, vertex and color bufferes
+#     pragma omp parallel for
+      for (unsigned int i = 0; i < bulbButtonsVerts; i++){
+         bulbButtonVertexBuffer[i*2]   = verts[i*2];
+         bulbButtonVertexBuffer[i*2+1] = verts[i*2+1];
+         bulbButtonIndices[i]          = i;
+         bulbButtonColorBuffer[i*3+0]  = colrs[i*3+0];
+         bulbButtonColorBuffer[i*3+1]  = colrs[i*3+1];
+         bulbButtonColorBuffer[i*3+2]  = colrs[i*3+2];
       }
 
       prevNumBulbs = numBulbs;
       prevAngOffset = angularOffset;
-      prevW2H = w2h;
+      prevBulbButtonW2H = w2h;
       prevArn = arn;
-      prevScale = scale;
+      prevBulbButtonScale = scale;
 
    } 
-   // Recalculate vertex geometry without expensieve reallocation
+   // Recalculate vertex geometry without expensive vertex/array reallocation
    else if (
-         prevW2H != w2h ||
+         prevBulbButtonW2H != w2h ||
          prevArn != arn ||
          prevAngOffset != angularOffset ||
-         prevScale != scale
+         prevBulbButtonScale != scale
          ) {
       // Set Number of edges on circles
       char circleSegments = 60;
@@ -283,7 +283,6 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
 
       float tmx, tmy, ang;
       // Define verts / colors for each bulb button
-#     pragma omp parallel for
       for (int j = 0; j < numBulbs; j++) {
          if (arn == 0) {
             ang = float(degToRad(j*360/numBulbs - 90 + angularOffset + 180/numBulbs));
@@ -309,27 +308,29 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
          buttonCoords[j*2+1] = tmy;
 
          // Define Vertices / Colors for Button Face
+#        pragma omp parallel for
          for (int i = 0; i < circleSegments+1; i++){
-            /* X */ vertexBuffer[j*bulbVerts*2+i*6+0] = (float(tmx+0.0));
-            /* Y */ vertexBuffer[j*bulbVerts*2+i*6+1] = (float(tmy+0.0));
+            /* X */ bulbButtonVertexBuffer[j*vertsPerBulb*2+i*6+0] = (float(tmx+0.0));
+            /* Y */ bulbButtonVertexBuffer[j*vertsPerBulb*2+i*6+1] = (float(tmy+0.0));
 
-            /* X */ vertexBuffer[j*bulbVerts*2+i*6+2] = (float(tmx+0.4*cos(degToRad(i*degSegment))*scale));
-            /* Y */ vertexBuffer[j*bulbVerts*2+i*6+3] = (float(tmy+0.4*sin(degToRad(i*degSegment))*scale));
+            /* X */ bulbButtonVertexBuffer[j*vertsPerBulb*2+i*6+2] = (float(tmx+0.4*cos(degToRad(i*degSegment))*scale));
+            /* Y */ bulbButtonVertexBuffer[j*vertsPerBulb*2+i*6+3] = (float(tmy+0.4*sin(degToRad(i*degSegment))*scale));
 
-            /* X */ vertexBuffer[j*bulbVerts*2+i*6+4] = (float(tmx+0.4*cos(degToRad((i+1)*degSegment))*scale));
-            /* Y */ vertexBuffer[j*bulbVerts*2+i*6+5] = (float(tmy+0.4*sin(degToRad((i+1)*degSegment))*scale));
+            /* X */ bulbButtonVertexBuffer[j*vertsPerBulb*2+i*6+4] = (float(tmx+0.4*cos(degToRad((i+1)*degSegment))*scale));
+            /* Y */ bulbButtonVertexBuffer[j*vertsPerBulb*2+i*6+5] = (float(tmy+0.4*sin(degToRad((i+1)*degSegment))*scale));
          }
 
          // Define Vertices for Bulb Icon
+#        pragma omp parallel for
          for (int i = 0; i < circleSegments+1; i++){
-            /* X */ vertexBuffer[j*bulbVerts*2+(circleSegments+1)*6+i*6+0] = (float(tmx+0.0*scale));
-            /* Y */ vertexBuffer[j*bulbVerts*2+(circleSegments+1)*6+i*6+1] = (float(tmy+0.1*scale));
+            /* X */ bulbButtonVertexBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+0] = (float(tmx+0.0*scale));
+            /* Y */ bulbButtonVertexBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+1] = (float(tmy+0.1*scale));
 
-            /* X */ vertexBuffer[j*bulbVerts*2+(circleSegments+1)*6+i*6+2] = (float(tmx+0.2*cos(degToRad(i*degSegment))*scale));
-            /* Y */ vertexBuffer[j*bulbVerts*2+(circleSegments+1)*6+i*6+3] = (float(tmy+(0.1+0.2*sin(degToRad(i*degSegment)))*scale));
+            /* X */ bulbButtonVertexBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+2] = (float(tmx+0.2*cos(degToRad(i*degSegment))*scale));
+            /* Y */ bulbButtonVertexBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+3] = (float(tmy+(0.1+0.2*sin(degToRad(i*degSegment)))*scale));
 
-            /* X */ vertexBuffer[j*bulbVerts*2+(circleSegments+1)*6+i*6+4] = (float(tmx+0.2*cos(degToRad((i+1)*degSegment))*scale));
-            /* Y */ vertexBuffer[j*bulbVerts*2+(circleSegments+1)*6+i*6+5] = (float(tmy+(0.1+0.2*sin(degToRad((i+1)*degSegment)))*scale));
+            /* X */ bulbButtonVertexBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+4] = (float(tmx+0.2*cos(degToRad((i+1)*degSegment))*scale));
+            /* Y */ bulbButtonVertexBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+5] = (float(tmy+(0.1+0.2*sin(degToRad((i+1)*degSegment)))*scale));
          }
 
          // Define Verts for bulb screw base
@@ -368,44 +369,50 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
          };
    
          for (int i = 0; i < 27; i++) {
-            /* X */ vertexBuffer[j*bulbVerts*2+i*2+(circleSegments+1)*12+0] = (float(tmp[i*2+0]));
-            /* Y */ vertexBuffer[j*bulbVerts*2+i*2+(circleSegments+1)*12+1] = (float(tmp[i*2+1]));
+            /* X */ bulbButtonVertexBuffer[j*vertsPerBulb*2+i*2+(circleSegments+1)*12+0] = (float(tmp[i*2+0]));
+            /* Y */ bulbButtonVertexBuffer[j*vertsPerBulb*2+i*2+(circleSegments+1)*12+1] = (float(tmp[i*2+1]));
          }
       }
 
       prevAngOffset = angularOffset;
-      prevW2H = w2h;
+      prevBulbButtonW2H = w2h;
       prevArn = arn;
-      prevScale = scale;
+      prevBulbButtonScale = scale;
    }
    // Vertices / Geometry already calculated
    // Check if colors need to be updated
    else
    {
+      /*
+       * Iterate through each color channel 
+       * 0 - RED
+       * 1 - GREEN
+       * 2 - BLUE
+       */
       for (int i = 0; i < 3; i++) {
+
          // Update face color, if needed
-         if (float(faceColor[i]) != colahbuffah[i]) {
-            //printf("Updating Face color\n");
+         if (float(faceColor[i]) != bulbButtonColorBuffer[i]) {
             for (int j = 0; j < numBulbs; j++) {
+#              pragma omp parallel for
                for (int k = 0; k < colorsStart/3; k++) {
-                  colahbuffah[ j*bulbVerts*3 + k*3 + i ] = float(faceColor[i]);
+                  bulbButtonColorBuffer[ j*vertsPerBulb*3 + k*3 + i ] = float(faceColor[i]);
                }
             }
          }
 
-         // Update Line Color, if needed
-         if (float(lineColor[i]) != colahbuffah[colorsEnd+i]) {
-            //printf("Updating Line Color\n");
+         // Update Detail Color, if needed
+         if (float(detailColor[i]) != bulbButtonColorBuffer[colorsEnd+i]) {
             for (int j = 0; j < numBulbs; j++) {
-               for (int k = 0; k < (lineEnd - colorsEnd)/3; k++) {
-                  colahbuffah[ colorsEnd + j*bulbVerts*3 + k*3 + i ] = float(lineColor[i]);
+#              pragma omp parallel for
+               for (int k = 0; k < (detailEnd - colorsEnd)/3; k++) {
+                  bulbButtonColorBuffer[ colorsEnd + j*vertsPerBulb*3 + k*3 + i ] = float(detailColor[i]);
                }
             }
          }
       }
       
       // Update any bulb colors, if needed
-#     pragma omp parallel for
       // Iterate through colors (R0, G1, B2)
       for (int i = 0; i < 3; i++) {
 
@@ -413,10 +420,10 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
          for (int j = 0; j < numBulbs; j++) {
 
             // Iterate through color buffer to update colors
-            if (float(bulbColors[i+j*3]) != colahbuffah[colorsStart + i + j*bulbVerts*3]) {
-               //printf("Updating Color %.i on Bulb %.i\n", i, j);
+            if (float(bulbColors[i+j*3]) != bulbButtonColorBuffer[colorsStart + i + j*vertsPerBulb*3]) {
+#              pragma omp parallel for
                for (int k = 0; k < (colorsEnd-colorsStart)/3; k++) {
-                  colahbuffah[ j*bulbVerts*3 + colorsStart + i + k*3 ] = float(bulbColors[i+j*3]);
+                  bulbButtonColorBuffer[ j*vertsPerBulb*3 + colorsStart + i + k*3 ] = float(bulbColors[i+j*3]);
                }
             }
          }
@@ -437,16 +444,133 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
    delete [] bulbColors;
    
    // Copy Vertex / Color Array Bufferes to GPU, draw
-   glColorPointer(3, GL_FLOAT, 0, colahbuffah);
-   glVertexPointer(2, GL_FLOAT, 0, vertexBuffer);
-   glDrawElements( GL_TRIANGLES, numVerts, GL_UNSIGNED_SHORT, indices);
+   glColorPointer(3, GL_FLOAT, 0, bulbButtonColorBuffer);
+   glVertexPointer(2, GL_FLOAT, 0, bulbButtonVertexBuffer);
+   glDrawElements( GL_TRIANGLES, bulbButtonsVerts, GL_UNSIGNED_SHORT, bulbButtonIndices);
 
    return py_list;
    //Py_RETURN_NONE;
 }
 
+GLfloat  *clockVertexBuffer = NULL;
+GLfloat  *clockColorBuffer  = NULL;
+GLushort *clockIndices      = NULL;
+GLuint    clockVerts        = NULL;
+float     prevClockScale    = NULL;
+float     prevClockw2h      = NULL;
+PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
+{
+   PyObject* faceColorPyTup;
+   PyObject* detailColorPyTup;
+   float scale, w2h;
+   double detailColor[3];
+   double faceColor[3];
+
+   // Parse Inputs
+   if (!PyArg_ParseTuple(args,
+            "ffOO",
+            &scale,
+            &w2h,
+            &detailColorPyTup,
+            &faceColorPyTup)) 
+   {
+      Py_RETURN_NONE;
+   }
+
+   // Parse RGB color tuples of face and detail colors
+   for (int i = 0; i < 3; i++){
+      faceColor[i] = PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, i));
+      detailColor[i] = PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, i));
+   }
+   
+   if (  clockVertexBuffer == NULL  ||
+         clockColorBuffer  == NULL  ||
+         clockIndices      == NULL  ||
+         prevClockScale    != scale ||
+         prevClockw2h      != w2h
+         ){
+
+      vector<GLfloat> verts;
+      vector<GLfloat> colrs;
+
+      // Set Number of edges on circles
+      char circleSegments = 60;
+      char degSegment = 360 / circleSegments;
+
+      if (w2h <= 1.0)
+      {
+         scale = scale*w2h;
+      }
+
+      //float tmx, tmy, ang;
+      for (int i = 0; i < circleSegments+1; i++) {
+         /* X */ verts.push_back(float(0.0));
+         /* Y */ verts.push_back(float(0.0));
+         /* R */ colrs.push_back(float(faceColor[0]));
+         /* G */ colrs.push_back(float(faceColor[1]));
+         /* B */ colrs.push_back(float(faceColor[2]));
+
+         /* X */ verts.push_back(float(0.5*cos(degToRad(i*degSegment))*scale));
+         /* Y */ verts.push_back(float(0.5*sin(degToRad(i*degSegment))*scale));
+         /* R */ colrs.push_back(float(faceColor[0]));
+         /* G */ colrs.push_back(float(faceColor[1]));
+         /* B */ colrs.push_back(float(faceColor[2]));
+
+         /* X */ verts.push_back(float(0.5*cos(degToRad((i+1)*degSegment))*scale));
+         /* Y */ verts.push_back(float(0.5*sin(degToRad((i+1)*degSegment))*scale));
+         /* R */ colrs.push_back(float(faceColor[0]));
+         /* G */ colrs.push_back(float(faceColor[1]));
+         /* B */ colrs.push_back(float(faceColor[2]));
+      }
+
+      clockVerts = verts.size()/2;
+
+      // Pack Vertics and Colors into global array buffers
+      if (clockVertexBuffer == NULL) {
+         clockVertexBuffer = new GLfloat[clockVerts*2];
+      } else {
+         delete [] clockVertexBuffer;
+         clockVertexBuffer = new GLfloat[clockVerts*2];
+      }
+
+      if (clockColorBuffer == NULL) {
+         clockColorBuffer = new GLfloat[clockVerts*3];
+      } else {
+         delete [] clockColorBuffer;
+         clockColorBuffer = new GLfloat[clockVerts*3];
+      }
+
+      if (clockIndices == NULL) {
+         clockIndices = new GLushort[clockVerts];
+      } else {
+         delete [] clockIndices;
+         clockIndices = new GLushort[clockVerts];
+      }
+
+      for (unsigned int i = 0; i < clockVerts; i++) {
+         clockVertexBuffer[i*2]   = verts[i*2];
+         clockVertexBuffer[i*2+1] = verts[i*2+1];
+         clockIndices[i]          = i;
+         clockColorBuffer[i*3+0]  = colrs[i*3+0];
+         clockColorBuffer[i*3+1]  = colrs[i*3+1];
+         clockColorBuffer[i*3+2]  = colrs[i*3+2];
+      }
+
+      prevClockScale = scale;
+      prevClockw2h   = w2h;
+   }
+   glColorPointer(3, GL_FLOAT, 0, clockColorBuffer);
+   glVertexPointer(2, GL_FLOAT, 0, clockVertexBuffer);
+   glDrawElements( GL_TRIANGLES, clockVerts, GL_UNSIGNED_SHORT, clockIndices);
+
+
+
+   Py_RETURN_NONE;
+}
+
 static PyMethodDef drawButtons_methods[] = {
    { "drawBulbButton", (PyCFunction)drawBulbButton_drawButtons, METH_VARARGS },
+   { "drawClock",      (PyCFunction)drawClock_drawButtons,      METH_VARARGS },
    { NULL, NULL, 0, NULL}
 };
 
@@ -457,13 +581,6 @@ static PyModuleDef drawButtons_module = {
    0,
    drawButtons_methods
 };
-
-/*
-void initdrawBulbButton(void)
-{
-   Py_InitModule3("drawButtons", drawButtons_methods, "quack");
-}
-*/
 
 PyMODINIT_FUNC PyInit_drawButtons() {
    //return PyModule_Create(&drawButtons_module);
