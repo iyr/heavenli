@@ -52,7 +52,7 @@ touchState = 0
 targetBulb = 0
 frameLimit = False
 someVar = 0
-someInc = 1
+someInc = 0.01
 #demo = Lamp()
 
 def init():
@@ -111,7 +111,9 @@ def drawHome():
     global lamps, wx, wy, w2h, screen, touchState, lightOn, prvState, targetScreen, targetBulb, colrSettingCursor
 
     iconSize = 0.15
-    drawClock(1.0, w2h, (0.95, 0.95, 0.95), (0.3, 0.3, 0.3))
+    drawClock(
+            360*(someVar/100),
+            0, 1.0, w2h, (0.95, 0.95, 0.95), (0.3, 0.3, 0.3))
 
     # We are at the home screen
     if (screen == 0) and (touchState != prvState):
@@ -218,6 +220,8 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
             w2h)
 
     drawClock(
+            360*(someVar/100),
+            30,
             1.0+acic*0.75, 
             w2h, 
             (0.9*acc, 0.9*acc, 0.9*acc), 

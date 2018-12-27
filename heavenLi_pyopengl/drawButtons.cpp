@@ -458,17 +458,21 @@ GLushort *clockIndices      = NULL;
 GLuint    clockVerts        = NULL;
 float     prevClockScale    = NULL;
 float     prevClockw2h      = NULL;
+float     prevClockHour     = NULL;
+float     prevClockMinute   = NULL;
 PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
 {
    PyObject* faceColorPyTup;
    PyObject* detailColorPyTup;
-   float scale, w2h;
+   float scale, w2h, hour, minute;
    double detailColor[3];
    double faceColor[3];
 
    // Parse Inputs
    if (!PyArg_ParseTuple(args,
-            "ffOO",
+            "ffffOO",
+            &hour,
+            &minute,
             &scale,
             &w2h,
             &detailColorPyTup,
@@ -487,7 +491,9 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
          clockColorBuffer  == NULL  ||
          clockIndices      == NULL  ||
          prevClockScale    != scale ||
-         prevClockw2h      != w2h
+         prevClockw2h      != w2h   ||
+         prevClockHour     != hour  ||
+         prevClockMinute   != minute
          ){
 
       vector<GLfloat> verts;
@@ -523,6 +529,130 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
          /* B */ colrs.push_back(float(faceColor[2]));
       }
 
+      GLfloat px = 0.0;
+      GLfloat py = 0.0;
+      GLfloat qx = 0.4*cos(degToRad(90-360*(hour/12.0)));
+      GLfloat qy = 0.4*sin(degToRad(90-360*(hour/12.0)));
+      GLfloat radius = 0.05;
+      //GLfloat slope = (qy-py)/(qx-px);
+      GLfloat slope;
+      if (qx >= px) {
+         slope = (qy-py)/(qx-px);
+      } else {
+         slope = (py-qy)/(px-qx);
+      }
+      GLfloat rx;
+      GLfloat ry;
+      GLfloat ang = degToRad(90)+atan(slope);
+      GLfloat tma;
+      GLfloat tmp;
+
+      rx = radius*cos(ang);
+      ry = radius*sin(ang);
+
+      // Draw Pill Body, (Rectangle)
+      verts.push_back(float(px+rx));
+      verts.push_back(float(py+ry));
+      colrs.push_back(float(detailColor[0]));
+      colrs.push_back(float(detailColor[1]*0.5));
+      colrs.push_back(float(detailColor[2]*0.5));
+      verts.push_back(float(px-rx));
+      verts.push_back(float(py-ry));
+      colrs.push_back(float(detailColor[0]));
+      colrs.push_back(float(detailColor[1]*0.5));
+      colrs.push_back(float(detailColor[2]*0.5));
+      verts.push_back(float(qx-rx));
+      verts.push_back(float(qy-ry));
+      colrs.push_back(float(detailColor[0]));
+      colrs.push_back(float(detailColor[1]));
+      colrs.push_back(float(detailColor[2]));
+
+      verts.push_back(float(qx-rx));
+      verts.push_back(float(qy-ry));
+      colrs.push_back(float(detailColor[0]));
+      colrs.push_back(float(detailColor[1]));
+      colrs.push_back(float(detailColor[2]));
+      verts.push_back(float(qx+rx));
+      verts.push_back(float(qy+ry));
+      colrs.push_back(float(detailColor[0]));
+      colrs.push_back(float(detailColor[1]));
+      colrs.push_back(float(detailColor[2]));
+      verts.push_back(float(px+rx));
+      verts.push_back(float(py+ry));
+      colrs.push_back(float(detailColor[0]));
+      colrs.push_back(float(detailColor[1]*0.5));
+      colrs.push_back(float(detailColor[2]*0.5));
+
+
+#     pragma omp parallel for
+      for (int i = 0; i < 15; i++) {
+         // Draw endcap for point P
+         if (qx >= px)
+            tma = ang + degToRad(+i*12.0);
+         else
+            tma = ang + degToRad(-i*12.0);
+         rx = radius*cos(tma);
+         ry = radius*sin(tma);
+         
+         verts.push_back(float(px));
+         verts.push_back(float(py));
+         colrs.push_back(float(detailColor[0]));
+         colrs.push_back(float(detailColor[1]*0.5));
+         colrs.push_back(float(detailColor[2]*0.5));
+
+         verts.push_back(float(px+rx));
+         verts.push_back(float(py+ry));
+         colrs.push_back(float(detailColor[0]));
+         colrs.push_back(float(detailColor[1]*0.5));
+         colrs.push_back(float(detailColor[2]*0.5));
+
+         if (qx >= px)
+            tma = ang + degToRad(+(i+1)*12.0);
+         else 
+            tma = ang + degToRad(-(i+1)*12.0);
+         rx = radius*cos(tma);
+         ry = radius*sin(tma);
+         
+         verts.push_back(float(px+rx));
+         verts.push_back(float(py+ry));
+         colrs.push_back(float(detailColor[0]));
+         colrs.push_back(float(detailColor[1]*0.5));
+         colrs.push_back(float(detailColor[2]*0.5));
+
+         // Draw endcap for point Q
+         if (qx >= px)
+            tma = ang + degToRad(+i*12.0);
+         else
+            tma = ang + degToRad(-i*12.0);
+         rx = radius*cos(tma);
+         ry = radius*sin(tma);
+         
+         verts.push_back(float(qx));
+         verts.push_back(float(qy));
+         colrs.push_back(float(detailColor[0]));
+         colrs.push_back(float(detailColor[1]));
+         colrs.push_back(float(detailColor[2]));
+
+         verts.push_back(float(qx-rx));
+         verts.push_back(float(qy-ry));
+         colrs.push_back(float(detailColor[0]));
+         colrs.push_back(float(detailColor[1]));
+         colrs.push_back(float(detailColor[2]));
+
+         if (qx >= px)
+            tma = ang + degToRad(+(i+1)*12.0);
+         else
+            tma = ang + degToRad(-(i+1)*12.0);
+         rx = radius*cos(tma);
+         ry = radius*sin(tma);
+         
+         verts.push_back(float(qx-rx));
+         verts.push_back(float(qy-ry));
+         colrs.push_back(float(detailColor[0]));
+         colrs.push_back(float(detailColor[1]));
+         colrs.push_back(float(detailColor[2]));
+      }
+
       clockVerts = verts.size()/2;
 
       // Pack Vertics and Colors into global array buffers
@@ -556,8 +686,10 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
          clockColorBuffer[i*3+2]  = colrs[i*3+2];
       }
 
-      prevClockScale = scale;
-      prevClockw2h   = w2h;
+      prevClockScale    = scale;
+      prevClockw2h      = w2h;
+      prevClockHour     = hour;
+      prevClockMinute   = minute;
    }
    glColorPointer(3, GL_FLOAT, 0, clockColorBuffer);
    glVertexPointer(2, GL_FLOAT, 0, clockVertexBuffer);
