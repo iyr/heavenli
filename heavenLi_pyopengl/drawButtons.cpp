@@ -5,7 +5,7 @@
 #include <GL/gl.h>
 #include <vector>
 #include <math.h>
-#include <drawUtils.h>
+#include "drawUtils.h"
 #define degToRad(angleInDegrees) ((angleInDegrees) * 3.1415926535 / 180.0)
 using namespace std;
 
@@ -457,6 +457,7 @@ GLfloat  *clockVertexBuffer = NULL;
 GLfloat  *clockColorBuffer  = NULL;
 GLushort *clockIndices      = NULL;
 GLuint    clockVerts        = NULL;
+GLuint    faceVerts         = NULL;
 float     prevClockScale    = NULL;
 float     prevClockw2h      = NULL;
 float     prevClockHour     = NULL;
@@ -465,6 +466,7 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
 {
    PyObject* faceColorPyTup;
    PyObject* detailColorPyTup;
+   GLfloat px, py, qx, qy, radius;
    float scale, w2h, hour, minute;
    double detailColor[3];
    double faceColor[3];
@@ -492,9 +494,7 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
          clockColorBuffer  == NULL  ||
          clockIndices      == NULL  ||
          prevClockScale    != scale ||
-         prevClockw2h      != w2h   ||
-         prevClockHour     != hour  ||
-         prevClockMinute   != minute
+         prevClockw2h      != w2h   
          ){
 
       vector<GLfloat> verts;
@@ -530,14 +530,19 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
          /* B */ colrs.push_back(float(faceColor[2]));
       }
 
-      GLfloat px = 0.0;
-      GLfloat py = 0.0;
-      GLfloat qx = 0.4*cos(degToRad(90-360*(hour/12.0)));
-      GLfloat qy = 0.4*sin(degToRad(90-360*(hour/12.0)));
-      GLfloat radius = 0.05;
-      //GLfloat slope = (qy-py)/(qx-px);
-      GLfloat slope;
-      drawPill(px, py, qx, qy, radius, faceColor, detailColor, verts, colrs);
+      faceVerts = verts.size()/2;
+
+      px = 0.0;
+      py = 0.0;
+      qx = float(0.2*cos(degToRad(90-360*(hour/12.0)))*scale);
+      qy = float(0.2*sin(degToRad(90-360*(hour/12.0)))*scale);
+      radius = float(0.02*scale);
+      drawPill(px, py, qx, qy, radius, detailColor, verts, colrs);
+
+      qx = float(0.4*cos(degToRad(90-360*(minute/60.0)))*scale);
+      qy = float(0.4*sin(degToRad(90-360*(minute/60.0)))*scale);
+      radius = float(0.01*scale);
+      drawPill(px, py, qx, qy, radius, detailColor, verts, colrs);
 
       clockVerts = verts.size()/2;
 
@@ -574,6 +579,43 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
 
       prevClockScale    = scale;
       prevClockw2h      = w2h;
+      prevClockHour     = hour;
+      prevClockMinute   = minute;
+   } else if (
+         prevClockHour     != hour  ||
+         prevClockMinute   != minute
+         ){
+      px = 0.0;
+      py = 0.0;
+      qx = float(0.2*cos(degToRad(90-360*(hour/12.0)))*scale);
+      qy = float(0.2*sin(degToRad(90-360*(hour/12.0)))*scale);
+      radius = float(0.02*scale);
+
+      int tmp;
+      tmp = drawPill(
+            px, py, 
+            qx, qy, 
+            radius, 
+            faceVerts, 
+            //faceColor, 
+            detailColor, 
+            clockVertexBuffer, 
+            clockColorBuffer);
+
+      qx = float(0.4*cos(degToRad(90-360*(minute/60.0)))*scale);
+      qy = float(0.4*sin(degToRad(90-360*(minute/60.0)))*scale);
+      radius = float(0.01*scale);
+
+      tmp = drawPill(
+            px, py, 
+            qx, qy, 
+            radius, 
+            tmp, 
+            //faceColor, 
+            detailColor, 
+            clockVertexBuffer, 
+            clockColorBuffer);
+
       prevClockHour     = hour;
       prevClockMinute   = minute;
    }
