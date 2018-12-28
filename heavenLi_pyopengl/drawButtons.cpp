@@ -70,11 +70,11 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
    }
 
    // Initialize / Update Vertex Geometry and Colors
-   if (  bulbButtonVertexBuffer == NULL || 
+   if (  prevNumBulbs != numBulbs ||
+         bulbButtonVertexBuffer == NULL || 
          bulbButtonColorBuffer == NULL || 
          bulbButtonIndices == NULL || 
-         buttonCoords == NULL ||
-         prevNumBulbs != numBulbs
+         buttonCoords == NULL
          ) {
 
       vector<GLfloat> verts;
@@ -263,7 +263,6 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
       prevBulbButtonW2H = w2h;
       prevArn = arn;
       prevBulbButtonScale = scale;
-
    } 
    // Recalculate vertex geometry without expensive vertex/array reallocation
    else if (
@@ -369,6 +368,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
             /* X, Y */ float(tmx-0.051*scale), float(tmy-0.306*scale),
          };
    
+#        pragma omp parallel for
          for (int i = 0; i < 27; i++) {
             /* X */ bulbButtonVertexBuffer[j*vertsPerBulb*2+i*2+(circleSegments+1)*12+0] = (float(tmp[i*2+0]));
             /* Y */ bulbButtonVertexBuffer[j*vertsPerBulb*2+i*2+(circleSegments+1)*12+1] = (float(tmp[i*2+1]));
@@ -433,12 +433,12 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
 
    PyList_ClearFreeList();
    py_list = PyList_New(numBulbs);
+   py_tuple = PyTuple_New(2);
+#  pragma omp parallel for
    for (int i = 0; i < numBulbs; i++) {
-      py_tuple = PyTuple_New(2);
       PyTuple_SetItem(py_tuple, 0, PyFloat_FromDouble(buttonCoords[i*2+0]));
       PyTuple_SetItem(py_tuple, 1, PyFloat_FromDouble(buttonCoords[i*2+1]));
       PyList_SetItem(py_list, i, py_tuple);
-      //PyList_Append(py_list, py_tuple);
    }
 
    // Cleanup
@@ -450,7 +450,6 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
    glDrawElements( GL_TRIANGLES, bulbButtonsVerts, GL_UNSIGNED_SHORT, bulbButtonIndices);
 
    return py_list;
-   //Py_RETURN_NONE;
 }
 
 GLfloat  *clockVertexBuffer = NULL;
@@ -619,11 +618,10 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
       prevClockHour     = hour;
       prevClockMinute   = minute;
    }
+
    glColorPointer(3, GL_FLOAT, 0, clockColorBuffer);
    glVertexPointer(2, GL_FLOAT, 0, clockVertexBuffer);
    glDrawElements( GL_TRIANGLES, clockVerts, GL_UNSIGNED_SHORT, clockIndices);
-
-
 
    Py_RETURN_NONE;
 }
