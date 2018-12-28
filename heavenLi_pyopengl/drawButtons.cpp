@@ -5,6 +5,7 @@
 #include <GL/gl.h>
 #include <vector>
 #include <math.h>
+#include <drawUtils.h>
 #define degToRad(angleInDegrees) ((angleInDegrees) * 3.1415926535 / 180.0)
 using namespace std;
 
@@ -536,122 +537,7 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
       GLfloat radius = 0.05;
       //GLfloat slope = (qy-py)/(qx-px);
       GLfloat slope;
-      if (qx >= px) {
-         slope = (qy-py)/(qx-px);
-      } else {
-         slope = (py-qy)/(px-qx);
-      }
-      GLfloat rx;
-      GLfloat ry;
-      GLfloat ang = degToRad(90)+atan(slope);
-      GLfloat tma;
-      GLfloat tmp;
-
-      rx = radius*cos(ang);
-      ry = radius*sin(ang);
-
-      // Draw Pill Body, (Rectangle)
-      verts.push_back(float(px+rx));
-      verts.push_back(float(py+ry));
-      colrs.push_back(float(detailColor[0]));
-      colrs.push_back(float(detailColor[1]*0.5));
-      colrs.push_back(float(detailColor[2]*0.5));
-      verts.push_back(float(px-rx));
-      verts.push_back(float(py-ry));
-      colrs.push_back(float(detailColor[0]));
-      colrs.push_back(float(detailColor[1]*0.5));
-      colrs.push_back(float(detailColor[2]*0.5));
-      verts.push_back(float(qx-rx));
-      verts.push_back(float(qy-ry));
-      colrs.push_back(float(detailColor[0]));
-      colrs.push_back(float(detailColor[1]));
-      colrs.push_back(float(detailColor[2]));
-
-      verts.push_back(float(qx-rx));
-      verts.push_back(float(qy-ry));
-      colrs.push_back(float(detailColor[0]));
-      colrs.push_back(float(detailColor[1]));
-      colrs.push_back(float(detailColor[2]));
-      verts.push_back(float(qx+rx));
-      verts.push_back(float(qy+ry));
-      colrs.push_back(float(detailColor[0]));
-      colrs.push_back(float(detailColor[1]));
-      colrs.push_back(float(detailColor[2]));
-      verts.push_back(float(px+rx));
-      verts.push_back(float(py+ry));
-      colrs.push_back(float(detailColor[0]));
-      colrs.push_back(float(detailColor[1]*0.5));
-      colrs.push_back(float(detailColor[2]*0.5));
-
-
-#     pragma omp parallel for
-      for (int i = 0; i < 15; i++) {
-         // Draw endcap for point P
-         if (qx >= px)
-            tma = ang + degToRad(+i*12.0);
-         else
-            tma = ang + degToRad(-i*12.0);
-         rx = radius*cos(tma);
-         ry = radius*sin(tma);
-         
-         verts.push_back(float(px));
-         verts.push_back(float(py));
-         colrs.push_back(float(detailColor[0]));
-         colrs.push_back(float(detailColor[1]*0.5));
-         colrs.push_back(float(detailColor[2]*0.5));
-
-         verts.push_back(float(px+rx));
-         verts.push_back(float(py+ry));
-         colrs.push_back(float(detailColor[0]));
-         colrs.push_back(float(detailColor[1]*0.5));
-         colrs.push_back(float(detailColor[2]*0.5));
-
-         if (qx >= px)
-            tma = ang + degToRad(+(i+1)*12.0);
-         else 
-            tma = ang + degToRad(-(i+1)*12.0);
-         rx = radius*cos(tma);
-         ry = radius*sin(tma);
-         
-         verts.push_back(float(px+rx));
-         verts.push_back(float(py+ry));
-         colrs.push_back(float(detailColor[0]));
-         colrs.push_back(float(detailColor[1]*0.5));
-         colrs.push_back(float(detailColor[2]*0.5));
-
-         // Draw endcap for point Q
-         if (qx >= px)
-            tma = ang + degToRad(+i*12.0);
-         else
-            tma = ang + degToRad(-i*12.0);
-         rx = radius*cos(tma);
-         ry = radius*sin(tma);
-         
-         verts.push_back(float(qx));
-         verts.push_back(float(qy));
-         colrs.push_back(float(detailColor[0]));
-         colrs.push_back(float(detailColor[1]));
-         colrs.push_back(float(detailColor[2]));
-
-         verts.push_back(float(qx-rx));
-         verts.push_back(float(qy-ry));
-         colrs.push_back(float(detailColor[0]));
-         colrs.push_back(float(detailColor[1]));
-         colrs.push_back(float(detailColor[2]));
-
-         if (qx >= px)
-            tma = ang + degToRad(+(i+1)*12.0);
-         else
-            tma = ang + degToRad(-(i+1)*12.0);
-         rx = radius*cos(tma);
-         ry = radius*sin(tma);
-         
-         verts.push_back(float(qx-rx));
-         verts.push_back(float(qy-ry));
-         colrs.push_back(float(detailColor[0]));
-         colrs.push_back(float(detailColor[1]));
-         colrs.push_back(float(detailColor[2]));
-      }
+      drawPill(px, py, qx, qy, radius, faceColor, detailColor, verts, colrs);
 
       clockVerts = verts.size()/2;
 
