@@ -12,20 +12,21 @@ GLfloat  *homeCircleVertexBuffer = NULL;
 GLfloat  *homeCircleColorBuffer  = NULL;
 GLushort *homeCircleIndices      = NULL;
 GLuint   homeCircleVerts         = NULL;
-int prevNumBulbs                 = NULL;
-float prevAngularOffset         = NULL;
+int      prevNumBulbs            = NULL;
+float    prevAngularOffset       = NULL;
 
 PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    PyObject* py_list;
    PyObject* py_tuple;
    PyObject* py_float;
    double *bulbColors;
-   float gx, gy, dx, dy, ao, w2h;
+   float gx, gy, wx, wy, ao, w2h, sx, sy;
    int numBulbs;
+   char circleSegments = 30;
    if (!PyArg_ParseTuple(args,
             "fffflffO",
             &gx, &gy,
-            &dx, &dy,
+            &wx, &wy,
             &numBulbs,
             &ao,
             &w2h,
@@ -34,8 +35,6 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    {
       Py_RETURN_NONE;
    }
-   int wx = 300;
-   int wy = 300;
    float angOffset = float(360.0 / float(numBulbs));
 
    // Parse array of tuples containing RGB Colors of bulbs
@@ -49,8 +48,6 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
       }
    }
 
-   glPushMatrix();
-   glScalef(sqrt(w2h)*hypot(wx, wy), sqrt(wy/wx)*hypot(wx, wy), 1);
    if (prevNumBulbs != numBulbs       ||
        prevAngularOffset != ao        ||
        homeCircleVertexBuffer == NULL ||
@@ -60,9 +57,10 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
 
-      char circleSegments = 30;
       char degSegment = 360 / circleSegments;
       float tma, tmx, tmy;
+      sx = sqrt(w2h)*hypot(wx, wy);
+      sy = sqrt(wy/wx)*hypot(wx, wy);
       
       for (int j = 0; j < numBulbs; j++) {
          for (int i = 0; i < circleSegments; i++) {
@@ -72,18 +70,18 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
             /* G */ colrs.push_back(float(bulbColors[j*3+1]));
             /* B */ colrs.push_back(float(bulbColors[j*3+2]));
 
-            tma = degToRad(i*float(12.0/float(numBulbs)) + ao + float(j)*(angOffset) - 90.0);
-            tmx = cos(tma);
-            tmy = sin(tma);
+            tma = float(degToRad(i*float(12.0/(numBulbs)) + ao + (j)*(angOffset) - 90.0));
+            tmx = cos(tma)*sx;
+            tmy = sin(tma)*sy;
             /* X */ verts.push_back(float(tmx));
             /* Y */ verts.push_back(float(tmy));
             /* R */ colrs.push_back(float(bulbColors[j*3+0]));
             /* G */ colrs.push_back(float(bulbColors[j*3+1]));
             /* B */ colrs.push_back(float(bulbColors[j*3+2]));
 
-            tma = degToRad((i+1)*float(12.0/float(numBulbs)) + ao + float(j)*(angOffset) - 90.0);
-            tmx = cos(tma);
-            tmy = sin(tma);
+            tma = float(degToRad((i+1)*float(12.0/(numBulbs)) + ao + (j)*(angOffset) - 90.0));
+            tmx = cos(tma)*sx;
+            tmy = sin(tma)*sy;
             /* X */ verts.push_back(float(tmx));
             /* Y */ verts.push_back(float(tmy));
             /* R */ colrs.push_back(float(bulbColors[j*3+0]));
@@ -126,6 +124,31 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
 
       prevNumBulbs = numBulbs;
       prevAngularOffset = ao;
+   } 
+   // Geometry already calculated, update colors
+   else if (
+         prevNumBulbs == numBulbs &&
+         prevAngularOffset == ao
+         ) {
+      /*
+       * Iterate through each color channel 
+       * 0 - RED
+       * 1 - GREEN
+       * 2 - BLUE
+       */
+      for (int i = 0; i < 3; i++) {
+         
+         // Update color, if needed
+         for (int j = 0; j < numBulbs; j++) {
+
+            if (float(bulbColors[i+j*3]) != homeCircleColorBuffer[ i + j*circleSegments*9]) {
+#              pragma omp parallel for
+               for (unsigned int k = 0; k < homeCircleVerts/numBulbs; k++) {
+                     homeCircleColorBuffer[ j*circleSegments*9 + k*3 + i] = float(bulbColors[i+j*3]);
+               }
+            }
+         }
+      }
    }
 
    delete [] bulbColors;
@@ -133,7 +156,7 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    glColorPointer(3, GL_FLOAT, 0, homeCircleColorBuffer);
    glVertexPointer(2, GL_FLOAT, 0, homeCircleVertexBuffer);
    glDrawElements( GL_TRIANGLES, homeCircleVerts, GL_UNSIGNED_SHORT, homeCircleIndices);
-   glPopMatrix();
+   //glPopMatrix();
 
    Py_RETURN_NONE;
 }

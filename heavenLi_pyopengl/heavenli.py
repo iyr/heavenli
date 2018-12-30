@@ -89,9 +89,10 @@ def framerate():
 
 def drawBackground(Light = 0 # Currently Selected Lamp, Space, or *
         ):
+    global wx, wy
     if (lamps[Light].getArn() == 0):
          drawHomeCircle(0.0, 0.0, 
-                 1.0, 1.0, 
+                 wx, wy, 
                  lamps[Light].getNumBulbs(), 
                  lamps[Light].getAngle(), 
                  w2h,
