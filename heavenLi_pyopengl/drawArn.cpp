@@ -214,22 +214,26 @@ GLfloat  *iconCircleVertexBuffer = NULL;
 GLfloat  *iconCircleColorBuffer  = NULL;
 GLushort *iconCircleIndices      = NULL;
 GLuint   iconCircleVerts         = NULL;
-int      prevIconCircleNumBulbs            = NULL;
-float    prevIconCircleAngularOffset       = NULL;
-float    prevIconCircleWx                  = NULL;
-float    prevIconCircleWy                  = NULL;
+int      prevIconCircleNumBulbs        = NULL;
+float    prevIconCircleAngularOffset   = NULL;
+float    prevIconCircleWx              = NULL;
+float    prevIconCircleWy              = NULL;
+float    prevIconCircleW2H             = NULL;
 
 PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
+   PyObject* detailColorPyTup;
    PyObject* py_list;
    PyObject* py_tuple;
    PyObject* py_float;
    double *bulbColors;
-   float gx, gy, wx, wy, ao, w2h, sx, sy;
+   double detailColor[3];
+   float gx, gy, scale, ao, w2h, sx, sy;
    int numBulbs;
    if (!PyArg_ParseTuple(args,
-            "fffflffO",
+            "fffOlffO",
             &gx, &gy,
-            &wx, &wy,
+            &scale, 
+            &detailColorPyTup,
             &numBulbs,
             &ao,
             &w2h,
@@ -238,6 +242,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
    {
       Py_RETURN_NONE;
    }
+
    char circleSegments = 60/numBulbs;
 
    // Parse array of tuples containing RGB Colors of bulbs
@@ -251,9 +256,14 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       }
    }
 
-   if (iconCircleVertexBuffer == NULL  ||
-       iconCircleColorBuffer  == NULL  ||
-       iconCircleIndices      == NULL ) {
+   detailColor[0] = PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 0));
+   detailColor[1] = PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 1));
+   detailColor[2] = PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2));
+
+   if (prevIconCircleNumBulbs != numBulbs ||
+       iconCircleVertexBuffer == NULL     ||
+       iconCircleColorBuffer  == NULL     ||
+       iconCircleIndices      == NULL     ){
 
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
@@ -261,9 +271,14 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       char degSegment = 360 / circleSegments;
       float angOffset = float(360.0 / float(numBulbs));
       float tma, tmx, tmy;
-      sx = sqrt(w2h)*hypot(wx, wy);
-      sy = sqrt(wy/wx)*hypot(wx, wy);
+      if (w2h >= 1.0) {
+         scale = scale;
+         gx *= w2h;
+      } else {
+         scale *= w2h;
+      }
       
+      // Draw Color Wheel
       for (int j = 0; j < numBulbs; j++) {
          for (int i = 0; i < circleSegments; i++) {
             /* X */ verts.push_back(float(gx));
@@ -273,8 +288,8 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
             /* B */ colrs.push_back(float(bulbColors[j*3+2]));
 
             tma = float(degToRad(i*float(degSegment/(numBulbs)) + ao + (j)*(angOffset) - 90.0));
-            tmx = gx+cos(tma)*sx;
-            tmy = gy+sin(tma)*sy;
+            tmx = gx+cos(tma)*scale;
+            tmy = gy+sin(tma)*scale;
             /* X */ verts.push_back(float(tmx));
             /* Y */ verts.push_back(float(tmy));
             /* R */ colrs.push_back(float(bulbColors[j*3+0]));
@@ -282,8 +297,8 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
             /* B */ colrs.push_back(float(bulbColors[j*3+2]));
 
             tma = float(degToRad((i+1)*float(degSegment/(numBulbs)) + ao + (j)*(angOffset) - 90.0));
-            tmx = gx+cos(tma)*sx;
-            tmy = gy+sin(tma)*sy;
+            tmx = gx+cos(tma)*scale;
+            tmy = gy+sin(tma)*scale;
             /* X */ verts.push_back(float(tmx));
             /* Y */ verts.push_back(float(tmy));
             /* R */ colrs.push_back(float(bulbColors[j*3+0]));
@@ -291,6 +306,88 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
             /* B */ colrs.push_back(float(bulbColors[j*3+2]));
          }
       }
+
+      // Draw Outline
+      for (int i = 0; i < circleSegments*3; i++) {
+         tma = float(degToRad(i*float(degSegment/3)) + ao - 90.0);
+         tmx = gx+cos(tma)*scale;
+         tmy = gy+sin(tma)*scale;
+         /* X */ verts.push_back(float(tmx));
+         /* Y */ verts.push_back(float(tmy));
+         /* R */ colrs.push_back(detailColor[0]);
+         /* G */ colrs.push_back(detailColor[1]);
+         /* B */ colrs.push_back(detailColor[2]);
+
+         tmx = gx+cos(tma)*scale*1.1;
+         tmy = gy+sin(tma)*scale*1.1;
+         /* X */ verts.push_back(float(tmx));
+         /* Y */ verts.push_back(float(tmy));
+         /* R */ colrs.push_back(detailColor[0]);
+         /* G */ colrs.push_back(detailColor[1]);
+         /* B */ colrs.push_back(detailColor[2]);
+
+         tma = float(degToRad((i+1)*float(degSegment/3)) + ao - 90.0);
+         tmx = gx+cos(tma)*scale;
+         tmy = gy+sin(tma)*scale;
+         /* X */ verts.push_back(float(tmx));
+         /* Y */ verts.push_back(float(tmy));
+         /* R */ colrs.push_back(detailColor[0]);
+         /* G */ colrs.push_back(detailColor[1]);
+         /* B */ colrs.push_back(detailColor[2]);
+
+         tmx = gx+cos(tma)*scale*1.1;
+         tmy = gy+sin(tma)*scale*1.1;
+         /* X */ verts.push_back(float(tmx));
+         /* Y */ verts.push_back(float(tmy));
+         /* R */ colrs.push_back(detailColor[0]);
+         /* G */ colrs.push_back(detailColor[1]);
+         /* B */ colrs.push_back(detailColor[2]);
+
+         tmx = gx+cos(tma)*scale;
+         tmy = gy+sin(tma)*scale;
+         /* X */ verts.push_back(float(tmx));
+         /* Y */ verts.push_back(float(tmy));
+         /* R */ colrs.push_back(detailColor[0]);
+         /* G */ colrs.push_back(detailColor[1]);
+         /* B */ colrs.push_back(detailColor[2]);
+
+         tma = float(degToRad((i+0)*float(degSegment/3)) + ao - 90.0);
+         tmx = gx+cos(tma)*scale*1.1;
+         tmy = gy+sin(tma)*scale*1.1;
+         /* X */ verts.push_back(float(tmx));
+         /* Y */ verts.push_back(float(tmy));
+         /* R */ colrs.push_back(detailColor[0]);
+         /* G */ colrs.push_back(detailColor[1]);
+         /* B */ colrs.push_back(detailColor[2]);
+
+      }
+
+      // Draw Bulb Markers
+      degSegment = 360/((circleSegments*numBulbs)/3);
+      for (int j = 0; j < numBulbs; j++) {
+         tmx = gx+cos(degToRad(-90 - j*(angOffset) + 180/numBulbs + ao))*1.05*scale;
+         tmy = gy+sin(degToRad(-90 - j*(angOffset) + 180/numBulbs + ao))*1.05*scale;
+         for (int i = 0; i < (circleSegments*numBulbs)/3; i++) {
+            /* X */ verts.push_back(float(tmx));
+            /* Y */ verts.push_back(float(tmy));
+            /* R */ colrs.push_back(float(detailColor[0]));
+            /* G */ colrs.push_back(float(detailColor[1]));
+            /* B */ colrs.push_back(float(detailColor[2]));
+
+            /* X */ verts.push_back(float(tmx + scale*0.16*cos(degToRad(i*degSegment))));
+            /* Y */ verts.push_back(float(tmy + scale*0.16*sin(degToRad(i*degSegment))));
+            /* R */ colrs.push_back(float(detailColor[0]));
+            /* G */ colrs.push_back(float(detailColor[1]));
+            /* B */ colrs.push_back(float(detailColor[2]));
+
+            /* X */ verts.push_back(float(tmx + scale*0.16*cos(degToRad((i+1)*degSegment))));
+            /* Y */ verts.push_back(float(tmy + scale*0.16*sin(degToRad((i+1)*degSegment))));
+            /* R */ colrs.push_back(float(detailColor[0]));
+            /* G */ colrs.push_back(float(detailColor[1]));
+            /* B */ colrs.push_back(float(detailColor[2]));
+         }
+      }
+
       iconCircleVerts = verts.size()/2;
 
       if (iconCircleVertexBuffer == NULL) {
@@ -326,57 +423,102 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
 
       prevIconCircleNumBulbs = numBulbs;
       prevIconCircleAngularOffset = ao;
-      prevIconCircleWx = wx;
-      prevIconCircleWy = wy;
+      prevIconCircleW2H = w2h;
    } 
    else
    // Update Geometry, if alreay allocated
-   if (prevIconCircleNumBulbs        != numBulbs   ||
-       prevIconCircleAngularOffset   != ao         ||
-       prevIconCircleWx              != wx         ||
-       prevIconCircleWy              != wy         ){
+   if (prevIconCircleAngularOffset   != ao         ||
+       prevIconCircleW2H             != w2h        ){
 
       char degSegment = 360 / circleSegments;
       float angOffset = float(360.0 / float(numBulbs));
       float tma, tmx, tmy;
       int vertIndex = 0;
       int colorIndex = 0;
-      sx = sqrt(w2h)*hypot(wx, wy);
-      sy = sqrt(wy/wx)*hypot(wx, wy);
       
+      gx *= w2h;
+      if (w2h >= 1.0) {
+         scale = scale;
+      } else {
+         scale *= w2h;
+      }
+
+      // Update Color Wheel
       for (int j = 0; j < numBulbs; j++) {
          for (int i = 0; i < circleSegments; i++) {
             /* X */ iconCircleVertexBuffer[vertIndex++] = (float(gx));
             /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(gy));
-            /* R */ iconCircleColorBuffer[colorIndex++] = (float(bulbColors[j*3+0]));
-            /* G */ iconCircleColorBuffer[colorIndex++] = (float(bulbColors[j*3+1]));
-            /* B */ iconCircleColorBuffer[colorIndex++] = (float(bulbColors[j*3+2]));
 
             tma = float(degToRad(i*float(degSegment/(numBulbs)) + ao + (j)*(angOffset) - 90.0));
-            tmx = gx+cos(tma)*sx;
-            tmy = gy+sin(tma)*sy;
+            tmx = gx+cos(tma)*scale;
+            tmy = gy+sin(tma)*scale;
             /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx));
             /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy));
-            /* R */ iconCircleColorBuffer[colorIndex++] = (float(bulbColors[j*3+0]));
-            /* G */ iconCircleColorBuffer[colorIndex++] = (float(bulbColors[j*3+1]));
-            /* B */ iconCircleColorBuffer[colorIndex++] = (float(bulbColors[j*3+2]));
 
             tma = float(degToRad((i+1)*float(degSegment/(numBulbs)) + ao + (j)*(angOffset) - 90.0));
-            tmx = gx+cos(tma)*sx;
-            tmy = gy+sin(tma)*sy;
+            tmx = gx+cos(tma)*scale;
+            tmy = gy+sin(tma)*scale;
             /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx));
             /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy));
-            /* R */ iconCircleColorBuffer[colorIndex++] = (float(bulbColors[j*3+0]));
-            /* G */ iconCircleColorBuffer[colorIndex++] = (float(bulbColors[j*3+1]));
-            /* B */ iconCircleColorBuffer[colorIndex++] = (float(bulbColors[j*3+2]));
+         }
+      }
+
+      // Update Outline
+      for (int i = 0; i < circleSegments*3; i++) {
+         tma = float(degToRad(i*float(degSegment/3)) + ao - 90.0);
+         tmx = gx+cos(tma)*scale;
+         tmy = gy+sin(tma)*scale;
+         /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx));
+         /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy));
+
+         tmx = gx+cos(tma)*scale*1.1;
+         tmy = gy+sin(tma)*scale*1.1;
+         /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx));
+         /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy));
+
+         tma = float(degToRad((i+1)*float(degSegment/3)) + ao - 90.0);
+         tmx = gx+cos(tma)*scale;
+         tmy = gy+sin(tma)*scale;
+         /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx));
+         /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy));
+
+         tmx = gx+cos(tma)*scale*1.1;
+         tmy = gy+sin(tma)*scale*1.1;
+         /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx));
+         /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy));
+
+         tmx = gx+cos(tma)*scale;
+         tmy = gy+sin(tma)*scale;
+         /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx));
+         /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy));
+
+         tma = float(degToRad((i+0)*float(degSegment/3)) + ao - 90.0);
+         tmx = gx+cos(tma)*scale*1.1;
+         tmy = gy+sin(tma)*scale*1.1;
+         /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx));
+         /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy));
+      }
+
+      // Update Bulb Markers
+      degSegment = 360/((circleSegments*numBulbs)/3);
+      for (int j = 0; j < numBulbs; j++) {
+         tmx = gx+cos(degToRad(-90 - j*(angOffset) + 180/numBulbs + ao))*1.05*scale;
+         tmy = gy+sin(degToRad(-90 - j*(angOffset) + 180/numBulbs + ao))*1.05*scale;
+         for (int i = 0; i < (circleSegments*numBulbs)/3; i++) {
+            /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx));
+            /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy));
+
+            /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx + scale*0.16*cos(degToRad(i*degSegment))));
+            /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy + scale*0.16*sin(degToRad(i*degSegment))));
+
+            /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx + scale*0.16*cos(degToRad((i+1)*degSegment))));
+            /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy + scale*0.16*sin(degToRad((i+1)*degSegment))));
          }
       }
 
       prevIconCircleNumBulbs = numBulbs;
       prevIconCircleAngularOffset = ao;
-      prevIconCircleWx = wx;
-      prevIconCircleWy = wy;
-
+      prevIconCircleW2H = w2h;
    }
    // Geometry already calculated, update colors
    else 
@@ -389,7 +531,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
        */
       for (int i = 0; i < 3; i++) {
          
-         // Update color, if needed
+         // Update color wheel, if needed
          for (int j = 0; j < numBulbs; j++) {
 
             if (float(bulbColors[i+j*3]) != iconCircleColorBuffer[ i + j*circleSegments*9 ]) {
@@ -398,6 +540,13 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
                for (unsigned int k = 0; k < tmu; k++) {
                      iconCircleColorBuffer[ j*circleSegments*9 + k*3 + i ] = float(bulbColors[i+j*3]);
                }
+            }
+         }
+
+         // Update outline, bulb markers, if needed
+         if (float(detailColor[i]) != float(iconCircleColorBuffer[i + numBulbs*circleSegments*9])) {
+            for (unsigned int k = numBulbs*circleSegments*3; k < iconCircleVerts; k++) {
+               iconCircleColorBuffer[ k*3 + i ] = float(detailColor[i]);
             }
          }
       }
