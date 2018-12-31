@@ -433,9 +433,9 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
 
    PyList_ClearFreeList();
    py_list = PyList_New(numBulbs);
-   py_tuple = PyTuple_New(2);
 #  pragma omp parallel for
    for (int i = 0; i < numBulbs; i++) {
+      py_tuple = PyTuple_New(2);
       PyTuple_SetItem(py_tuple, 0, PyFloat_FromDouble(buttonCoords[i*2+0]));
       PyTuple_SetItem(py_tuple, 1, PyFloat_FromDouble(buttonCoords[i*2+1]));
       PyList_SetItem(py_list, i, py_tuple);

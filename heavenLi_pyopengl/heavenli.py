@@ -14,6 +14,10 @@ print("Loading GLUT...")
 from OpenGL.GLUT import *
 print("Done!")
 
+print("Loading NumPy...")
+import numpy as np
+print("Done!")
+
 print("Loading System Utilities...")
 import sys, time
 from math import sin,cos,sqrt,pi,radians
@@ -92,7 +96,8 @@ def drawBackground(Light = 0 # Currently Selected Lamp, Space, or *
     global wx, wy
     if (lamps[Light].getArn() == 0):
          drawHomeCircle(0.0, 0.0, 
-                 wx, wy, 
+                 #wx, wy, 
+                 glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT),
                  lamps[Light].getNumBulbs(), 
                  lamps[Light].getAngle(), 
                  w2h,

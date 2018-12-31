@@ -14,10 +14,10 @@ int drawPill(
       float *verts,
       float *colrs
       ){
-   int vertIndex = index*2;
-   int colrIndex = index*3;
-
+   int vertIndex = index*2;   /* index (x, y) */
+   int colrIndex = index*3;   /* index (r, g, b) */
    float rx, ry, slope, tma;
+
    if (qx >= px) {
       slope = (qy-py)/(qx-px);
    } else {
