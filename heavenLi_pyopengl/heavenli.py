@@ -42,8 +42,8 @@ lightOn = False
 fps = 60
 windowPosX = 0
 windowPosY = 0
-windowDimW = 300
-windowDimH = 300
+windowDimW = 900
+windowDimH = 900
 cursorX = 0
 cursorY = 0
 isFullScreen = False
@@ -74,7 +74,7 @@ def init():
 def framerate():
     global t0, frames, w2h, fps, someVar, someInc
     t = time.time()
-    frames += 1
+    frames += 1.0
     seconds = t - t0
     someVar += someInc
     if (someVar > 100) or (someVar < 0):
@@ -156,10 +156,27 @@ def drawHome():
                 prevBri = lamps[0].getBulbHSV(i)[2]
 
     drawIconCircle(0.75, 0.75, 
-            iconSize, 
+            iconSize*0.85, 
+            #(0.9, 0.9, 0.9),
             ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
             lamps[0].getNumBulbs(), 
             lamps[0].getAngle(), 
+            w2h, 
+            lamps[0].getBulbsRGB())
+    drawIconCircle(0.75, 0.0, 
+            iconSize*0.85, 
+            #(0.9, 0.9, 0.9),
+            ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
+            lamps[0].getNumBulbs()-1, 
+            lamps[0].getAngle()-45, 
+            w2h, 
+            lamps[0].getBulbsRGB())
+    drawIconCircle(0.75, -0.75, 
+            iconSize*0.85, 
+            #(0.9, 0.9, 0.9),
+            ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
+            lamps[0].getNumBulbs()-2, 
+            lamps[0].getAngle()-90, 
             w2h, 
             lamps[0].getBulbsRGB())
 
