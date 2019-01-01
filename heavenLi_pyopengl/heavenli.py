@@ -42,8 +42,8 @@ lightOn = False
 fps = 60
 windowPosX = 0
 windowPosY = 0
-windowDimW = 900
-windowDimH = 900
+windowDimW = 800
+windowDimH = 480
 cursorX = 0
 cursorY = 0
 isFullScreen = False
@@ -96,8 +96,8 @@ def drawBackground(Light = 0 # Currently Selected Lamp, Space, or *
     global wx, wy
     if (lamps[Light].getArn() == 0):
          drawHomeCircle(0.0, 0.0, 
-                 #wx, wy, 
-                 glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT),
+                 wx, wy, 
+                 #glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT),
                  lamps[Light].getNumBulbs(), 
                  lamps[Light].getAngle(), 
                  w2h,
@@ -400,7 +400,6 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
                 targetLamp.setBulbRGB(targetBulb, tmc)
                 currentBri = (j)/5.0
                 currentSat = (i+1)/6.0 - 1/6.0
-                #print("currentBri: {:.3f}, (j)/5.0: {:.3f}, currentSat: {:.3f}, i/6.0: {:.3f}".format(currentBri, (j)/5.0, currentSat, i/6.0))
 
     ptc = np.array(__pickerColrs, 'f').reshape(-1, 3)
     pnt = np.array(__pickerVerts, 'f').reshape(-1, 2)
@@ -457,7 +456,7 @@ def display():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
 
-    glDisable(GL_LIGHTING)
+    #glDisable(GL_LIGHTING)
     drawBackground(0)
 
     if (targetScreen == 0):
@@ -477,7 +476,7 @@ def display():
     for i in range(len(lamps)):
         lamps[i].updateBulbs(1.0/fps)
 
-    glFlush()
+    #glFlush()
     glutSwapBuffers()
 
     framerate()
@@ -570,10 +569,6 @@ def reshape(width, height):
 
 # Only Render if the window (any pixel of it at all) is visible
 def visible(vis):
-    # Enfore Minimum WindowSize
-    width = glutGet(GLUT_WINDOW_WIDTH)
-    height = glutGet(GLUT_WINDOW_HEIGHT)
-
     if vis == GLUT_VISIBLE:
         glutIdleFunc(idle)
     else:
@@ -584,7 +579,8 @@ if __name__ == '__main__':
     #global windowDimW, windowDimH, windowPosX, windowPosY
     print("Initializing...")
     glutInit(sys.argv)
-    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE)
+    #glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE)
+    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE)
 
     glutInitWindowPosition(windowPosX, windowPosY)
     glutInitWindowSize(windowDimW, windowDimH)
@@ -593,15 +589,11 @@ if __name__ == '__main__':
     glutMouseFunc(mouseInteraction)
     glutPassiveMotionFunc(mousePassive)
     glEnable(GL_LINE_SMOOTH)
-    print(glutGetWindow())
 
     init()
 
     glutDisplayFunc(display)
-    #glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR)
-    #glEnable( GL_BLEND )
     glutReshapeFunc(reshape)
-    #glutKeyboardFunc(key)
     glutSpecialFunc(special)
     glutKeyboardFunc(key)
     glutVisibilityFunc(visible)
