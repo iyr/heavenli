@@ -157,6 +157,7 @@ def drawHome():
 
     drawIconCircle(0.75, 0.75, 
             iconSize*0.85, 
+            2,
             #(0.9, 0.9, 0.9),
             ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
             lamps[0].getNumBulbs(), 
@@ -165,6 +166,7 @@ def drawHome():
             lamps[0].getBulbsRGB())
     drawIconCircle(0.75, 0.0, 
             iconSize*0.85, 
+            1,
             #(0.9, 0.9, 0.9),
             ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
             lamps[0].getNumBulbs()-1, 
@@ -173,6 +175,7 @@ def drawHome():
             lamps[0].getBulbsRGB())
     drawIconCircle(0.75, -0.75, 
             iconSize*0.85, 
+            0,
             #(0.9, 0.9, 0.9),
             ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
             lamps[0].getNumBulbs()-2, 
