@@ -155,6 +155,24 @@ def drawHome():
                 prevSat = lamps[0].getBulbHSV(i)[1]
                 prevBri = lamps[0].getBulbHSV(i)[2]
 
+    drawIconCircle(-0.75, 0.75, 
+            iconSize*0.85, 
+            4,
+            #(0.9, 0.9, 0.9),
+            ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
+            lamps[0].getNumBulbs(), 
+            lamps[0].getAngle(), 
+            w2h, 
+            lamps[0].getBulbsRGB())
+    drawIconCircle(0.0, 0.75, 
+            iconSize*0.85, 
+            3,
+            #(0.9, 0.9, 0.9),
+            ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
+            lamps[0].getNumBulbs(), 
+            lamps[0].getAngle(), 
+            w2h, 
+            lamps[0].getBulbsRGB())
     drawIconCircle(0.75, 0.75, 
             iconSize*0.85, 
             2,

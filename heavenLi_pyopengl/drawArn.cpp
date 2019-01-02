@@ -274,9 +274,9 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       char degSegment = 360 / circleSegments;
       float angOffset = float(360.0 / float(numBulbs));
       float tma, tmx, tmy;
+      gx *= w2h;
       if (w2h >= 1.0) {
          scale = scale;
-         gx *= w2h;
       } else {
          scale *= w2h;
       }
@@ -419,106 +419,132 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
 
       // Draw Halos for bulb Markers
       // Draw Color Wheel + Outline + Bulb Markers + Bulb Halos if 'features' == 3
-      for (int j = 0; j < numBulbs; j++) {
-         tmx = float(gx+cos(degToRad(-90 - j*(angOffset) + 180/numBulbs + ao))*1.05*scale);
-         tmy = float(gy+sin(degToRad(-90 - j*(angOffset) + 180/numBulbs + ao))*1.05*scale);
-         for (int i = 0; i < (circleSegments*numBulbs)/3; i++) {
-            tma = float(degToRad(i*float(degSegment)) + ao - 90.0);
-            /* X */ verts.push_back(float(tmx+cos(tma)*scale*0.22));
-            /* Y */ verts.push_back(float(tmy+sin(tma)*scale*0.22));
-            /* R */ colrs.push_back(float(detailColor[0]));
-            /* G */ colrs.push_back(float(detailColor[1]));
-            /* B */ colrs.push_back(float(detailColor[2]));
+      if (features >= 3) {
+         for (int j = 0; j < numBulbs; j++) {
+            tmx = float(gx+cos(degToRad(-90 - j*(angOffset) + 180/numBulbs + ao))*1.05*scale);
+            tmy = float(gy+sin(degToRad(-90 - j*(angOffset) + 180/numBulbs + ao))*1.05*scale);
+            for (int i = 0; i < iUlim; i++) {
+               tma = float(degToRad(i*float(degSegment)) + ao - 90.0);
+               /* X */ verts.push_back(float(tmx+cos(tma)*scale*0.22));
+               /* Y */ verts.push_back(float(tmy+sin(tma)*scale*0.22));
+               /* R */ colrs.push_back(float(detailColor[0]));
+               /* G */ colrs.push_back(float(detailColor[1]));
+               /* B */ colrs.push_back(float(detailColor[2]));
 
-            /* X */ verts.push_back(float(tmx+cos(tma)*scale*0.29));
-            /* Y */ verts.push_back(float(tmy+sin(tma)*scale*0.29));
-            /* R */ colrs.push_back(float(detailColor[0]));
-            /* G */ colrs.push_back(float(detailColor[1]));
-            /* B */ colrs.push_back(float(detailColor[2]));
+               /* X */ verts.push_back(float(tmx+cos(tma)*scale*0.29));
+               /* Y */ verts.push_back(float(tmy+sin(tma)*scale*0.29));
+               /* R */ colrs.push_back(float(detailColor[0]));
+               /* G */ colrs.push_back(float(detailColor[1]));
+               /* B */ colrs.push_back(float(detailColor[2]));
 
-            tma = float(degToRad((i+1)*float(degSegment)) + ao - 90.0);
-            /* X */ verts.push_back(float(tmx+cos(tma)*scale*0.22));
-            /* Y */ verts.push_back(float(tmy+sin(tma)*scale*0.22));
-            /* R */ colrs.push_back(float(detailColor[0]));
-            /* G */ colrs.push_back(float(detailColor[1]));
-            /* B */ colrs.push_back(float(detailColor[2]));
+               tma = float(degToRad((i+1)*float(degSegment)) + ao - 90.0);
+               /* X */ verts.push_back(float(tmx+cos(tma)*scale*0.22));
+               /* Y */ verts.push_back(float(tmy+sin(tma)*scale*0.22));
+               /* R */ colrs.push_back(float(detailColor[0]));
+               /* G */ colrs.push_back(float(detailColor[1]));
+               /* B */ colrs.push_back(float(detailColor[2]));
 
-            /* X */ verts.push_back(float(tmx+cos(tma)*scale*0.29));
-            /* Y */ verts.push_back(float(tmy+sin(tma)*scale*0.29));
-            /* R */ colrs.push_back(float(detailColor[0]));
-            /* G */ colrs.push_back(float(detailColor[1]));
-            /* B */ colrs.push_back(float(detailColor[2]));
+               /* X */ verts.push_back(float(tmx+cos(tma)*scale*0.29));
+               /* Y */ verts.push_back(float(tmy+sin(tma)*scale*0.29));
+               /* R */ colrs.push_back(float(detailColor[0]));
+               /* G */ colrs.push_back(float(detailColor[1]));
+               /* B */ colrs.push_back(float(detailColor[2]));
 
-            /* X */ verts.push_back(float(tmx+cos(tma)*scale*0.22));
-            /* Y */ verts.push_back(float(tmy+sin(tma)*scale*0.22));
-            /* R */ colrs.push_back(float(detailColor[0]));
-            /* G */ colrs.push_back(float(detailColor[1]));
-            /* B */ colrs.push_back(float(detailColor[2]));
+               /* X */ verts.push_back(float(tmx+cos(tma)*scale*0.22));
+               /* Y */ verts.push_back(float(tmy+sin(tma)*scale*0.22));
+               /* R */ colrs.push_back(float(detailColor[0]));
+               /* G */ colrs.push_back(float(detailColor[1]));
+               /* B */ colrs.push_back(float(detailColor[2]));
 
-            tma = float(degToRad((i+0)*float(degSegment)) + ao - 90.0);
-            /* X */ verts.push_back(float(tmx+cos(tma)*scale*0.29));
-            /* Y */ verts.push_back(float(tmy+sin(tma)*scale*0.29));
-            /* R */ colrs.push_back(float(detailColor[0]));
-            /* G */ colrs.push_back(float(detailColor[1]));
-            /* B */ colrs.push_back(float(detailColor[2]));
+               tma = float(degToRad((i+0)*float(degSegment)) + ao - 90.0);
+               /* X */ verts.push_back(float(tmx+cos(tma)*scale*0.29));
+               /* Y */ verts.push_back(float(tmy+sin(tma)*scale*0.29));
+               /* R */ colrs.push_back(float(detailColor[0]));
+               /* G */ colrs.push_back(float(detailColor[1]));
+               /* B */ colrs.push_back(float(detailColor[2]));
+            }
+         }
+      } else {
+         for (int j = 0; j < numBulbs; j++) {
+            for (int k = 0; k < 6; k++) {
+               for (int i = 0; i < iUlim; i++) {
+                  /* X */ verts.push_back(float(100.0));
+                  /* Y */ verts.push_back(float(100.0));
+                  /* R */ colrs.push_back(float(detailColor[0]));
+                  /* G */ colrs.push_back(float(detailColor[1]));
+                  /* B */ colrs.push_back(float(detailColor[2]));
+               }
+            }
          }
       }
       
       // Draw Grand (Room) Halo
       // Draw Color Wheel + Outline + Bulb Markers + Bulb Halos + Grand Halo if 'features' == 4
       circleSegments = 60;
-      degSegment = 360/60;
-      for (int i = 0; i < circleSegments; i++) {
-         tma = float(degToRad(i*float(degSegment)) + ao - 90.0);
-         tmx = float(gx+cos(tma)*scale*1.28);
-         tmy = float(gy+sin(tma)*scale*1.28);
-         /* X */ verts.push_back(float(tmx));
-         /* Y */ verts.push_back(float(tmy));
-         /* R */ colrs.push_back(float(detailColor[0]));
-         /* G */ colrs.push_back(float(detailColor[1]));
-         /* B */ colrs.push_back(float(detailColor[2]));
+      if (features >= 4) {
+         degSegment = 360/60;
+         for (int i = 0; i < circleSegments; i++) {
+            tma = float(degToRad(i*float(degSegment)) + ao - 90.0);
+            tmx = float(gx+cos(tma)*scale*1.28);
+            tmy = float(gy+sin(tma)*scale*1.28);
+            /* X */ verts.push_back(float(tmx));
+            /* Y */ verts.push_back(float(tmy));
+            /* R */ colrs.push_back(float(detailColor[0]));
+            /* G */ colrs.push_back(float(detailColor[1]));
+            /* B */ colrs.push_back(float(detailColor[2]));
 
-         tmx = float(gx+cos(tma)*scale*1.36);
-         tmy = float(gy+sin(tma)*scale*1.36);
-         /* X */ verts.push_back(float(tmx));
-         /* Y */ verts.push_back(float(tmy));
-         /* R */ colrs.push_back(float(detailColor[0]));
-         /* G */ colrs.push_back(float(detailColor[1]));
-         /* B */ colrs.push_back(float(detailColor[2]));
+            tmx = float(gx+cos(tma)*scale*1.36);
+            tmy = float(gy+sin(tma)*scale*1.36);
+            /* X */ verts.push_back(float(tmx));
+            /* Y */ verts.push_back(float(tmy));
+            /* R */ colrs.push_back(float(detailColor[0]));
+            /* G */ colrs.push_back(float(detailColor[1]));
+            /* B */ colrs.push_back(float(detailColor[2]));
 
-         tma = float(degToRad((i+1)*float(degSegment)) + ao - 90.0);
-         tmx = float(gx+cos(tma)*scale*1.28);
-         tmy = float(gy+sin(tma)*scale*1.28);
-         /* X */ verts.push_back(float(tmx));
-         /* Y */ verts.push_back(float(tmy));
-         /* R */ colrs.push_back(float(detailColor[0]));
-         /* G */ colrs.push_back(float(detailColor[1]));
-         /* B */ colrs.push_back(float(detailColor[2]));
+            tma = float(degToRad((i+1)*float(degSegment)) + ao - 90.0);
+            tmx = float(gx+cos(tma)*scale*1.28);
+            tmy = float(gy+sin(tma)*scale*1.28);
+            /* X */ verts.push_back(float(tmx));
+            /* Y */ verts.push_back(float(tmy));
+            /* R */ colrs.push_back(float(detailColor[0]));
+            /* G */ colrs.push_back(float(detailColor[1]));
+            /* B */ colrs.push_back(float(detailColor[2]));
 
-         tmx = float(gx+cos(tma)*scale*1.36);
-         tmy = float(gy+sin(tma)*scale*1.36);
-         /* X */ verts.push_back(float(tmx));
-         /* Y */ verts.push_back(float(tmy));
-         /* R */ colrs.push_back(float(detailColor[0]));
-         /* G */ colrs.push_back(float(detailColor[1]));
-         /* B */ colrs.push_back(float(detailColor[2]));
+            tmx = float(gx+cos(tma)*scale*1.36);
+            tmy = float(gy+sin(tma)*scale*1.36);
+            /* X */ verts.push_back(float(tmx));
+            /* Y */ verts.push_back(float(tmy));
+            /* R */ colrs.push_back(float(detailColor[0]));
+            /* G */ colrs.push_back(float(detailColor[1]));
+            /* B */ colrs.push_back(float(detailColor[2]));
 
-         tmx = float(gx+cos(tma)*scale*1.28);
-         tmy = float(gy+sin(tma)*scale*1.28);
-         /* X */ verts.push_back(float(tmx));
-         /* Y */ verts.push_back(float(tmy));
-         /* R */ colrs.push_back(float(detailColor[0]));
-         /* G */ colrs.push_back(float(detailColor[1]));
-         /* B */ colrs.push_back(float(detailColor[2]));
+            tmx = float(gx+cos(tma)*scale*1.28);
+            tmy = float(gy+sin(tma)*scale*1.28);
+            /* X */ verts.push_back(float(tmx));
+            /* Y */ verts.push_back(float(tmy));
+            /* R */ colrs.push_back(float(detailColor[0]));
+            /* G */ colrs.push_back(float(detailColor[1]));
+            /* B */ colrs.push_back(float(detailColor[2]));
 
-         tma = float(degToRad((i+0)*float(degSegment)) + ao - 90.0);
-         tmx = float(gx+cos(tma)*scale*1.36);
-         tmy = float(gy+sin(tma)*scale*1.36);
-         /* X */ verts.push_back(float(tmx));
-         /* Y */ verts.push_back(float(tmy));
-         /* R */ colrs.push_back(float(detailColor[0]));
-         /* G */ colrs.push_back(float(detailColor[1]));
-         /* B */ colrs.push_back(float(detailColor[2]));
+            tma = float(degToRad((i+0)*float(degSegment)) + ao - 90.0);
+            tmx = float(gx+cos(tma)*scale*1.36);
+            tmy = float(gy+sin(tma)*scale*1.36);
+            /* X */ verts.push_back(float(tmx));
+            /* Y */ verts.push_back(float(tmy));
+            /* R */ colrs.push_back(float(detailColor[0]));
+            /* G */ colrs.push_back(float(detailColor[1]));
+            /* B */ colrs.push_back(float(detailColor[2]));
+         }
+      } else {
+         for (int k = 0; k < 6; k++) {
+            for (int i = 0; i < circleSegments; i++) {
+               /* X */ verts.push_back(float(100.0));
+               /* Y */ verts.push_back(float(100.0));
+               /* R */ colrs.push_back(float(detailColor[0]));
+               /* G */ colrs.push_back(float(detailColor[1]));
+               /* B */ colrs.push_back(float(detailColor[2]));
+            }
+         }
       }
 
       iconCircleVerts = verts.size()/2;
@@ -647,115 +673,123 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
 
       // Update Bulb Markers
       // Draw Color Wheel + Outline + BulbMarkers if 'features' == 2
-      degSegment = 360/((circleSegments*numBulbs)/3);
       int iUlim = (circleSegments*numBulbs)/3;
-      for (int j = 0; j < numBulbs; j++) {
-         tmx = float(gx+cos(degToRad(-90 - j*(angOffset) + 180/numBulbs + ao))*1.05*scale);
-         tmy = float(gy+sin(degToRad(-90 - j*(angOffset) + 180/numBulbs + ao))*1.05*scale);
-         for (int i = 0; i < iUlim; i++) {
-            /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx));
-            /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy));
+      if (features >= 2) {
+         degSegment = 360/((circleSegments*numBulbs)/3);
+         for (int j = 0; j < numBulbs; j++) {
+            tmx = float(gx+cos(degToRad(-90 - j*(angOffset) + 180/numBulbs + ao))*1.05*scale);
+            tmy = float(gy+sin(degToRad(-90 - j*(angOffset) + 180/numBulbs + ao))*1.05*scale);
+               for (int i = 0; i < iUlim; i++) {
+               /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx));
+               /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy));
 
-            /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx + scale*0.16*cos(degToRad(i*degSegment))));
-            /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy + scale*0.16*sin(degToRad(i*degSegment))));
+               /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx + scale*0.16*cos(degToRad(i*degSegment))));
+               /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy + scale*0.16*sin(degToRad(i*degSegment))));
 
-            /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx + scale*0.16*cos(degToRad((i+1)*degSegment))));
-            /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy + scale*0.16*sin(degToRad((i+1)*degSegment))));
+               /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx + scale*0.16*cos(degToRad((i+1)*degSegment))));
+               /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy + scale*0.16*sin(degToRad((i+1)*degSegment))));
+            }
+         }
+      } else {
+         for (int j = 0; j < numBulbs; j++) {
+            for (int k = 0; k < 6; k++) {
+               for (int i = 0; i < iUlim; i++) {
+                  /* X */ iconCircleVertexBuffer[vertIndex++] = (float(100.0));
+                  /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(100.0));
+               }
+            }
          }
       }
 
       // Draw Halos for bulb Markers
       // Draw Color Wheel + Outline + Bulb Markers + Bulb Halos if 'features' == 3
-      for (int j = 0; j < numBulbs; j++) {
-         tmx = float(gx+cos(degToRad(-90 - j*(angOffset) + 180/numBulbs + ao))*1.05*scale);
-         tmy = float(gy+sin(degToRad(-90 - j*(angOffset) + 180/numBulbs + ao))*1.05*scale);
-         for (int i = 0; i < iUlim; i++) {
-            tma = float(degToRad(i*float(degSegment)) + ao - 90.0);
-            /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx+cos(tma)*scale*0.22));
-            /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy+sin(tma)*scale*0.22));
+      if (features >= 3) {
+         for (int j = 0; j < numBulbs; j++) {
+            tmx = float(gx+cos(degToRad(-90 - j*(angOffset) + 180/numBulbs + ao))*1.05*scale);
+            tmy = float(gy+sin(degToRad(-90 - j*(angOffset) + 180/numBulbs + ao))*1.05*scale);
+            for (int i = 0; i < iUlim; i++) {
+               tma = float(degToRad(i*float(degSegment)) + ao - 90.0);
+               /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx+cos(tma)*scale*0.22));
+               /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy+sin(tma)*scale*0.22));
 
-            /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx+cos(tma)*scale*0.29));
-            /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy+sin(tma)*scale*0.29));
+               /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx+cos(tma)*scale*0.29));
+               /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy+sin(tma)*scale*0.29));
 
-            tma = float(degToRad((i+1)*float(degSegment)) + ao - 90.0);
-            /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx+cos(tma)*scale*0.22));
-            /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy+sin(tma)*scale*0.22));
+               tma = float(degToRad((i+1)*float(degSegment)) + ao - 90.0);
+               /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx+cos(tma)*scale*0.22));
+               /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy+sin(tma)*scale*0.22));
 
-            /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx+cos(tma)*scale*0.29));
-            /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy+sin(tma)*scale*0.29));
+               /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx+cos(tma)*scale*0.29));
+               /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy+sin(tma)*scale*0.29));
 
-            /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx+cos(tma)*scale*0.22));
-            /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy+sin(tma)*scale*0.22));
+               /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx+cos(tma)*scale*0.22));
+               /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy+sin(tma)*scale*0.22));
 
-            tma = float(degToRad((i+0)*float(degSegment)) + ao - 90.0);
-            /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx+cos(tma)*scale*0.29));
-            /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy+sin(tma)*scale*0.29));
+               tma = float(degToRad((i+0)*float(degSegment)) + ao - 90.0);
+               /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx+cos(tma)*scale*0.29));
+               /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy+sin(tma)*scale*0.29));
+            }
+         }
+      } else {
+         for (int j = 0; j < numBulbs; j++) {
+            for (int k = 0; k < 6; k++) {
+               for (int i = 0; i < iUlim; i++) {
+                  /* X */ iconCircleVertexBuffer[vertIndex++] = float(100.0);
+                  /* Y */ iconCircleVertexBuffer[vertIndex++] = float(100.0);
+               }
+            }
          }
       }
 
       // Update Grand (Room) Outline
+      // Draw Color Wheel + Outline + Bulb Markers + Bulb Halos + Grand Halo if 'features' == 4
       circleSegments = 60;
       degSegment = 360/60;
-      if (prevIconCircleW2H != w2h) {
+      if (features >= 4) {
+         if (prevIconCircleW2H != w2h) {
+            for (int i = 0; i < circleSegments; i++) {
+               tma = float(degToRad(i*float(degSegment)) + ao - 90.0);
+               tmx = float(gx+cos(tma)*scale*1.28);
+               tmy = float(gy+sin(tma)*scale*1.28);
+               /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx));
+               /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy));
+
+               tmx = float(gx+cos(tma)*scale*1.36);
+               tmy = float(gy+sin(tma)*scale*1.36);
+               /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx));
+               /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy));
+
+               tma = float(degToRad((i+1)*float(degSegment)) + ao - 90.0);
+               tmx = float(gx+cos(tma)*scale*1.28);
+               tmy = float(gy+sin(tma)*scale*1.28);
+               /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx));
+               /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy));
+
+               tmx = float(gx+cos(tma)*scale*1.36);
+               tmy = float(gy+sin(tma)*scale*1.36);
+               /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx));
+               /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy));
+
+               tmx = float(gx+cos(tma)*scale*1.28);
+               tmy = float(gy+sin(tma)*scale*1.28);
+               /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx));
+               /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy));
+
+               tma = float(degToRad((i+0)*float(degSegment)) + ao - 90.0);
+               tmx = float(gx+cos(tma)*scale*1.36);
+               tmy = float(gy+sin(tma)*scale*1.36);
+               /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx));
+               /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy));
+            }
+         }
+      } else {
          for (int i = 0; i < circleSegments; i++) {
-            tma = float(degToRad(i*float(degSegment)) + ao - 90.0);
-            tmx = float(gx+cos(tma)*scale*1.28);
-            tmy = float(gy+sin(tma)*scale*1.28);
-            /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx));
-            /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy));
-
-            tmx = float(gx+cos(tma)*scale*1.36);
-            tmy = float(gy+sin(tma)*scale*1.36);
-            /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx));
-            /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy));
-
-            tma = float(degToRad((i+1)*float(degSegment)) + ao - 90.0);
-            tmx = float(gx+cos(tma)*scale*1.28);
-            tmy = float(gy+sin(tma)*scale*1.28);
-            /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx));
-            /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy));
-
-            tmx = float(gx+cos(tma)*scale*1.36);
-            tmy = float(gy+sin(tma)*scale*1.36);
-            /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx));
-            /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy));
-
-            tmx = float(gx+cos(tma)*scale*1.28);
-            tmy = float(gy+sin(tma)*scale*1.28);
-            /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx));
-            /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy));
-
-            tma = float(degToRad((i+0)*float(degSegment)) + ao - 90.0);
-            tmx = float(gx+cos(tma)*scale*1.36);
-            tmy = float(gy+sin(tma)*scale*1.36);
-            /* X */ iconCircleVertexBuffer[vertIndex++] = (float(tmx));
-            /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(tmy));
-         }
-      }
-
-      /*
-      // Draw Color Wheel + Outline + Bulb Markers + Bulb Halos + Grand Halo if 'features' == 4
-      if (features == 4) {
-         if (iconCircleIndices == NULL) {
-            iconCircleIndices = new GLushort[vertIndex/2];
-#           pragma omp parallel for
-            for (int i = 0; i < vertIndex/6; i++) {
-               iconCircleIndices[i*3+0] = i+0;
-               iconCircleIndices[i*3+1] = i+1;
-               iconCircleIndices[i*3+2] = i+2;
-            }
-         } else {
-            delete [] iconCircleIndices;
-            iconCircleIndices = new GLushort[vertIndex/2];
-#           pragma omp parallel for
-            for (int i = 0; i < vertIndex/6; i++) {
-               iconCircleIndices[i*3+0] = i+0;
-               iconCircleIndices[i*3+1] = i+1;
-               iconCircleIndices[i*3+2] = i+2;
+            for (int j = 0; j < 6; j++) {
+               /* X */ iconCircleVertexBuffer[vertIndex++] = (float(100.0));
+               /* Y */ iconCircleVertexBuffer[vertIndex++] = (float(100.0));
             }
          }
       }
-      */
 
       prevIconCircleNumBulbs = numBulbs;
       prevIconCircleAngularOffset = ao;
