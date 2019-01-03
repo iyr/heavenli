@@ -89,6 +89,7 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
             /* B */ colrs.push_back(float(bulbColors[j*3+2]));
          }
       }
+
       homeCircleVerts = verts.size()/2;
 
       if (homeCircleVertexBuffer == NULL) {
@@ -805,7 +806,6 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
        * 1 - GREEN
        * 2 - BLUE
        */
-      printf("quack\n");
       for (int i = 0; i < 3; i++) {
          
          // Update color wheel, if needed
@@ -838,7 +838,168 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
    Py_RETURN_NONE;
 }
 
+GLfloat  *homeLinearVertexBuffer = NULL;
+GLfloat  *homeLinearColorBuffer  = NULL;
+GLushort *homeLinearIndices      = NULL;
+GLuint   homeLinearVerts         = NULL;
+int      prevHomeLinearNumBulbs  = NULL;
+
 PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
+   PyObject* py_list;
+   PyObject* py_tuple;
+   PyObject* py_float;
+   double *bulbColors;
+   float gx, gy, wx, wy, ao, w2h, sx, sy;
+   int numBulbs;
+   if (!PyArg_ParseTuple(args,
+            "fffflffO",
+            &gx, &gy,
+            &wx, &wy,
+            &numBulbs,
+            &ao,
+            &w2h,
+            &py_list
+            ))
+   {
+      Py_RETURN_NONE;
+   }
+   char circleSegments = 60/numBulbs;
+
+   // Parse array of tuples containing RGB Colors of bulbs
+   bulbColors = new double[numBulbs*3];
+   for (int i = 0; i < numBulbs; i++) {
+      py_tuple = PyList_GetItem(py_list, i);
+
+      for (int j = 0; j < 3; j++) {
+         py_float = PyTuple_GetItem(py_tuple, j);
+         bulbColors[i*3+j] = double(PyFloat_AsDouble(py_float));
+      }
+   }
+
+   if (homeLinearVertexBuffer    == NULL ||
+       homeLinearColorBuffer     == NULL ||
+       homeLinearIndices         == NULL ||
+       homeLinearVerts           == NULL ||
+       prevHomeLinearNumBulbs    != numBulbs 
+       ){
+
+      vector<GLfloat> verts;
+      vector<GLfloat> colrs;
+      float TLx, TRx, BLx, BRx, TLy, TRy, BLy, BRy;
+      float offset = float(4.0/numBulbs);
+      for (int i = 0; i < numBulbs; i++) {
+         if (i == 0) {
+            TLx = -4.0;
+            TLy =  4.0;
+
+            BLx = -4.0;
+            BLy = -4.0;
+         } else {
+            TLx = -2.0 + i*offset;
+            TLy =  4.0;
+
+            BLx = -2.0 + i*offset;
+            BLy = -4.0;
+         }
+
+         if (i == numBulbs-1) {
+            TRx =  4.0;
+            TRy =  4.0;
+
+            BRx =  4.0;
+            BRy = -4.0;
+         } else {
+            TRx = -2.0 + (i+1)*offset;
+            TRy =  4.0;
+
+            BRx = -2.0 + (i+1)*offset;
+            BRy = -4.0;
+         }
+
+         /* X */ verts.push_back(TLx);
+         /* Y */ verts.push_back(TLy);
+         /* X */ verts.push_back(BLx);
+         /* Y */ verts.push_back(BLy);
+         /* X */ verts.push_back(TRx);
+         /* Y */ verts.push_back(TRy);
+
+         /* X */ verts.push_back(TRx);
+         /* Y */ verts.push_back(TRy);
+         /* X */ verts.push_back(BLx);
+         /* Y */ verts.push_back(BLy);
+         /* X */ verts.push_back(BRx);
+         /* Y */ verts.push_back(BRy);
+
+         for (int j = 0; j < 6; j++) {
+            /* R */ colrs.push_back(float(bulbColors[i*3+0]));
+            /* G */ colrs.push_back(float(bulbColors[i*3+1]));
+            /* B */ colrs.push_back(float(bulbColors[i*3+2]));
+         }
+      }
+
+      homeLinearVerts = verts.size()/2;
+
+      if (homeLinearVertexBuffer == NULL) {
+         homeLinearVertexBuffer = new GLfloat[homeLinearVerts*2];
+      } else {
+         delete [] homeLinearVertexBuffer;
+         homeLinearVertexBuffer = new GLfloat[homeLinearVerts*2];
+      }
+
+      if (homeLinearColorBuffer == NULL) {
+         homeLinearColorBuffer = new GLfloat[homeLinearVerts*3];
+      } else {
+         delete [] homeLinearColorBuffer;
+         homeLinearColorBuffer = new GLfloat[homeLinearVerts*3];
+      }
+
+      if (homeLinearIndices == NULL) {
+         homeLinearIndices = new GLushort[homeLinearVerts];
+      } else {
+         delete [] homeLinearIndices;
+         homeLinearIndices = new GLushort[homeLinearVerts];
+      }
+
+#     pragma omp parallel for
+      for (unsigned int i = 0; i < homeLinearVerts; i++) {
+         homeLinearVertexBuffer[i*2+0] = verts[i*2+0];
+         homeLinearVertexBuffer[i*2+1] = verts[i*2+1];
+         homeLinearColorBuffer[i*3+0]  = colrs[i*3+0];
+         homeLinearColorBuffer[i*3+1]  = colrs[i*3+1];
+         homeLinearColorBuffer[i*3+2]  = colrs[i*3+2];
+         homeLinearIndices[i]          = i;
+      }
+
+      prevHomeLinearNumBulbs = numBulbs;
+   } 
+   // Geometry already calculated, check if any colors need to be updated.
+   else {
+      for (int i = 0; i < 3; i++) {
+         for (int j = 0; j < numBulbs; j++) {
+            // 3*2*3:
+            // 3 (R,G,B) color values per vertex
+            // 2 Triangles per Quad
+            // 3 Vertices per Triangle
+            if (float(bulbColors[i+j*3]) != homeLinearColorBuffer[i+j*3*2*3]) {
+               float tmc = bulbColors[j*3+i];
+               for (int k = 0; k < 6; k++) {
+                  homeLinearColorBuffer[j*3*2*3 + k*3 + i] = tmc;
+               }
+            }
+         }
+      }
+   }
+   delete [] bulbColors;
+
+   glPushMatrix();
+   glRotatef(90, 0, 0, 1);
+   glScalef(0.5, w2h/2.0, 1);
+   glRotatef(ao+90, 0, 0, 1);
+   glColorPointer(3, GL_FLOAT, 0, homeLinearColorBuffer);
+   glVertexPointer(2, GL_FLOAT, 0, homeLinearVertexBuffer);
+   glDrawElements( GL_TRIANGLES, homeLinearVerts, GL_UNSIGNED_SHORT, homeLinearIndices);
+   glPopMatrix();
+
    Py_RETURN_NONE;
 }
 

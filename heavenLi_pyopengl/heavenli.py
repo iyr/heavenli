@@ -97,7 +97,6 @@ def drawBackground(Light = 0 # Currently Selected Lamp, Space, or *
     if (lamps[Light].getArn() == 0):
          drawHomeCircle(0.0, 0.0, 
                  wx, wy, 
-                 #glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT),
                  lamps[Light].getNumBulbs(), 
                  lamps[Light].getAngle(), 
                  w2h,
@@ -105,7 +104,7 @@ def drawBackground(Light = 0 # Currently Selected Lamp, Space, or *
 
     elif (lamps[Light].getArn() == 1):
          drawHomeLinear(0.0, 0.0, 
-                 1.0, 1.0, 
+                 wx, wy,
                  lamps[Light].getNumBulbs(), 
                  lamps[Light].getAngle(), 
                  w2h,
@@ -155,49 +154,14 @@ def drawHome():
                 prevSat = lamps[0].getBulbHSV(i)[1]
                 prevBri = lamps[0].getBulbHSV(i)[2]
 
-    drawIconCircle(-0.75, 0.75, 
-            iconSize*0.85, 
-            4,
-            #(0.9, 0.9, 0.9),
-            ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
-            lamps[0].getNumBulbs(), 
-            lamps[0].getAngle(), 
-            w2h, 
-            lamps[0].getBulbsRGB())
-    drawIconCircle(0.0, 0.75, 
-            iconSize*0.85, 
-            3,
-            #(0.9, 0.9, 0.9),
-            ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
-            lamps[0].getNumBulbs(), 
-            lamps[0].getAngle(), 
-            w2h, 
-            lamps[0].getBulbsRGB())
+    features = 4;
     drawIconCircle(0.75, 0.75, 
             iconSize*0.85, 
-            2,
+            features,
             #(0.9, 0.9, 0.9),
             ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
             lamps[0].getNumBulbs(), 
             lamps[0].getAngle(), 
-            w2h, 
-            lamps[0].getBulbsRGB())
-    drawIconCircle(0.75, 0.0, 
-            iconSize*0.85, 
-            1,
-            #(0.9, 0.9, 0.9),
-            ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
-            lamps[0].getNumBulbs()-1, 
-            lamps[0].getAngle()-45, 
-            w2h, 
-            lamps[0].getBulbsRGB())
-    drawIconCircle(0.75, -0.75, 
-            iconSize*0.85, 
-            0,
-            #(0.9, 0.9, 0.9),
-            ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
-            lamps[0].getNumBulbs()-2, 
-            lamps[0].getAngle()-90, 
             w2h, 
             lamps[0].getBulbsRGB())
 
@@ -205,8 +169,10 @@ def drawHome():
 
     drawIconLinear(-0.75, -0.75, 
             iconSize*0.875, iconSize*0.875, 
-            lamps[0].getNumBulbs(), lamps[0].getAngle(), 
-            w2h, lamps[0].getBulbsRGB())
+            lamps[0].getNumBulbs(), 
+            lamps[0].getAngle(), 
+            w2h, 
+            lamps[0].getBulbsRGB())
 
     #cProfile.run('drawIconLinear(-0.75, -0.75, 0.15*0.875, 0.15*0.875, lamps[0].getNumBulbs(), lamps[0].getAngle(), w2h, lamps[0].getBulbsRGB())')
 
@@ -600,8 +566,8 @@ if __name__ == '__main__':
     #global windowDimW, windowDimH, windowPosX, windowPosY
     print("Initializing...")
     glutInit(sys.argv)
-    #glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE)
-    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE)
+    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE)
+    #glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE)
 
     glutInitWindowPosition(windowPosX, windowPosY)
     glutInitWindowSize(windowDimW, windowDimH)
