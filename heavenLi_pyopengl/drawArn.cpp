@@ -281,7 +281,15 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       } else {
          scale *= w2h;
       }
-      
+
+      /*
+       * Explanation of features:
+       * <= 0: just the color representation
+       * <= 1: color representation + outline
+       * <= 2: color representation + outline + bulb markers
+       * <= 3: color representation + outline + bulb markers + bulb marker halos
+       * <= 4: color representation + outline + bulb markers + bulb marker halos + grand halo
+       */
       // Draw Only the color wheel if 'features' <= 0
       for (int j = 0; j < numBulbs; j++) {
          for (int i = 0; i < circleSegments; i++) {
@@ -605,6 +613,14 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
          scale *= w2h;
       }
 
+      /*
+       * Explanation of features:
+       * <= 0: just the color representation
+       * <= 1: color representation + outline
+       * <= 2: color representation + outline + bulb markers
+       * <= 3: color representation + outline + bulb markers + bulb marker halos
+       * <= 4: color representation + outline + bulb markers + bulb marker halos + grand halo
+       */
       // Draw Only the color wheel if 'features' <= 0
       // Update Color Wheel
       for (int j = 0; j < numBulbs; j++) {
@@ -1066,6 +1082,17 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       float TLx, TRx, BLx, BRx, TLy, TRy, BLy, BRy;
       float offset = float(2.0/numBulbs);
       char degSegment = 360/circleSegments;
+
+      /*
+       * Explanation of features:
+       * <= 0: just the color representation
+       * <= 1: color representation + outline
+       * <= 2: color representation + outline + bulb markers
+       * <= 3: color representation + outline + bulb markers + bulb marker halos
+       * <= 4: color representation + outline + bulb markers + bulb marker halos + grand halo
+       */
+
+      // Define Square of Stripes with Rounded Corners
       for (int i = 0; i < numBulbs; i++) {
          if (i == 0) {
             TLx = -0.75;
@@ -1088,6 +1115,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
             /* X */ verts.push_back(-0.75);
             /* Y */ verts.push_back(-0.75);
 
+            // Defines Rounded Corners
             for (int j = 0; j < circleSegments; j++) {
                /* X */ verts.push_back(-0.75);
                /* Y */ verts.push_back( 0.75);
@@ -1142,6 +1170,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
             /* X */ verts.push_back( 0.75);
             /* Y */ verts.push_back(-0.75);
 
+            // Defines Rounded Corners
             for (int j = 0; j < circleSegments; j++) {
                /* X */ verts.push_back( 0.75);
                /* Y */ verts.push_back( 0.75);
@@ -1175,6 +1204,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
             BRy = -1.0;
          }
 
+         // Draw normal rectangular strip for none end segments
          /* X */ verts.push_back(TLx);
          /* Y */ verts.push_back(TLy);
          /* X */ verts.push_back(BLx);
@@ -1193,6 +1223,126 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
             /* R */ colrs.push_back(float(bulbColors[i*3+0]));
             /* G */ colrs.push_back(float(bulbColors[i*3+1]));
             /* B */ colrs.push_back(float(bulbColors[i*3+2]));
+         }
+
+         // Define OutLine
+         if (features >= 1) {
+
+            /*
+             * Draw Outer Straights
+             */
+            /* X */ verts.push_back(-9.0/8.0);
+            /* Y */ verts.push_back( 0.75);
+            /* X */ verts.push_back(-9.0/8.0);
+            /* Y */ verts.push_back(-0.75);
+            /* X */ verts.push_back(-1.00);
+            /* Y */ verts.push_back( 0.75);
+
+            /* X */ verts.push_back(-1.00);
+            /* Y */ verts.push_back( 0.75);
+            /* X */ verts.push_back(-9.0/8.0);
+            /* Y */ verts.push_back(-0.75);
+            /* X */ verts.push_back(-1.00);
+            /* Y */ verts.push_back(-0.75);
+
+            /* X */ verts.push_back( 9.0/8.0);
+            /* Y */ verts.push_back( 0.75);
+            /* X */ verts.push_back( 9.0/8.0);
+            /* Y */ verts.push_back(-0.75);
+            /* X */ verts.push_back( 1.00);
+            /* Y */ verts.push_back( 0.75);
+
+            /* X */ verts.push_back( 1.00);
+            /* Y */ verts.push_back( 0.75);
+            /* X */ verts.push_back( 9.0/8.0);
+            /* Y */ verts.push_back(-0.75);
+            /* X */ verts.push_back( 1.00);
+            /* Y */ verts.push_back(-0.75);
+
+            /* X */ verts.push_back( 0.75);
+            /* Y */ verts.push_back(-9.0/8.0);
+            /* X */ verts.push_back(-0.75);
+            /* Y */ verts.push_back(-9.0/8.0);
+            /* X */ verts.push_back( 0.75);
+            /* Y */ verts.push_back(-1.00);
+
+            /* X */ verts.push_back( 0.75);
+            /* Y */ verts.push_back(-1.00);
+            /* X */ verts.push_back(-0.75);
+            /* Y */ verts.push_back(-9.0/8.0);
+            /* X */ verts.push_back(-0.75);
+            /* Y */ verts.push_back(-1.00);
+
+            /* X */ verts.push_back( 0.75);
+            /* Y */ verts.push_back( 9.0/8.0);
+            /* X */ verts.push_back(-0.75);
+            /* Y */ verts.push_back( 9.0/8.0);
+            /* X */ verts.push_back( 0.75);
+            /* Y */ verts.push_back( 1.00);
+
+            /* X */ verts.push_back( 0.75);
+            /* Y */ verts.push_back( 1.00);
+            /* X */ verts.push_back(-0.75);
+            /* Y */ verts.push_back( 9.0/8.0);
+            /* X */ verts.push_back(-0.75);
+            /* Y */ verts.push_back( 1.00);
+            for (int j = 0; j < 24; j++) {
+               /* R */ colrs.push_back(float(detailColor[0]));
+               /* G */ colrs.push_back(float(detailColor[1]));
+               /* B */ colrs.push_back(float(detailColor[2]));
+            }
+
+            /*
+             * Draw Rounded Corners
+             */
+            float tmx, tmy;
+            for (int i = 0; i < 4; i++) {
+               switch(i) {
+                  case 0:
+                     tmx =  0.75;
+                     tmy =  0.75;
+                     break;
+                  case 1:
+                     tmx = -0.75;
+                     tmy =  0.75;
+                     break;
+                  case 2:
+                     tmx = -0.75;
+                     tmy = -0.75;
+                     break;
+                  case 3:
+                     tmx =  0.75;
+                     tmy = -0.75;
+                     break;
+               }
+
+               for (int j = 0; j < circleSegments; j++) {
+                  /* X */ verts.push_back(float(tmx + 0.25*cos(degToRad(i*90 + j*(degSegment/4.0)))));
+                  /* Y */ verts.push_back(float(tmy + 0.25*sin(degToRad(i*90 + j*(degSegment/4.0)))));
+                  /* X */ verts.push_back(float(tmx + (0.25+0.125)*cos(degToRad(i*90 + j*(degSegment/4.0)))));
+                  /* Y */ verts.push_back(float(tmy + (0.25+0.125)*sin(degToRad(i*90 + j*(degSegment/4.0)))));
+                  /* X */ verts.push_back(float(tmx + 0.25*cos(degToRad(i*90 + (j+1)*(degSegment/4.0)))));
+                  /* Y */ verts.push_back(float(tmy + 0.25*sin(degToRad(i*90 + (j+1)*(degSegment/4.0)))));
+
+
+                  /* X */ verts.push_back(float(tmx + 0.25*cos(degToRad(i*90 + (j+1)*(degSegment/4.0)))));
+                  /* Y */ verts.push_back(float(tmy + 0.25*sin(degToRad(i*90 + (j+1)*(degSegment/4.0)))));
+                  /* X */ verts.push_back(float(tmx + (0.25+0.125)*cos(degToRad(i*90 + j*(degSegment/4.0)))));
+                  /* Y */ verts.push_back(float(tmy + (0.25+0.125)*sin(degToRad(i*90 + j*(degSegment/4.0)))));
+                  /* X */ verts.push_back(float(tmx + (0.25+0.125)*cos(degToRad(i*90 + (j+1)*(degSegment/4.0)))));
+                  /* Y */ verts.push_back(float(tmy + (0.25+0.125)*sin(degToRad(i*90 + (j+1)*(degSegment/4.0)))));
+                  for (int k = 0; k < 6; k++) {
+                     /* R */ colrs.push_back(float(detailColor[0]));
+                     /* G */ colrs.push_back(float(detailColor[1]));
+                     /* B */ colrs.push_back(float(detailColor[2]));
+                  }
+               }
+            }
+         }
+
+         // Define Bulb Markers
+         if (features >= 2) {
+
          }
       }
 
