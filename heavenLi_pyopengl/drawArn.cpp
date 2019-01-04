@@ -17,6 +17,15 @@ float    prevHomeCircleAngularOffset       = NULL;
 float    prevHomeCircleWx                  = NULL;
 float    prevHomeCircleWy                  = NULL;
 
+float constrain(float value, float min, float max) {
+   if (value > max)
+      return max;
+   else if (value < min)
+      return min;
+   else
+      return value;
+}
+
 PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    PyObject* py_list;
    PyObject* py_tuple;
@@ -831,7 +840,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
                unsigned int tmu = circleSegments*3;
 #              pragma omp parallel for
                for (unsigned int k = 0; k < tmu; k++) {
-                     iconCircleColorBuffer[ j*circleSegments*9 + k*3 + i ] = float(bulbColors[i+j*3]);
+                  iconCircleColorBuffer[ j*circleSegments*9 + k*3 + i ] = float(bulbColors[i+j*3]);
                }
             }
          }
@@ -1081,7 +1090,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       vector<GLfloat> colrs;
       float TLx, TRx, BLx, BRx, TLy, TRy, BLy, BRy;
       float offset = float(2.0/numBulbs);
-      char degSegment = 360/circleSegments;
+      float degSegment = 360.0/float(circleSegments);
 
       /*
        * Explanation of features:
@@ -1338,11 +1347,125 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
                   }
                }
             }
+         } else {
+            for (int i = 0; i < (4*6*4 + 4*6*circleSegments); i++) {
+               /* X */ verts.push_back(100.0);
+               /* Y */ verts.push_back(100.0);
+               /* R */ colrs.push_back(float(detailColor[0]));
+               /* G */ colrs.push_back(float(detailColor[1]));
+               /* B */ colrs.push_back(float(detailColor[2]));
+            }
          }
 
          // Define Bulb Markers
          if (features >= 2) {
+            float tmx, tmy;
+            for (int i = 0; i < numBulbs; i++) {
+               if (numBulbs == 1) {
+                  tmy = (17.0/16.0);
+               } else {
+                  tmy = -(17.0/16.0);
+               }
+               tmx = float(-1.0 + 1.0/float(numBulbs) + (i*2.0)/float(numBulbs));
+               for (int j = 0; j < circleSegments; j++) {
+                  /* X */ verts.push_back(tmx);
+                  /* Y */ verts.push_back(tmy);
+                  /* X */ verts.push_back(tmx+float((1.0/6.0)*cos(degToRad(j*degSegment))));
+                  /* Y */ verts.push_back(tmy+float((1.0/6.0)*sin(degToRad(j*degSegment))));
+                  /* X */ verts.push_back(tmx+float((1.0/6.0)*cos(degToRad((j+1)*degSegment))));
+                  /* Y */ verts.push_back(tmy+float((1.0/6.0)*sin(degToRad((j+1)*degSegment))));
+               }
 
+               for (int j = 0; j < circleSegments*3; j++) {
+                  /* R */ colrs.push_back(float(detailColor[0]));
+                  /* G */ colrs.push_back(float(detailColor[1]));
+                  /* B */ colrs.push_back(float(detailColor[2]));
+               }
+            }
+         } else {
+            for (int i = 0; i < circleSegments*numBulbs*3; i++) {
+               /* X */ verts.push_back(100.0);
+               /* Y */ verts.push_back(100.0);
+               /* R */ colrs.push_back(float(detailColor[0]));
+               /* G */ colrs.push_back(float(detailColor[1]));
+               /* B */ colrs.push_back(float(detailColor[2]));
+            }
+         }
+
+         // Define Bulb Halos
+         if (features >= 3) {
+            float tmx, tmy;
+            for (int i = 0; i < numBulbs; i++) {
+               if (numBulbs == 1) {
+                  tmy = (17.0/16.0);
+               } else {
+                  tmy = -(17.0/16.0);
+               }
+               tmx = float(-1.0 + 1.0/float(numBulbs) + (i*2.0)/float(numBulbs));
+               float limit = float(1.0/float(numBulbs));
+               for (int j = 0; j < circleSegments; j++) {
+                  if (i == 0) {
+                     /* X */ verts.push_back(constrain(tmx+float((1.3/6.0)*cos(degToRad(j*degSegment))),       -2.0, tmx+limit));
+                     /* Y */ verts.push_back(tmy+float((1.3/6.0)*sin(degToRad(j*degSegment))));
+                     /* X */ verts.push_back(constrain(tmx+float((1.7/6.0)*cos(degToRad(j*degSegment))),       -2.0, tmx+limit));
+                     /* Y */ verts.push_back(tmy+float((1.7/6.0)*sin(degToRad(j*degSegment))));
+                     /* X */ verts.push_back(constrain(tmx+float((1.3/6.0)*cos(degToRad((j+1)*degSegment))),   -2.0, tmx+limit));
+                     /* Y */ verts.push_back(tmy+float((1.3/6.0)*sin(degToRad((j+1)*degSegment))));
+
+                     /* X */ verts.push_back(constrain(tmx+float((1.3/6.0)*cos(degToRad((j+1)*degSegment))),   -2.0, tmx+limit));
+                     /* Y */ verts.push_back(tmy+float((1.3/6.0)*sin(degToRad((j+1)*degSegment))));
+                     /* X */ verts.push_back(constrain(tmx+float((1.7/6.0)*cos(degToRad(j*degSegment))),       -2.0, tmx+limit));
+                     /* Y */ verts.push_back(tmy+float((1.7/6.0)*sin(degToRad(j*degSegment))));
+                     /* X */ verts.push_back(constrain(tmx+float((1.7/6.0)*cos(degToRad((j+1)*degSegment))),   -2.0, tmx+limit));
+                     /* Y */ verts.push_back(tmy+float((1.7/6.0)*sin(degToRad((j+1)*degSegment))));
+                  } else if (i == numBulbs-1) {
+                     /* X */ verts.push_back(constrain(tmx+float((1.3/6.0)*cos(degToRad(j*degSegment))),       tmx-limit, 2.0));
+                     /* Y */ verts.push_back(tmy+float((1.3/6.0)*sin(degToRad(j*degSegment))));
+                     /* X */ verts.push_back(constrain(tmx+float((1.7/6.0)*cos(degToRad(j*degSegment))),       tmx-limit, 2.0));
+                     /* Y */ verts.push_back(tmy+float((1.7/6.0)*sin(degToRad(j*degSegment))));
+                     /* X */ verts.push_back(constrain(tmx+float((1.3/6.0)*cos(degToRad((j+1)*degSegment))),   tmx-limit, 2.0));
+                     /* Y */ verts.push_back(tmy+float((1.3/6.0)*sin(degToRad((j+1)*degSegment))));
+
+                     /* X */ verts.push_back(constrain(tmx+float((1.3/6.0)*cos(degToRad((j+1)*degSegment))),   tmx-limit, 2.0));
+                     /* Y */ verts.push_back(tmy+float((1.3/6.0)*sin(degToRad((j+1)*degSegment))));
+                     /* X */ verts.push_back(constrain(tmx+float((1.7/6.0)*cos(degToRad(j*degSegment))),       tmx-limit, 2.0));
+                     /* Y */ verts.push_back(tmy+float((1.7/6.0)*sin(degToRad(j*degSegment))));
+                     /* X */ verts.push_back(constrain(tmx+float((1.7/6.0)*cos(degToRad((j+1)*degSegment))),   tmx-limit, 2.0));
+                     /* Y */ verts.push_back(tmy+float((1.7/6.0)*sin(degToRad((j+1)*degSegment))));
+                  } else {
+                     /* X */ verts.push_back(constrain(tmx+float((1.3/6.0)*cos(degToRad(j*degSegment))), tmx-limit, tmx+limit));
+                     /* Y */ verts.push_back(tmy+float((1.3/6.0)*sin(degToRad(j*degSegment))));
+                     /* X */ verts.push_back(constrain(tmx+float((1.7/6.0)*cos(degToRad(j*degSegment))), tmx-limit, tmx+limit));
+                     /* Y */ verts.push_back(tmy+float((1.7/6.0)*sin(degToRad(j*degSegment))));
+                     /* X */ verts.push_back(constrain(tmx+float((1.3/6.0)*cos(degToRad((j+1)*degSegment))), tmx-limit, tmx+limit));
+                     /* Y */ verts.push_back(tmy+float((1.3/6.0)*sin(degToRad((j+1)*degSegment))));
+
+                     /* X */ verts.push_back(constrain(tmx+float((1.3/6.0)*cos(degToRad((j+1)*degSegment))), tmx-limit, tmx+limit));
+                     /* Y */ verts.push_back(tmy+float((1.3/6.0)*sin(degToRad((j+1)*degSegment))));
+                     /* X */ verts.push_back(constrain(tmx+float((1.7/6.0)*cos(degToRad(j*degSegment))), tmx-limit, tmx+limit));
+                     /* Y */ verts.push_back(tmy+float((1.7/6.0)*sin(degToRad(j*degSegment))));
+                     /* X */ verts.push_back(constrain(tmx+float((1.7/6.0)*cos(degToRad((j+1)*degSegment))), tmx-limit, tmx+limit));
+                     /* Y */ verts.push_back(tmy+float((1.7/6.0)*sin(degToRad((j+1)*degSegment))));
+                  }
+               }
+
+               for (int j = 0; j < circleSegments*3; j++) {
+                  /* R */ colrs.push_back(float(detailColor[0]));
+                  /* G */ colrs.push_back(float(detailColor[1]));
+                  /* B */ colrs.push_back(float(detailColor[2]));
+                  /* R */ colrs.push_back(float(detailColor[0]));
+                  /* G */ colrs.push_back(float(detailColor[1]));
+                  /* B */ colrs.push_back(float(detailColor[2]));
+               }
+            }
+         } else {
+            for (int i = 0; i < 6*circleSegments; i++) {
+               /* X */ verts.push_back(100.0);
+               /* Y */ verts.push_back(100.0);
+               /* R */ colrs.push_back(float(detailColor[0]));
+               /* G */ colrs.push_back(float(detailColor[1]));
+               /* B */ colrs.push_back(float(detailColor[2]));
+            }
          }
       }
 

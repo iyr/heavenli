@@ -169,7 +169,8 @@ def drawHome():
 
     drawIconLinear(0.75, -0.75, 
             iconSize*0.85, 
-            features,
+            4,
+            #features,
             ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
             lamps[0].getNumBulbs(), 
             lamps[0].getAngle(), 
