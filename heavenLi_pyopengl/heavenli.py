@@ -167,8 +167,10 @@ def drawHome():
 
     #cProfile.run('drawIconCircle(0.75, 0.75, 0.15, 0.15, lamps[0].getNumBulbs(), lamps[0].getAngle(), w2h, lamps[0].getBulbsRGB())')
 
-    drawIconLinear(-0.75, -0.75, 
-            iconSize*0.875, iconSize*0.875, 
+    drawIconLinear(0.75, -0.75, 
+            iconSize*0.85, 
+            features,
+            ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
             lamps[0].getNumBulbs(), 
             lamps[0].getAngle(), 
             w2h, 

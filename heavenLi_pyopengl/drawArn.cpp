@@ -849,7 +849,7 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
    PyObject* py_tuple;
    PyObject* py_float;
    double *bulbColors;
-   float gx, gy, wx, wy, ao, w2h, sx, sy;
+   float gx, gy, wx, wy, ao, w2h;
    int numBulbs;
    if (!PyArg_ParseTuple(args,
             "fffflffO",
@@ -895,10 +895,10 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
             BLx = -4.0;
             BLy = -4.0;
          } else {
-            TLx = -2.0 + i*offset;
+            TLx = float(-2.0 + i*offset);
             TLy =  4.0;
 
-            BLx = -2.0 + i*offset;
+            BLx = float(-2.0 + i*offset);
             BLy = -4.0;
          }
 
@@ -909,10 +909,10 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
             BRx =  4.0;
             BRy = -4.0;
          } else {
-            TRx = -2.0 + (i+1)*offset;
+            TRx = float(-2.0 + (i+1)*offset);
             TRy =  4.0;
 
-            BRx = -2.0 + (i+1)*offset;
+            BRx = float(-2.0 + (i+1)*offset);
             BRy = -4.0;
          }
 
@@ -981,7 +981,7 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
             // 2 Triangles per Quad
             // 3 Vertices per Triangle
             if (float(bulbColors[i+j*3]) != homeLinearColorBuffer[i+j*3*2*3]) {
-               float tmc = bulbColors[j*3+i];
+               float tmc = float(bulbColors[j*3+i]);
                for (int k = 0; k < 6; k++) {
                   homeLinearColorBuffer[j*3*2*3 + k*3 + i] = tmc;
                }
@@ -993,7 +993,7 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
 
    glPushMatrix();
    glRotatef(90, 0, 0, 1);
-   glScalef(0.5, w2h/2.0, 1);
+   glScalef(0.5, float(w2h/2.0), 1);
    glRotatef(ao+90, 0, 0, 1);
    glColorPointer(3, GL_FLOAT, 0, homeLinearColorBuffer);
    glVertexPointer(2, GL_FLOAT, 0, homeLinearVertexBuffer);
@@ -1003,7 +1003,251 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
    Py_RETURN_NONE;
 }
 
+GLfloat  *iconLinearVertexBuffer = NULL;
+GLfloat  *iconLinearColorBuffer  = NULL;
+GLushort *iconLinearIndices      = NULL;
+GLuint   iconLinearVerts         = NULL;
+int      prevIconLinearNumBulbs        = NULL;
+int      prevIconLinearFeatures        = NULL;
+float    prevIconLinearAngularOffset   = NULL;
+float    prevIconLinearWx              = NULL;
+float    prevIconLinearWy              = NULL;
+float    prevIconLinearW2H             = NULL;
+
 PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
+   PyObject* detailColorPyTup;
+   PyObject* py_list;
+   PyObject* py_tuple;
+   PyObject* py_float;
+   double *bulbColors;
+   double detailColor[3];
+   float gx, gy, scale, ao, w2h; 
+   int numBulbs, features;
+   if (!PyArg_ParseTuple(args,
+            "ffflOlffO",
+            &gx, &gy,
+            &scale, 
+            &features,
+            &detailColorPyTup,
+            &numBulbs,
+            &ao,
+            &w2h,
+            &py_list
+            ))
+   {
+      Py_RETURN_NONE;
+   }
+
+   char circleSegments = 20;
+
+   // Parse array of tuples containing RGB Colors of bulbs
+   bulbColors = new double[numBulbs*3];
+   for (int i = 0; i < numBulbs; i++) {
+      py_tuple = PyList_GetItem(py_list, i);
+
+      for (int j = 0; j < 3; j++) {
+         py_float = PyTuple_GetItem(py_tuple, j);
+         bulbColors[i*3+j] = double(PyFloat_AsDouble(py_float));
+      }
+   }
+
+   // Parse RGB detail colors
+   detailColor[0] = PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 0));
+   detailColor[1] = PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 1));
+   detailColor[2] = PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2));
+
+   if (prevIconLinearNumBulbs != numBulbs ||
+       iconLinearVertexBuffer == NULL     ||
+       iconLinearColorBuffer  == NULL     ||
+       iconLinearIndices      == NULL     ){
+
+      vector<GLfloat> verts;
+      vector<GLfloat> colrs;
+      float TLx, TRx, BLx, BRx, TLy, TRy, BLy, BRy;
+      float offset = float(2.0/numBulbs);
+      char degSegment = 360/circleSegments;
+      for (int i = 0; i < numBulbs; i++) {
+         if (i == 0) {
+            TLx = -0.75;
+            TLy =  1.00;
+
+            BLx = -0.75;
+            BLy = -1.00;
+
+            /* X */ verts.push_back(-1.00);
+            /* Y */ verts.push_back( 0.75);
+            /* X */ verts.push_back(-1.00);
+            /* Y */ verts.push_back(-0.75);
+            /* X */ verts.push_back(-0.75);
+            /* Y */ verts.push_back( 0.75);
+
+            /* X */ verts.push_back(-0.75);
+            /* Y */ verts.push_back( 0.75);
+            /* X */ verts.push_back(-1.00);
+            /* Y */ verts.push_back(-0.75);
+            /* X */ verts.push_back(-0.75);
+            /* Y */ verts.push_back(-0.75);
+
+            for (int j = 0; j < circleSegments; j++) {
+               /* X */ verts.push_back(-0.75);
+               /* Y */ verts.push_back( 0.75);
+               /* X */ verts.push_back(float(-0.75 + 0.25*cos(degToRad(90+j*(degSegment/4.0)))));
+               /* Y */ verts.push_back(float( 0.75 + 0.25*sin(degToRad(90+j*(degSegment/4.0)))));
+               /* X */ verts.push_back(float(-0.75 + 0.25*cos(degToRad(90+(j+1)*(degSegment/4.0)))));
+               /* Y */ verts.push_back(float( 0.75 + 0.25*sin(degToRad(90+(j+1)*(degSegment/4.0)))));
+
+               /* X */ verts.push_back(-0.75);
+               /* Y */ verts.push_back(-0.75);
+               /* X */ verts.push_back(float(-0.75 + 0.25*cos(degToRad(180+j*(degSegment/4.0)))));
+               /* Y */ verts.push_back(float(-0.75 + 0.25*sin(degToRad(180+j*(degSegment/4.0)))));
+               /* X */ verts.push_back(float(-0.75 + 0.25*cos(degToRad(180+(j+1)*(degSegment/4.0)))));
+               /* Y */ verts.push_back(float(-0.75 + 0.25*sin(degToRad(180+(j+1)*(degSegment/4.0)))));
+               for (int j = 0; j < 6; j++) {
+                  /* R */ colrs.push_back(float(bulbColors[i*3+0]));
+                  /* G */ colrs.push_back(float(bulbColors[i*3+1]));
+                  /* B */ colrs.push_back(float(bulbColors[i*3+2]));
+               }
+            }
+
+            for (int j = 0; j < 6; j++) {
+               /* R */ colrs.push_back(float(bulbColors[i*3+0]));
+               /* G */ colrs.push_back(float(bulbColors[i*3+1]));
+               /* B */ colrs.push_back(float(bulbColors[i*3+2]));
+            }
+         } else {
+            TLx = float(-1.0 + i*offset);
+            TLy =  1.0;
+
+            BLx = float(-1.0 + i*offset);
+            BLy = -1.0;
+         }
+
+         if (i == numBulbs-1) {
+            TRx =  0.75;
+            TRy =  1.00;
+
+            BRx =  0.75;
+            BRy = -1.00;
+            /* X */ verts.push_back( 1.00);
+            /* Y */ verts.push_back( 0.75);
+            /* X */ verts.push_back( 1.00);
+            /* Y */ verts.push_back(-0.75);
+            /* X */ verts.push_back( 0.75);
+            /* Y */ verts.push_back( 0.75);
+
+            /* X */ verts.push_back( 0.75);
+            /* Y */ verts.push_back( 0.75);
+            /* X */ verts.push_back( 1.00);
+            /* Y */ verts.push_back(-0.75);
+            /* X */ verts.push_back( 0.75);
+            /* Y */ verts.push_back(-0.75);
+
+            for (int j = 0; j < circleSegments; j++) {
+               /* X */ verts.push_back( 0.75);
+               /* Y */ verts.push_back( 0.75);
+               /* X */ verts.push_back(float( 0.75 + 0.25*cos(degToRad(j*(degSegment/4.0)))));
+               /* Y */ verts.push_back(float( 0.75 + 0.25*sin(degToRad(j*(degSegment/4.0)))));
+               /* X */ verts.push_back(float( 0.75 + 0.25*cos(degToRad((j+1)*(degSegment/4.0)))));
+               /* Y */ verts.push_back(float( 0.75 + 0.25*sin(degToRad((j+1)*(degSegment/4.0)))));
+
+               /* X */ verts.push_back( 0.75);
+               /* Y */ verts.push_back(-0.75);
+               /* X */ verts.push_back(float( 0.75 + 0.25*cos(degToRad(270+j*(degSegment/4.0)))));
+               /* Y */ verts.push_back(float(-0.75 + 0.25*sin(degToRad(270+j*(degSegment/4.0)))));
+               /* X */ verts.push_back(float( 0.75 + 0.25*cos(degToRad(270+(j+1)*(degSegment/4.0)))));
+               /* Y */ verts.push_back(float(-0.75 + 0.25*sin(degToRad(270+(j+1)*(degSegment/4.0)))));
+               for (int j = 0; j < 6; j++) {
+                  /* R */ colrs.push_back(float(bulbColors[i*3+0]));
+                  /* G */ colrs.push_back(float(bulbColors[i*3+1]));
+                  /* B */ colrs.push_back(float(bulbColors[i*3+2]));
+               }
+            }
+            for (int j = 0; j < 6; j++) {
+               /* R */ colrs.push_back(float(bulbColors[i*3+0]));
+               /* G */ colrs.push_back(float(bulbColors[i*3+1]));
+               /* B */ colrs.push_back(float(bulbColors[i*3+2]));
+            }
+         } else {
+            TRx = float(-1.0 + (i+1)*offset);
+            TRy =  1.0;
+
+            BRx = float(-1.0 + (i+1)*offset);
+            BRy = -1.0;
+         }
+
+         /* X */ verts.push_back(TLx);
+         /* Y */ verts.push_back(TLy);
+         /* X */ verts.push_back(BLx);
+         /* Y */ verts.push_back(BLy);
+         /* X */ verts.push_back(TRx);
+         /* Y */ verts.push_back(TRy);
+
+         /* X */ verts.push_back(TRx);
+         /* Y */ verts.push_back(TRy);
+         /* X */ verts.push_back(BLx);
+         /* Y */ verts.push_back(BLy);
+         /* X */ verts.push_back(BRx);
+         /* Y */ verts.push_back(BRy);
+
+         for (int j = 0; j < 6; j++) {
+            /* R */ colrs.push_back(float(bulbColors[i*3+0]));
+            /* G */ colrs.push_back(float(bulbColors[i*3+1]));
+            /* B */ colrs.push_back(float(bulbColors[i*3+2]));
+         }
+      }
+
+      iconLinearVerts = verts.size()/2;
+
+      if (iconLinearVertexBuffer == NULL) {
+         iconLinearVertexBuffer = new GLfloat[iconLinearVerts*2];
+      } else {
+         delete [] iconLinearVertexBuffer;
+         iconLinearVertexBuffer = new GLfloat[iconLinearVerts*2];
+      }
+
+      if (iconLinearColorBuffer == NULL) {
+         iconLinearColorBuffer = new GLfloat[iconLinearVerts*3];
+      } else {
+         delete [] iconLinearColorBuffer;
+         iconLinearColorBuffer = new GLfloat[iconLinearVerts*3];
+      }
+
+      if (iconLinearIndices == NULL) {
+         iconLinearIndices = new GLushort[iconLinearVerts];
+      } else {
+         delete [] iconLinearIndices;
+         iconLinearIndices = new GLushort[iconLinearVerts];
+      }
+
+#     pragma omp parallel for
+      for (unsigned int i = 0; i < iconLinearVerts; i++) {
+         iconLinearVertexBuffer[i*2+0] = verts[i*2+0];
+         iconLinearVertexBuffer[i*2+1] = verts[i*2+1];
+         iconLinearColorBuffer[i*3+0]  = colrs[i*3+0];
+         iconLinearColorBuffer[i*3+1]  = colrs[i*3+1];
+         iconLinearColorBuffer[i*3+2]  = colrs[i*3+2];
+         iconLinearIndices[i]          = i;
+      }
+
+      prevIconLinearNumBulbs = numBulbs;
+   }
+   
+   delete [] bulbColors;
+
+   glPushMatrix();
+   glTranslatef(gx*w2h, gy, 0);
+   glRotatef(90, 0, 0, 1);
+   if (w2h >= 1.0) {
+      glScalef(scale, scale, 1);
+   } else {
+      glScalef(scale*w2h, scale*w2h, 1);
+   }
+   glRotatef(ao+90, 0, 0, 1);
+   glColorPointer(3, GL_FLOAT, 0, iconLinearColorBuffer);
+   glVertexPointer(2, GL_FLOAT, 0, iconLinearVertexBuffer);
+   glDrawElements( GL_TRIANGLES, iconLinearVerts, GL_UNSIGNED_SHORT, iconLinearIndices);
+   glPopMatrix();
+
    Py_RETURN_NONE;
 }
 
