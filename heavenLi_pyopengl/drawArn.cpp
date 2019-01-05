@@ -8,14 +8,14 @@
 #define degToRad(angleInDegrees) ((angleInDegrees) * 3.1415926535 / 180.0)
 using namespace std;
 
-GLfloat  *homeCircleVertexBuffer = NULL;
-GLfloat  *homeCircleColorBuffer  = NULL;
-GLushort *homeCircleIndices      = NULL;
-GLuint   homeCircleVerts         = NULL;
-int      prevHomeCircleNumBulbs            = NULL;
-float    prevHomeCircleAngularOffset       = NULL;
-float    prevHomeCircleWx                  = NULL;
-float    prevHomeCircleWy                  = NULL;
+GLfloat  *homeCircleVertexBuffer       = NULL;
+GLfloat  *homeCircleColorBuffer        = NULL;
+GLushort *homeCircleIndices            = NULL;
+GLuint   homeCircleVerts               = NULL;
+int      prevHomeCircleNumBulbs        = NULL;
+float    prevHomeCircleAngularOffset   = NULL;
+float    prevHomeCircleWx              = NULL;
+float    prevHomeCircleWy              = NULL;
 
 float constrain(float value, float min, float max) {
    if (value > max)
@@ -60,14 +60,14 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
 
    if (homeCircleVertexBuffer == NULL  ||
        homeCircleColorBuffer  == NULL  ||
-       homeCircleIndices      == NULL ) {
+       homeCircleIndices      == NULL  ){
 
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
 
       char degSegment = 360 / circleSegments;
       float angOffset = float(360.0 / float(numBulbs));
-      float tma, tmx, tmy;
+      float tma;
       sx = sqrt(w2h)*hypot(wx, wy);
       sy = sqrt(wy/wx)*hypot(wx, wy);
       
@@ -80,19 +80,15 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
             /* B */ colrs.push_back(float(bulbColors[j*3+2]));
 
             tma = float(degToRad(i*float(degSegment/(numBulbs)) + ao + (j)*(angOffset) - 90.0));
-            tmx = cos(tma)*sx;
-            tmy = sin(tma)*sy;
-            /* X */ verts.push_back(float(tmx));
-            /* Y */ verts.push_back(float(tmy));
+            /* X */ verts.push_back(float(cos(tma)*sx));
+            /* Y */ verts.push_back(float(sin(tma)*sy));
             /* R */ colrs.push_back(float(bulbColors[j*3+0]));
             /* G */ colrs.push_back(float(bulbColors[j*3+1]));
             /* B */ colrs.push_back(float(bulbColors[j*3+2]));
 
             tma = float(degToRad((i+1)*float(degSegment/(numBulbs)) + ao + (j)*(angOffset) - 90.0));
-            tmx = cos(tma)*sx;
-            tmy = sin(tma)*sy;
-            /* X */ verts.push_back(float(tmx));
-            /* Y */ verts.push_back(float(tmy));
+            /* X */ verts.push_back(float(cos(tma)*sx));
+            /* Y */ verts.push_back(float(sin(tma)*sy));
             /* R */ colrs.push_back(float(bulbColors[j*3+0]));
             /* G */ colrs.push_back(float(bulbColors[j*3+1]));
             /* B */ colrs.push_back(float(bulbColors[j*3+2]));
@@ -146,7 +142,7 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
 
       char degSegment = 360 / circleSegments;
       float angOffset = float(360.0 / float(numBulbs));
-      float tma, tmx, tmy;
+      float tma;
       int vertIndex = 0;
       int colorIndex = 0;
       sx = sqrt(w2h)*hypot(wx, wy);
@@ -318,8 +314,8 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       if (features >= 1) {
          for (int i = 0; i < circleSegments*3; i++) {
             tma = float(degToRad(i*float(degSegment/3)) - 90.0);
-            /* X */ verts.push_back(float(cos(tma));
-            /* Y */ verts.push_back(float(sin(tma));
+            /* X */ verts.push_back(float(cos(tma)));
+            /* Y */ verts.push_back(float(sin(tma)));
             /* R */ colrs.push_back(float(detailColor[0]));
             /* G */ colrs.push_back(float(detailColor[1]));
             /* B */ colrs.push_back(float(detailColor[2]));
@@ -331,8 +327,8 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
             /* B */ colrs.push_back(float(detailColor[2]));
 
             tma = float(degToRad((i+1)*float(degSegment/3)) - 90.0);
-            /* X */ verts.push_back(float(cos(tma));
-            /* Y */ verts.push_back(float(sin(tma));
+            /* X */ verts.push_back(float(cos(tma)));
+            /* Y */ verts.push_back(float(sin(tma)));
             /* R */ colrs.push_back(float(detailColor[0]));
             /* G */ colrs.push_back(float(detailColor[1]));
             /* B */ colrs.push_back(float(detailColor[2]));
@@ -343,8 +339,8 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
             /* G */ colrs.push_back(float(detailColor[1]));
             /* B */ colrs.push_back(float(detailColor[2]));
 
-            /* X */ verts.push_back(float(cos(tma));
-            /* Y */ verts.push_back(float(sin(tma));
+            /* X */ verts.push_back(float(cos(tma)));
+            /* Y */ verts.push_back(float(sin(tma)));
             /* R */ colrs.push_back(float(detailColor[0]));
             /* G */ colrs.push_back(float(detailColor[1]));
             /* B */ colrs.push_back(float(detailColor[2]));
@@ -370,11 +366,12 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
 
       // Draw Color Wheel + Outline + BulbMarkers if 'features' == 2
       int iUlim = (circleSegments*numBulbs)/3;
+      int tmo = 180/numBulbs;
       if (features >= 2) {
          degSegment = 360/((circleSegments*numBulbs)/3);
          for (int j = 0; j < numBulbs; j++) {
-            tmx = float(cos(degToRad(-90 - j*(angOffset) + 180/numBulbs))*1.05);
-            tmy = float(sin(degToRad(-90 - j*(angOffset) + 180/numBulbs))*1.05);
+            tmx = float(cos(degToRad(-90 - j*(angOffset) + tmo))*1.05);
+            tmy = float(sin(degToRad(-90 - j*(angOffset) + tmo))*1.05);
             for (int i = 0; i < iUlim; i++) {
                /* X */ verts.push_back(float(tmx));
                /* Y */ verts.push_back(float(tmy));
@@ -423,8 +420,8 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       // Draw Color Wheel + Outline + Bulb Markers + Bulb Halos if 'features' == 3
       if (features >= 3) {
          for (int j = 0; j < numBulbs; j++) {
-            tmx = float(cos(degToRad(-90 - j*(angOffset) + 180/numBulbs))*1.05);
-            tmy = float(sin(degToRad(-90 - j*(angOffset) + 180/numBulbs))*1.05);
+            tmx = float(cos(degToRad(-90 - j*(angOffset) + tmo))*1.05);
+            tmy = float(sin(degToRad(-90 - j*(angOffset) + tmo))*1.05);
             for (int i = 0; i < iUlim; i++) {
                tma = float(degToRad(i*float(degSegment)) - 90.0);
                /* X */ verts.push_back(float(tmx+cos(tma)*0.22));
@@ -487,41 +484,41 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
          degSegment = 360/60;
          for (int i = 0; i < circleSegments; i++) {
             tma = float(degToRad(i*float(degSegment)) - 90.0);
-            /* X */ verts.push_back(float(cos(tma)*1.28);
-            /* Y */ verts.push_back(float(sin(tma)*1.28);
+            /* X */ verts.push_back(float(cos(tma)*1.28));
+            /* Y */ verts.push_back(float(sin(tma)*1.28));
             /* R */ colrs.push_back(float(detailColor[0]));
             /* G */ colrs.push_back(float(detailColor[1]));
             /* B */ colrs.push_back(float(detailColor[2]));
 
-            /* X */ verts.push_back(float(cos(tma)*1.36);
-            /* Y */ verts.push_back(float(sin(tma)*1.36);
+            /* X */ verts.push_back(float(cos(tma)*1.36));
+            /* Y */ verts.push_back(float(sin(tma)*1.36));
             /* R */ colrs.push_back(float(detailColor[0]));
             /* G */ colrs.push_back(float(detailColor[1]));
             /* B */ colrs.push_back(float(detailColor[2]));
 
             tma = float(degToRad((i+1)*float(degSegment)) - 90.0);
-            /* X */ verts.push_back(float(cos(tma)*1.28);
-            /* Y */ verts.push_back(float(sin(tma)*1.28);
+            /* X */ verts.push_back(float(cos(tma)*1.28));
+            /* Y */ verts.push_back(float(sin(tma)*1.28));
             /* R */ colrs.push_back(float(detailColor[0]));
             /* G */ colrs.push_back(float(detailColor[1]));
             /* B */ colrs.push_back(float(detailColor[2]));
 
 
-            /* X */ verts.push_back(float(cos(tma)*1.36);
-            /* Y */ verts.push_back(float(sin(tma)*1.36);
+            /* X */ verts.push_back(float(cos(tma)*1.36));
+            /* Y */ verts.push_back(float(sin(tma)*1.36));
             /* R */ colrs.push_back(float(detailColor[0]));
             /* G */ colrs.push_back(float(detailColor[1]));
             /* B */ colrs.push_back(float(detailColor[2]));
 
-            /* X */ verts.push_back(float(cos(tma)*1.28);
-            /* Y */ verts.push_back(float(sin(tma)*1.28);
+            /* X */ verts.push_back(float(cos(tma)*1.28));
+            /* Y */ verts.push_back(float(sin(tma)*1.28));
             /* R */ colrs.push_back(float(detailColor[0]));
             /* G */ colrs.push_back(float(detailColor[1]));
             /* B */ colrs.push_back(float(detailColor[2]));
 
             tma = float(degToRad((i)*float(degSegment)) - 90.0);
-            /* X */ verts.push_back(float(cos(tma)*1.36);
-            /* Y */ verts.push_back(float(sin(tma)*1.36);
+            /* X */ verts.push_back(float(cos(tma)*1.36));
+            /* Y */ verts.push_back(float(sin(tma)*1.36));
             /* R */ colrs.push_back(float(detailColor[0]));
             /* G */ colrs.push_back(float(detailColor[1]));
             /* B */ colrs.push_back(float(detailColor[2]));
