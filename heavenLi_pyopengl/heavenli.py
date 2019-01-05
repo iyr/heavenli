@@ -42,8 +42,10 @@ lightOn = False
 fps = 60
 windowPosX = 0
 windowPosY = 0
-windowDimW = 800
-windowDimH = 480
+#windowDimW = 800
+#windowDimH = 480
+windowDimW = 320
+windowDimH = 240
 cursorX = 0
 cursorY = 0
 isFullScreen = False
@@ -57,6 +59,7 @@ targetBulb = 0
 frameLimit = False
 someVar = 0
 someInc = 0.1
+features = 4
 #demo = Lamp()
 
 def init():
@@ -113,7 +116,7 @@ def drawBackground(Light = 0 # Currently Selected Lamp, Space, or *
 prvState = touchState
 
 def drawHome():
-    global lamps, wx, wy, w2h, screen, touchState, lightOn, prvState, targetScreen, targetBulb, colrSettingCursor
+    global lamps, wx, wy, w2h, screen, touchState, lightOn, prvState, targetScreen, targetBulb, colrSettingCursor, features
 
     iconSize = 0.15
     drawClock(
@@ -137,8 +140,6 @@ def drawHome():
             iconSize*2.66,
             (0.3, 0.3, 0.3),
             (0.8, 0.8, 0.8),
-            #(0.3*(1-someVar/100), 0.3*(1-someVar/100), 0.3*(1-someVar/100)),
-            #(0.8*(someVar/100), 0.8*(someVar/100), 0.8*(someVar/100)),
             lamps[0].getBulbsRGB(),
             w2h)
 
@@ -154,11 +155,9 @@ def drawHome():
                 prevSat = lamps[0].getBulbHSV(i)[1]
                 prevBri = lamps[0].getBulbHSV(i)[2]
 
-    features = 4;
     drawIconCircle(0.75, 0.75, 
             iconSize*0.85, 
             features,
-            #(0.9, 0.9, 0.9),
             ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
             lamps[0].getNumBulbs(), 
             lamps[0].getAngle(), 
@@ -169,8 +168,7 @@ def drawHome():
 
     drawIconLinear(0.75, -0.75, 
             iconSize*0.85, 
-            4,
-            #features,
+            features,
             ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
             lamps[0].getNumBulbs(), 
             lamps[0].getAngle(), 
@@ -516,7 +514,7 @@ def special(k, x, y):
     glutPostRedisplay()
 
 def key(ch, x, y):
-    global targetScreen, wereColorsTouched
+    global targetScreen, wereColorsTouched, features
     if ch == as_8_bit('q'):
         sys.exit(0)
     if ord(ch) == 27: # ESC
@@ -531,6 +529,16 @@ def key(ch, x, y):
     if ch == as_8_bit('h'):
         wereColorsTouched = False
         targetScreen = 0
+
+    if ch == as_8_bit(']'):
+        features += 1
+        if features > 4:
+            features = 4
+
+    if ch == as_8_bit('['):
+        features -= 1
+        if features < 0:
+            features = 0
 
     #if ch == as_8_bit('m'):
         #glutIconifyWindow()

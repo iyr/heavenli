@@ -274,6 +274,8 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
    detailColor[2] = PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2));
 
    if (prevIconCircleNumBulbs != numBulbs ||
+       prevIconCircleFeatures != features ||
+       prevIconCircleAngularOffset != ao  ||
        iconCircleVertexBuffer == NULL     ||
        iconCircleColorBuffer  == NULL     ||
        iconCircleIndices      == NULL     ){
@@ -422,7 +424,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
             }
          }
       } else {
-         for (int k = 0; k < 3; k++) {
+         //for (int k = 0; k < 3; k++) {
             for (int j = 0; j < numBulbs; j++) {
                for (int i = 0; i < iUlim; i++) {
                   /* X */ verts.push_back(float(100.0));
@@ -430,9 +432,19 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
                   /* R */ colrs.push_back(float(detailColor[0]));
                   /* G */ colrs.push_back(float(detailColor[1]));
                   /* B */ colrs.push_back(float(detailColor[2]));
+                  /* X */ verts.push_back(float(100.0));
+                  /* Y */ verts.push_back(float(100.0));
+                  /* R */ colrs.push_back(float(detailColor[0]));
+                  /* G */ colrs.push_back(float(detailColor[1]));
+                  /* B */ colrs.push_back(float(detailColor[2]));
+                  /* X */ verts.push_back(float(100.0));
+                  /* Y */ verts.push_back(float(100.0));
+                  /* R */ colrs.push_back(float(detailColor[0]));
+                  /* G */ colrs.push_back(float(detailColor[1]));
+                  /* B */ colrs.push_back(float(detailColor[2]));
                }
             }
-         }
+         //}
       }
 
       // Draw Halos for bulb Markers
@@ -605,8 +617,8 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
    } 
    else
    // Update Geometry, if alreay allocated
-   if (prevIconCircleAngularOffset  != ao          ||
-       prevIconCircleFeatures       != features    ||
+   if (//prevIconCircleAngularOffset  != ao          ||
+       //prevIconCircleFeatures       != features    ||
        prevIconCircleW2H            != w2h         ){
 
       char degSegment = 360 / circleSegments;
@@ -1032,6 +1044,9 @@ GLfloat  *iconLinearVertexBuffer = NULL;
 GLfloat  *iconLinearColorBuffer  = NULL;
 GLushort *iconLinearIndices      = NULL;
 GLuint   iconLinearVerts         = NULL;
+GLuint   iconLinearColrs0        = NULL;
+GLuint   iconLinearColrs1        = NULL;
+GLuint   iconLinearColrs2        = NULL;
 int      prevIconLinearNumBulbs        = NULL;
 int      prevIconLinearFeatures        = NULL;
 float    prevIconLinearAngularOffset   = NULL;
@@ -1082,6 +1097,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
    detailColor[2] = PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2));
 
    if (prevIconLinearNumBulbs != numBulbs ||
+       prevIconLinearFeatures != features ||
        iconLinearVertexBuffer == NULL     ||
        iconLinearColorBuffer  == NULL     ||
        iconLinearIndices      == NULL     ){
@@ -1090,7 +1106,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       vector<GLfloat> colrs;
       float TLx, TRx, BLx, BRx, TLy, TRy, BLy, BRy;
       float offset = float(2.0/numBulbs);
-      float degSegment = 360.0/float(circleSegments);
+      float degSegment = float(360.0/float(circleSegments));
 
       /*
        * Explanation of features:
@@ -1110,19 +1126,13 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
             BLx = -0.75;
             BLy = -1.00;
 
-            /* X */ verts.push_back(-1.00);
-            /* Y */ verts.push_back( 0.75);
-            /* X */ verts.push_back(-1.00);
-            /* Y */ verts.push_back(-0.75);
-            /* X */ verts.push_back(-0.75);
-            /* Y */ verts.push_back( 0.75);
+            /* X */ verts.push_back(-1.00);   /* Y */ verts.push_back( 0.75);
+            /* X */ verts.push_back(-1.00);   /* Y */ verts.push_back(-0.75);
+            /* X */ verts.push_back(-0.75);   /* Y */ verts.push_back( 0.75);
 
-            /* X */ verts.push_back(-0.75);
-            /* Y */ verts.push_back( 0.75);
-            /* X */ verts.push_back(-1.00);
-            /* Y */ verts.push_back(-0.75);
-            /* X */ verts.push_back(-0.75);
-            /* Y */ verts.push_back(-0.75);
+            /* X */ verts.push_back(-0.75);   /* Y */ verts.push_back( 0.75);
+            /* X */ verts.push_back(-1.00);   /* Y */ verts.push_back(-0.75);
+            /* X */ verts.push_back(-0.75);   /* Y */ verts.push_back(-0.75);
 
             // Defines Rounded Corners
             for (int j = 0; j < circleSegments; j++) {
@@ -1165,19 +1175,13 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
 
             BRx =  0.75;
             BRy = -1.00;
-            /* X */ verts.push_back( 1.00);
-            /* Y */ verts.push_back( 0.75);
-            /* X */ verts.push_back( 1.00);
-            /* Y */ verts.push_back(-0.75);
-            /* X */ verts.push_back( 0.75);
-            /* Y */ verts.push_back( 0.75);
+            /* X */ verts.push_back( 1.00);   /* Y */ verts.push_back( 0.75);
+            /* X */ verts.push_back( 1.00);   /* Y */ verts.push_back(-0.75);
+            /* X */ verts.push_back( 0.75);   /* Y */ verts.push_back( 0.75);
 
-            /* X */ verts.push_back( 0.75);
-            /* Y */ verts.push_back( 0.75);
-            /* X */ verts.push_back( 1.00);
-            /* Y */ verts.push_back(-0.75);
-            /* X */ verts.push_back( 0.75);
-            /* Y */ verts.push_back(-0.75);
+            /* X */ verts.push_back( 0.75);   /* Y */ verts.push_back( 0.75);
+            /* X */ verts.push_back( 1.00);   /* Y */ verts.push_back(-0.75);
+            /* X */ verts.push_back( 0.75);   /* Y */ verts.push_back(-0.75);
 
             // Defines Rounded Corners
             for (int j = 0; j < circleSegments; j++) {
@@ -1213,259 +1217,341 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
             BRy = -1.0;
          }
 
-         // Draw normal rectangular strip for none end segments
-         /* X */ verts.push_back(TLx);
-         /* Y */ verts.push_back(TLy);
-         /* X */ verts.push_back(BLx);
-         /* Y */ verts.push_back(BLy);
-         /* X */ verts.push_back(TRx);
-         /* Y */ verts.push_back(TRy);
+         // Draw normal rectangular strip for non-end segments
+         /* X */ verts.push_back(TLx);   /* Y */ verts.push_back(TLy);
+         /* X */ verts.push_back(BLx);   /* Y */ verts.push_back(BLy);
+         /* X */ verts.push_back(TRx);   /* Y */ verts.push_back(TRy);
 
-         /* X */ verts.push_back(TRx);
-         /* Y */ verts.push_back(TRy);
-         /* X */ verts.push_back(BLx);
-         /* Y */ verts.push_back(BLy);
-         /* X */ verts.push_back(BRx);
-         /* Y */ verts.push_back(BRy);
+         /* X */ verts.push_back(TRx);   /* Y */ verts.push_back(TRy);
+         /* X */ verts.push_back(BLx);   /* Y */ verts.push_back(BLy);
+         /* X */ verts.push_back(BRx);   /* Y */ verts.push_back(BRy);
+
+         if (i == 0) {
+            iconLinearColrs0 = verts.size()/2;
+         } 
+         if (i == 1) {
+            iconLinearColrs1 = verts.size()/2;
+         } 
+         if (i == numBulbs-1 ) {
+            iconLinearColrs2 = verts.size()/2;
+         }
 
          for (int j = 0; j < 6; j++) {
             /* R */ colrs.push_back(float(bulbColors[i*3+0]));
             /* G */ colrs.push_back(float(bulbColors[i*3+1]));
             /* B */ colrs.push_back(float(bulbColors[i*3+2]));
          }
+      }
 
-         // Define OutLine
-         if (features >= 1) {
+      // Define OutLine
+      if (features >= 1) {
 
-            /*
-             * Draw Outer Straights
-             */
-            /* X */ verts.push_back(-9.0/8.0);
-            /* Y */ verts.push_back( 0.75);
-            /* X */ verts.push_back(-9.0/8.0);
-            /* Y */ verts.push_back(-0.75);
-            /* X */ verts.push_back(-1.00);
-            /* Y */ verts.push_back( 0.75);
+         /*
+          * Draw Outer Straights
+          */
+         //---------//
+         /* X */ verts.push_back(-9.0/8.0);   /* Y */ verts.push_back( 0.75);
+         /* X */ verts.push_back(-9.0/8.0);   /* Y */ verts.push_back(-0.75);
+         /* X */ verts.push_back(-1.00);      /* Y */ verts.push_back( 0.75);
 
-            /* X */ verts.push_back(-1.00);
-            /* Y */ verts.push_back( 0.75);
-            /* X */ verts.push_back(-9.0/8.0);
-            /* Y */ verts.push_back(-0.75);
-            /* X */ verts.push_back(-1.00);
-            /* Y */ verts.push_back(-0.75);
+         /* X */ verts.push_back(-1.00);      /* Y */ verts.push_back( 0.75);
+         /* X */ verts.push_back(-9.0/8.0);   /* Y */ verts.push_back(-0.75);
+         /* X */ verts.push_back(-1.00);      /* Y */ verts.push_back(-0.75);
 
-            /* X */ verts.push_back( 9.0/8.0);
-            /* Y */ verts.push_back( 0.75);
-            /* X */ verts.push_back( 9.0/8.0);
-            /* Y */ verts.push_back(-0.75);
-            /* X */ verts.push_back( 1.00);
-            /* Y */ verts.push_back( 0.75);
+         //---------//
+         /* X */ verts.push_back( 9.0/8.0);   /* Y */ verts.push_back( 0.75);
+         /* X */ verts.push_back( 9.0/8.0);   /* Y */ verts.push_back(-0.75);
+         /* X */ verts.push_back( 1.00);      /* Y */ verts.push_back( 0.75);
 
-            /* X */ verts.push_back( 1.00);
-            /* Y */ verts.push_back( 0.75);
-            /* X */ verts.push_back( 9.0/8.0);
-            /* Y */ verts.push_back(-0.75);
-            /* X */ verts.push_back( 1.00);
-            /* Y */ verts.push_back(-0.75);
+         /* X */ verts.push_back( 1.00);      /* Y */ verts.push_back( 0.75);
+         /* X */ verts.push_back( 9.0/8.0);   /* Y */ verts.push_back(-0.75);
+         /* X */ verts.push_back( 1.00);      /* Y */ verts.push_back(-0.75);
 
-            /* X */ verts.push_back( 0.75);
-            /* Y */ verts.push_back(-9.0/8.0);
-            /* X */ verts.push_back(-0.75);
-            /* Y */ verts.push_back(-9.0/8.0);
-            /* X */ verts.push_back( 0.75);
-            /* Y */ verts.push_back(-1.00);
+         //---------//
+         /* X */ verts.push_back( 0.75);   /* Y */ verts.push_back(-9.0/8.0);
+         /* X */ verts.push_back(-0.75);   /* Y */ verts.push_back(-9.0/8.0);
+         /* X */ verts.push_back( 0.75);   /* Y */ verts.push_back(-1.00);
 
-            /* X */ verts.push_back( 0.75);
-            /* Y */ verts.push_back(-1.00);
-            /* X */ verts.push_back(-0.75);
-            /* Y */ verts.push_back(-9.0/8.0);
-            /* X */ verts.push_back(-0.75);
-            /* Y */ verts.push_back(-1.00);
+         /* X */ verts.push_back( 0.75);   /* Y */ verts.push_back(-1.00);
+         /* X */ verts.push_back(-0.75);   /* Y */ verts.push_back(-9.0/8.0);
+         /* X */ verts.push_back(-0.75);   /* Y */ verts.push_back(-1.00);
 
-            /* X */ verts.push_back( 0.75);
-            /* Y */ verts.push_back( 9.0/8.0);
-            /* X */ verts.push_back(-0.75);
-            /* Y */ verts.push_back( 9.0/8.0);
-            /* X */ verts.push_back( 0.75);
-            /* Y */ verts.push_back( 1.00);
+         //---------//
+         /* X */ verts.push_back( 0.75);   /* Y */ verts.push_back( 9.0/8.0);
+         /* X */ verts.push_back(-0.75);   /* Y */ verts.push_back( 9.0/8.0);
+         /* X */ verts.push_back( 0.75);   /* Y */ verts.push_back( 1.00);
 
-            /* X */ verts.push_back( 0.75);
-            /* Y */ verts.push_back( 1.00);
-            /* X */ verts.push_back(-0.75);
-            /* Y */ verts.push_back( 9.0/8.0);
-            /* X */ verts.push_back(-0.75);
-            /* Y */ verts.push_back( 1.00);
-            for (int j = 0; j < 24; j++) {
-               /* R */ colrs.push_back(float(detailColor[0]));
-               /* G */ colrs.push_back(float(detailColor[1]));
-               /* B */ colrs.push_back(float(detailColor[2]));
+         /* X */ verts.push_back( 0.75);   /* Y */ verts.push_back( 1.00);
+         /* X */ verts.push_back(-0.75);   /* Y */ verts.push_back( 9.0/8.0);
+         /* X */ verts.push_back(-0.75);   /* Y */ verts.push_back( 1.00);
+         for (int j = 0; j < 24; j++) {
+            /* R */ colrs.push_back(float(detailColor[0]));
+            /* G */ colrs.push_back(float(detailColor[1]));
+            /* B */ colrs.push_back(float(detailColor[2]));
+         }
+
+         /*
+          * Draw Rounded Corners
+          */
+         float tmx, tmy, ri, ro;
+         ri = 0.25;
+         ro = 0.125 + 0.25;
+         for (int i = 0; i < 4; i++) {
+            switch(i) {
+               case 0:
+                  tmx =  0.75;
+                  tmy =  0.75;
+                  break;
+               case 1:
+                  tmx = -0.75;
+                  tmy =  0.75;
+                  break;
+               case 2:
+                  tmx = -0.75;
+                  tmy = -0.75;
+                  break;
+               case 3:
+                  tmx =  0.75;
+                  tmy = -0.75;
+                  break;
             }
 
-            /*
-             * Draw Rounded Corners
-             */
-            float tmx, tmy;
-            for (int i = 0; i < 4; i++) {
-               switch(i) {
-                  case 0:
-                     tmx =  0.75;
-                     tmy =  0.75;
-                     break;
-                  case 1:
-                     tmx = -0.75;
-                     tmy =  0.75;
-                     break;
-                  case 2:
-                     tmx = -0.75;
-                     tmy = -0.75;
-                     break;
-                  case 3:
-                     tmx =  0.75;
-                     tmy = -0.75;
-                     break;
-               }
+            for (int j = 0; j < circleSegments; j++) {
+               /* X */ verts.push_back(float(tmx + ri*cos(degToRad(i*90 + j*(degSegment/4.0)))));
+               /* Y */ verts.push_back(float(tmy + ri*sin(degToRad(i*90 + j*(degSegment/4.0)))));
+               /* X */ verts.push_back(float(tmx + ro*cos(degToRad(i*90 + j*(degSegment/4.0)))));
+               /* Y */ verts.push_back(float(tmy + ro*sin(degToRad(i*90 + j*(degSegment/4.0)))));
+               /* X */ verts.push_back(float(tmx + ri*cos(degToRad(i*90 + (j+1)*(degSegment/4.0)))));
+               /* Y */ verts.push_back(float(tmy + ri*sin(degToRad(i*90 + (j+1)*(degSegment/4.0)))));
 
-               for (int j = 0; j < circleSegments; j++) {
-                  /* X */ verts.push_back(float(tmx + 0.25*cos(degToRad(i*90 + j*(degSegment/4.0)))));
-                  /* Y */ verts.push_back(float(tmy + 0.25*sin(degToRad(i*90 + j*(degSegment/4.0)))));
-                  /* X */ verts.push_back(float(tmx + (0.25+0.125)*cos(degToRad(i*90 + j*(degSegment/4.0)))));
-                  /* Y */ verts.push_back(float(tmy + (0.25+0.125)*sin(degToRad(i*90 + j*(degSegment/4.0)))));
-                  /* X */ verts.push_back(float(tmx + 0.25*cos(degToRad(i*90 + (j+1)*(degSegment/4.0)))));
-                  /* Y */ verts.push_back(float(tmy + 0.25*sin(degToRad(i*90 + (j+1)*(degSegment/4.0)))));
-
-
-                  /* X */ verts.push_back(float(tmx + 0.25*cos(degToRad(i*90 + (j+1)*(degSegment/4.0)))));
-                  /* Y */ verts.push_back(float(tmy + 0.25*sin(degToRad(i*90 + (j+1)*(degSegment/4.0)))));
-                  /* X */ verts.push_back(float(tmx + (0.25+0.125)*cos(degToRad(i*90 + j*(degSegment/4.0)))));
-                  /* Y */ verts.push_back(float(tmy + (0.25+0.125)*sin(degToRad(i*90 + j*(degSegment/4.0)))));
-                  /* X */ verts.push_back(float(tmx + (0.25+0.125)*cos(degToRad(i*90 + (j+1)*(degSegment/4.0)))));
-                  /* Y */ verts.push_back(float(tmy + (0.25+0.125)*sin(degToRad(i*90 + (j+1)*(degSegment/4.0)))));
-                  for (int k = 0; k < 6; k++) {
-                     /* R */ colrs.push_back(float(detailColor[0]));
-                     /* G */ colrs.push_back(float(detailColor[1]));
-                     /* B */ colrs.push_back(float(detailColor[2]));
-                  }
+               /* X */ verts.push_back(float(tmx + ri*cos(degToRad(i*90 + (j+1)*(degSegment/4.0)))));
+               /* Y */ verts.push_back(float(tmy + ri*sin(degToRad(i*90 + (j+1)*(degSegment/4.0)))));
+               /* X */ verts.push_back(float(tmx + ro*cos(degToRad(i*90 + j*(degSegment/4.0)))));
+               /* Y */ verts.push_back(float(tmy + ro*sin(degToRad(i*90 + j*(degSegment/4.0)))));
+               /* X */ verts.push_back(float(tmx + ro*cos(degToRad(i*90 + (j+1)*(degSegment/4.0)))));
+               /* Y */ verts.push_back(float(tmy + ro*sin(degToRad(i*90 + (j+1)*(degSegment/4.0)))));
+               for (int k = 0; k < 6; k++) {
+                  /* R */ colrs.push_back(float(detailColor[0]));
+                  /* G */ colrs.push_back(float(detailColor[1]));
+                  /* B */ colrs.push_back(float(detailColor[2]));
                }
             }
-         } else {
-            for (int i = 0; i < (4*6*4 + 4*6*circleSegments); i++) {
-               /* X */ verts.push_back(100.0);
-               /* Y */ verts.push_back(100.0);
+         }
+      } else {
+         for (int i = 0; i < (4*6*4 + 4*6*circleSegments); i++) {
+            /* X */ verts.push_back(100.0);
+            /* Y */ verts.push_back(100.0);
+            /* R */ colrs.push_back(float(detailColor[0]));
+            /* G */ colrs.push_back(float(detailColor[1]));
+            /* B */ colrs.push_back(float(detailColor[2]));
+         }
+      }
+
+      // Define Bulb Markers
+      if (features >= 2) {
+         float tmx, tmy;
+         for (int i = 0; i < numBulbs; i++) {
+            if (numBulbs == 1) {
+               tmy = (17.0/16.0);
+            } else {
+               tmy = -(17.0/16.0);
+            }
+            tmx = float(-1.0 + 1.0/float(numBulbs) + (i*2.0)/float(numBulbs));
+            for (int j = 0; j < circleSegments; j++) {
+               /* X */ verts.push_back(tmx);
+               /* Y */ verts.push_back(tmy);
+               /* X */ verts.push_back(tmx+float((1.0/6.0)*cos(degToRad(j*degSegment))));
+               /* Y */ verts.push_back(tmy+float((1.0/6.0)*sin(degToRad(j*degSegment))));
+               /* X */ verts.push_back(tmx+float((1.0/6.0)*cos(degToRad((j+1)*degSegment))));
+               /* Y */ verts.push_back(tmy+float((1.0/6.0)*sin(degToRad((j+1)*degSegment))));
+            }
+
+            for (int j = 0; j < circleSegments*3; j++) {
                /* R */ colrs.push_back(float(detailColor[0]));
                /* G */ colrs.push_back(float(detailColor[1]));
                /* B */ colrs.push_back(float(detailColor[2]));
             }
          }
+      } else {
+         for (int i = 0; i < circleSegments*numBulbs*3; i++) {
+            /* X */ verts.push_back(100.0);
+            /* Y */ verts.push_back(100.0);
+            /* R */ colrs.push_back(float(detailColor[0]));
+            /* G */ colrs.push_back(float(detailColor[1]));
+            /* B */ colrs.push_back(float(detailColor[2]));
+         }
+      }
 
-         // Define Bulb Markers
-         if (features >= 2) {
-            float tmx, tmy;
-            for (int i = 0; i < numBulbs; i++) {
-               if (numBulbs == 1) {
-                  tmy = (17.0/16.0);
+      // Define Bulb Halos
+      if (features >= 3) {
+         float tmx, tmy, ri, ro, limit;
+         for (int i = 0; i < numBulbs; i++) {
+            if (numBulbs == 1) {
+               tmy = (17.0/16.0);
+            } else {
+               tmy = -(17.0/16.0);
+            }
+            tmx = float(-1.0 + 1.0/float(numBulbs) + (i*2.0)/float(numBulbs));
+            limit = float(1.0/float(numBulbs));
+            ri = float(13.0/60.0);
+            ro = float(17.0/60.0);
+            for (int j = 0; j < circleSegments; j++) {
+               if (i == 0) {
+                  /* X */ verts.push_back(constrain(tmx+float(ri*cos(degToRad(j*degSegment))),       -2.0, tmx+limit));
+                  /* Y */ verts.push_back(tmy+float(ri*sin(degToRad(j*degSegment))));
+                  /* X */ verts.push_back(constrain(tmx+float(ro*cos(degToRad(j*degSegment))),       -2.0, tmx+limit));
+                  /* Y */ verts.push_back(tmy+float(ro*sin(degToRad(j*degSegment))));
+                  /* X */ verts.push_back(constrain(tmx+float(ri*cos(degToRad((j+1)*degSegment))),   -2.0, tmx+limit));
+                  /* Y */ verts.push_back(tmy+float(ri*sin(degToRad((j+1)*degSegment))));
+
+                  /* X */ verts.push_back(constrain(tmx+float(ri*cos(degToRad((j+1)*degSegment))),   -2.0, tmx+limit));
+                  /* Y */ verts.push_back(tmy+float(ri*sin(degToRad((j+1)*degSegment))));
+                  /* X */ verts.push_back(constrain(tmx+float(ro*cos(degToRad(j*degSegment))),       -2.0, tmx+limit));
+                  /* Y */ verts.push_back(tmy+float(ro*sin(degToRad(j*degSegment))));
+                  /* X */ verts.push_back(constrain(tmx+float(ro*cos(degToRad((j+1)*degSegment))),   -2.0, tmx+limit));
+                  /* Y */ verts.push_back(tmy+float(ro*sin(degToRad((j+1)*degSegment))));
+               } else if (i == numBulbs-1) {
+                  /* X */ verts.push_back(constrain(tmx+float(ri*cos(degToRad(j*degSegment))),       tmx-limit, 2.0));
+                  /* Y */ verts.push_back(tmy+float(ri*sin(degToRad(j*degSegment))));
+                  /* X */ verts.push_back(constrain(tmx+float(ro*cos(degToRad(j*degSegment))),       tmx-limit, 2.0));
+                  /* Y */ verts.push_back(tmy+float(ro*sin(degToRad(j*degSegment))));
+                  /* X */ verts.push_back(constrain(tmx+float(ri*cos(degToRad((j+1)*degSegment))),   tmx-limit, 2.0));
+                  /* Y */ verts.push_back(tmy+float(ri*sin(degToRad((j+1)*degSegment))));
+
+                  /* X */ verts.push_back(constrain(tmx+float(ri*cos(degToRad((j+1)*degSegment))),   tmx-limit, 2.0));
+                  /* Y */ verts.push_back(tmy+float(ri*sin(degToRad((j+1)*degSegment))));
+                  /* X */ verts.push_back(constrain(tmx+float(ro*cos(degToRad(j*degSegment))),       tmx-limit, 2.0));
+                  /* Y */ verts.push_back(tmy+float(ro*sin(degToRad(j*degSegment))));
+                  /* X */ verts.push_back(constrain(tmx+float(ro*cos(degToRad((j+1)*degSegment))),   tmx-limit, 2.0));
+                  /* Y */ verts.push_back(tmy+float(ro*sin(degToRad((j+1)*degSegment))));
                } else {
-                  tmy = -(17.0/16.0);
-               }
-               tmx = float(-1.0 + 1.0/float(numBulbs) + (i*2.0)/float(numBulbs));
-               for (int j = 0; j < circleSegments; j++) {
-                  /* X */ verts.push_back(tmx);
-                  /* Y */ verts.push_back(tmy);
-                  /* X */ verts.push_back(tmx+float((1.0/6.0)*cos(degToRad(j*degSegment))));
-                  /* Y */ verts.push_back(tmy+float((1.0/6.0)*sin(degToRad(j*degSegment))));
-                  /* X */ verts.push_back(tmx+float((1.0/6.0)*cos(degToRad((j+1)*degSegment))));
-                  /* Y */ verts.push_back(tmy+float((1.0/6.0)*sin(degToRad((j+1)*degSegment))));
-               }
+                  /* X */ verts.push_back(constrain(tmx+float(ri*cos(degToRad(j*degSegment))),       tmx-limit, tmx+limit));
+                  /* Y */ verts.push_back(tmy+float(ri*sin(degToRad(j*degSegment))));
+                  /* X */ verts.push_back(constrain(tmx+float(ro*cos(degToRad(j*degSegment))),       tmx-limit, tmx+limit));
+                  /* Y */ verts.push_back(tmy+float(ro*sin(degToRad(j*degSegment))));
+                  /* X */ verts.push_back(constrain(tmx+float(ri*cos(degToRad((j+1)*degSegment))),   tmx-limit, tmx+limit));
+                  /* Y */ verts.push_back(tmy+float(ri*sin(degToRad((j+1)*degSegment))));
 
-               for (int j = 0; j < circleSegments*3; j++) {
-                  /* R */ colrs.push_back(float(detailColor[0]));
-                  /* G */ colrs.push_back(float(detailColor[1]));
-                  /* B */ colrs.push_back(float(detailColor[2]));
+                  /* X */ verts.push_back(constrain(tmx+float(ri*cos(degToRad((j+1)*degSegment))),   tmx-limit, tmx+limit));
+                  /* Y */ verts.push_back(tmy+float(ri*sin(degToRad((j+1)*degSegment))));
+                  /* X */ verts.push_back(constrain(tmx+float(ro*cos(degToRad(j*degSegment))),       tmx-limit, tmx+limit));
+                  /* Y */ verts.push_back(tmy+float(ro*sin(degToRad(j*degSegment))));
+                  /* X */ verts.push_back(constrain(tmx+float(ro*cos(degToRad((j+1)*degSegment))),   tmx-limit, tmx+limit));
+                  /* Y */ verts.push_back(tmy+float(ro*sin(degToRad((j+1)*degSegment))));
                }
             }
-         } else {
-            for (int i = 0; i < circleSegments*numBulbs*3; i++) {
-               /* X */ verts.push_back(100.0);
-               /* Y */ verts.push_back(100.0);
+
+            for (int j = 0; j < circleSegments*3; j++) {
+               /* R */ colrs.push_back(float(detailColor[0]));
+               /* G */ colrs.push_back(float(detailColor[1]));
+               /* B */ colrs.push_back(float(detailColor[2]));
                /* R */ colrs.push_back(float(detailColor[0]));
                /* G */ colrs.push_back(float(detailColor[1]));
                /* B */ colrs.push_back(float(detailColor[2]));
             }
          }
+      } else {
+         for (int i = 0; i < numBulbs*6*circleSegments; i++) {
+            /* X */ verts.push_back(100.0);
+            /* Y */ verts.push_back(100.0);
+            /* R */ colrs.push_back(float(detailColor[0]));
+            /* G */ colrs.push_back(float(detailColor[1]));
+            /* B */ colrs.push_back(float(detailColor[2]));
+         }
+      }
 
-         // Define Bulb Halos
-         if (features >= 3) {
-            float tmx, tmy;
-            for (int i = 0; i < numBulbs; i++) {
-               if (numBulbs == 1) {
-                  tmy = (17.0/16.0);
-               } else {
-                  tmy = -(17.0/16.0);
-               }
-               tmx = float(-1.0 + 1.0/float(numBulbs) + (i*2.0)/float(numBulbs));
-               float limit = float(1.0/float(numBulbs));
-               for (int j = 0; j < circleSegments; j++) {
-                  if (i == 0) {
-                     /* X */ verts.push_back(constrain(tmx+float((1.3/6.0)*cos(degToRad(j*degSegment))),       -2.0, tmx+limit));
-                     /* Y */ verts.push_back(tmy+float((1.3/6.0)*sin(degToRad(j*degSegment))));
-                     /* X */ verts.push_back(constrain(tmx+float((1.7/6.0)*cos(degToRad(j*degSegment))),       -2.0, tmx+limit));
-                     /* Y */ verts.push_back(tmy+float((1.7/6.0)*sin(degToRad(j*degSegment))));
-                     /* X */ verts.push_back(constrain(tmx+float((1.3/6.0)*cos(degToRad((j+1)*degSegment))),   -2.0, tmx+limit));
-                     /* Y */ verts.push_back(tmy+float((1.3/6.0)*sin(degToRad((j+1)*degSegment))));
+      // Define Grand Outline
+      if (features >= 4) {
 
-                     /* X */ verts.push_back(constrain(tmx+float((1.3/6.0)*cos(degToRad((j+1)*degSegment))),   -2.0, tmx+limit));
-                     /* Y */ verts.push_back(tmy+float((1.3/6.0)*sin(degToRad((j+1)*degSegment))));
-                     /* X */ verts.push_back(constrain(tmx+float((1.7/6.0)*cos(degToRad(j*degSegment))),       -2.0, tmx+limit));
-                     /* Y */ verts.push_back(tmy+float((1.7/6.0)*sin(degToRad(j*degSegment))));
-                     /* X */ verts.push_back(constrain(tmx+float((1.7/6.0)*cos(degToRad((j+1)*degSegment))),   -2.0, tmx+limit));
-                     /* Y */ verts.push_back(tmy+float((1.7/6.0)*sin(degToRad((j+1)*degSegment))));
-                  } else if (i == numBulbs-1) {
-                     /* X */ verts.push_back(constrain(tmx+float((1.3/6.0)*cos(degToRad(j*degSegment))),       tmx-limit, 2.0));
-                     /* Y */ verts.push_back(tmy+float((1.3/6.0)*sin(degToRad(j*degSegment))));
-                     /* X */ verts.push_back(constrain(tmx+float((1.7/6.0)*cos(degToRad(j*degSegment))),       tmx-limit, 2.0));
-                     /* Y */ verts.push_back(tmy+float((1.7/6.0)*sin(degToRad(j*degSegment))));
-                     /* X */ verts.push_back(constrain(tmx+float((1.3/6.0)*cos(degToRad((j+1)*degSegment))),   tmx-limit, 2.0));
-                     /* Y */ verts.push_back(tmy+float((1.3/6.0)*sin(degToRad((j+1)*degSegment))));
+         /*
+          * Draw Outer Straights
+          */
 
-                     /* X */ verts.push_back(constrain(tmx+float((1.3/6.0)*cos(degToRad((j+1)*degSegment))),   tmx-limit, 2.0));
-                     /* Y */ verts.push_back(tmy+float((1.3/6.0)*sin(degToRad((j+1)*degSegment))));
-                     /* X */ verts.push_back(constrain(tmx+float((1.7/6.0)*cos(degToRad(j*degSegment))),       tmx-limit, 2.0));
-                     /* Y */ verts.push_back(tmy+float((1.7/6.0)*sin(degToRad(j*degSegment))));
-                     /* X */ verts.push_back(constrain(tmx+float((1.7/6.0)*cos(degToRad((j+1)*degSegment))),   tmx-limit, 2.0));
-                     /* Y */ verts.push_back(tmy+float((1.7/6.0)*sin(degToRad((j+1)*degSegment))));
-                  } else {
-                     /* X */ verts.push_back(constrain(tmx+float((1.3/6.0)*cos(degToRad(j*degSegment))), tmx-limit, tmx+limit));
-                     /* Y */ verts.push_back(tmy+float((1.3/6.0)*sin(degToRad(j*degSegment))));
-                     /* X */ verts.push_back(constrain(tmx+float((1.7/6.0)*cos(degToRad(j*degSegment))), tmx-limit, tmx+limit));
-                     /* Y */ verts.push_back(tmy+float((1.7/6.0)*sin(degToRad(j*degSegment))));
-                     /* X */ verts.push_back(constrain(tmx+float((1.3/6.0)*cos(degToRad((j+1)*degSegment))), tmx-limit, tmx+limit));
-                     /* Y */ verts.push_back(tmy+float((1.3/6.0)*sin(degToRad((j+1)*degSegment))));
+         /* X */ verts.push_back(-0.75);  /* Y */ verts.push_back(float( (17.0/16.0 + 17.0/60.0)));
+         /* X */ verts.push_back(-0.75);  /* Y */ verts.push_back(float( (17.0/16.0 + 13.0/60.0)));
+         /* X */ verts.push_back( 0.75);  /* Y */ verts.push_back(float( (17.0/16.0 + 17.0/60.0)));
 
-                     /* X */ verts.push_back(constrain(tmx+float((1.3/6.0)*cos(degToRad((j+1)*degSegment))), tmx-limit, tmx+limit));
-                     /* Y */ verts.push_back(tmy+float((1.3/6.0)*sin(degToRad((j+1)*degSegment))));
-                     /* X */ verts.push_back(constrain(tmx+float((1.7/6.0)*cos(degToRad(j*degSegment))), tmx-limit, tmx+limit));
-                     /* Y */ verts.push_back(tmy+float((1.7/6.0)*sin(degToRad(j*degSegment))));
-                     /* X */ verts.push_back(constrain(tmx+float((1.7/6.0)*cos(degToRad((j+1)*degSegment))), tmx-limit, tmx+limit));
-                     /* Y */ verts.push_back(tmy+float((1.7/6.0)*sin(degToRad((j+1)*degSegment))));
-                  }
-               }
+         /* X */ verts.push_back( 0.75);  /* Y */ verts.push_back(float( (17.0/16.0 + 13.0/60.0)));
+         /* X */ verts.push_back( 0.75);  /* Y */ verts.push_back(float( (17.0/16.0 + 17.0/60.0)));
+         /* X */ verts.push_back(-0.75);  /* Y */ verts.push_back(float( (17.0/16.0 + 13.0/60.0)));
 
-               for (int j = 0; j < circleSegments*3; j++) {
-                  /* R */ colrs.push_back(float(detailColor[0]));
-                  /* G */ colrs.push_back(float(detailColor[1]));
-                  /* B */ colrs.push_back(float(detailColor[2]));
+         /* X */ verts.push_back(-0.75);  /* Y */ verts.push_back(float(-(17.0/16.0 + 17.0/60.0)));
+         /* X */ verts.push_back(-0.75);  /* Y */ verts.push_back(float(-(17.0/16.0 + 13.0/60.0)));
+         /* X */ verts.push_back( 0.75);  /* Y */ verts.push_back(float(-(17.0/16.0 + 17.0/60.0)));
+
+         /* X */ verts.push_back( 0.75);  /* Y */ verts.push_back(float(-(17.0/16.0 + 13.0/60.0)));
+         /* X */ verts.push_back( 0.75);  /* Y */ verts.push_back(float(-(17.0/16.0 + 17.0/60.0)));
+         /* X */ verts.push_back(-0.75);  /* Y */ verts.push_back(float(-(17.0/16.0 + 13.0/60.0)));
+
+         /* X */ verts.push_back(float( (17.0/16.0 + 17.0/60.0)));  /* Y */ verts.push_back(-0.75);
+         /* X */ verts.push_back(float( (17.0/16.0 + 13.0/60.0)));  /* Y */ verts.push_back(-0.75);
+         /* X */ verts.push_back(float( (17.0/16.0 + 17.0/60.0)));  /* Y */ verts.push_back( 0.75);
+
+         /* X */ verts.push_back(float( (17.0/16.0 + 13.0/60.0)));  /* Y */ verts.push_back( 0.75);
+         /* X */ verts.push_back(float( (17.0/16.0 + 17.0/60.0)));  /* Y */ verts.push_back( 0.75);
+         /* X */ verts.push_back(float( (17.0/16.0 + 13.0/60.0)));  /* Y */ verts.push_back(-0.75);
+
+         /* X */ verts.push_back(float(-(17.0/16.0 + 17.0/60.0)));  /* Y */ verts.push_back(-0.75);
+         /* X */ verts.push_back(float(-(17.0/16.0 + 13.0/60.0)));  /* Y */ verts.push_back(-0.75);
+         /* X */ verts.push_back(float(-(17.0/16.0 + 17.0/60.0)));  /* Y */ verts.push_back( 0.75);
+
+         /* X */ verts.push_back(float(-(17.0/16.0 + 13.0/60.0)));  /* Y */ verts.push_back( 0.75);
+         /* X */ verts.push_back(float(-(17.0/16.0 + 17.0/60.0)));  /* Y */ verts.push_back( 0.75);
+         /* X */ verts.push_back(float(-(17.0/16.0 + 13.0/60.0)));  /* Y */ verts.push_back(-0.75);
+
+         for (int j = 0; j < 24; j++) {
+            /* R */ colrs.push_back(float(detailColor[0]));
+            /* G */ colrs.push_back(float(detailColor[1]));
+            /* B */ colrs.push_back(float(detailColor[2]));
+         }
+
+         /*
+          * Draw Rounded Corners
+          */
+         float tmx, tmy, ri, ro, delta;
+         ri = float(5.0/16.0+13.0/60.0);
+         ro = float(5.0/16.0+17.0/60.0);
+         delta = float(degSegment/4.0);
+         for (int i = 0; i < 4; i++) {
+            switch(i) {
+               case 0:
+                  tmx =  0.75;   tmy =  0.75;
+                  break;
+               case 1:
+                  tmx = -0.75;   tmy =  0.75;
+                  break;
+               case 2:
+                  tmx = -0.75;   tmy = -0.75;
+                  break;
+               case 3:
+                  tmx =  0.75;   tmy = -0.75;
+                  break;
+            }
+
+            for (int j = 0; j < circleSegments; j++) {
+               float j0 = float(degToRad(i*90 + j*delta));
+               float j1 = float(degToRad(i*90 + (j+1)*delta));
+               /* X */ verts.push_back(float(tmx + ri*cos(j0)));  /* Y */ verts.push_back(float(tmy + ri*sin(j0)));
+               /* X */ verts.push_back(float(tmx + ro*cos(j0)));  /* Y */ verts.push_back(float(tmy + ro*sin(j0)));
+               /* X */ verts.push_back(float(tmx + ri*cos(j1)));  /* Y */ verts.push_back(float(tmy + ri*sin(j1)));
+
+               /* X */ verts.push_back(float(tmx + ri*cos(j1)));  /* Y */ verts.push_back(float(tmy + ri*sin(j1)));
+               /* X */ verts.push_back(float(tmx + ro*cos(j0)));  /* Y */ verts.push_back(float(tmy + ro*sin(j0)));
+               /* X */ verts.push_back(float(tmx + ro*cos(j1)));  /* Y */ verts.push_back(float(tmy + ro*sin(j1)));
+               for (int k = 0; k < 6; k++) {
                   /* R */ colrs.push_back(float(detailColor[0]));
                   /* G */ colrs.push_back(float(detailColor[1]));
                   /* B */ colrs.push_back(float(detailColor[2]));
                }
             }
-         } else {
-            for (int i = 0; i < 6*circleSegments; i++) {
-               /* X */ verts.push_back(100.0);
-               /* Y */ verts.push_back(100.0);
-               /* R */ colrs.push_back(float(detailColor[0]));
-               /* G */ colrs.push_back(float(detailColor[1]));
-               /* B */ colrs.push_back(float(detailColor[2]));
-            }
+         }
+      } else {
+         for (int i = 0; i < (4*6*4 + 4*6*circleSegments); i++) {
+            /* X */ verts.push_back(100.0);
+            /* Y */ verts.push_back(100.0);
+            /* R */ colrs.push_back(float(detailColor[0]));
+            /* G */ colrs.push_back(float(detailColor[1]));
+            /* B */ colrs.push_back(float(detailColor[2]));
          }
       }
 
@@ -1503,6 +1589,51 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       }
 
       prevIconLinearNumBulbs = numBulbs;
+      prevIconLinearFeatures = features;
+   } 
+   // Geometry already allocated, check if colors need to be updated
+   else 
+   {
+      int deltaColrs = iconLinearColrs1 - iconLinearColrs0;
+      for (int i = 0; i < 3; i++) {
+         for (int j = 0; j < numBulbs; j++) {
+
+            // Special Cases for Rounded Corner Segments
+            if (j == 0) {
+               if (float(bulbColors[i]) != iconLinearColorBuffer[i]) {
+                  float tmc = float(bulbColors[i]);
+                  for (unsigned int k = 0; k < iconLinearColrs0; k++) {
+                     iconLinearColorBuffer[k*3 + i] = tmc;
+                  }
+               }
+            } else if (j == numBulbs-1) {
+               int uLim = iconLinearColrs0 + (j-1)*deltaColrs;
+               if (float(bulbColors[i + j*3]) != iconLinearColorBuffer[i + uLim*3]) {
+                  float tmc = float(bulbColors[i+j*3]);
+                  for (unsigned int k = uLim; k < iconLinearVerts; k++) {
+                     iconLinearColorBuffer[k*3 + i] = tmc;
+                  }
+               }
+            } else
+
+            // General Cases
+            {
+               if (float(bulbColors[i + j*3]) != iconLinearColorBuffer[i + iconLinearColrs0*3 + (j-1)*deltaColrs*3]) {
+                  float tmc = float(bulbColors[i+j*3]);
+                  for (unsigned int k = iconLinearColrs0; k < iconLinearColrs1; k++) {
+                     iconLinearColorBuffer[k*3 + i + (j-1)*deltaColrs*3] = tmc;
+                  }
+               }
+            }
+         }
+
+         // Check if outline color needs to be updated
+         if (float(detailColor[i]) != iconLinearColorBuffer[i+iconLinearColrs2*3]) {
+            for (unsigned int k = iconLinearColrs2; k < iconLinearVerts; k++) {
+               iconLinearColorBuffer[k*3+i] = float(detailColor[i]);
+            }
+         }
+      }
    }
    
    delete [] bulbColors;
