@@ -42,10 +42,10 @@ lightOn = False
 fps = 60
 windowPosX = 0
 windowPosY = 0
-#windowDimW = 800
-#windowDimH = 480
-windowDimW = 320
-windowDimH = 240
+windowDimW = 800
+windowDimH = 480
+#windowDimW = 320
+#windowDimH = 240
 cursorX = 0
 cursorY = 0
 isFullScreen = False
@@ -56,7 +56,7 @@ colrSettingCursor = 0
 targetScreen = 0
 touchState = 0
 targetBulb = 0
-frameLimit = False
+frameLimit = True
 someVar = 0
 someInc = 0.1
 features = 4
@@ -166,14 +166,14 @@ def drawHome():
 
     #cProfile.run('drawIconCircle(0.75, 0.75, 0.15, 0.15, lamps[0].getNumBulbs(), lamps[0].getAngle(), w2h, lamps[0].getBulbsRGB())')
 
-    drawIconLinear(0.75, -0.75, 
-            iconSize*0.85, 
-            features,
-            ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
-            lamps[0].getNumBulbs(), 
-            lamps[0].getAngle(), 
-            w2h, 
-            lamps[0].getBulbsRGB())
+    #drawIconLinear(0.75, -0.75, 
+            #iconSize*0.85, 
+            #features,
+            #( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
+            #lamps[0].getNumBulbs(), 
+            #lamps[0].getAngle(), 
+            #w2h, 
+            #lamps[0].getBulbsRGB())
 
     #cProfile.run('drawIconLinear(-0.75, -0.75, 0.15*0.875, 0.15*0.875, lamps[0].getNumBulbs(), lamps[0].getAngle(), w2h, lamps[0].getBulbsRGB())')
 
