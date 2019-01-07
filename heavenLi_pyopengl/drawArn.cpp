@@ -765,7 +765,6 @@ GLfloat  *homeLinearVertexBuffer = NULL;
 GLfloat  *homeLinearColorBuffer  = NULL;
 GLushort *homeLinearIndices      = NULL;
 GLuint   homeLinearVerts         = NULL;
-int      prevHomeLinearNumBulbs  = NULL;
 
 PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
    PyObject* py_list;
@@ -786,8 +785,6 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
    {
       Py_RETURN_NONE;
    }
-   char circleSegments = 60/numBulbs;
-
    // Parse array of tuples containing RGB Colors of bulbs
    bulbColors = new double[numBulbs*3];
    for (int i = 0; i < numBulbs; i++) {
@@ -802,18 +799,17 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
    if (homeLinearVertexBuffer    == NULL ||
        homeLinearColorBuffer     == NULL ||
        homeLinearIndices         == NULL ||
-       homeLinearVerts           == NULL ||
-       prevHomeLinearNumBulbs    != numBulbs 
-       ){
+       homeLinearVerts           == NULL ){
 
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
       float TLx, TRx, BLx, BRx, TLy, TRy, BLy, BRy;
-      float offset = float(4.0/numBulbs);
-      for (int i = 0; i < numBulbs; i++) {
-         R = float(bulbColors[i*3+0]);
-         G = float(bulbColors[i*3+1]);
-         B = float(bulbColors[i*3+2]);
+      float offset = float(4.0/60.0);
+      int tmc = 0;
+      R = float(0.0);
+      G = float(0.0);
+      B = float(0.0);
+      for (int i = 0; i < 60; i++) {
          if (i == 0) {
             TLx = -4.0;
             TLy =  4.0;
@@ -828,7 +824,7 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
             BLy = -4.0;
          }
 
-         if (i == numBulbs-1) {
+         if (i == 60-1) {
             TRx =  4.0;
             TRy =  4.0;
 
@@ -895,8 +891,6 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
          homeLinearColorBuffer[i*3+2]  = colrs[i*3+2];
          homeLinearIndices[i]          = i;
       }
-
-      prevHomeLinearNumBulbs = numBulbs;
    } 
    // Geometry already calculated, check if any colors need to be updated.
    else {
@@ -906,10 +900,10 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
             // 3 (R,G,B) color values per vertex
             // 2 Triangles per Quad
             // 3 Vertices per Triangle
-            if (float(bulbColors[i+j*3]) != homeLinearColorBuffer[i+j*3*2*3]) {
-               float tmc = float(bulbColors[j*3+i]);
-               for (int k = 0; k < 6; k++) {
-                  homeLinearColorBuffer[j*3*2*3 + k*3 + i] = tmc;
+#           pragma omp parallel for
+            for (int k = 0; k < (60/numBulbs)*3*2; k++) {  
+               if (float(bulbColors[i+j*3]) != homeLinearColorBuffer[i + k*3 + j*(60/numBulbs)*9*2 ]) {
+                  homeLinearColorBuffer[ j*(60/numBulbs)*9*2 + k*3 + i ] = float(bulbColors[i+j*3]);
                }
             }
          }
