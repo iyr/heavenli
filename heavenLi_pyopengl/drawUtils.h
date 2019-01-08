@@ -1,22 +1,129 @@
 #include <math.h>
 #define degToRad(angleInDegrees) ((angleInDegrees) * 3.1415926535 / 180.0)
 
-// Writing to pre-allocated input arrays, update pill shape between two points
+// Append Halo vertices to input vectors
+int drawHalo(
+      float bx,                  /* X-Coordinate */
+      float by,                  /* Y-Coordinate */
+      float bsx,                 /* x-Scale 2.0=spans display before GL scaling */
+      float bsy,                 /* y-Scale 2.0=spans display before GL scaling */
+      float rs,                  /* Halo thickness */
+      char circleSegments,       /* Number of sides */
+      double *color,             /* Polygon Color */
+      std::vector<float> &verts, /* Input Vector of x,y coordinates */
+      std::vector<float> &colrs  /* Input Vector of r,g,b values */
+      ){
+   float tma, R, G, B;
+   char degSegment = 360 / circleSegments;
+   R = float(color[0]);
+   G = float(color[1]);
+   B = float(color[2]);
+
+#  pragma omp parallel for
+   for (int i = 0; i < circleSegments; i ++ ) {
+      tma = float(degToRad((i+0)*float(degSegment)));
+      /* X */ verts.push_back(float(bx+cos(tma)*bsx));
+      /* Y */ verts.push_back(float(by+sin(tma)*bsy));
+      /* X */ verts.push_back(float(bx+cos(tma)*(bsx+rs)));
+      /* Y */ verts.push_back(float(by+sin(tma)*(bsy+rs)));
+      tma = float(degToRad((i+1)*float(degSegment)));
+      /* X */ verts.push_back(float(bx+cos(tma)*bsx));
+      /* Y */ verts.push_back(float(by+sin(tma)*bsy));
+
+      /* X */ verts.push_back(float(bx+cos(tma)*(bsx+rs)));
+      /* Y */ verts.push_back(float(by+sin(tma)*(bsy+rs)));
+      /* X */ verts.push_back(float(bx+cos(tma)*bsx));
+      /* Y */ verts.push_back(float(by+sin(tma)*bsy));
+      tma = float(degToRad((i+0)*float(degSegment)));
+      /* X */ verts.push_back(float(bx+cos(tma)*(bsx+rs)));
+      /* Y */ verts.push_back(float(by+sin(tma)*(bsy+rs)));
+
+      /* R */ colrs.push_back(R);   /* G */ colrs.push_back(G);   /* B */ colrs.push_back(B);
+      /* R */ colrs.push_back(R);   /* G */ colrs.push_back(G);   /* B */ colrs.push_back(B);
+      /* R */ colrs.push_back(R);   /* G */ colrs.push_back(G);   /* B */ colrs.push_back(B);
+      /* R */ colrs.push_back(R);   /* G */ colrs.push_back(G);   /* B */ colrs.push_back(B);
+      /* R */ colrs.push_back(R);   /* G */ colrs.push_back(G);   /* B */ colrs.push_back(B);
+      /* R */ colrs.push_back(R);   /* G */ colrs.push_back(G);   /* B */ colrs.push_back(B);
+   }
+
+   return verts.size()/2;
+}
+// Append Ellipse vertices to input vectors
+int drawEllipse(
+      float bx,                  /* X-Coordinate */
+      float by,                  /* Y-Coordinate */
+      float bsx,                 /* x-Scale 2.0=spans display before GL scaling */
+      float bsy,                 /* y-Scale 2.0=spans display before GL scaling */
+      char circleSegments,       /* Number of sides */
+      double *color,             /* Polygon Color */
+      std::vector<float> &verts, /* Input Vector of x,y coordinates */
+      std::vector<float> &colrs  /* Input Vector of r,g,b values */
+      ){
+   float R, G, B;
+   char degSegment = 360 / circleSegments;
+   R = float(color[0]);
+   G = float(color[1]);
+   B = float(color[2]);
+
+#  pragma omp parallel for
+   for (char i = 0; i < circleSegments; i++) {
+      /* X */ verts.push_back(float(bx));
+      /* Y */ verts.push_back(float(by));
+
+      /* X */ verts.push_back(float(bx + bsx*cos(degToRad(i*degSegment))));
+      /* Y */ verts.push_back(float(by + bsy*sin(degToRad(i*degSegment))));
+
+      /* X */ verts.push_back(float(bx + bsx*cos(degToRad((i+1)*degSegment))));
+      /* Y */ verts.push_back(float(by + bsy*sin(degToRad((i+1)*degSegment))));
+
+      /* R */ colrs.push_back(R);  /* G */ colrs.push_back(G);  /* B */ colrs.push_back(B);
+      /* R */ colrs.push_back(R);  /* G */ colrs.push_back(G);  /* B */ colrs.push_back(B);
+      /* R */ colrs.push_back(R);  /* G */ colrs.push_back(G);  /* B */ colrs.push_back(B);
+   }
+   return verts.size()/2;
+}
+
+// Append Circle vertices to input vectors
+int drawEllipse(
+      float bx,                  /* X-Coordinate */
+      float by,                  /* Y-Coordinate */
+      float bs,                  /* Scale~ 2.0=spans display before GL Transformations */
+      char circleSegments,       /* Number of sides */
+      double *color,             /* Polygon Color */
+      std::vector<float> &verts, /* Input Vector of x,y coordinates */
+      std::vector<float> &colrs  /* Input Vector of r,g,b values */
+      ){
+   return drawEllipse(bx, by, bs, bs, circleSegments, color, verts, colrs);
+}
+// Append Circle vertices to input vectors
+int drawCircle(
+      float bx,                  /* X-Coordinate */
+      float by,                  /* Y-Coordinate */
+      float bs,                  /* Scale~ 2.0=spans display before GL Transformations */
+      char circleSegments,       /* Number of sides */
+      double *color,             /* Polygon Color */
+      std::vector<float> &verts, /* Input Vector of x,y coordinates */
+      std::vector<float> &colrs  /* Input Vector of r,g,b values */
+      ){
+   return drawEllipse(bx, by, bs, bs, circleSegments, color, verts, colrs);
+}
+
+// Write to pre-allocated input arrays, update pill shape between two points
 int drawPill(
-      float px, 
-      float py, 
-      float qx, 
-      float qy, 
-      float radius, 
-      int index,
-      double *pColor, 
-      double *qColor,
-      float *verts,
-      float *colrs
+      float px,         /* x-coordinate of Point P */
+      float py,         /* y-coordinate of Point P */
+      float qx,         /* x-coordinate of Point Q */
+      float qy,         /* y-coordinate of Point Q */
+      float radius,     /* Radius/Thickness of pill */
+      int index,        /* index of where to start writing to input arrays */
+      double *pColor,   /* RGB values of P */
+      double *qColor,   /* RGB values of Q */
+      float *verts,     /* Input Array of x,y coordinates */
+      float *colrs      /* Input Array of r,g,b values */
       ){
    int vertIndex = index*2;   /* index (x, y) */
    int colrIndex = index*3;   /* index (r, g, b) */
-   float rx, ry, slope, tma;
+   float rx, ry, slope, tma, pR, pG, pB, qR, qG, qB;
 
    if (qx >= px) {
       slope = (qy-py)/(qx-px);
@@ -28,45 +135,36 @@ int drawPill(
    rx = radius*cos(ang);
    ry = radius*sin(ang);
 
+   pR = float(pColor[0]);
+   pG = float(pColor[1]);
+   pB = float(pColor[2]);
+   qR = float(qColor[0]);
+   qG = float(qColor[1]);
+   qB = float(qColor[2]);
    // Draw Pill Body, (Rectangle)
-   verts[vertIndex++] = float(px+rx);
-   verts[vertIndex++] = float(py+ry);
-   colrs[colrIndex++] = float(pColor[0]);
-   colrs[colrIndex++] = float(pColor[1]);
-   colrs[colrIndex++] = float(pColor[2]);
+   /* pX */ verts[vertIndex++] = float(px+rx);
+   /* pY */ verts[vertIndex++] = float(py+ry);
+   /* pX */ verts[vertIndex++] = float(px-rx);
+   /* pY */ verts[vertIndex++] = float(py-ry);
+   /* qX */ verts[vertIndex++] = float(qx-rx);
+   /* qY */ verts[vertIndex++] = float(qy-ry);
 
-   verts[vertIndex++] = float(px-rx);
-   verts[vertIndex++] = float(py-ry);
-   colrs[colrIndex++] = float(pColor[0]);
-   colrs[colrIndex++] = float(pColor[1]);
-   colrs[colrIndex++] = float(pColor[2]);
+   /* qX */ verts[vertIndex++] = float(qx-rx);
+   /* qY */ verts[vertIndex++] = float(qy-ry);
+   /* qX */ verts[vertIndex++] = float(qx+rx);
+   /* qY */ verts[vertIndex++] = float(qy+ry);
+   /* pX */ verts[vertIndex++] = float(px+rx);
+   /* pY */ verts[vertIndex++] = float(py+ry);
 
-   verts[vertIndex++] = float(qx-rx);
-   verts[vertIndex++] = float(qy-ry);
-   colrs[colrIndex++] = float(qColor[0]);
-   colrs[colrIndex++] = float(qColor[1]);
-   colrs[colrIndex++] = float(qColor[2]);
+   /* pR */ colrs[colrIndex++] = pR;   /* pG */ colrs[colrIndex++] = pG;   /* pB */ colrs[colrIndex++] = pB;
+   /* pR */ colrs[colrIndex++] = pR;   /* pG */ colrs[colrIndex++] = pG;   /* pB */ colrs[colrIndex++] = pB;
+   /* qR */ colrs[colrIndex++] = qR;   /* qG */ colrs[colrIndex++] = qG;   /* qB */ colrs[colrIndex++] = qB;
 
-   verts[vertIndex++] = float(qx-rx);
-   verts[vertIndex++] = float(qy-ry);
-   colrs[colrIndex++] = float(qColor[0]);
-   colrs[colrIndex++] = float(qColor[1]);
-   colrs[colrIndex++] = float(qColor[2]);
+   /* qR */ colrs[colrIndex++] = qR;   /* qG */ colrs[colrIndex++] = qG;   /* qB */ colrs[colrIndex++] = qB;
+   /* qR */ colrs[colrIndex++] = qR;   /* qG */ colrs[colrIndex++] = qG;   /* qB */ colrs[colrIndex++] = qB;
+   /* pR */ colrs[colrIndex++] = pR;   /* pG */ colrs[colrIndex++] = pG;   /* pB */ colrs[colrIndex++] = pB;
 
-   verts[vertIndex++] = float(qx+rx);
-   verts[vertIndex++] = float(qy+ry);
-   colrs[colrIndex++] = float(qColor[0]);
-   colrs[colrIndex++] = float(qColor[1]);
-   colrs[colrIndex++] = float(qColor[2]);
-
-   verts[vertIndex++] = float(px+rx);
-   verts[vertIndex++] = float(py+ry);
-   colrs[colrIndex++] = float(pColor[0]);
-   colrs[colrIndex++] = float(pColor[1]);
-   colrs[colrIndex++] = float(pColor[2]);
-
-
-#     pragma omp parallel for
+#  pragma omp parallel for
    for (int i = 0; i < 15; i++) {
       // Draw endcap for point P
       if (qx >= px)
@@ -76,17 +174,11 @@ int drawPill(
       rx = radius*cos(tma);
       ry = radius*sin(tma);
          
-      verts[vertIndex++] = float(px);
-      verts[vertIndex++] = float(py);
-      colrs[colrIndex++] = float(pColor[0]);
-      colrs[colrIndex++] = float(pColor[1]);
-      colrs[colrIndex++] = float(pColor[2]);
+      /* pX */ verts[vertIndex++] = float(px);
+      /* pY */ verts[vertIndex++] = float(py);
 
-      verts[vertIndex++] = float(px+rx);
-      verts[vertIndex++] = float(py+ry);
-      colrs[colrIndex++] = float(pColor[0]);
-      colrs[colrIndex++] = float(pColor[1]);
-      colrs[colrIndex++] = float(pColor[2]);
+      /* pX */ verts[vertIndex++] = float(px+rx);
+      /* pY */ verts[vertIndex++] = float(py+ry);
 
       if (qx >= px)
          tma = ang + float(degToRad(+(i+1)*12.0));
@@ -95,11 +187,13 @@ int drawPill(
       rx = radius*cos(tma);
       ry = radius*sin(tma);
          
-      verts[vertIndex++] = float(px+rx);
-      verts[vertIndex++] = float(py+ry);
-      colrs[colrIndex++] = float(pColor[0]);
-      colrs[colrIndex++] = float(pColor[1]);
-      colrs[colrIndex++] = float(pColor[2]);
+      /* pX */ verts[vertIndex++] = float(px+rx);
+      /* pY */ verts[vertIndex++] = float(py+ry);
+
+      /* pR */ colrs[colrIndex++] = pR;  /* pG */ colrs[colrIndex++] = pG;  /* pB */ colrs[colrIndex++] = pB;
+      /* pR */ colrs[colrIndex++] = pR;  /* pG */ colrs[colrIndex++] = pG;  /* pB */ colrs[colrIndex++] = pB;
+      /* pR */ colrs[colrIndex++] = pR;  /* pG */ colrs[colrIndex++] = pG;  /* pB */ colrs[colrIndex++] = pB;
+
 
       // Draw endcap for point Q
       if (qx >= px)
@@ -109,17 +203,11 @@ int drawPill(
       rx = radius*cos(tma);
       ry = radius*sin(tma);
          
-      verts[vertIndex++] = float(qx);
-      verts[vertIndex++] = float(qy);
-      colrs[colrIndex++] = float(qColor[0]);
-      colrs[colrIndex++] = float(qColor[1]);
-      colrs[colrIndex++] = float(qColor[2]);
+      /* qX */ verts[vertIndex++] = float(qx);
+      /* qY */ verts[vertIndex++] = float(qy);
 
-      verts[vertIndex++] = float(qx-rx);
-      verts[vertIndex++] = float(qy-ry);
-      colrs[colrIndex++] = float(qColor[0]);
-      colrs[colrIndex++] = float(qColor[1]);
-      colrs[colrIndex++] = float(qColor[2]);
+      /* qX */ verts[vertIndex++] = float(qx-rx);
+      /* qY */ verts[vertIndex++] = float(qy-ry);
 
       if (qx >= px)
          tma = ang + float(degToRad(+(i+1)*12.0));
@@ -128,77 +216,72 @@ int drawPill(
       rx = radius*cos(tma);
       ry = radius*sin(tma);
          
-      verts[vertIndex++] = float(qx-rx);
-      verts[vertIndex++] = float(qy-ry);
-      colrs[colrIndex++] = float(qColor[0]);
-      colrs[colrIndex++] = float(qColor[1]);
-      colrs[colrIndex++] = float(qColor[2]);
+      /* qX */ verts[vertIndex++] = float(qx-rx);
+      /* qY */ verts[vertIndex++] = float(qy-ry);
+
+      /* qR */ colrs[colrIndex++] = qR;  /* qG */ colrs[colrIndex++] = qG;  /* qB */ colrs[colrIndex++] = qB;
+      /* qR */ colrs[colrIndex++] = qR;  /* qG */ colrs[colrIndex++] = qG;  /* qB */ colrs[colrIndex++] = qB;
+      /* qR */ colrs[colrIndex++] = qR;  /* qG */ colrs[colrIndex++] = qG;  /* qB */ colrs[colrIndex++] = qB;
    }
    return (vertIndex)/2;
 }
 
 // Appending to input arrays, define vertices for a pill shape between two points
 int drawPill(
-      float px, 
-      float py, 
-      float qx, 
-      float qy, 
-      float radius, 
-      double *pColor, 
-      double *qColor,
-      std::vector<float> &verts,
-      std::vector<float> &colrs
+      float px,                  /* x-coordinate of Point P */
+      float py,                  /* y-coordinate of Point P */
+      float qx,                  /* x-coordinate of Point Q */
+      float qy,                  /* y-coordinate of Point Q */
+      float radius,              /* Radius/Thickness of pill */
+      double *pColor,            /* RGB values of P */
+      double *qColor,            /* RGB values of Q */
+      std::vector<float> &verts, /* Input Vector of x,y coordinates */
+      std::vector<float> &colrs  /* Input Vector of r,g,b values */
       ){
-   float slope;
+   float rx, ry, slope, tma, pR, pG, pB, qR, qG, qB;
 
    if (qx >= px) {
       slope = (qy-py)/(qx-px);
    } else {
       slope = (py-qy)/(px-qx);
    }
-   float rx;
-   float ry;
    float ang = float(degToRad(90)+atan(slope));
-   float tma;
+
+   pR = float(pColor[0]);
+   pG = float(pColor[1]);
+   pB = float(pColor[2]);
+   qR = float(qColor[0]);
+   qG = float(qColor[1]);
+   qB = float(qColor[2]);
 
    rx = radius*cos(ang);
    ry = radius*sin(ang);
 
    // Draw Pill Body, (Rectangle)
-   verts.push_back(float(px+rx));
-   verts.push_back(float(py+ry));
-   colrs.push_back(float(pColor[0]));
-   colrs.push_back(float(pColor[1]));
-   colrs.push_back(float(pColor[2]));
-   verts.push_back(float(px-rx));
-   verts.push_back(float(py-ry));
-   colrs.push_back(float(pColor[0]));
-   colrs.push_back(float(pColor[1]));
-   colrs.push_back(float(pColor[2]));
-   verts.push_back(float(qx-rx));
-   verts.push_back(float(qy-ry));
-   colrs.push_back(float(qColor[0]));
-   colrs.push_back(float(qColor[1]));
-   colrs.push_back(float(qColor[2]));
+   /* pX */ verts.push_back(float(px+rx));
+   /* pY */ verts.push_back(float(py+ry));
+   /* pX */ verts.push_back(float(px-rx));
+   /* pY */ verts.push_back(float(py-ry));
+   /* qX */ verts.push_back(float(qx-rx));
+   /* qY */ verts.push_back(float(qy-ry));
 
-   verts.push_back(float(qx-rx));
-   verts.push_back(float(qy-ry));
-   colrs.push_back(float(qColor[0]));
-   colrs.push_back(float(qColor[1]));
-   colrs.push_back(float(qColor[2]));
-   verts.push_back(float(qx+rx));
-   verts.push_back(float(qy+ry));
-   colrs.push_back(float(qColor[0]));
-   colrs.push_back(float(qColor[1]));
-   colrs.push_back(float(qColor[2]));
-   verts.push_back(float(px+rx));
-   verts.push_back(float(py+ry));
-   colrs.push_back(float(pColor[0]));
-   colrs.push_back(float(pColor[1]));
-   colrs.push_back(float(pColor[2]));
+   /* qX */ verts.push_back(float(qx-rx));
+   /* qY */ verts.push_back(float(qy-ry));
+   /* qX */ verts.push_back(float(qx+rx));
+   /* qY */ verts.push_back(float(qy+ry));
+   /* pX */ verts.push_back(float(px+rx));
+   /* pY */ verts.push_back(float(py+ry));
+
+   /* pR */ colrs.push_back(pR);  /* pG */ colrs.push_back(pG);  /* pB */ colrs.push_back(pB);
+   /* pR */ colrs.push_back(pR);  /* pG */ colrs.push_back(pG);  /* pB */ colrs.push_back(pB);
+   /* qR */ colrs.push_back(pR);  /* qG */ colrs.push_back(pG);  /* qB */ colrs.push_back(pB);
+
+   /* qR */ colrs.push_back(qR);  /* qG */ colrs.push_back(qG);  /* qB */ colrs.push_back(qB);
+   /* qR */ colrs.push_back(qR);  /* qG */ colrs.push_back(qG);  /* qB */ colrs.push_back(qB);
+   /* pR */ colrs.push_back(qR);  /* pG */ colrs.push_back(qG);  /* pB */ colrs.push_back(qB);
 
 
-#     pragma omp parallel for
+#  pragma omp parallel for
    for (int i = 0; i < 15; i++) {
       // Draw endcap for point P
       if (qx >= px)
@@ -208,17 +291,11 @@ int drawPill(
       rx = radius*cos(tma);
       ry = radius*sin(tma);
          
-      verts.push_back(float(px));
-      verts.push_back(float(py));
-      colrs.push_back(float(pColor[0]));
-      colrs.push_back(float(pColor[1]));
-      colrs.push_back(float(pColor[2]));
+      /* pX */ verts.push_back(float(px));
+      /* pY */ verts.push_back(float(py));
 
-      verts.push_back(float(px+rx));
-      verts.push_back(float(py+ry));
-      colrs.push_back(float(pColor[0]));
-      colrs.push_back(float(pColor[1]));
-      colrs.push_back(float(pColor[2]));
+      /* pX */ verts.push_back(float(px+rx));
+      /* pY */ verts.push_back(float(py+ry));
 
       if (qx >= px)
          tma = ang + float(degToRad(+(i+1)*12.0));
@@ -227,11 +304,13 @@ int drawPill(
       rx = radius*cos(tma);
       ry = radius*sin(tma);
          
-      verts.push_back(float(px+rx));
-      verts.push_back(float(py+ry));
-      colrs.push_back(float(pColor[0]));
-      colrs.push_back(float(pColor[1]));
-      colrs.push_back(float(pColor[2]));
+      /* pX */ verts.push_back(float(px+rx));
+      /* pY */ verts.push_back(float(py+ry));
+
+      /* pR */ colrs.push_back(pR);  /* pG */ colrs.push_back(pG);  /* pB */ colrs.push_back(pB);
+      /* pR */ colrs.push_back(pR);  /* pG */ colrs.push_back(pG);  /* pB */ colrs.push_back(pB);
+      /* pR */ colrs.push_back(pR);  /* pG */ colrs.push_back(pG);  /* pB */ colrs.push_back(pB);
+
 
       // Draw endcap for point Q
       if (qx >= px)
@@ -241,17 +320,11 @@ int drawPill(
       rx = radius*cos(tma);
       ry = radius*sin(tma);
          
-      verts.push_back(float(qx));
-      verts.push_back(float(qy));
-      colrs.push_back(float(qColor[0]));
-      colrs.push_back(float(qColor[1]));
-      colrs.push_back(float(qColor[2]));
+      /* qX */ verts.push_back(float(qx));
+      /* qY */ verts.push_back(float(qy));
 
-      verts.push_back(float(qx-rx));
-      verts.push_back(float(qy-ry));
-      colrs.push_back(float(qColor[0]));
-      colrs.push_back(float(qColor[1]));
-      colrs.push_back(float(qColor[2]));
+      /* qX */ verts.push_back(float(qx-rx));
+      /* qY */ verts.push_back(float(qy-ry));
 
       if (qx >= px)
          tma = ang + float(degToRad(+(i+1)*12.0));
@@ -260,40 +333,41 @@ int drawPill(
       rx = radius*cos(tma);
       ry = radius*sin(tma);
          
-      verts.push_back(float(qx-rx));
-      verts.push_back(float(qy-ry));
-      colrs.push_back(float(qColor[0]));
-      colrs.push_back(float(qColor[1]));
-      colrs.push_back(float(qColor[2]));
+      /* qX */ verts.push_back(float(qx-rx));
+      /* qY */ verts.push_back(float(qy-ry));
+
+      /* qR */ colrs.push_back(qR);  /* qG */ colrs.push_back(qG);  /* qB */ colrs.push_back(qB);
+      /* qR */ colrs.push_back(qR);  /* qG */ colrs.push_back(qG);  /* qB */ colrs.push_back(qB);
+      /* qR */ colrs.push_back(qR);  /* qG */ colrs.push_back(qG);  /* qB */ colrs.push_back(qB);
    }
    return verts.size()/2;
 }
 
 // Writing to pre-allocated input arrays, update pill shape between two points
 int drawPill(
-      float px, 
-      float py, 
-      float qx, 
-      float qy, 
-      float radius, 
-      int   index,
-      double *color, 
-      float *verts,
-      float *colrs
+      float px,         /* x-coordinate of Point P */
+      float py,         /* y-coordinate of Point P */
+      float qx,         /* x-coordinate of Point Q */
+      float qy,         /* y-coordinate of Point Q */
+      float radius,     /* Radius/Thickness of pill */
+      int index,        /* index of where to start writing to input arrays */
+      double *color,    /* RGB values of pill */
+      float *verts,     /* Input Array of x,y coordinates */
+      float *colrs      /* Input Array of r,g,b values */
       ){
    return drawPill(px, py, qx, qy, radius, index, color, color, verts, colrs);
 }
 
 // Appending to input arrays, define vertices for a pill shape between two points
 int drawPill(
-      float px, 
-      float py, 
-      float qx, 
-      float qy, 
-      float radius, 
-      double *color, 
-      std::vector<float> &verts,
-      std::vector<float> &colrs
+      float px,                  /* x-coordinate of Point P */
+      float py,                  /* y-coordinate of Point P */
+      float qx,                  /* x-coordinate of Point Q */
+      float qy,                  /* y-coordinate of Point Q */
+      float radius,              /* Radius/Thickness of pill */
+      double *color,             /* RGB values of pill */
+      std::vector<float> &verts, /* Input Vector of x,y coordinates */
+      std::vector<float> &colrs  /* Input Vector of r,g,b values */
       ){
    return drawPill(px, py, qx, qy, radius, color, color, verts, colrs);
 }
