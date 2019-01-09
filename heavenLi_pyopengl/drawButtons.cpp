@@ -12,17 +12,17 @@ using namespace std;
 GLfloat  *bulbButtonVertexBuffer = NULL;
 GLfloat  *bulbButtonColorBuffer  = NULL;
 GLushort *bulbButtonIndices      = NULL;
-GLuint   bulbButtonsVerts        = NULL;
-GLuint   vertsPerBulb            = NULL;
+GLuint   bulbButtonsVerts;
+GLuint   vertsPerBulb;
 float*   buttonCoords            = NULL;
-int      colorsStart             = NULL;
-int      colorsEnd               = NULL;
-int      detailEnd               = NULL;
-int      prevNumBulbs            = NULL;
-int      prevArn                 = NULL;
-float    prevAngOffset           = NULL;
-float    prevBulbButtonScale     = NULL;
-float    prevBulbButtonW2H       = NULL;
+int      colorsStart;
+int      colorsEnd;
+int      detailEnd;
+int      prevNumBulbs;
+int      prevArn;
+float    prevAngOffset;
+float    prevBulbButtonScale;
+float    prevBulbButtonW2H;
 PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
 {
    PyObject* faceColorPyTup;
@@ -107,6 +107,8 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
                   angularOffset + 
                   (numBulbs == 1 ? -90 : 0)
                   ));
+         } else {
+            ang = float(0.0);
          }
 
          // Relative coordinates of each button (from the center of the circle)
@@ -292,6 +294,8 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
                   angularOffset + 
                   (numBulbs == 1 ? -90 : 0)
                   ));
+         } else {
+            ang = float(0.0);
          }
 
          // Relative coordinates of each button (from the center of the circle)
@@ -455,12 +459,12 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
 GLfloat  *clockVertexBuffer = NULL;
 GLfloat  *clockColorBuffer  = NULL;
 GLushort *clockIndices      = NULL;
-GLuint    clockVerts        = NULL;
-GLuint    faceVerts         = NULL;
-float     prevClockScale    = NULL;
-float     prevClockw2h      = NULL;
-float     prevClockHour     = NULL;
-float     prevClockMinute   = NULL;
+GLuint    clockVerts;
+GLuint    faceVerts;
+float     prevClockScale;
+float     prevClockw2h;
+float     prevClockHour;
+float     prevClockMinute;
 PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
 {
    PyObject* faceColorPyTup;

@@ -22,7 +22,7 @@ GLfloat  *homeCircleVertexBuffer       = NULL;
 GLfloat  *homeCircleColorBuffer        = NULL;
 GLushort *homeCircleIndices            = NULL;
 GLuint   homeCircleVerts;
-GLuint   prevHomeCircleNumBulbs;
+GLint    prevHomeCircleNumBulbs;
 
 PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    PyObject* py_list;
@@ -240,6 +240,8 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       char degSegment = 360 / circleSegments;
       float angOffset = float(360.0 / float(numBulbs));
       float tma, tmx, tmy, R, G, B, delta;
+      int vertIndex = 0;
+      int colorIndex = 0;
 
       drawEllipse(float(0.0), float(0.0), float(0.16), circleSegments/3, detailColor, markerVerts, markerColrs);
       drawHalo(float(0.0), float(0.0), float(0.22), float(0.22), float(0.07), circleSegments/3, detailColor, markerVerts, markerColrs);
@@ -403,8 +405,6 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       char degSegment = 360 / circleSegments;
       float angOffset = float(360.0 / float(numBulbs));
       float tmx, tmy;
-      int vertIndex = 0;
-      int colorIndex = 0;
       
       /*
        * Explanation of features:
@@ -645,14 +645,12 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
 
    if (homeLinearVertexBuffer    == NULL ||
        homeLinearColorBuffer     == NULL ||
-       homeLinearIndices         == NULL ||
-       homeLinearVerts           == NULL ){
+       homeLinearIndices         == NULL ){
 
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
       float TLx, TRx, BLx, BRx, TLy, TRy, BLy, BRy;
       float offset = float(4.0/60.0);
-      int tmc = 0;
       R = float(0.0);
       G = float(0.0);
       B = float(0.0);
@@ -836,6 +834,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       printf("Generating geometry for iconLinear\n");
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
+      int vertIndex = 0;
       float TLx, TRx, BLx, BRx, TLy, TRy, BLy, BRy, tmx, tmy, ri, ro;
       float offset = float(2.0/60.0);
       float degSegment = float(360.0/float(circleSegments));
@@ -1299,8 +1298,6 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
        prevIconLinearNumBulbs != numBulbs ){
 
       prevIconLinearFeatures = features;
-      int vertIndex = 0;
-      int colorIndex = 0;
       float tmx, tmy;
       float offset = float(2.0/60.0);
       float degSegment = float(360.0/float(circleSegments));
