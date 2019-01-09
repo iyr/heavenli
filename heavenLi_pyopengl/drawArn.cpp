@@ -443,7 +443,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
             tmy = offScreen;
          }
       }
-      delta = float(degSegment);
+      float delta = float(degSegment);
 #     pragma omp parallel for
       for (int i = 0; i < circleSegments; i++) {
          /* X */ iconCircleVertexBuffer[vertIndex +  0] = iconCircleVertexBuffer[vertIndex +  0] + tmx;
@@ -1374,19 +1374,19 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       for (int i = 0; i < 4; i++) {
 #        pragma omp parallel for
          for (int j = 0; j < circleSegments; j++) {
-            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
-            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
-            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+            /* X */ iconLinearVertexBuffer[vertIndex +  0] = iconLinearVertexBuffer[vertIndex +  0] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex +  1] = iconLinearVertexBuffer[vertIndex +  1] + tmy;
+            /* X */ iconLinearVertexBuffer[vertIndex +  2] = iconLinearVertexBuffer[vertIndex +  2] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex +  3] = iconLinearVertexBuffer[vertIndex +  3] + tmy;
+            /* X */ iconLinearVertexBuffer[vertIndex +  4] = iconLinearVertexBuffer[vertIndex +  4] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex +  5] = iconLinearVertexBuffer[vertIndex +  5] + tmy;
 
-            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
-            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
-            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+            /* X */ iconLinearVertexBuffer[vertIndex +  6] = iconLinearVertexBuffer[vertIndex +  6] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex +  7] = iconLinearVertexBuffer[vertIndex +  7] + tmy;
+            /* X */ iconLinearVertexBuffer[vertIndex +  8] = iconLinearVertexBuffer[vertIndex +  8] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex +  9] = iconLinearVertexBuffer[vertIndex +  9] + tmy;
+            /* X */ iconLinearVertexBuffer[vertIndex + 10] = iconLinearVertexBuffer[vertIndex + 10] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex + 11] = iconLinearVertexBuffer[vertIndex + 11] + tmy;
          }
       }
 
@@ -1528,19 +1528,19 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       for (int i = 0; i < 4; i++) {
 #        pragma omp parallel for
          for (int j = 0; j < circleSegments; j++) {
-            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
-            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
-            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+            /* X */ iconLinearVertexBuffer[vertIndex +  0] = iconLinearVertexBuffer[vertIndex +  0] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex +  1] = iconLinearVertexBuffer[vertIndex +  1] + tmy;
+            /* X */ iconLinearVertexBuffer[vertIndex +  2] = iconLinearVertexBuffer[vertIndex +  2] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex +  3] = iconLinearVertexBuffer[vertIndex +  3] + tmy;
+            /* X */ iconLinearVertexBuffer[vertIndex +  4] = iconLinearVertexBuffer[vertIndex +  4] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex +  5] = iconLinearVertexBuffer[vertIndex +  5] + tmy;
 
-            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
-            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
-            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+            /* X */ iconLinearVertexBuffer[vertIndex +  6] = iconLinearVertexBuffer[vertIndex +  6] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex +  7] = iconLinearVertexBuffer[vertIndex +  7] + tmy;
+            /* X */ iconLinearVertexBuffer[vertIndex +  8] = iconLinearVertexBuffer[vertIndex +  8] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex +  9] = iconLinearVertexBuffer[vertIndex +  9] + tmy;
+            /* X */ iconLinearVertexBuffer[vertIndex + 10] = iconLinearVertexBuffer[vertIndex + 10] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex + 11] = iconLinearVertexBuffer[vertIndex + 11] + tmy;
          }
       }
 
@@ -1548,7 +1548,6 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
    }
 
    // Geometry allocated/calculated, check if colors need to be updated
-   int tmb = 0;
    for (int i = 0; i < 3; i++) {
       for (int j = 0; j < numBulbs; j++) {
          float tmc = float(bulbColors[j*3+i]);
