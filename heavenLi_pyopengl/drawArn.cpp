@@ -401,7 +401,6 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
    if (prevIconCircleFeatures != features ||
        prevIconCircleNumBulbs != numBulbs ){
 
-      char degSegment = 360 / circleSegments;
       float angOffset = float(360.0 / float(numBulbs));
       float tmx, tmy;
       vertIndex = 0;
@@ -1303,7 +1302,6 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       prevIconLinearFeatures = features;
       float tmx, tmy;
       float degSegment = float(360.0/float(circleSegments));
-      float delta = float(degSegment/4.0);
       tmx = 0.0;
       tmy = 0.0;
       vertIndex = 0;
