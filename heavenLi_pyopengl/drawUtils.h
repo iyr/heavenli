@@ -19,7 +19,7 @@ int drawHalo(
    G = float(color[1]);
    B = float(color[2]);
 
-#  pragma omp parallel for
+//#  pragma omp parallel for
    for (int i = 0; i < circleSegments; i ++ ) {
       tma = float(degToRad((i+0)*float(degSegment)));
       /* X */ verts.push_back(float(bx+cos(tma)*bsx));
@@ -65,7 +65,7 @@ int drawEllipse(
    G = float(color[1]);
    B = float(color[2]);
 
-#  pragma omp parallel for
+//#  pragma omp parallel for
    for (char i = 0; i < circleSegments; i++) {
       /* X */ verts.push_back(float(bx));
       /* Y */ verts.push_back(float(by));
@@ -164,7 +164,7 @@ int drawPill(
    /* qR */ colrs[colrIndex++] = qR;   /* qG */ colrs[colrIndex++] = qG;   /* qB */ colrs[colrIndex++] = qB;
    /* pR */ colrs[colrIndex++] = pR;   /* pG */ colrs[colrIndex++] = pG;   /* pB */ colrs[colrIndex++] = pB;
 
-#  pragma omp parallel for
+//#  pragma omp parallel for
    for (int i = 0; i < 15; i++) {
       // Draw endcap for point P
       if (qx >= px)
@@ -281,7 +281,7 @@ int drawPill(
    /* pR */ colrs.push_back(qR);  /* pG */ colrs.push_back(qG);  /* pB */ colrs.push_back(qB);
 
 
-#  pragma omp parallel for
+//#  pragma omp parallel for
    for (int i = 0; i < 15; i++) {
       // Draw endcap for point P
       if (qx >= px)

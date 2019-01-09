@@ -125,7 +125,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
          buttonCoords[j*2+1] = tmy;
 
          // Define Vertices / Colors for Button Face
-#        pragma omp parallel for
+//#        pragma omp parallel for
          for (int i = 0; i < circleSegments+1; i++){
             /* X */ verts.push_back(float(tmx+0.0));
             /* Y */ verts.push_back(float(tmy+0.0));
@@ -150,7 +150,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
             colorsStart = colrs.size();
          }
          // Define Vertices for Bulb Icon
-#        pragma omp parallel for
+//#        pragma omp parallel for
          for (int i = 0; i < circleSegments+1; i++){
             /* X */ verts.push_back(float(tmx+0.0*scale));
             /* Y */ verts.push_back(float(tmy+0.1*scale));
@@ -250,7 +250,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
       }
 
       // Pack bulbButtonIndices, vertex and color bufferes
-#     pragma omp parallel for
+//#     pragma omp parallel for
       for (unsigned int i = 0; i < bulbButtonsVerts; i++){
          bulbButtonVertexBuffer[i*2]   = verts[i*2];
          bulbButtonVertexBuffer[i*2+1] = verts[i*2+1];
@@ -312,7 +312,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
          buttonCoords[j*2+1] = tmy;
 
          // Define Vertices / Colors for Button Face
-#        pragma omp parallel for
+//#        pragma omp parallel for
          for (int i = 0; i < circleSegments+1; i++){
             /* X */ bulbButtonVertexBuffer[j*vertsPerBulb*2+i*6+0] = (float(tmx+0.0));
             /* Y */ bulbButtonVertexBuffer[j*vertsPerBulb*2+i*6+1] = (float(tmy+0.0));
@@ -325,7 +325,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
          }
 
          // Define Vertices for Bulb Icon
-#        pragma omp parallel for
+//#        pragma omp parallel for
          for (int i = 0; i < circleSegments+1; i++){
             /* X */ bulbButtonVertexBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+0] = (float(tmx+0.0*scale));
             /* Y */ bulbButtonVertexBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+1] = (float(tmy+0.1*scale));
@@ -372,7 +372,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
             /* X, Y */ float(tmx-0.051*scale), float(tmy-0.306*scale),
          };
    
-#        pragma omp parallel for
+//#        pragma omp parallel for
          for (int i = 0; i < 27; i++) {
             /* X */ bulbButtonVertexBuffer[j*vertsPerBulb*2+i*2+(circleSegments+1)*12+0] = (float(tmp[i*2+0]));
             /* Y */ bulbButtonVertexBuffer[j*vertsPerBulb*2+i*2+(circleSegments+1)*12+1] = (float(tmp[i*2+1]));
@@ -399,7 +399,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
          // Update face color, if needed
          if (float(faceColor[i]) != bulbButtonColorBuffer[i]) {
             for (int j = 0; j < numBulbs; j++) {
-#              pragma omp parallel for
+//#              pragma omp parallel for
                for (int k = 0; k < colorsStart/3; k++) {
                   bulbButtonColorBuffer[ j*vertsPerBulb*3 + k*3 + i ] = float(faceColor[i]);
                }
@@ -409,7 +409,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
          // Update Detail Color, if needed
          if (float(detailColor[i]) != bulbButtonColorBuffer[colorsEnd+i]) {
             for (int j = 0; j < numBulbs; j++) {
-#              pragma omp parallel for
+//#              pragma omp parallel for
                for (int k = 0; k < (detailEnd - colorsEnd)/3; k++) {
                   bulbButtonColorBuffer[ colorsEnd + j*vertsPerBulb*3 + k*3 + i ] = float(detailColor[i]);
                }
@@ -426,7 +426,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
 
             // Iterate through color buffer to update colors
             if (float(bulbColors[i+j*3]) != bulbButtonColorBuffer[colorsStart + i + j*vertsPerBulb*3]) {
-#              pragma omp parallel for
+//#              pragma omp parallel for
                for (int k = 0; k < (colorsEnd-colorsStart)/3; k++) {
                   bulbButtonColorBuffer[ j*vertsPerBulb*3 + colorsStart + i + k*3 ] = float(bulbColors[i+j*3]);
                }
@@ -437,7 +437,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
 
    PyList_ClearFreeList();
    py_list = PyList_New(numBulbs);
-#  pragma omp parallel for
+//#  pragma omp parallel for
    for (int i = 0; i < numBulbs; i++) {
       py_tuple = PyTuple_New(2);
       PyTuple_SetItem(py_tuple, 0, PyFloat_FromDouble(buttonCoords[i*2+0]));

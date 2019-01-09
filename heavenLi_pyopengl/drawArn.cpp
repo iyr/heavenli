@@ -48,7 +48,7 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
 
    // Parse array of tuples containing RGB Colors of bulbs
    bulbColors = new double[numBulbs*3];
-#  pragma omp parallel for
+//#  pragma omp parallel for
    for (int i = 0; i < numBulbs; i++) {
       py_tuple = PyList_GetItem(py_list, i);
 
@@ -75,7 +75,7 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
          R = float(bulbColors[j*3+0]);
          G = float(bulbColors[j*3+1]);
          B = float(bulbColors[j*3+2]);
-#        pragma omp parallel for
+//#        pragma omp parallel for
          for (int i = 0; i < circleSegments/numBulbs; i++) {
             /* X */ verts.push_back(float(0.0));
             /* Y */ verts.push_back(float(0.0));
@@ -118,7 +118,7 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
          homeCircleIndices = new GLushort[homeCircleVerts];
       }
 
-#     pragma omp parallel for
+//#     pragma omp parallel for
       for (unsigned int i = 0; i < homeCircleVerts; i++) {
          homeCircleVertexBuffer[i*2+0] = verts[i*2+0];
          homeCircleVertexBuffer[i*2+1] = verts[i*2+1];
@@ -143,7 +143,7 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
       for (int j = 0; j < numBulbs; j++) {
          if (float(bulbColors[ i + j*3 ]) != homeCircleColorBuffer[ i + j*(60/numBulbs)*9 ] ||
                prevHomeCircleNumBulbs != numBulbs) {
-#           pragma omp parallel for
+//#           pragma omp parallel for
             for (int k = 0; k < (60/numBulbs)*3; k++) {
                if (float(bulbColors[ i + j*3 ]) != homeCircleColorBuffer[ i + k*3 + j*(60/numBulbs)*9 ]) {
                   homeCircleColorBuffer[ j*(60/numBulbs)*9 + k*3 + i ] = float(bulbColors[i+j*3]);
@@ -213,7 +213,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
 
    // Parse array of tuples containing RGB Colors of bulbs
    bulbColors = new double[numBulbs*3];
-#  pragma omp parallel for
+//#  pragma omp parallel for
    for (int i = 0; i < numBulbs; i++) {
       py_tuple = PyList_GetItem(py_list, i);
 
@@ -249,7 +249,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
 
       // Draw Only the color wheel if 'features' <= 0
       delta = degSegment;
-#     pragma omp parallel for
+//#     pragma omp parallel for
       for (int j = 0; j < numBulbs; j++) {
          R = float(bulbColors[j*3+0]);
          G = float(bulbColors[j*3+1]);
@@ -296,7 +296,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       int iUlim = circleSegments/3;
       int tmo = 180/numBulbs;
       degSegment = 360/iUlim;
-#     pragma omp parallel for
+//#     pragma omp parallel for
       for (int j = 0; j < 6; j++) {
          if ( (j < numBulbs) && (features >= 2) ) {
             tmx = float(cos(degToRad(-90 - j*(angOffset) + tmo))*1.05);
@@ -310,7 +310,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
 
       // Draw Halos for bulb Markers
       // Draw Color Wheel + Outline + Bulb Markers + Bulb Halos if 'features' == 3
-#     pragma omp parallel for
+//#     pragma omp parallel for
       for (int j = 0; j < 6; j++) {
          if (j < numBulbs && features >= 3) {
             tmx = float(cos(degToRad(-90 - j*(angOffset) + tmo))*1.05);
@@ -380,13 +380,13 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
          iconCircleIndices = new GLushort[iconCircleVerts];
       }
 
-#     pragma omp parallel for
+//#     pragma omp parallel for
       for (unsigned int i = 0; i < markerVerts.size()/2; i++) {
          iconBulbMarkerVertices[i*2+0] = markerVerts[i*2+0];
          iconBulbMarkerVertices[i*2+1] = markerVerts[i*2+1];
       }
 
-#     pragma omp parallel for
+//#     pragma omp parallel for
       for (unsigned int i = 0; i < iconCircleVerts; i++) {
          iconCircleVertexBuffer[i*2+0] = verts[i*2+0];
          iconCircleVertexBuffer[i*2+1] = verts[i*2+1];
@@ -445,7 +445,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
          }
       }
       //float delta = float(degSegment);
-#     pragma omp parallel for
+//#     pragma omp parallel for
       for (int i = 0; i < circleSegments; i++) {
          /* X */ iconCircleVertexBuffer[vertIndex +  0] = iconCircleVertexBuffer[vertIndex +  0] + tmx;
          /* Y */ iconCircleVertexBuffer[vertIndex +  1] = iconCircleVertexBuffer[vertIndex +  1] + tmy;
@@ -475,7 +475,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
             tmx = offScreen;
             tmy = offScreen;
          }
-#        pragma omp parallel for
+//#        pragma omp parallel for
          for (int i = 0; i < iUlim; i++) {
             /* X */ iconCircleVertexBuffer[vertIndex++] = tmx + iconBulbMarkerVertices[i*6+0];
             /* Y */ iconCircleVertexBuffer[vertIndex++] = tmy + iconBulbMarkerVertices[i*6+1];
@@ -498,7 +498,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
             tmx = offScreen;
             tmy = offScreen;
          }
-#        pragma omp parallel for
+//#        pragma omp parallel for
          for (int i = 0; i < iUlim; i++) {
             /* X */ iconCircleVertexBuffer[vertIndex++] = tmx + iconBulbMarkerVertices[iUlim*6 + i*12 +  0];
             /* Y */ iconCircleVertexBuffer[vertIndex++] = tmy + iconBulbMarkerVertices[iUlim*6 + i*12 +  1];
@@ -538,7 +538,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
             tmy = offScreen;
          }
       }
-#     pragma omp parallel for
+//#     pragma omp parallel for
       for (int i = 0; i < circleSegments; i++) {
          /* X */ iconCircleVertexBuffer[vertIndex +  0] = iconCircleVertexBuffer[vertIndex +  0]  + tmx;
          /* Y */ iconCircleVertexBuffer[vertIndex +  1] = iconCircleVertexBuffer[vertIndex +  1]  + tmy;
@@ -557,7 +557,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       }
 
       prevIconCircleFeatures = features;
-      printf("iconCircle vertIndex after update: %.i, vertices updated: %.i, tris updated: %.i\n", vertIndex, vertIndex/2, vertIndex/6);
+      //printf("iconCircle vertIndex after update: %.i, vertices updated: %.i, tris updated: %.i\n", vertIndex, vertIndex/2, vertIndex/6);
    }
    // Geometry already calculated, update colors
    /*
@@ -573,7 +573,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
          int tmo = (60/numBulbs)*9;
          if (float(bulbColors[i+j*3]) != iconCircleColorBuffer[i + j*tmo]
                || prevIconCircleNumBulbs != numBulbs){
-#           pragma omp parallel for
+//#           pragma omp parallel for
             for (int k = 0; k < tmo/3; k++) {
                if (float(bulbColors[i+j*3]) != iconCircleColorBuffer[i + k*3 + j*tmo]){
                   iconCircleColorBuffer[j*tmo + k*3 + i] = float(bulbColors[i+j*3]);
@@ -636,7 +636,7 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
    }
    // Parse array of tuples containing RGB Colors of bulbs
    bulbColors = new double[numBulbs*3];
-#  pragma omp parallel for
+//#  pragma omp parallel for
    for (int i = 0; i < numBulbs; i++) {
       py_tuple = PyList_GetItem(py_list, i);
 
@@ -726,7 +726,7 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
          homeLinearIndices = new GLushort[homeLinearVerts];
       }
 
-#     pragma omp parallel for
+//#     pragma omp parallel for
       for (unsigned int i = 0; i < homeLinearVerts; i++) {
          homeLinearVertexBuffer[i*2+0] = verts[i*2+0];
          homeLinearVertexBuffer[i*2+1] = verts[i*2+1];
@@ -747,7 +747,7 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
             // 2 Triangles per Quad
             // 3 Vertices per Triangle
             if (float(bulbColors[i+j*3]) != homeLinearColorBuffer[i + j*(60/numBulbs)*9*2 ] || prevHomeLinearNumbulbs != numBulbs) {
-#              pragma omp parallel for
+//#              pragma omp parallel for
                for (int k = 0; k < (60/numBulbs)*3*2; k++) {  
                   if (float(bulbColors[i+j*3]) != homeLinearColorBuffer[i + k*3 + j*(60/numBulbs)*9*2 ]) {
                      homeLinearColorBuffer[ j*(60/numBulbs)*9*2 + k*3 + i ] = float(bulbColors[i+j*3]);
@@ -818,7 +818,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
 
    // Parse array of tuples containing RGB Colors of bulbs
    bulbColors = new double[numBulbs*3];
-#  pragma omp parallel for
+//#  pragma omp parallel for
    for (int i = 0; i < numBulbs; i++) {
       py_tuple = PyList_GetItem(py_list, i);
 
@@ -1286,7 +1286,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
          iconLinearIndices = new GLushort[iconLinearVerts];
       }
 
-#     pragma omp parallel for
+//#     pragma omp parallel for
       for (unsigned int i = 0; i < iconLinearVerts; i++) {
          iconLinearVertexBuffer[i*2+0] = verts[i*2+0];
          iconLinearVertexBuffer[i*2+1] = verts[i*2+1];
@@ -1312,7 +1312,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       vertIndex = 0;
 
       // Define Square of Stripes with Rounded Corners
-#     pragma omp parallel for
+//#     pragma omp parallel for
       for (int i = 0; i < 60; i++) {
          if (i == 0 || i == 60-1) {
             vertIndex += 12;
@@ -1353,7 +1353,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       /*
        * Draw Outer Straights
        */
-#     pragma omp parallel for
+//#     pragma omp parallel for
       for (int i = 0; i < 4; i++ ) {
          /* X */ iconLinearVertexBuffer[vertIndex +  0] = iconLinearVertexBuffer[vertIndex +  0] + tmx;
          /* Y */ iconLinearVertexBuffer[vertIndex +  1] = iconLinearVertexBuffer[vertIndex +  1] + tmy;
@@ -1375,7 +1375,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
        * Draw Rounded Corners
        */
       for (int i = 0; i < 4; i++) {
-#        pragma omp parallel for
+//#        pragma omp parallel for
          for (int j = 0; j < circleSegments; j++) {
             /* X */ iconLinearVertexBuffer[vertIndex +  0] = iconLinearVertexBuffer[vertIndex +  0] + tmx;
             /* Y */ iconLinearVertexBuffer[vertIndex +  1] = iconLinearVertexBuffer[vertIndex +  1] + tmy;
@@ -1408,7 +1408,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
             tmx = offScreen;
             tmy = offScreen;
          }
-#        pragma omp parallel for
+//#        pragma omp parallel for
          for (int j = 0; j < circleSegments; j++) {
             /* X */ iconLinearVertexBuffer[vertIndex++] = iconBulbMarkerVertices[j*6 + 0] + tmx;
             /* Y */ iconLinearVertexBuffer[vertIndex++] = iconBulbMarkerVertices[j*6 + 1] + tmy;
@@ -1436,7 +1436,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
          }
          limit = float(1.0/float(numBulbs));
          int tmj;
-#        pragma omp parallel for
+//#        pragma omp parallel for
          for (int j = 0; j < circleSegments; j++) {
             tmj = 6*circleSegments + j*12;
             if (i == 0) {
@@ -1511,7 +1511,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
        * Draw Outer Straights
        */
 
-#     pragma omp parallel for
+//#     pragma omp parallel for
       for (int i = 0; i < 4; i++ ) {
          /* X */ iconLinearVertexBuffer[vertIndex +  0] = iconLinearVertexBuffer[vertIndex +  0] + tmx;
          /* Y */ iconLinearVertexBuffer[vertIndex +  1] = iconLinearVertexBuffer[vertIndex +  1] + tmy;
@@ -1533,7 +1533,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
        * Draw Rounded Corners
        */
       for (int i = 0; i < 4; i++) {
-#        pragma omp parallel for
+//#        pragma omp parallel for
          for (int j = 0; j < circleSegments; j++) {
             /* X */ iconLinearVertexBuffer[vertIndex +  0] = iconLinearVertexBuffer[vertIndex +  0] + tmx;
             /* Y */ iconLinearVertexBuffer[vertIndex +  1] = iconLinearVertexBuffer[vertIndex +  1] + tmy;
@@ -1562,7 +1562,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
          // Special Case for Rounded Corner Segments
          if (j == 0) {
             if (tmc != iconLinearColorBuffer[i] || prevIconLinearNumBulbs != numBulbs) {
-#              pragma omp parallel for
+//#              pragma omp parallel for
                for (int k = 0; k < (j*(60/numBulbs)*3*2 + circleSegments*2*3 + 6)*3; k++) {
                   if (tmc != iconLinearColorBuffer[i + k*3]) {
                      iconLinearColorBuffer[i + k*3] = tmc;
@@ -1574,7 +1574,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
          // Special Case for Rounded Corner Segments
          if (j == numBulbs-1) {
             if (tmc != iconLinearColorBuffer[i + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] || prevIconLinearNumBulbs != numBulbs ) {
-#              pragma omp parallel for
+//#              pragma omp parallel for
                for (int k = 0; k < ((60/numBulbs)*3*2 + 2*3*circleSegments + 2*3); k++) {
                   if (tmc != iconLinearColorBuffer[i + k*3 + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] ) {
                      iconLinearColorBuffer[i + k*3 + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] = tmc;
@@ -1586,7 +1586,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
          // General Case for middle segments
          {
             if (tmc != iconLinearColorBuffer[i + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] || prevIconLinearNumBulbs != numBulbs) {
-#              pragma omp parallel for
+//#              pragma omp parallel for
                for (int k = 0; k < (60/numBulbs)*3*2; k++) {
                   if (tmc != iconLinearColorBuffer[i + k*3 + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] ) {
                      iconLinearColorBuffer[i + k*3 + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] = tmc;
@@ -1598,7 +1598,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
 
       // Check if detail color needs to be updated
       if (float(detailColor[i]) != iconLinearColorBuffer[i+(60*2*3 + 4*circleSegments*3 + 2*6)*3]) {
-#           pragma omp parallel for
+//#           pragma omp parallel for
          for (unsigned int k = (60*2*3 + 4*circleSegments*3 + 2*6); k < iconLinearVerts; k++) {
             iconLinearColorBuffer[k*3+i] = float(detailColor[i]);
          }
