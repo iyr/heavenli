@@ -14,13 +14,13 @@ else:
     drawButtons_sfc_module = Extension(
             'drawButtons', 
             sources             = ['drawButtons.cpp'],
-            extra_compiler_args = ['-fopenmp', '-O3', 'ffast-math', '-march=native'],
+            extra_compile_args  = ['-fopenmp', '-O3', '-march=native'],
             extra_link_args     = ['-lGL', '-fopenmp'])
 
     drawArn_sfc_module = Extension(
             'drawArn', 
             sources             = ['drawArn.cpp'],
-            extra_compiler_args = ['-fopenmp', '-O3', 'ffast-math', '-march=native'],
+            extra_compile_args  = ['-fopenmp', '-O3', '-march=native'],
             extra_link_args     = ['-lGL', '-fopenmp'])
 
 

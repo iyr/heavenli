@@ -189,7 +189,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
    PyObject* py_float;
    double *bulbColors;
    double detailColor[3];
-   float gx, gy, scale, ao, w2h, delta;
+   float gx, gy, scale, ao, w2h;
    int numBulbs, features;
    int vertIndex = 0;
    if (!PyArg_ParseTuple(args,
@@ -446,19 +446,20 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       delta = float(degSegment);
 #     pragma omp parallel for
       for (int i = 0; i < circleSegments; i++) {
-         /* X */ iconCircleVertexBuffer[vertIndex++] = iconCircleVertexBuffer[vertIndex] + tmx;
-         /* Y */ iconCircleVertexBuffer[vertIndex++] = iconCircleVertexBuffer[vertIndex] + tmy;
-         /* X */ iconCircleVertexBuffer[vertIndex++] = iconCircleVertexBuffer[vertIndex] + tmx;
-         /* Y */ iconCircleVertexBuffer[vertIndex++] = iconCircleVertexBuffer[vertIndex] + tmy;
-         /* X */ iconCircleVertexBuffer[vertIndex++] = iconCircleVertexBuffer[vertIndex] + tmx;
-         /* Y */ iconCircleVertexBuffer[vertIndex++] = iconCircleVertexBuffer[vertIndex] + tmy;
+         /* X */ iconCircleVertexBuffer[vertIndex +  0] = iconCircleVertexBuffer[vertIndex +  0] + tmx;
+         /* Y */ iconCircleVertexBuffer[vertIndex +  1] = iconCircleVertexBuffer[vertIndex +  1] + tmy;
+         /* X */ iconCircleVertexBuffer[vertIndex +  2] = iconCircleVertexBuffer[vertIndex +  2] + tmx;
+         /* Y */ iconCircleVertexBuffer[vertIndex +  3] = iconCircleVertexBuffer[vertIndex +  3] + tmy;
+         /* X */ iconCircleVertexBuffer[vertIndex +  4] = iconCircleVertexBuffer[vertIndex +  4] + tmx;
+         /* Y */ iconCircleVertexBuffer[vertIndex +  5] = iconCircleVertexBuffer[vertIndex +  5] + tmy;
 
-         /* X */ iconCircleVertexBuffer[vertIndex++] = iconCircleVertexBuffer[vertIndex] + tmx;
-         /* Y */ iconCircleVertexBuffer[vertIndex++] = iconCircleVertexBuffer[vertIndex] + tmy;
-         /* X */ iconCircleVertexBuffer[vertIndex++] = iconCircleVertexBuffer[vertIndex] + tmx;
-         /* Y */ iconCircleVertexBuffer[vertIndex++] = iconCircleVertexBuffer[vertIndex] + tmy;
-         /* X */ iconCircleVertexBuffer[vertIndex++] = iconCircleVertexBuffer[vertIndex] + tmx;
-         /* Y */ iconCircleVertexBuffer[vertIndex++] = iconCircleVertexBuffer[vertIndex] + tmy;
+         /* X */ iconCircleVertexBuffer[vertIndex +  6] = iconCircleVertexBuffer[vertIndex +  6] + tmx;
+         /* Y */ iconCircleVertexBuffer[vertIndex +  7] = iconCircleVertexBuffer[vertIndex +  7] + tmy;
+         /* X */ iconCircleVertexBuffer[vertIndex +  8] = iconCircleVertexBuffer[vertIndex +  8] + tmx;
+         /* Y */ iconCircleVertexBuffer[vertIndex +  9] = iconCircleVertexBuffer[vertIndex +  9] + tmy;
+         /* X */ iconCircleVertexBuffer[vertIndex + 10] = iconCircleVertexBuffer[vertIndex + 10] + tmx;
+         /* Y */ iconCircleVertexBuffer[vertIndex + 11] = iconCircleVertexBuffer[vertIndex + 11] + tmy;
+         vertIndex += 12;
       }
 
       // Update Bulb Markers
@@ -538,20 +539,20 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       }
 #     pragma omp parallel for
       for (int i = 0; i < circleSegments; i++) {
-         /* X */ iconCircleVertexBuffer[vertIndex++] = iconCircleVertexBuffer[vertIndex]  + tmx;
-         /* Y */ iconCircleVertexBuffer[vertIndex++] = iconCircleVertexBuffer[vertIndex]  + tmy;
-         /* X */ iconCircleVertexBuffer[vertIndex++] = iconCircleVertexBuffer[vertIndex]  + tmx;
-         /* Y */ iconCircleVertexBuffer[vertIndex++] = iconCircleVertexBuffer[vertIndex]  + tmy;
-         /* X */ iconCircleVertexBuffer[vertIndex++] = iconCircleVertexBuffer[vertIndex]  + tmx;
-         /* Y */ iconCircleVertexBuffer[vertIndex++] = iconCircleVertexBuffer[vertIndex]  + tmy;
+         /* X */ iconCircleVertexBuffer[vertIndex +  0] = iconCircleVertexBuffer[vertIndex +  0]  + tmx;
+         /* Y */ iconCircleVertexBuffer[vertIndex +  1] = iconCircleVertexBuffer[vertIndex +  1]  + tmy;
+         /* X */ iconCircleVertexBuffer[vertIndex +  2] = iconCircleVertexBuffer[vertIndex +  2]  + tmx;
+         /* Y */ iconCircleVertexBuffer[vertIndex +  3] = iconCircleVertexBuffer[vertIndex +  3]  + tmy;
+         /* X */ iconCircleVertexBuffer[vertIndex +  4] = iconCircleVertexBuffer[vertIndex +  4]  + tmx;
+         /* Y */ iconCircleVertexBuffer[vertIndex +  5] = iconCircleVertexBuffer[vertIndex +  5]  + tmy;
 
-
-         /* X */ iconCircleVertexBuffer[vertIndex++] = iconCircleVertexBuffer[vertIndex]  + tmx;
-         /* Y */ iconCircleVertexBuffer[vertIndex++] = iconCircleVertexBuffer[vertIndex]  + tmy;
-         /* X */ iconCircleVertexBuffer[vertIndex++] = iconCircleVertexBuffer[vertIndex]  + tmx;
-         /* Y */ iconCircleVertexBuffer[vertIndex++] = iconCircleVertexBuffer[vertIndex]  + tmy;
-         /* X */ iconCircleVertexBuffer[vertIndex++] = iconCircleVertexBuffer[vertIndex]  + tmx;
-         /* Y */ iconCircleVertexBuffer[vertIndex++] = iconCircleVertexBuffer[vertIndex]  + tmy;
+         /* X */ iconCircleVertexBuffer[vertIndex +  6] = iconCircleVertexBuffer[vertIndex +  6]  + tmx;
+         /* Y */ iconCircleVertexBuffer[vertIndex +  7] = iconCircleVertexBuffer[vertIndex +  7]  + tmy;
+         /* X */ iconCircleVertexBuffer[vertIndex +  8] = iconCircleVertexBuffer[vertIndex +  8]  + tmx;
+         /* Y */ iconCircleVertexBuffer[vertIndex +  9] = iconCircleVertexBuffer[vertIndex +  9]  + tmy;
+         /* X */ iconCircleVertexBuffer[vertIndex + 10] = iconCircleVertexBuffer[vertIndex + 10]  + tmx;
+         /* Y */ iconCircleVertexBuffer[vertIndex + 11] = iconCircleVertexBuffer[vertIndex + 11]  + tmy;
+         vertIndex += 12;
       }
 
       prevIconCircleFeatures = features;
@@ -1351,19 +1352,20 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
        */
 #     pragma omp parallel for
       for (int i = 0; i < 4; i++ ) {
-         /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
-         /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
-         /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
-         /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
-         /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
-         /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+         /* X */ iconLinearVertexBuffer[vertIndex +  0] = iconLinearVertexBuffer[vertIndex +  0] + tmx;
+         /* Y */ iconLinearVertexBuffer[vertIndex +  1] = iconLinearVertexBuffer[vertIndex +  1] + tmy;
+         /* X */ iconLinearVertexBuffer[vertIndex +  2] = iconLinearVertexBuffer[vertIndex +  2] + tmx;
+         /* Y */ iconLinearVertexBuffer[vertIndex +  3] = iconLinearVertexBuffer[vertIndex +  3] + tmy;
+         /* X */ iconLinearVertexBuffer[vertIndex +  4] = iconLinearVertexBuffer[vertIndex +  4] + tmx;
+         /* Y */ iconLinearVertexBuffer[vertIndex +  5] = iconLinearVertexBuffer[vertIndex +  5] + tmy;
 
-         /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
-         /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
-         /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
-         /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
-         /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
-         /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+         /* X */ iconLinearVertexBuffer[vertIndex +  6] = iconLinearVertexBuffer[vertIndex +  6] + tmx;
+         /* Y */ iconLinearVertexBuffer[vertIndex +  7] = iconLinearVertexBuffer[vertIndex +  7] + tmy;
+         /* X */ iconLinearVertexBuffer[vertIndex +  8] = iconLinearVertexBuffer[vertIndex +  8] + tmx;
+         /* Y */ iconLinearVertexBuffer[vertIndex +  9] = iconLinearVertexBuffer[vertIndex +  9] + tmy;
+         /* X */ iconLinearVertexBuffer[vertIndex + 10] = iconLinearVertexBuffer[vertIndex + 10] + tmx;
+         /* Y */ iconLinearVertexBuffer[vertIndex + 11] = iconLinearVertexBuffer[vertIndex + 11] + tmy;
+         vertIndex += 12;
       }
 
       /*
@@ -1504,19 +1506,20 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
 
 #     pragma omp parallel for
       for (int i = 0; i < 4; i ++ ) {
-         /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
-         /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
-         /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
-         /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
-         /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
-         /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+         /* X */ iconLinearVertexBuffer[vertIndex +  0] = iconLinearVertexBuffer[vertIndex +  0] = tmx;
+         /* Y */ iconLinearVertexBuffer[vertIndex +  1] = iconLinearVertexBuffer[vertIndex +  1] = tmy;
+         /* X */ iconLinearVertexBuffer[vertIndex +  2] = iconLinearVertexBuffer[vertIndex +  2] = tmx;
+         /* Y */ iconLinearVertexBuffer[vertIndex +  3] = iconLinearVertexBuffer[vertIndex +  3] = tmy;
+         /* X */ iconLinearVertexBuffer[vertIndex +  4] = iconLinearVertexBuffer[vertIndex +  4] = tmx;
+         /* Y */ iconLinearVertexBuffer[vertIndex +  5] = iconLinearVertexBuffer[vertIndex +  5] = tmy;
 
-         /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
-         /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
-         /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
-         /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
-         /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
-         /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+         /* X */ iconLinearVertexBuffer[vertIndex +  6] = iconLinearVertexBuffer[vertIndex +  6] = tmx;
+         /* Y */ iconLinearVertexBuffer[vertIndex +  7] = iconLinearVertexBuffer[vertIndex +  7] = tmy;
+         /* X */ iconLinearVertexBuffer[vertIndex +  8] = iconLinearVertexBuffer[vertIndex +  8] = tmx;
+         /* Y */ iconLinearVertexBuffer[vertIndex +  9] = iconLinearVertexBuffer[vertIndex +  9] = tmy;
+         /* X */ iconLinearVertexBuffer[vertIndex + 10] = iconLinearVertexBuffer[vertIndex + 10] = tmx;
+         /* Y */ iconLinearVertexBuffer[vertIndex + 11] = iconLinearVertexBuffer[vertIndex + 11] = tmy;
+         vertIndex += 12;
       }
 
       /*
