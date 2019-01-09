@@ -21,7 +21,8 @@ float constrain(float value, float min, float max) {
 GLfloat  *homeCircleVertexBuffer       = NULL;
 GLfloat  *homeCircleColorBuffer        = NULL;
 GLushort *homeCircleIndices            = NULL;
-GLuint   homeCircleVerts               = NULL;
+GLuint   homeCircleVerts;
+GLuint   prevHomeCircleNumBulbs;
 
 PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    PyObject* py_list;
@@ -47,6 +48,7 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
 
    // Parse array of tuples containing RGB Colors of bulbs
    bulbColors = new double[numBulbs*3];
+#  pragma omp parallel for
    for (int i = 0; i < numBulbs; i++) {
       py_tuple = PyList_GetItem(py_list, i);
 
@@ -72,6 +74,7 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
          R = float(bulbColors[j*3+0]);
          G = float(bulbColors[j*3+1]);
          B = float(bulbColors[j*3+2]);
+#        pragma omp parallel for
          for (int i = 0; i < circleSegments/numBulbs; i++) {
             /* X */ verts.push_back(float(0.0));
             /* Y */ verts.push_back(float(0.0));
@@ -122,6 +125,8 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
          homeCircleColorBuffer[i*3+2]  = colrs[i*3+2];
          homeCircleIndices[i]          = i;
       }
+
+      prevHomeCircleNumBulbs = numBulbs;
    } 
    // Geometry already calculated, update colors
    /*
@@ -134,15 +139,19 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
          
       // Update color, if needed
       for (int j = 0; j < numBulbs; j++) {
-#        pragma omp parallel for
-         for (int k = 0; k < (60/numBulbs)*3; k++) {
-            if (float(bulbColors[ i + j*3 ]) != homeCircleColorBuffer[ i + k*3 + j*(60/numBulbs)*9 ]) {
-               homeCircleColorBuffer[ j*(60/numBulbs)*9 + k*3 + i ] = float(bulbColors[i+j*3]);
+         if (float(bulbColors[ i + j*3 ]) != homeCircleColorBuffer[ i + j*(60/numBulbs)*9 ] ||
+               prevHomeCircleNumBulbs != numBulbs) {
+#           pragma omp parallel for
+            for (int k = 0; k < (60/numBulbs)*3; k++) {
+               if (float(bulbColors[ i + j*3 ]) != homeCircleColorBuffer[ i + k*3 + j*(60/numBulbs)*9 ]) {
+                  homeCircleColorBuffer[ j*(60/numBulbs)*9 + k*3 + i ] = float(bulbColors[i+j*3]);
+               }
             }
          }
       }
    }
 
+   prevHomeCircleNumBulbs = numBulbs;
    delete [] bulbColors;
 
    glPushMatrix();
@@ -156,13 +165,21 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    Py_RETURN_NONE;
 }
 
+/*
+ * Explanation of features:
+ * <= 0: just the color representation
+ * <= 1: color representation + outline
+ * <= 2: color representation + outline + bulb markers
+ * <= 3: color representation + outline + bulb markers + bulb marker halos
+ * <= 4: color representation + outline + bulb markers + bulb marker halos + grand halo
+ */
 GLfloat  *iconCircleVertexBuffer       = NULL;
 GLfloat  *iconCircleColorBuffer        = NULL;
 GLfloat  *iconBulbMarkerVertices       = NULL;
 GLushort *iconCircleIndices            = NULL;
-GLuint   iconCircleVerts               = NULL;
-int      prevIconCircleNumBulbs        = NULL;
-int      prevIconCircleFeatures        = NULL;
+GLuint   iconCircleVerts;
+int      prevIconCircleNumBulbs;
+int      prevIconCircleFeatures;
 float    offScreen                     = 100.0;
 
 PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
@@ -193,6 +210,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
 
    // Parse array of tuples containing RGB Colors of bulbs
    bulbColors = new double[numBulbs*3];
+#  pragma omp parallel for
    for (int i = 0; i < numBulbs; i++) {
       py_tuple = PyList_GetItem(py_list, i);
 
@@ -225,16 +243,10 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
 
       drawEllipse(float(0.0), float(0.0), float(0.16), circleSegments/3, detailColor, markerVerts, markerColrs);
       drawHalo(float(0.0), float(0.0), float(0.22), float(0.22), float(0.07), circleSegments/3, detailColor, markerVerts, markerColrs);
-      /*
-       * Explanation of features:
-       * <= 0: just the color representation
-       * <= 1: color representation + outline
-       * <= 2: color representation + outline + bulb markers
-       * <= 3: color representation + outline + bulb markers + bulb marker halos
-       * <= 4: color representation + outline + bulb markers + bulb marker halos + grand halo
-       */
+
       // Draw Only the color wheel if 'features' <= 0
       delta = degSegment;
+#     pragma omp parallel for
       for (int j = 0; j < numBulbs; j++) {
          R = float(bulbColors[j*3+0]);
          G = float(bulbColors[j*3+1]);
@@ -281,6 +293,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       int iUlim = circleSegments/3;
       int tmo = 180/numBulbs;
       degSegment = 360/iUlim;
+#     pragma omp parallel for
       for (int j = 0; j < 6; j++) {
          if ( (j < numBulbs) && (features >= 2) ) {
             tmx = float(cos(degToRad(-90 - j*(angOffset) + tmo))*1.05);
@@ -294,6 +307,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
 
       // Draw Halos for bulb Markers
       // Draw Color Wheel + Outline + Bulb Markers + Bulb Halos if 'features' == 3
+#     pragma omp parallel for
       for (int j = 0; j < 6; j++) {
          if (j < numBulbs && features >= 3) {
             tmx = float(cos(degToRad(-90 - j*(angOffset) + tmo))*1.05);
@@ -540,7 +554,6 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
          /* Y */ iconCircleVertexBuffer[vertIndex++] = iconCircleVertexBuffer[vertIndex]  + tmy;
       }
 
-      prevIconCircleNumBulbs = numBulbs;
       prevIconCircleFeatures = features;
    }
    // Geometry already calculated, update colors
@@ -555,10 +568,13 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       // Update color wheel, if needed
       for (int j = 0; j < numBulbs; j++) {
          int tmo = (60/numBulbs)*9;
-#        pragma omp parallel for
-         for (int k = 0; k < tmo/3; k++) {
-            if (float(bulbColors[i+j*3]) != iconCircleColorBuffer[i + k*3 + j*tmo]){
-               iconCircleColorBuffer[j*tmo + k*3 + i] = float(bulbColors[i+j*3]);
+         if (float(bulbColors[i+j*3]) != iconCircleColorBuffer[i + j*tmo]
+               || prevIconCircleNumBulbs != numBulbs){
+#           pragma omp parallel for
+            for (int k = 0; k < tmo/3; k++) {
+               if (float(bulbColors[i+j*3]) != iconCircleColorBuffer[i + k*3 + j*tmo]){
+                  iconCircleColorBuffer[j*tmo + k*3 + i] = float(bulbColors[i+j*3]);
+               }
             }
          }
       }
@@ -571,6 +587,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       }
    }
 
+   prevIconCircleNumBulbs = numBulbs;
    delete [] bulbColors;
 
    glPushMatrix();
@@ -592,7 +609,8 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
 GLfloat  *homeLinearVertexBuffer = NULL;
 GLfloat  *homeLinearColorBuffer  = NULL;
 GLushort *homeLinearIndices      = NULL;
-GLuint   homeLinearVerts         = NULL;
+GLuint   homeLinearVerts;
+int      prevHomeLinearNumbulbs;
 
 PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
    PyObject* py_list;
@@ -615,6 +633,7 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
    }
    // Parse array of tuples containing RGB Colors of bulbs
    bulbColors = new double[numBulbs*3];
+#  pragma omp parallel for
    for (int i = 0; i < numBulbs; i++) {
       py_tuple = PyList_GetItem(py_list, i);
 
@@ -713,6 +732,8 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
          homeLinearColorBuffer[i*3+2]  = colrs[i*3+2];
          homeLinearIndices[i]          = i;
       }
+
+      prevHomeLinearNumbulbs = numBulbs;
    } 
    // Geometry already calculated, check if any colors need to be updated.
    else {
@@ -722,15 +743,19 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
             // 3 (R,G,B) color values per vertex
             // 2 Triangles per Quad
             // 3 Vertices per Triangle
-#           pragma omp parallel for
-            for (int k = 0; k < (60/numBulbs)*3*2; k++) {  
-               if (float(bulbColors[i+j*3]) != homeLinearColorBuffer[i + k*3 + j*(60/numBulbs)*9*2 ]) {
-                  homeLinearColorBuffer[ j*(60/numBulbs)*9*2 + k*3 + i ] = float(bulbColors[i+j*3]);
+            if (float(bulbColors[i+j*3]) != homeLinearColorBuffer[i + j*(60/numBulbs)*9*2 ] || prevHomeLinearNumbulbs != numBulbs) {
+#              pragma omp parallel for
+               for (int k = 0; k < (60/numBulbs)*3*2; k++) {  
+                  if (float(bulbColors[i+j*3]) != homeLinearColorBuffer[i + k*3 + j*(60/numBulbs)*9*2 ]) {
+                     homeLinearColorBuffer[ j*(60/numBulbs)*9*2 + k*3 + i ] = float(bulbColors[i+j*3]);
+                  }
                }
             }
          }
       }
    }
+
+   prevHomeLinearNumbulbs = numBulbs;
    delete [] bulbColors;
 
    glPushMatrix();
@@ -745,15 +770,21 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
    Py_RETURN_NONE;
 }
 
+/*
+ * Explanation of features:
+ * <= 0: just the color representation
+ * <= 1: color representation + outline
+ * <= 2: color representation + outline + bulb markers
+ * <= 3: color representation + outline + bulb markers + bulb marker halos
+ * <= 4: color representation + outline + bulb markers + bulb marker halos + grand halo
+ */
+
 GLfloat  *iconLinearVertexBuffer = NULL;
 GLfloat  *iconLinearColorBuffer  = NULL;
 GLushort *iconLinearIndices      = NULL;
-GLuint   iconLinearVerts         = NULL;
-GLuint   iconLinearColrs0        = NULL;
-GLuint   iconLinearColrs1        = NULL;
-GLuint   iconLinearColrs2        = NULL;
-int      prevIconLinearNumBulbs  = NULL;
-int      prevIconLinearFeatures  = NULL;
+GLuint   iconLinearVerts;
+int      prevIconLinearNumBulbs;
+int      prevIconLinearFeatures;
 
 PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
    PyObject* detailColorPyTup;
@@ -783,6 +814,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
 
    // Parse array of tuples containing RGB Colors of bulbs
    bulbColors = new double[numBulbs*3];
+#  pragma omp parallel for
    for (int i = 0; i < numBulbs; i++) {
       py_tuple = PyList_GetItem(py_list, i);
 
@@ -797,9 +829,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
    detailColor[1] = PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 1));
    detailColor[2] = PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2));
 
-   if (prevIconLinearNumBulbs != numBulbs ||
-       prevIconLinearFeatures != features ||
-       iconLinearVertexBuffer == NULL     ||
+   if (iconLinearVertexBuffer == NULL     ||
        iconLinearColorBuffer  == NULL     ||
        iconLinearIndices      == NULL     ){
 
@@ -807,24 +837,21 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
       float TLx, TRx, BLx, BRx, TLy, TRy, BLy, BRy, tmx, tmy, ri, ro;
-      float offset = float(2.0/numBulbs);
+      float offset = float(2.0/60.0);
       float degSegment = float(360.0/float(circleSegments));
-
-      /*
-       * Explanation of features:
-       * <= 0: just the color representation
-       * <= 1: color representation + outline
-       * <= 2: color representation + outline + bulb markers
-       * <= 3: color representation + outline + bulb markers + bulb marker halos
-       * <= 4: color representation + outline + bulb markers + bulb marker halos + grand halo
-       */
+      float delta = float(degSegment/4.0);
 
       // Define Square of Stripes with Rounded Corners
-      float delta = float(degSegment/4.0);
-      for (int i = 0; i < numBulbs; i++) {
-         R = float(bulbColors[i*3+0]);
-         G = float(bulbColors[i*3+1]);
-         B = float(bulbColors[i*3+2]);
+      int tmb = 0;
+      for (int i = 0; i < 60; i++) {
+         if (i%10 == 0) {
+            tmb++;
+         }
+         R = float(bulbColors[tmb*3+0]);
+         G = float(bulbColors[tmb*3+1]);
+         B = float(bulbColors[tmb*3+2]);
+
+         // Define end-slice with rounded corners
          if (i == 0) {
             TLx = -0.75;
             TLy =  1.00;
@@ -875,7 +902,8 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
             BLy = -1.0;
          }
 
-         if (i == numBulbs-1) {
+         // Define end-slice with rounded corners
+         if (i == 60-1) {
             TRx =  0.75;
             TRy =  1.00;
 
@@ -924,23 +952,13 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
          }
 
          // Draw normal rectangular strip for non-end segments
-         /* X */ verts.push_back(TLx);   /* Y */ verts.push_back(TLy);
-         /* X */ verts.push_back(BLx);   /* Y */ verts.push_back(BLy);
-         /* X */ verts.push_back(TRx);   /* Y */ verts.push_back(TRy);
+         /* X */ verts.push_back(constrain(TLx, -0.75, 0.75));   /* Y */ verts.push_back(TLy);
+         /* X */ verts.push_back(constrain(BLx, -0.75, 0.75));   /* Y */ verts.push_back(BLy);
+         /* X */ verts.push_back(constrain(TRx, -0.75, 0.75));   /* Y */ verts.push_back(TRy);
 
-         /* X */ verts.push_back(TRx);   /* Y */ verts.push_back(TRy);
-         /* X */ verts.push_back(BLx);   /* Y */ verts.push_back(BLy);
-         /* X */ verts.push_back(BRx);   /* Y */ verts.push_back(BRy);
-
-         if (i == 0) {
-            iconLinearColrs0 = verts.size()/2;
-         } 
-         if (i == 1) {
-            iconLinearColrs1 = verts.size()/2;
-         } 
-         if (i == numBulbs-1 ) {
-            iconLinearColrs2 = verts.size()/2;
-         }
+         /* X */ verts.push_back(constrain(TRx, -0.75, 0.75));   /* Y */ verts.push_back(TRy);
+         /* X */ verts.push_back(constrain(BLx, -0.75, 0.75));   /* Y */ verts.push_back(BLy);
+         /* X */ verts.push_back(constrain(BRx, -0.75, 0.75));   /* Y */ verts.push_back(BRy);
 
          for (int j = 0; j < 6; j++) {
             /* R */ colrs.push_back(R);
@@ -1060,8 +1078,8 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       }
 
       // Define Bulb Markers
-      for (int i = 0; i < numBulbs; i++) {
-         if (features >= 2.0) {
+      for (int i = 0; i < 6; i++) {
+         if (features >= 2.0 && i < numBulbs) {
             if (numBulbs == 1) {
                tmx = float(-1.0 + 1.0/float(numBulbs) + (i*2.0)/float(numBulbs));
                tmy = (17.0/16.0);
@@ -1077,13 +1095,13 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       }
 
       // Define Bulb Halos
-      if (features >= 3) {
-         tmo = 0.0;
-      } else { 
-         tmo = offScreen;
-      }
       float limit = float(1.0/float(numBulbs));
-      for (int i = 0; i < numBulbs; i++) {
+      for (int i = 0; i < 6; i++) {
+         if (features >= 3 && i < numBulbs) {
+            tmo = 0.0;
+         } else { 
+            tmo = offScreen;
+         }
          if (numBulbs == 1) {
             tmx = float(-1.0 + 1.0/float(numBulbs) + (i*2.0)/float(numBulbs)) + tmo;
             tmy = float( (17.0/16.0) + tmo);
@@ -1277,425 +1295,307 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       prevIconLinearFeatures = features;
    } 
    // Update features
-   if (prevIconLinearFeatures != features) {
-      int vertIndex = 0;
-      int colorIndex = 0;
+   if (prevIconLinearFeatures != features ||
+       prevIconLinearNumBulbs != numBulbs ){
 
       prevIconLinearFeatures = features;
-      float TLx, TRx, BLx, BRx, TLy, TRy, BLy, BRy;
-      float offset = float(2.0/numBulbs);
+      int vertIndex = 0;
+      int colorIndex = 0;
+      float tmx, tmy;
+      float offset = float(2.0/60.0);
       float degSegment = float(360.0/float(circleSegments));
-
-      /*
-       * Explanation of features:
-       * <= 0: just the color representation
-       * <= 1: color representation + outline
-       * <= 2: color representation + outline + bulb markers
-       * <= 3: color representation + outline + bulb markers + bulb marker halos
-       * <= 4: color representation + outline + bulb markers + bulb marker halos + grand halo
-       */
+      delta = float(degSegment/4.0);
+      tmx = 0.0;
+      tmy = 0.0;
 
       // Define Square of Stripes with Rounded Corners
-      delta = float(degSegment/4.0);
-      for (int i = 0; i < numBulbs; i++) {
-         if (i == 0) {
-            TLx = -0.75;
-            TLy =  1.00;
-
-            BLx = -0.75;
-            BLy = -1.00;
-
-            /* X */ iconLinearVertexBuffer[vertIndex++] = (-1.00);   /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);
-            /* X */ iconLinearVertexBuffer[vertIndex++] = (-1.00);   /* Y */ iconLinearVertexBuffer[vertIndex++] = (-0.75);
-            /* X */ iconLinearVertexBuffer[vertIndex++] = (-0.75);   /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);
-
-            /* X */ iconLinearVertexBuffer[vertIndex++] = (-0.75);   /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);
-            /* X */ iconLinearVertexBuffer[vertIndex++] = (-1.00);   /* Y */ iconLinearVertexBuffer[vertIndex++] = (-0.75);
-            /* X */ iconLinearVertexBuffer[vertIndex++] = (-0.75);   /* Y */ iconLinearVertexBuffer[vertIndex++] = (-0.75);
+#     pragma omp parallel for
+      for (int i = 0; i < 60; i++) {
+         if (i == 0 || i == 60-1) {
+            vertIndex += 12;
 
             // Defines Rounded Corners
             for (int j = 0; j < circleSegments; j++) {
-               /* X */ iconLinearVertexBuffer[vertIndex++] = (-0.75);
-               /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);
-               /* X */ iconLinearVertexBuffer[vertIndex++] = float(-0.75 + 0.25*cos(degToRad(90+j*delta)));
-               /* Y */ iconLinearVertexBuffer[vertIndex++] = float( 0.75 + 0.25*sin(degToRad(90+j*delta)));
-               /* X */ iconLinearVertexBuffer[vertIndex++] = float(-0.75 + 0.25*cos(degToRad(90+(j+1)*delta)));
-               /* Y */ iconLinearVertexBuffer[vertIndex++] = float( 0.75 + 0.25*sin(degToRad(90+(j+1)*delta)));
-
-               /* X */ iconLinearVertexBuffer[vertIndex++] = (-0.75);
-               /* Y */ iconLinearVertexBuffer[vertIndex++] = (-0.75);
-               /* X */ iconLinearVertexBuffer[vertIndex++] = float(-0.75 + 0.25*cos(degToRad(180+j*delta)));
-               /* Y */ iconLinearVertexBuffer[vertIndex++] = float(-0.75 + 0.25*sin(degToRad(180+j*delta)));
-               /* X */ iconLinearVertexBuffer[vertIndex++] = float(-0.75 + 0.25*cos(degToRad(180+(j+1)*delta)));
-               /* Y */ iconLinearVertexBuffer[vertIndex++] = float(-0.75 + 0.25*sin(degToRad(180+(j+1)*delta)));
+               vertIndex += 12;
             }
-         } else {
-            TLx = float(-1.0 + i*offset);
-            TLy =  1.0;
-
-            BLx = float(-1.0 + i*offset);
-            BLy = -1.0;
-         }
-
-         if (i == numBulbs-1) {
-            TRx =  0.75;
-            TRy =  1.00;
-
-            BRx =  0.75;
-            BRy = -1.00;
-            /* X */ iconLinearVertexBuffer[vertIndex++] = ( 1.00);   /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);
-            /* X */ iconLinearVertexBuffer[vertIndex++] = ( 1.00);   /* Y */ iconLinearVertexBuffer[vertIndex++] = (-0.75);
-            /* X */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);   /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);
-
-            /* X */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);   /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);
-            /* X */ iconLinearVertexBuffer[vertIndex++] = ( 1.00);   /* Y */ iconLinearVertexBuffer[vertIndex++] = (-0.75);
-            /* X */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);   /* Y */ iconLinearVertexBuffer[vertIndex++] = (-0.75);
-
-            // Defines Rounded Corners
-            for (int j = 0; j < circleSegments; j++) {
-               /* X */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);
-               /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);
-               /* X */ iconLinearVertexBuffer[vertIndex++] = float( 0.75 + 0.25*cos(degToRad(j*delta)));
-               /* Y */ iconLinearVertexBuffer[vertIndex++] = float( 0.75 + 0.25*sin(degToRad(j*delta)));
-               /* X */ iconLinearVertexBuffer[vertIndex++] = float( 0.75 + 0.25*cos(degToRad((j+1)*delta)));
-               /* Y */ iconLinearVertexBuffer[vertIndex++] = float( 0.75 + 0.25*sin(degToRad((j+1)*delta)));
-
-               /* X */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);
-               /* Y */ iconLinearVertexBuffer[vertIndex++] = (-0.75);
-               /* X */ iconLinearVertexBuffer[vertIndex++] = float( 0.75 + 0.25*cos(degToRad(270+j*delta)));
-               /* Y */ iconLinearVertexBuffer[vertIndex++] = float(-0.75 + 0.25*sin(degToRad(270+j*delta)));
-               /* X */ iconLinearVertexBuffer[vertIndex++] = float( 0.75 + 0.25*cos(degToRad(270+(j+1)*delta)));
-               /* Y */ iconLinearVertexBuffer[vertIndex++] = float(-0.75 + 0.25*sin(degToRad(270+(j+1)*delta)));
-            }
-         } else {
-            TRx = float(-1.0 + (i+1)*offset);
-            TRy =  1.0;
-
-            BRx = float(-1.0 + (i+1)*offset);
-            BRy = -1.0;
          }
 
          // Draw normal rectangular strip for non-end segments
-         /* X */ iconLinearVertexBuffer[vertIndex++] = TLx;   /* Y */ iconLinearVertexBuffer[vertIndex++] = TLy;
-         /* X */ iconLinearVertexBuffer[vertIndex++] = BLx;   /* Y */ iconLinearVertexBuffer[vertIndex++] = BLy;
-         /* X */ iconLinearVertexBuffer[vertIndex++] = TRx;   /* Y */ iconLinearVertexBuffer[vertIndex++] = TRy;
-
-         /* X */ iconLinearVertexBuffer[vertIndex++] = TRx;   /* Y */ iconLinearVertexBuffer[vertIndex++] = TRy;
-         /* X */ iconLinearVertexBuffer[vertIndex++] = BLx;   /* Y */ iconLinearVertexBuffer[vertIndex++] = BLy;
-         /* X */ iconLinearVertexBuffer[vertIndex++] = BRx;   /* Y */ iconLinearVertexBuffer[vertIndex++] = BRy;
+         vertIndex += 12;
       }
 
+
       // Define OutLine
+      // Move outline on-screen if off-screen
       if (features >= 1) {
-         /*
-          * Draw Outer Straights
-          */
-         //---------//
-         /* X */ iconLinearVertexBuffer[vertIndex++] = (-9.0/8.0);   /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);
-         /* X */ iconLinearVertexBuffer[vertIndex++] = (-9.0/8.0);   /* Y */ iconLinearVertexBuffer[vertIndex++] = (-0.75);
-         /* X */ iconLinearVertexBuffer[vertIndex++] = (-1.00);      /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);
-
-         /* X */ iconLinearVertexBuffer[vertIndex++] = (-1.00);      /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);
-         /* X */ iconLinearVertexBuffer[vertIndex++] = (-9.0/8.0);   /* Y */ iconLinearVertexBuffer[vertIndex++] = (-0.75);
-         /* X */ iconLinearVertexBuffer[vertIndex++] = (-1.00);      /* Y */ iconLinearVertexBuffer[vertIndex++] = (-0.75);
-
-         //---------//
-         /* X */ iconLinearVertexBuffer[vertIndex++] = ( 9.0/8.0);   /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);
-         /* X */ iconLinearVertexBuffer[vertIndex++] = ( 9.0/8.0);   /* Y */ iconLinearVertexBuffer[vertIndex++] = (-0.75);
-         /* X */ iconLinearVertexBuffer[vertIndex++] = ( 1.00);      /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);
-
-         /* X */ iconLinearVertexBuffer[vertIndex++] = ( 1.00);      /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);
-         /* X */ iconLinearVertexBuffer[vertIndex++] = ( 9.0/8.0);   /* Y */ iconLinearVertexBuffer[vertIndex++] = (-0.75);
-         /* X */ iconLinearVertexBuffer[vertIndex++] = ( 1.00);      /* Y */ iconLinearVertexBuffer[vertIndex++] = (-0.75);
-
-         //---------//
-         /* X */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);   /* Y */ iconLinearVertexBuffer[vertIndex++] = (-9.0/8.0);
-         /* X */ iconLinearVertexBuffer[vertIndex++] = (-0.75);   /* Y */ iconLinearVertexBuffer[vertIndex++] = (-9.0/8.0);
-         /* X */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);   /* Y */ iconLinearVertexBuffer[vertIndex++] = (-1.00);
-
-         /* X */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);   /* Y */ iconLinearVertexBuffer[vertIndex++] = (-1.00);
-         /* X */ iconLinearVertexBuffer[vertIndex++] = (-0.75);   /* Y */ iconLinearVertexBuffer[vertIndex++] = (-9.0/8.0);
-         /* X */ iconLinearVertexBuffer[vertIndex++] = (-0.75);   /* Y */ iconLinearVertexBuffer[vertIndex++] = (-1.00);
-
-         //---------//
-         /* X */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);   /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 9.0/8.0);
-         /* X */ iconLinearVertexBuffer[vertIndex++] = (-0.75);   /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 9.0/8.0);
-         /* X */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);   /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 1.00);
-
-         /* X */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);   /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 1.00);
-         /* X */ iconLinearVertexBuffer[vertIndex++] = (-0.75);   /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 9.0/8.0);
-         /* X */ iconLinearVertexBuffer[vertIndex++] = (-0.75);   /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 1.00);
-
-         /*
-          * Draw Rounded Corners
-          */
-         float tmx, tmy, ri, ro;
-         ri = 0.25;
-         ro = 0.125 + 0.25;
-         for (int i = 0; i < 4; i++) {
-            switch(i) {
-               case 0:
-                  tmx = ( 0.75);
-                  tmy = ( 0.75);
-                  break;
-               case 1:
-                  tmx = (-0.75);
-                  tmy = ( 0.75);
-                  break;
-               case 2:
-                  tmx = (-0.75);
-                  tmy = (-0.75);
-                  break;
-               case 3:
-                  tmx = ( 0.75);
-                  tmy = (-0.75);
-                  break;
-            }
-
-            for (int j = 0; j < circleSegments; j++) {
-               /* X */ iconLinearVertexBuffer[vertIndex++] = float(tmx + ri*cos(degToRad(i*90 + j*delta)));
-               /* Y */ iconLinearVertexBuffer[vertIndex++] = float(tmy + ri*sin(degToRad(i*90 + j*delta)));
-               /* X */ iconLinearVertexBuffer[vertIndex++] = float(tmx + ro*cos(degToRad(i*90 + j*delta)));
-               /* Y */ iconLinearVertexBuffer[vertIndex++] = float(tmy + ro*sin(degToRad(i*90 + j*delta)));
-               /* X */ iconLinearVertexBuffer[vertIndex++] = float(tmx + ri*cos(degToRad(i*90 + (j+1)*delta)));
-               /* Y */ iconLinearVertexBuffer[vertIndex++] = float(tmy + ri*sin(degToRad(i*90 + (j+1)*delta)));
-
-               /* X */ iconLinearVertexBuffer[vertIndex++] = float(tmx + ri*cos(degToRad(i*90 + (j+1)*delta)));
-               /* Y */ iconLinearVertexBuffer[vertIndex++] = float(tmy + ri*sin(degToRad(i*90 + (j+1)*delta)));
-               /* X */ iconLinearVertexBuffer[vertIndex++] = float(tmx + ro*cos(degToRad(i*90 + j*delta)));
-               /* Y */ iconLinearVertexBuffer[vertIndex++] = float(tmy + ro*sin(degToRad(i*90 + j*delta)));
-               /* X */ iconLinearVertexBuffer[vertIndex++] = float(tmx + ro*cos(degToRad(i*90 + (j+1)*delta)));
-               /* Y */ iconLinearVertexBuffer[vertIndex++] = float(tmy + ro*sin(degToRad(i*90 + (j+1)*delta)));
-            }
+         if (iconLinearVertexBuffer[vertIndex+1] > offScreen/2) {
+            tmx = -offScreen;
+            tmy = -offScreen;
+         } else {
+            tmx = 0.0;
+            tmy = 0.0;
          }
-      } else {
-         for (int i = 0; i < (4*6*4 + 4*6*circleSegments); i++) {
-            /* X */ iconLinearVertexBuffer[vertIndex++] = (100.0);
-            /* Y */ iconLinearVertexBuffer[vertIndex++] = (100.0);
+      } 
+      // Move outline off-screen if on-screen
+      else {
+         if (iconLinearVertexBuffer[vertIndex+1] > offScreen/2) {
+            tmx = 0.0;
+            tmy = 0.0;
+         } else {
+            tmx = offScreen;
+            tmy = offScreen;
+         }
+      }
+
+      /*
+       * Draw Outer Straights
+       */
+#     pragma omp parallel for
+      for (int i = 0; i < 4; i++ ) {
+         /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
+         /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+         /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
+         /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+         /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
+         /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+
+         /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
+         /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+         /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
+         /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+         /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
+         /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+      }
+
+      /*
+       * Draw Rounded Corners
+       */
+      for (int i = 0; i < 4; i++) {
+#        pragma omp parallel for
+         for (int j = 0; j < circleSegments; j++) {
+            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+
+            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
          }
       }
 
       // Define Bulb Markers
-      if (features >= 2) {
-         float tmx, tmy;
-         for (int i = 0; i < numBulbs; i++) {
+      for (int i = 0; i < 6; i++) {
+         if (features >= 2 && i < numBulbs) {
             if (numBulbs == 1) {
+               tmx = float(-1.0 + 1.0/float(numBulbs) + (i*2.0)/float(numBulbs));
                tmy = (17.0/16.0);
             } else {
+               tmx = float(-1.0 + 1.0/float(numBulbs) + (i*2.0)/float(numBulbs));
                tmy = -(17.0/16.0);
             }
-            tmx = float(-1.0 + 1.0/float(numBulbs) + (i*2.0)/float(numBulbs));
-            for (int j = 0; j < circleSegments; j++) {
-               /* X */ iconLinearVertexBuffer[vertIndex++] = (tmx);
-               /* Y */ iconLinearVertexBuffer[vertIndex++] = (tmy);
-               /* X */ iconLinearVertexBuffer[vertIndex++] = tmx+float((1.0/6.0)*cos(degToRad(j*degSegment)));
-               /* Y */ iconLinearVertexBuffer[vertIndex++] = tmy+float((1.0/6.0)*sin(degToRad(j*degSegment)));
-               /* X */ iconLinearVertexBuffer[vertIndex++] = tmx+float((1.0/6.0)*cos(degToRad((j+1)*degSegment)));
-               /* Y */ iconLinearVertexBuffer[vertIndex++] = tmy+float((1.0/6.0)*sin(degToRad((j+1)*degSegment)));
-            }
+         } else {
+            tmx = offScreen;
+            tmy = offScreen;
          }
-      } else {
-         for (int i = 0; i < circleSegments*numBulbs*3; i++) {
-            /* X */ iconLinearVertexBuffer[vertIndex++] = (100.0);
-            /* Y */ iconLinearVertexBuffer[vertIndex++] = (100.0);
+#        pragma omp parallel for
+         for (int j = 0; j < circleSegments; j++) {
+            /* X */ iconLinearVertexBuffer[vertIndex++] = iconBulbMarkerVertices[j*6 + 0] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconBulbMarkerVertices[j*6 + 1] + tmy;
+            /* X */ iconLinearVertexBuffer[vertIndex++] = iconBulbMarkerVertices[j*6 + 2] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconBulbMarkerVertices[j*6 + 3] + tmy;
+            /* X */ iconLinearVertexBuffer[vertIndex++] = iconBulbMarkerVertices[j*6 + 4] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconBulbMarkerVertices[j*6 + 5] + tmy;
          }
       }
 
       // Define Bulb Halos
-      if (features >= 3) {
-         float tmx, tmy, ri, ro, limit;
-         for (int i = 0; i < numBulbs; i++) {
+      float limit;
+      for (int i = 0; i < 6; i++) {
+         if (features >= 3 && i < numBulbs) {
             if (numBulbs == 1) {
+               tmx = float(-1.0 + 1.0/float(numBulbs) + (i*2.0)/float(numBulbs));
                tmy = (17.0/16.0);
             } else {
+               tmx = float(-1.0 + 1.0/float(numBulbs) + (i*2.0)/float(numBulbs));
                tmy = -(17.0/16.0);
             }
-            tmx = float(-1.0 + 1.0/float(numBulbs) + (i*2.0)/float(numBulbs));
-            limit = float(1.0/float(numBulbs));
-            ri = float(13.0/60.0);
-            ro = float(17.0/60.0);
-            for (int j = 0; j < circleSegments; j++) {
-               if (i == 0) {
-                  /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx+float(ri*cos(degToRad(j*degSegment))),       -2.0, tmx+limit);
-                  /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy+float(ri*sin(degToRad(j*degSegment)));
-                  /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx+float(ro*cos(degToRad(j*degSegment))),       -2.0, tmx+limit);
-                  /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy+float(ro*sin(degToRad(j*degSegment)));
-                  /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx+float(ri*cos(degToRad((j+1)*degSegment))),   -2.0, tmx+limit);
-                  /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy+float(ri*sin(degToRad((j+1)*degSegment)));
-
-                  /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx+float(ri*cos(degToRad((j+1)*degSegment))),   -2.0, tmx+limit);
-                  /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy+float(ri*sin(degToRad((j+1)*degSegment)));
-                  /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx+float(ro*cos(degToRad(j*degSegment))),       -2.0, tmx+limit);
-                  /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy+float(ro*sin(degToRad(j*degSegment)));
-                  /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx+float(ro*cos(degToRad((j+1)*degSegment))),   -2.0, tmx+limit);
-                  /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy+float(ro*sin(degToRad((j+1)*degSegment)));
-               } else if (i == numBulbs-1) {
-                  /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx+float(ri*cos(degToRad(j*degSegment))),       tmx-limit, 2.0);
-                  /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy+float(ri*sin(degToRad(j*degSegment)));
-                  /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx+float(ro*cos(degToRad(j*degSegment))),       tmx-limit, 2.0);
-                  /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy+float(ro*sin(degToRad(j*degSegment)));
-                  /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx+float(ri*cos(degToRad((j+1)*degSegment))),   tmx-limit, 2.0);
-                  /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy+float(ri*sin(degToRad((j+1)*degSegment)));
-
-                  /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx+float(ri*cos(degToRad((j+1)*degSegment))),   tmx-limit, 2.0);
-                  /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy+float(ri*sin(degToRad((j+1)*degSegment)));
-                  /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx+float(ro*cos(degToRad(j*degSegment))),       tmx-limit, 2.0);
-                  /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy+float(ro*sin(degToRad(j*degSegment)));
-                  /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx+float(ro*cos(degToRad((j+1)*degSegment))),   tmx-limit, 2.0);
-                  /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy+float(ro*sin(degToRad((j+1)*degSegment)));
-               } else {
-                  /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx+float(ri*cos(degToRad(j*degSegment))),       tmx-limit, tmx+limit);
-                  /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy+float(ri*sin(degToRad(j*degSegment)));
-                  /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx+float(ro*cos(degToRad(j*degSegment))),       tmx-limit, tmx+limit);
-                  /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy+float(ro*sin(degToRad(j*degSegment)));
-                  /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx+float(ri*cos(degToRad((j+1)*degSegment))),   tmx-limit, tmx+limit);
-                  /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy+float(ri*sin(degToRad((j+1)*degSegment)));
-
-                  /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx+float(ri*cos(degToRad((j+1)*degSegment))),   tmx-limit, tmx+limit);
-                  /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy+float(ri*sin(degToRad((j+1)*degSegment)));
-                  /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx+float(ro*cos(degToRad(j*degSegment))),       tmx-limit, tmx+limit);
-                  /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy+float(ro*sin(degToRad(j*degSegment)));
-                  /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx+float(ro*cos(degToRad((j+1)*degSegment))),   tmx-limit, tmx+limit);
-                  /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy+float(ro*sin(degToRad((j+1)*degSegment)));
-               }
-            }
+         } else {
+            tmx = offScreen;
+            tmy = offScreen;
          }
-      } else {
-         for (int i = 0; i < numBulbs*6*circleSegments; i++) {
-            /* X */ iconLinearVertexBuffer[vertIndex++] = (100.0);
-            /* Y */ iconLinearVertexBuffer[vertIndex++] = (100.0);
+         limit = float(1.0/float(numBulbs));
+         int tmj;
+#        pragma omp parallel for
+         for (int j = 0; j < circleSegments; j++) {
+            tmj = 6*circleSegments + j*12;
+            if (i == 0) {
+               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  0 + tmj], -2.0, tmx+limit);
+               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  1 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  2 + tmj], -2.0, tmx+limit);
+               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  3 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  4 + tmj], -2.0, tmx+limit);
+               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  5 + tmj];
+
+               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  6 + tmj], -2.0, tmx+limit);
+               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  7 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  8 + tmj], -2.0, tmx+limit);
+               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  9 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[ 10 + tmj], -2.0, tmx+limit);
+               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[ 11 + tmj];
+            } else if (i == numBulbs-1) {
+               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  0 + tmj], tmx-limit,  2.0);
+               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  1 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  2 + tmj], tmx-limit,  2.0);
+               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  3 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  4 + tmj], tmx-limit,  2.0);
+               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  5 + tmj];
+
+               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  6 + tmj], tmx-limit,  2.0);
+               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  7 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  8 + tmj], tmx-limit,  2.0);
+               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  9 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[ 10 + tmj], tmx-limit,  2.0);
+               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[ 11 + tmj];
+            } else {
+               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  0 + tmj], tmx-limit, tmx+limit);
+               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  1 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  2 + tmj], tmx-limit, tmx+limit);
+               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  3 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  4 + tmj], tmx-limit, tmx+limit);
+               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  5 + tmj];
+
+               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  6 + tmj], tmx-limit, tmx+limit);
+               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  7 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  8 + tmj], tmx-limit, tmx+limit);
+               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  9 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[ 10 + tmj], tmx-limit, tmx+limit);
+               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[ 11 + tmj];
+            }
          }
       }
 
       // Define Grand Outline
       if (features >= 4) {
-
-         /*
-          * Draw Outer Straights
-          */
-
-         /* X */ iconLinearVertexBuffer[vertIndex++] = (-0.75);  /* Y */ iconLinearVertexBuffer[vertIndex++] = float( (17.0/16.0 + 17.0/60.0) );
-         /* X */ iconLinearVertexBuffer[vertIndex++] = (-0.75);  /* Y */ iconLinearVertexBuffer[vertIndex++] = float( (17.0/16.0 + 13.0/60.0) );
-         /* X */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);  /* Y */ iconLinearVertexBuffer[vertIndex++] = float( (17.0/16.0 + 17.0/60.0) );
-
-         /* X */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);  /* Y */ iconLinearVertexBuffer[vertIndex++] = float( (17.0/16.0 + 13.0/60.0) );
-         /* X */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);  /* Y */ iconLinearVertexBuffer[vertIndex++] = float( (17.0/16.0 + 17.0/60.0) );
-         /* X */ iconLinearVertexBuffer[vertIndex++] = (-0.75);  /* Y */ iconLinearVertexBuffer[vertIndex++] = float( (17.0/16.0 + 13.0/60.0) );
-
-         /* X */ iconLinearVertexBuffer[vertIndex++] = (-0.75);  /* Y */ iconLinearVertexBuffer[vertIndex++] = float(-(17.0/16.0 + 17.0/60.0) );
-         /* X */ iconLinearVertexBuffer[vertIndex++] = (-0.75);  /* Y */ iconLinearVertexBuffer[vertIndex++] = float(-(17.0/16.0 + 13.0/60.0) );
-         /* X */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);  /* Y */ iconLinearVertexBuffer[vertIndex++] = float(-(17.0/16.0 + 17.0/60.0) );
-
-         /* X */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);  /* Y */ iconLinearVertexBuffer[vertIndex++] = float(-(17.0/16.0 + 13.0/60.0) );
-         /* X */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);  /* Y */ iconLinearVertexBuffer[vertIndex++] = float(-(17.0/16.0 + 17.0/60.0) );
-         /* X */ iconLinearVertexBuffer[vertIndex++] = (-0.75);  /* Y */ iconLinearVertexBuffer[vertIndex++] = float(-(17.0/16.0 + 13.0/60.0) );
-
-         /* X */ iconLinearVertexBuffer[vertIndex++] = float( (17.0/16.0 + 17.0/60.0) );  /* Y */ iconLinearVertexBuffer[vertIndex++] = (-0.75);
-         /* X */ iconLinearVertexBuffer[vertIndex++] = float( (17.0/16.0 + 13.0/60.0) );  /* Y */ iconLinearVertexBuffer[vertIndex++] = (-0.75);
-         /* X */ iconLinearVertexBuffer[vertIndex++] = float( (17.0/16.0 + 17.0/60.0) );  /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);
-
-         /* X */ iconLinearVertexBuffer[vertIndex++] = float( (17.0/16.0 + 13.0/60.0) );  /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);
-         /* X */ iconLinearVertexBuffer[vertIndex++] = float( (17.0/16.0 + 17.0/60.0) );  /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);
-         /* X */ iconLinearVertexBuffer[vertIndex++] = float( (17.0/16.0 + 13.0/60.0) );  /* Y */ iconLinearVertexBuffer[vertIndex++] = (-0.75);
-
-         /* X */ iconLinearVertexBuffer[vertIndex++] = float(-(17.0/16.0 + 17.0/60.0) );  /* Y */ iconLinearVertexBuffer[vertIndex++] = (-0.75);
-         /* X */ iconLinearVertexBuffer[vertIndex++] = float(-(17.0/16.0 + 13.0/60.0) );  /* Y */ iconLinearVertexBuffer[vertIndex++] = (-0.75);
-         /* X */ iconLinearVertexBuffer[vertIndex++] = float(-(17.0/16.0 + 17.0/60.0) );  /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);
-
-         /* X */ iconLinearVertexBuffer[vertIndex++] = float(-(17.0/16.0 + 13.0/60.0) );  /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);
-         /* X */ iconLinearVertexBuffer[vertIndex++] = float(-(17.0/16.0 + 17.0/60.0) );  /* Y */ iconLinearVertexBuffer[vertIndex++] = ( 0.75);
-         /* X */ iconLinearVertexBuffer[vertIndex++] = float(-(17.0/16.0 + 13.0/60.0) );  /* Y */ iconLinearVertexBuffer[vertIndex++] = (-0.75);
-
-         /*
-          * Draw Rounded Corners
-          */
-         float tmx, tmy, ri, ro;
-         ri = float(5.0/16.0+13.0/60.0);
-         ro = float(5.0/16.0+17.0/60.0);
-         delta = float(degSegment/4.0);
-         for (int i = 0; i < 4; i++) {
-            switch(i) {
-               case 0:
-                  tmx =  0.75;   tmy =  0.75;
-                  break;
-               case 1:
-                  tmx = -0.75;   tmy =  0.75;
-                  break;
-               case 2:
-                  tmx = -0.75;   tmy = -0.75;
-                  break;
-               case 3:
-                  tmx =  0.75;   tmy = -0.75;
-                  break;
-            }
-
-            for (int j = 0; j < circleSegments; j++) {
-               float j0 = float(degToRad(i*90 + j*delta));
-               float j1 = float(degToRad(i*90 + (j+1)*delta));
-               /* X */ iconLinearVertexBuffer[vertIndex++] = (float(tmx + ri*cos(j0)));  /* Y */ iconLinearVertexBuffer[vertIndex++] = (float(tmy + ri*sin(j0)));
-               /* X */ iconLinearVertexBuffer[vertIndex++] = (float(tmx + ro*cos(j0)));  /* Y */ iconLinearVertexBuffer[vertIndex++] = (float(tmy + ro*sin(j0)));
-               /* X */ iconLinearVertexBuffer[vertIndex++] = (float(tmx + ri*cos(j1)));  /* Y */ iconLinearVertexBuffer[vertIndex++] = (float(tmy + ri*sin(j1)));
-
-               /* X */ iconLinearVertexBuffer[vertIndex++] = (float(tmx + ri*cos(j1)));  /* Y */ iconLinearVertexBuffer[vertIndex++] = (float(tmy + ri*sin(j1)));
-               /* X */ iconLinearVertexBuffer[vertIndex++] = (float(tmx + ro*cos(j0)));  /* Y */ iconLinearVertexBuffer[vertIndex++] = (float(tmy + ro*sin(j0)));
-               /* X */ iconLinearVertexBuffer[vertIndex++] = (float(tmx + ro*cos(j1)));  /* Y */ iconLinearVertexBuffer[vertIndex++] = (float(tmy + ro*sin(j1)));
-            }
+         if (iconLinearVertexBuffer[vertIndex] > offScreen/2) {
+            tmx = -offScreen;
+            tmy = -offScreen;
+         } else {
+            tmx = 0.0;
+            tmy = 0.0;
          }
       } else {
-         for (int i = 0; i < (4*6*4 + 4*6*circleSegments); i++) {
-            /* X */ iconLinearVertexBuffer[vertIndex++] = (100.0);
-            /* Y */ iconLinearVertexBuffer[vertIndex++] = (100.0);
+         if (iconLinearVertexBuffer[vertIndex] > offScreen/2) {
+            tmx = 0.0;
+            tmy = 0.0;
+         } else {
+            tmx = offScreen;
+            tmy = offScreen;
          }
       }
+
+      /*
+       * Draw Outer Straights
+       */
+
+#     pragma omp parallel for
+      for (int i = 0; i < 4; i ++ ) {
+         /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
+         /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+         /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
+         /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+         /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
+         /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+
+         /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
+         /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+         /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
+         /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+         /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
+         /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+      }
+
+      /*
+       * Draw Rounded Corners
+       */
+      for (int i = 0; i < 4; i++) {
+#        pragma omp parallel for
+         for (int j = 0; j < circleSegments; j++) {
+            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+
+            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmx;
+            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearVertexBuffer[vertIndex] + tmy;
+         }
+      }
+
+      prevIconLinearFeatures = features;
    }
+
    // Geometry allocated/calculated, check if colors need to be updated
-   if (true)
-   {
-      int deltaColrs = iconLinearColrs1 - iconLinearColrs0;
-      for (int i = 0; i < 3; i++) {
-         for (int j = 0; j < numBulbs; j++) {
-
-            // Special Cases for Rounded Corner Segments
-            if (j == 0) {
-               if (float(bulbColors[i]) != iconLinearColorBuffer[i]) {
-                  float tmc = float(bulbColors[i]);
-#                 pragma omp parallel for
-                  for (unsigned int k = 0; k < iconLinearColrs0; k++) {
-                     iconLinearColorBuffer[k*3 + i] = tmc;
-                  }
-               }
-            } else if (j == numBulbs-1) {
-               int uLim = iconLinearColrs0 + (j-1)*deltaColrs;
-               if (float(bulbColors[i + j*3]) != iconLinearColorBuffer[i + uLim*3]) {
-                  float tmc = float(bulbColors[i+j*3]);
-#                 pragma omp parallel for
-                  for (unsigned int k = uLim; k < iconLinearVerts; k++) {
-                     iconLinearColorBuffer[k*3 + i] = tmc;
-                  }
-               }
-            } else
-
-            // General Cases
-            {
-               if (float(bulbColors[i + j*3]) != iconLinearColorBuffer[i + iconLinearColrs0*3 + (j-1)*deltaColrs*3]) {
-                  float tmc = float(bulbColors[i+j*3]);
-#                 pragma omp parallel for
-                  for (unsigned int k = iconLinearColrs0; k < iconLinearColrs1; k++) {
-                     iconLinearColorBuffer[k*3 + i + (j-1)*deltaColrs*3] = tmc;
+   int tmb = 0;
+   for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < numBulbs; j++) {
+         float tmc = float(bulbColors[j*3+i]);
+         // Special Case for Rounded Corner Segments
+         if (j == 0) {
+            if (tmc != iconLinearColorBuffer[i] || prevIconLinearNumBulbs != numBulbs) {
+#              pragma omp parallel for
+               for (unsigned int k = 0; k < (j*(60/numBulbs)*3*2 + circleSegments*2*3 + 6)*3; k++) {
+                  if (tmc != iconLinearColorBuffer[i + k*3]) {
+                     iconLinearColorBuffer[i + k*3] = tmc;
                   }
                }
             }
-         }
-
-         // Check if outline color needs to be updated
-         if (float(detailColor[i]) != iconLinearColorBuffer[i+iconLinearColrs2*3]) {
-#           pragma omp parallel for
-            for (unsigned int k = iconLinearColrs2; k < iconLinearVerts; k++) {
-               iconLinearColorBuffer[k*3+i] = float(detailColor[i]);
+         } 
+   
+         // Special Case for Rounded Corner Segments
+         if (j == numBulbs-1) {
+            if (tmc != iconLinearColorBuffer[i + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] || prevIconLinearNumBulbs != numBulbs ) {
+#              pragma omp parallel for
+               for (unsigned int k = 0; k < ((60/numBulbs)*3*2 + 2*3*circleSegments + 2*3); k++) {
+                  if (tmc != iconLinearColorBuffer[i + k*3 + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] ) {
+                     iconLinearColorBuffer[i + k*3 + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] = tmc;
+                  }
+               }
+            }
+         } 
+         else
+         // General Case for middle segments
+         {
+            if (tmc != iconLinearColorBuffer[i + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] || prevIconLinearNumBulbs != numBulbs) {
+#              pragma omp parallel for
+               for (unsigned int k = 0; k < (60/numBulbs)*3*2; k++) {
+                  if (tmc != iconLinearColorBuffer[i + k*3 + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] ) {
+                     iconLinearColorBuffer[i + k*3 + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] = tmc;
+                  }
+               }
             }
          }
       }
+
+      // Check if detail color needs to be updated
+      if (float(detailColor[i]) != iconLinearColorBuffer[i+(60*2*3 + 4*circleSegments*3 + 2*6)*3]) {
+#           pragma omp parallel for
+         for (unsigned int k = (60*2*3 + 4*circleSegments*3 + 2*6); k < iconLinearVerts; k++) {
+            iconLinearColorBuffer[k*3+i] = float(detailColor[i]);
+         }
+      }
    }
+   prevIconLinearNumBulbs = numBulbs;
    
    delete [] bulbColors;
 
