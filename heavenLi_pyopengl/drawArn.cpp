@@ -793,6 +793,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
    double detailColor[3];
    float gx, gy, scale, ao, w2h, R, G, B, delta;
    int numBulbs, features;
+   int vertIndex = 0;
    if (!PyArg_ParseTuple(args,
             "ffflOlffO",
             &gx, &gy,
@@ -834,7 +835,6 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       printf("Generating geometry for iconLinear\n");
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
-      int vertIndex = 0;
       float TLx, TRx, BLx, BRx, TLy, TRy, BLy, BRy, tmx, tmy, ri, ro;
       float offset = float(2.0/60.0);
       float degSegment = float(360.0/float(circleSegments));
@@ -1299,7 +1299,6 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
 
       prevIconLinearFeatures = features;
       float tmx, tmy;
-      float offset = float(2.0/60.0);
       float degSegment = float(360.0/float(circleSegments));
       delta = float(degSegment/4.0);
       tmx = 0.0;
@@ -1551,7 +1550,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
          if (j == 0) {
             if (tmc != iconLinearColorBuffer[i] || prevIconLinearNumBulbs != numBulbs) {
 #              pragma omp parallel for
-               for (unsigned int k = 0; k < (j*(60/numBulbs)*3*2 + circleSegments*2*3 + 6)*3; k++) {
+               for (int k = 0; k < (j*(60/numBulbs)*3*2 + circleSegments*2*3 + 6)*3; k++) {
                   if (tmc != iconLinearColorBuffer[i + k*3]) {
                      iconLinearColorBuffer[i + k*3] = tmc;
                   }
@@ -1563,7 +1562,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
          if (j == numBulbs-1) {
             if (tmc != iconLinearColorBuffer[i + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] || prevIconLinearNumBulbs != numBulbs ) {
 #              pragma omp parallel for
-               for (unsigned int k = 0; k < ((60/numBulbs)*3*2 + 2*3*circleSegments + 2*3); k++) {
+               for (int k = 0; k < ((60/numBulbs)*3*2 + 2*3*circleSegments + 2*3); k++) {
                   if (tmc != iconLinearColorBuffer[i + k*3 + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] ) {
                      iconLinearColorBuffer[i + k*3 + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] = tmc;
                   }
@@ -1575,7 +1574,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
          {
             if (tmc != iconLinearColorBuffer[i + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] || prevIconLinearNumBulbs != numBulbs) {
 #              pragma omp parallel for
-               for (unsigned int k = 0; k < (60/numBulbs)*3*2; k++) {
+               for (int k = 0; k < (60/numBulbs)*3*2; k++) {
                   if (tmc != iconLinearColorBuffer[i + k*3 + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] ) {
                      iconLinearColorBuffer[i + k*3 + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] = tmc;
                   }
