@@ -192,7 +192,6 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
    float gx, gy, scale, ao, w2h, delta;
    int numBulbs, features;
    int vertIndex = 0;
-   int colorIndex = 0;
    if (!PyArg_ParseTuple(args,
             "ffflOlffO",
             &gx, &gy,
@@ -345,9 +344,9 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
             verts, colrs);
 
       iconCircleVerts = verts.size()/2;
-      printf("%.i\n", iconCircleVerts);
+      printf("iconCircle vertexBuffer length: %.i, Number of vertices: %.i, tris: %.i\n", iconCircleVerts*2, iconCircleVerts, iconCircleVerts/3);
 
-      // Safely (Re)allocated memory for bulb marker vertices
+      // Safely (Re)allocate memory for bulb marker vertices
       if (iconBulbMarkerVertices == NULL) {
          iconBulbMarkerVertices = new GLfloat[markerVerts.size()];
       } else {
@@ -355,7 +354,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
          iconBulbMarkerVertices = new GLfloat[markerVerts.size()];
       }
 
-      // Safely (Re)allocated memory for icon Vertex Buffer
+      // Safely (Re)allocate memory for icon Vertex Buffer
       if (iconCircleVertexBuffer == NULL) {
          iconCircleVertexBuffer = new GLfloat[iconCircleVerts*2];
       } else {
@@ -363,7 +362,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
          iconCircleVertexBuffer = new GLfloat[iconCircleVerts*2];
       }
 
-      // Safely (Re)allocated memory for icon Color Buffer
+      // Safely (Re)allocate memory for icon Color Buffer
       if (iconCircleColorBuffer == NULL) {
          iconCircleColorBuffer = new GLfloat[iconCircleVerts*3];
       } else {
@@ -371,7 +370,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
          iconCircleColorBuffer = new GLfloat[iconCircleVerts*3];
       }
 
-      // Safely (Re)allocated memory for icon indices
+      // Safely (Re)allocate memory for icon indices
       if (iconCircleIndices == NULL) {
          iconCircleIndices = new GLushort[iconCircleVerts];
       } else {
@@ -398,7 +397,6 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       prevIconCircleNumBulbs = numBulbs;
       prevIconCircleFeatures = features;
    } 
-   else
    // Update Geometry, if alreay allocated
    if (prevIconCircleFeatures != features ||
        prevIconCircleNumBulbs != numBulbs ){
@@ -406,6 +404,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       char degSegment = 360 / circleSegments;
       float angOffset = float(360.0 / float(numBulbs));
       float tmx, tmy;
+      vertIndex = 0;
       
       /*
        * Explanation of features:
@@ -556,7 +555,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       }
 
       prevIconCircleFeatures = features;
-      printf("%.i\n", vertIndex/2);
+      printf("iconCircle vertIndex after update: %.i, vertices updated: %.i, tris updated: %.i\n", vertIndex, vertIndex/2, vertIndex/6);
    }
    // Geometry already calculated, update colors
    /*
@@ -1295,6 +1294,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       prevIconLinearNumBulbs = numBulbs;
       prevIconLinearFeatures = features;
    } 
+
    // Update features
    if (prevIconLinearFeatures != features ||
        prevIconLinearNumBulbs != numBulbs ){
@@ -1305,6 +1305,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       delta = float(degSegment/4.0);
       tmx = 0.0;
       tmy = 0.0;
+      vertIndex = 0;
 
       // Define Square of Stripes with Rounded Corners
 #     pragma omp parallel for
