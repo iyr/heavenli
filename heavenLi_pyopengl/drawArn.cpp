@@ -464,7 +464,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       // Update Bulb Markers
       // Draw Color Wheel + Outline + BulbMarkers if 'features' >= 2
       int iUlim = circleSegments/3;
-      degSegment = 360/iUlim;
+      float degSegment = 360/iUlim;
       for (int j = 0; j < 6; j++) {
          if (j < numBulbs && features >= 2) {
             tmx = float(cos(degToRad(-90 - j*(angOffset) + 180/numBulbs))*1.05);
@@ -1301,7 +1301,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
 
       prevIconLinearFeatures = features;
       float tmx, tmy;
-      float degSegment = float(360.0/float(circleSegments));
+      //float degSegment = float(360.0/float(circleSegments));
       tmx = 0.0;
       tmy = 0.0;
       vertIndex = 0;
