@@ -4,21 +4,24 @@ import platform
 if (platform.system() == 'Windows'):
     drawButtons_sfc_module = Extension(
             'drawButtons', 
-            sources = ['drawButtons.cpp'],
-            extra_link_args=['opengl32.lib'])
+            sources         = ['drawButtons.cpp'],
+            extra_link_args = ['opengl32.lib'])
     drawArn_sfc_module = Extension(
             'drawArn', 
-            sources = ['drawArn.cpp'],
-            extra_link_args=['opengl32.lib'])
+            sources         = ['drawArn.cpp'],
+            extra_link_args = ['opengl32.lib'])
 else:
     drawButtons_sfc_module = Extension(
             'drawButtons', 
-            sources = ['drawButtons.cpp'],
-            extra_link_args=['-lGL', '-fopenmp'])
+            sources             = ['drawButtons.cpp'],
+            extra_compiler_args = ['-fopenmp', '-O3', 'ffast-math', '-march=native'],
+            extra_link_args     = ['-lGL', '-fopenmp'])
+
     drawArn_sfc_module = Extension(
             'drawArn', 
-            sources = ['drawArn.cpp'],
-            extra_link_args=['-lGL', '-fopenmp'])
+            sources             = ['drawArn.cpp'],
+            extra_compiler_args = ['-fopenmp', '-O3', 'ffast-math', '-march=native'],
+            extra_link_args     = ['-lGL', '-fopenmp'])
 
 
 setup(name='drawButtons', version = '0.1',
