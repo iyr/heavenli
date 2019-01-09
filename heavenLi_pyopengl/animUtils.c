@@ -44,7 +44,7 @@ static PyModuleDef animUtils_module = {
 };
 
 PyMODINIT_FUNC PyInit_animUtils() {
-   PyObject* m = PyModule_Create(&drawArn_module);
+   PyObject* m = PyModule_Create(&animUtils_module);
    if (m == NULL) {
       return NULL;
    }
