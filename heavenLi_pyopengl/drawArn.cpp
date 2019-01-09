@@ -443,7 +443,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
             tmy = offScreen;
          }
       }
-      float delta = float(degSegment);
+      //float delta = float(degSegment);
 #     pragma omp parallel for
       for (int i = 0; i < circleSegments; i++) {
          /* X */ iconCircleVertexBuffer[vertIndex +  0] = iconCircleVertexBuffer[vertIndex +  0] + tmx;
@@ -793,7 +793,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
    PyObject* py_float;
    double *bulbColors;
    double detailColor[3];
-   float gx, gy, scale, ao, w2h, R, G, B, delta;
+   float gx, gy, scale, ao, w2h, R, G, B;
    int numBulbs, features;
    int vertIndex = 0;
    if (!PyArg_ParseTuple(args,
