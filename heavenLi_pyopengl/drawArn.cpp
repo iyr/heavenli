@@ -191,6 +191,8 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
    double detailColor[3];
    float gx, gy, scale, ao, w2h, delta;
    int numBulbs, features;
+   int vertIndex = 0;
+   int colorIndex = 0;
    if (!PyArg_ParseTuple(args,
             "ffflOlffO",
             &gx, &gy,
@@ -240,8 +242,6 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       char degSegment = 360 / circleSegments;
       float angOffset = float(360.0 / float(numBulbs));
       float tma, tmx, tmy, R, G, B, delta;
-      int vertIndex = 0;
-      int colorIndex = 0;
 
       drawEllipse(float(0.0), float(0.0), float(0.16), circleSegments/3, detailColor, markerVerts, markerColrs);
       drawHalo(float(0.0), float(0.0), float(0.22), float(0.22), float(0.07), circleSegments/3, detailColor, markerVerts, markerColrs);
