@@ -464,7 +464,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       // Update Bulb Markers
       // Draw Color Wheel + Outline + BulbMarkers if 'features' >= 2
       int iUlim = circleSegments/3;
-      float degSegment = 360/iUlim;
+      int degSegment = 360/iUlim;
       for (int j = 0; j < 6; j++) {
          if (j < numBulbs && features >= 2) {
             tmx = float(cos(degToRad(-90 - j*(angOffset) + 180/numBulbs))*1.05);
@@ -1385,6 +1385,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
             /* Y */ iconLinearVertexBuffer[vertIndex +  9] = iconLinearVertexBuffer[vertIndex +  9] + tmy;
             /* X */ iconLinearVertexBuffer[vertIndex + 10] = iconLinearVertexBuffer[vertIndex + 10] + tmx;
             /* Y */ iconLinearVertexBuffer[vertIndex + 11] = iconLinearVertexBuffer[vertIndex + 11] + tmy;
+            vertIndex += 12;
          }
       }
 
@@ -1434,47 +1435,50 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
          for (int j = 0; j < circleSegments; j++) {
             tmj = 6*circleSegments + j*12;
             if (i == 0) {
-               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  0 + tmj], -2.0, tmx+limit);
-               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  1 + tmj];
-               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  2 + tmj], -2.0, tmx+limit);
-               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  3 + tmj];
-               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  4 + tmj], -2.0, tmx+limit);
-               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  5 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex +  0] = constrain( tmx + iconBulbMarkerVertices[  0 + tmj], -2.0, tmx+limit);
+               /* Y */ iconLinearVertexBuffer[vertIndex +  1] =            tmy + iconBulbMarkerVertices[  1 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex +  2] = constrain( tmx + iconBulbMarkerVertices[  2 + tmj], -2.0, tmx+limit);
+               /* Y */ iconLinearVertexBuffer[vertIndex +  3] =            tmy + iconBulbMarkerVertices[  3 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex +  4] = constrain( tmx + iconBulbMarkerVertices[  4 + tmj], -2.0, tmx+limit);
+               /* Y */ iconLinearVertexBuffer[vertIndex +  5] =            tmy + iconBulbMarkerVertices[  5 + tmj];
 
-               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  6 + tmj], -2.0, tmx+limit);
-               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  7 + tmj];
-               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  8 + tmj], -2.0, tmx+limit);
-               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  9 + tmj];
-               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[ 10 + tmj], -2.0, tmx+limit);
-               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[ 11 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex +  6] = constrain( tmx + iconBulbMarkerVertices[  6 + tmj], -2.0, tmx+limit);
+               /* Y */ iconLinearVertexBuffer[vertIndex +  7] =            tmy + iconBulbMarkerVertices[  7 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex +  8] = constrain( tmx + iconBulbMarkerVertices[  8 + tmj], -2.0, tmx+limit);
+               /* Y */ iconLinearVertexBuffer[vertIndex +  9] =            tmy + iconBulbMarkerVertices[  9 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex + 10] = constrain( tmx + iconBulbMarkerVertices[ 10 + tmj], -2.0, tmx+limit);
+               /* Y */ iconLinearVertexBuffer[vertIndex + 11] =            tmy + iconBulbMarkerVertices[ 11 + tmj];
+               vertIndex += 12;
             } else if (i == numBulbs-1) {
-               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  0 + tmj], tmx-limit,  2.0);
-               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  1 + tmj];
-               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  2 + tmj], tmx-limit,  2.0);
-               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  3 + tmj];
-               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  4 + tmj], tmx-limit,  2.0);
-               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  5 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex +  0] = constrain( tmx + iconBulbMarkerVertices[  0 + tmj], tmx-limit,  2.0);
+               /* Y */ iconLinearVertexBuffer[vertIndex +  1] =            tmy + iconBulbMarkerVertices[  1 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex +  2] = constrain( tmx + iconBulbMarkerVertices[  2 + tmj], tmx-limit,  2.0);
+               /* Y */ iconLinearVertexBuffer[vertIndex +  3] =            tmy + iconBulbMarkerVertices[  3 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex +  4] = constrain( tmx + iconBulbMarkerVertices[  4 + tmj], tmx-limit,  2.0);
+               /* Y */ iconLinearVertexBuffer[vertIndex +  5] =            tmy + iconBulbMarkerVertices[  5 + tmj];
 
-               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  6 + tmj], tmx-limit,  2.0);
-               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  7 + tmj];
-               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  8 + tmj], tmx-limit,  2.0);
-               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  9 + tmj];
-               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[ 10 + tmj], tmx-limit,  2.0);
-               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[ 11 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex +  6] = constrain( tmx + iconBulbMarkerVertices[  6 + tmj], tmx-limit,  2.0);
+               /* Y */ iconLinearVertexBuffer[vertIndex +  7] =            tmy + iconBulbMarkerVertices[  7 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex +  8] = constrain( tmx + iconBulbMarkerVertices[  8 + tmj], tmx-limit,  2.0);
+               /* Y */ iconLinearVertexBuffer[vertIndex +  9] =            tmy + iconBulbMarkerVertices[  9 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex + 10] = constrain( tmx + iconBulbMarkerVertices[ 10 + tmj], tmx-limit,  2.0);
+               /* Y */ iconLinearVertexBuffer[vertIndex + 11] =            tmy + iconBulbMarkerVertices[ 11 + tmj];
+               vertIndex += 12;
             } else {
-               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  0 + tmj], tmx-limit, tmx+limit);
-               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  1 + tmj];
-               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  2 + tmj], tmx-limit, tmx+limit);
-               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  3 + tmj];
-               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  4 + tmj], tmx-limit, tmx+limit);
-               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  5 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex +  0] = constrain( tmx + iconBulbMarkerVertices[  0 + tmj], tmx-limit, tmx+limit);
+               /* Y */ iconLinearVertexBuffer[vertIndex +  1] =            tmy + iconBulbMarkerVertices[  1 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex +  2] = constrain( tmx + iconBulbMarkerVertices[  2 + tmj], tmx-limit, tmx+limit);
+               /* Y */ iconLinearVertexBuffer[vertIndex +  3] =            tmy + iconBulbMarkerVertices[  3 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex +  4] = constrain( tmx + iconBulbMarkerVertices[  4 + tmj], tmx-limit, tmx+limit);
+               /* Y */ iconLinearVertexBuffer[vertIndex +  5] =            tmy + iconBulbMarkerVertices[  5 + tmj];
 
-               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  6 + tmj], tmx-limit, tmx+limit);
-               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  7 + tmj];
-               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[  8 + tmj], tmx-limit, tmx+limit);
-               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[  9 + tmj];
-               /* X */ iconLinearVertexBuffer[vertIndex++] = constrain( tmx + iconBulbMarkerVertices[ 10 + tmj], tmx-limit, tmx+limit);
-               /* Y */ iconLinearVertexBuffer[vertIndex++] =            tmy + iconBulbMarkerVertices[ 11 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex +  6] = constrain( tmx + iconBulbMarkerVertices[  6 + tmj], tmx-limit, tmx+limit);
+               /* Y */ iconLinearVertexBuffer[vertIndex +  7] =            tmy + iconBulbMarkerVertices[  7 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex +  8] = constrain( tmx + iconBulbMarkerVertices[  8 + tmj], tmx-limit, tmx+limit);
+               /* Y */ iconLinearVertexBuffer[vertIndex +  9] =            tmy + iconBulbMarkerVertices[  9 + tmj];
+               /* X */ iconLinearVertexBuffer[vertIndex + 10] = constrain( tmx + iconBulbMarkerVertices[ 10 + tmj], tmx-limit, tmx+limit);
+               /* Y */ iconLinearVertexBuffer[vertIndex + 11] =            tmy + iconBulbMarkerVertices[ 11 + tmj];
+               vertIndex += 12;
             }
          }
       }
@@ -1503,7 +1507,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
        */
 
 #     pragma omp parallel for
-      for (int i = 0; i < 4; i ++ ) {
+      for (int i = 0; i < 4; i++ ) {
          /* X */ iconLinearVertexBuffer[vertIndex +  0] = iconLinearVertexBuffer[vertIndex +  0] + tmx;
          /* Y */ iconLinearVertexBuffer[vertIndex +  1] = iconLinearVertexBuffer[vertIndex +  1] + tmy;
          /* X */ iconLinearVertexBuffer[vertIndex +  2] = iconLinearVertexBuffer[vertIndex +  2] + tmx;
@@ -1539,6 +1543,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
             /* Y */ iconLinearVertexBuffer[vertIndex +  9] = iconLinearVertexBuffer[vertIndex +  9] + tmy;
             /* X */ iconLinearVertexBuffer[vertIndex + 10] = iconLinearVertexBuffer[vertIndex + 10] + tmx;
             /* Y */ iconLinearVertexBuffer[vertIndex + 11] = iconLinearVertexBuffer[vertIndex + 11] + tmy;
+            vertIndex += 12;
          }
       }
 
