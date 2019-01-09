@@ -1303,7 +1303,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       prevIconLinearFeatures = features;
       float tmx, tmy;
       float degSegment = float(360.0/float(circleSegments));
-      delta = float(degSegment/4.0);
+      float delta = float(degSegment/4.0);
       tmx = 0.0;
       tmy = 0.0;
       vertIndex = 0;
