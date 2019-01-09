@@ -62,6 +62,7 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
        homeCircleColorBuffer  == NULL  ||
        homeCircleIndices      == NULL  ){
 
+      printf("Generating geometry for homeCircle\n");
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
 
@@ -94,6 +95,7 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
       }
 
       homeCircleVerts = verts.size()/2;
+      printf("homeCircle vertexBuffer length: %.i, Number of vertices: %.i, tris: %.i\n", homeCircleVerts*2, homeCircleVerts, homeCircleVerts/3);
 
       if (homeCircleVertexBuffer == NULL) {
          homeCircleVertexBuffer = new GLfloat[homeCircleVerts*2];
@@ -464,7 +466,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       // Update Bulb Markers
       // Draw Color Wheel + Outline + BulbMarkers if 'features' >= 2
       int iUlim = circleSegments/3;
-      int degSegment = 360/iUlim;
+      //int degSegment = 360/iUlim;
       for (int j = 0; j < 6; j++) {
          if (j < numBulbs && features >= 2) {
             tmx = float(cos(degToRad(-90 - j*(angOffset) + 180/numBulbs))*1.05);
@@ -516,7 +518,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       // Update Grand (Room) Outline
       // Draw Color Wheel + Outline + Bulb Markers + Bulb Halos + Grand Halo if 'features' == 4
       circleSegments = 60;
-      degSegment = 360/60;
+      int degSegment = 360/60;
       if (features >= 4) {
          // Move Outline on-screen if off-screen
          if (iconCircleVertexBuffer[vertIndex] > offScreen/2) {
@@ -648,6 +650,7 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
        homeLinearColorBuffer     == NULL ||
        homeLinearIndices         == NULL ){
 
+      printf("Generating geometry for homeLinear\n");
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
       float TLx, TRx, BLx, BRx, TLy, TRy, BLy, BRy;
@@ -700,6 +703,7 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
       }
 
       homeLinearVerts = verts.size()/2;
+      printf("homeLinear vertexBuffer length: %.i, Number of vertices: %.i, tris: %.i\n", homeLinearVerts*2, homeLinearVerts, homeLinearVerts/3);
 
       if (homeLinearVertexBuffer == NULL) {
          homeLinearVertexBuffer = new GLfloat[homeLinearVerts*2];
@@ -1259,6 +1263,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       }
 
       iconLinearVerts = verts.size()/2;
+      printf("iconLinear vertexBuffer length: %.i, Number of vertices: %.i, tris: %.i\n", iconLinearVerts*2, iconLinearVerts, iconLinearVerts/3);
 
       if (iconLinearVertexBuffer == NULL) {
          iconLinearVertexBuffer = new GLfloat[iconLinearVerts*2];
