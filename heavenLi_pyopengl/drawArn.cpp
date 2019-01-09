@@ -345,6 +345,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
             verts, colrs);
 
       iconCircleVerts = verts.size()/2;
+      printf("%.i\n", iconCircleVerts);
 
       // Safely (Re)allocated memory for bulb marker vertices
       if (iconBulbMarkerVertices == NULL) {
@@ -555,6 +556,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       }
 
       prevIconCircleFeatures = features;
+      printf("%.i\n", vertIndex/2);
    }
    // Geometry already calculated, update colors
    /*
