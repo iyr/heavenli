@@ -258,8 +258,8 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       float degSegment = float(360.0/float(circleSegments));
       float delta = float(degSegment/4.0);
 
-      drawEllipse(float(0.0), float(0.0), float(0.16), circleSegments/3, detailColor, markerVerts, markerColrs);
-      drawHalo(float(0.0), float(0.0), float(0.22), float(0.22), float(0.07), circleSegments/3, detailColor, markerVerts, markerColrs);
+      drawEllipse(float(0.0), float(0.0), float(0.16), circleSegments, detailColor, markerVerts, markerColrs);
+      drawHalo(float(0.0), float(0.0), float(0.22), float(0.22), float(0.07), circleSegments, detailColor, markerVerts, markerColrs);
 
       // Safely (Re)allocate memory for bulb marker vertices
       if (iconLinearBulbVertices == NULL) {

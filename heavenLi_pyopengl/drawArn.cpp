@@ -1,7 +1,7 @@
 #include <Python.h>
 #include "drawUtils.h"
-#include "arnUtils/arnLinear.cpp"
 #include "arnUtils/arnCircle.cpp"
+#include "arnUtils/arnLinear.cpp"
 
 static float offScreen = 100.0;
 PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args);
