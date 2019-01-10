@@ -1,5 +1,8 @@
 #include <math.h>
+#include <vector>
 #define degToRad(angleInDegrees) ((angleInDegrees) * 3.1415926535 / 180.0)
+using namespace std;
+
 
 // Append Halo vertices to input vectors
 int drawHalo(

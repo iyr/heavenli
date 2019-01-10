@@ -178,7 +178,7 @@ def drawHome():
 
     drawIconCircle(0.0, 0.75, 
             iconSize*0.85, 
-            2,
+            4,
             #features,
             ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
             lamps[0].getNumBulbs(), 
@@ -188,7 +188,7 @@ def drawHome():
 
     drawIconCircle(-0.37, 0.75, 
             iconSize*0.85, 
-            1,
+            2,
             #features,
             ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
             lamps[0].getNumBulbs(), 
@@ -198,7 +198,7 @@ def drawHome():
 
     drawIconCircle(-0.75, 0.75, 
             iconSize*0.85, 
-            0,
+            1,
             #features,
             ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
             lamps[0].getNumBulbs(), 
@@ -230,7 +230,7 @@ def drawHome():
 
     drawIconLinear(0.0, -0.75, 
             iconSize*0.85, 
-            2,
+            4,
             #features,
             ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
             lamps[0].getNumBulbs(), 
@@ -240,7 +240,7 @@ def drawHome():
 
     drawIconLinear(-0.37, -0.75, 
             iconSize*0.85, 
-            1,
+            2,
             #features,
             ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
             lamps[0].getNumBulbs(), 
@@ -250,7 +250,7 @@ def drawHome():
 
     drawIconLinear(-0.75, -0.75, 
             iconSize*0.85, 
-            0,
+            1,
             #features,
             ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
             lamps[0].getNumBulbs(), 
