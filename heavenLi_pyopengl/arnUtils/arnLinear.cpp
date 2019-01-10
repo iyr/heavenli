@@ -5,8 +5,6 @@
 #include <GL/gl.h>
 #include <vector>
 #include <math.h>
-//#include "drawUtils.h"
-#define degToRad(angleInDegrees) ((angleInDegrees) * 3.1415926535 / 180.0)
 using namespace std;
 
 float constrain(float value, float min, float max) {
