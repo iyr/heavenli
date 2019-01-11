@@ -10,8 +10,8 @@ int drawPill(
       float qy,         /* y-coordinate of Point Q */
       float radius,     /* Radius/Thickness of pill */
       int index,        /* index of where to start writing to input arrays */
-      double *pColor,   /* RGB values of P */
-      double *qColor,   /* RGB values of Q */
+      float *pColor,   /* RGB values of P */
+      float *qColor,   /* RGB values of Q */
       float *verts,     /* Input Array of x,y coordinates */
       float *colrs      /* Input Array of r,g,b values */
       ){
@@ -127,8 +127,8 @@ int drawPill(
       float qx,                  /* x-coordinate of Point Q */
       float qy,                  /* y-coordinate of Point Q */
       float radius,              /* Radius/Thickness of pill */
-      double *pColor,            /* RGB values of P */
-      double *qColor,            /* RGB values of Q */
+      float *pColor,            /* RGB values of P */
+      float *qColor,            /* RGB values of Q */
       std::vector<float> &verts, /* Input Vector of x,y coordinates */
       std::vector<float> &colrs  /* Input Vector of r,g,b values */
       ){
@@ -245,7 +245,7 @@ int drawPill(
       float qy,         /* y-coordinate of Point Q */
       float radius,     /* Radius/Thickness of pill */
       int index,        /* index of where to start writing to input arrays */
-      double *color,    /* RGB values of pill */
+      float *color,    /* RGB values of pill */
       float *verts,     /* Input Array of x,y coordinates */
       float *colrs      /* Input Array of r,g,b values */
       ){
@@ -259,7 +259,7 @@ int drawPill(
       float qx,                  /* x-coordinate of Point Q */
       float qy,                  /* y-coordinate of Point Q */
       float radius,              /* Radius/Thickness of pill */
-      double *color,             /* RGB values of pill */
+      float *color,             /* RGB values of pill */
       std::vector<float> &verts, /* Input Vector of x,y coordinates */
       std::vector<float> &colrs  /* Input Vector of r,g,b values */
       ){
