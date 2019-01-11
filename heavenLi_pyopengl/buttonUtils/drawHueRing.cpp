@@ -11,6 +11,7 @@ GLfloat  *hueRingVertexBuffer = NULL;
 GLfloat  *hueRingColorBuffer  = NULL;
 GLushort *hueRingIndices      = NULL;
 GLuint    hueRingVerts;
+GLuint    prevHueRingNumHues;
 
 PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
    float w2h, scale;
@@ -19,7 +20,8 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
 
    // Parse Inputs
    if (!PyArg_ParseTuple(args,
-            "ff",
+            "lff",
+            &numHues,
             &w2h,
             &scale))
    {
@@ -27,15 +29,17 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
    }
 
    // Allocate and Define Geometry/Color buffers
-   if (  hueRingVertexBuffer == NULL   ||
-         hueRingColorBuffer  == NULL   ||
-         hueRingIndices      == NULL   ){
+   if (  prevHueRingNumHues  != numHues ||
+         hueRingVertexBuffer == NULL    ||
+         hueRingColorBuffer  == NULL    ||
+         hueRingIndices      == NULL    ){
 
       printf("Initializing Geometry for Hue Ring\n");
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
-      float tmo, ang, tmx, tmy, tmf;
+      float ang, tmo, tmx, tmy, tmf, tmr;
       tmf = float(1.0f / numHues);
+      tmr = float(0.15f);
       float colors[3] = {0.0, 0.0, 0.0};
       for (int i = 0; i < numHues; i++) {
          tmo = float(i) / float(numHues);
@@ -43,7 +47,7 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
          ang = 360*tmo + 90;
          tmx = float(cos(degToRad(ang))*0.67*pow(numHues/12.0f, 1.0f/4.0f));
          tmy = float(sin(degToRad(ang))*0.67*pow(numHues/12.0f, 1.0f/4.0f));
-         drawEllipse(tmx, tmy, 0.15f*(12.0/numHues), 0.15f*(12.0/numHues), circleSegments, colors, verts, colrs);
+         drawEllipse(tmx, tmy, tmr*(12.0/numHues), tmr*(12.0/numHues), circleSegments, colors, verts, colrs);
       }
 
       hueRingVerts = verts.size()/2;
@@ -78,6 +82,7 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
          hueRingColorBuffer[i*3+1]  = colrs[i*3+1];
          hueRingColorBuffer[i*3+2]  = colrs[i*3+2];
       }
+      prevHueRingNumHues = numHues;
    }
          
    // Geometry up to date, check if colors need to be updated
