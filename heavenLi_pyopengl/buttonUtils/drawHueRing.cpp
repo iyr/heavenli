@@ -15,7 +15,7 @@ GLuint    hueRingVerts;
 PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
    float w2h, scale;
    char circleSegments = 45;
-   char numHues = 22;
+   char numHues = 12;
 
    // Parse Inputs
    if (!PyArg_ParseTuple(args,
@@ -35,15 +35,15 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
       float tmo, ang, tmx, tmy, tmf;
-      tmf = float(1.0/12.0);
+      tmf = float(1.0f / numHues);
       float colors[3] = {0.0, 0.0, 0.0};
-      for (int i = 0; i < 12; i++) {
-         tmo = float(float(i)/12.0);
-         hsv2rgb(tmo, 1.0, 1.0, colors);
+      for (int i = 0; i < numHues; i++) {
+         tmo = float(i) / float(numHues);
+         hsv2rgb(tmo, 1.0f, 1.0f, colors);
          ang = 360*tmo + 90;
-         tmx = float(cos(degToRad(ang))*0.67);
-         tmy = float(sin(degToRad(ang))*0.67);
-         drawEllipse(tmx, tmy, 0.15, 0.15, circleSegments, colors, verts, colrs);
+         tmx = float(cos(degToRad(ang))*0.67*pow(numHues/12.0f, 1.0f/4.0f));
+         tmy = float(sin(degToRad(ang))*0.67*pow(numHues/12.0f, 1.0f/4.0f));
+         drawEllipse(tmx, tmy, 0.15f*(12.0/numHues), 0.15f*(12.0/numHues), circleSegments, colors, verts, colrs);
       }
 
       hueRingVerts = verts.size()/2;

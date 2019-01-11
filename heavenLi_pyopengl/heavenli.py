@@ -530,9 +530,10 @@ def display():
     #glDisable(GL_LIGHTING)
     drawBackground(0)
 
+    tDiff = 3/fps
     if (targetScreen == 0):
         if (colrSettingCursor > 0):
-            colrSettingCursor = constrain(colrSettingCursor-3/fps, 0, 1)
+            colrSettingCursor = constrain(colrSettingCursor-tDiff, 0, 1)
             #cProfile.run('drawSettingColor(colrSettingCursor, lamps[0], targetBulb, w2h)')
             drawSettingColor(colrSettingCursor, lamps[0], targetBulb, w2h)
         if (targetScreen == 0) and (colrSettingCursor == 0):
@@ -540,12 +541,12 @@ def display():
 
     elif (targetScreen == 1):
         if (colrSettingCursor < 1):
-            colrSettingCursor = constrain(colrSettingCursor+3/fps, 0, 1)
+            colrSettingCursor = constrain(colrSettingCursor+tDiff, 0, 1)
         #cProfile.run('drawSettingColor(colrSettingCursor, lamps[0], targetBulb, w2h)')
         drawSettingColor(colrSettingCursor, lamps[0], targetBulb, w2h)
 
     for i in range(len(lamps)):
-        lamps[i].updateBulbs(1.0/fps)
+        lamps[i].updateBulbs(tDiff/2)
 
     #glFlush()
     glutSwapBuffers()
