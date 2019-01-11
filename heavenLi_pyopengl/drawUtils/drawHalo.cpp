@@ -10,7 +10,7 @@ int drawHalo(
       float bsy,                 /* y-Scale 2.0=spans display before GL scaling */
       float rs,                  /* Halo thickness */
       char circleSegments,       /* Number of sides */
-      double *color,             /* Polygon Color */
+      float *color,             /* Polygon Color */
       std::vector<float> &verts, /* Input Vector of x,y coordinates */
       std::vector<float> &colrs  /* Input Vector of r,g,b values */
       ){

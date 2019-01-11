@@ -27,7 +27,7 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
    PyObject* py_list;
    PyObject* py_tuple;
    PyObject* py_float;
-   double *bulbColors;
+   float *bulbColors;
    float gx, gy, wx, wy, ao, w2h, R, G, B;
    int numBulbs;
    if (!PyArg_ParseTuple(args,
@@ -43,14 +43,14 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
       Py_RETURN_NONE;
    }
    // Parse array of tuples containing RGB Colors of bulbs
-   bulbColors = new double[numBulbs*3];
+   bulbColors = new float[numBulbs*3];
 //#  pragma omp parallel for
    for (int i = 0; i < numBulbs; i++) {
       py_tuple = PyList_GetItem(py_list, i);
 
       for (int j = 0; j < 3; j++) {
          py_float = PyTuple_GetItem(py_tuple, j);
-         bulbColors[i*3+j] = double(PyFloat_AsDouble(py_float));
+         bulbColors[i*3+j] = float(PyFloat_AsDouble(py_float));
       }
    }
 
@@ -203,8 +203,8 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
    PyObject* py_list;
    PyObject* py_tuple;
    PyObject* py_float;
-   double *bulbColors;
-   double detailColor[3];
+   float *bulbColors;
+   float detailColor[3];
    float gx, gy, scale, ao, w2h, R, G, B;
    int numBulbs, features;
    int vertIndex = 0;
@@ -226,21 +226,21 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
    char circleSegments = 20;
 
    // Parse array of tuples containing RGB Colors of bulbs
-   bulbColors = new double[numBulbs*3];
+   bulbColors = new float[numBulbs*3];
 //#  pragma omp parallel for
    for (int i = 0; i < numBulbs; i++) {
       py_tuple = PyList_GetItem(py_list, i);
 
       for (int j = 0; j < 3; j++) {
          py_float = PyTuple_GetItem(py_tuple, j);
-         bulbColors[i*3+j] = double(PyFloat_AsDouble(py_float));
+         bulbColors[i*3+j] = float(PyFloat_AsDouble(py_float));
       }
    }
 
    // Parse RGB detail colors
-   detailColor[0] = PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 0));
-   detailColor[1] = PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 1));
-   detailColor[2] = PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2));
+   detailColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 0)));
+   detailColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 1)));
+   detailColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2)));
 
    if (iconLinearVertexBuffer == NULL     ||
        iconLinearColorBuffer  == NULL     ||

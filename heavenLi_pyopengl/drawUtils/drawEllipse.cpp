@@ -9,7 +9,7 @@ int drawEllipse(
       float bsx,                 /* x-Scale 2.0=spans display before GL scaling */
       float bsy,                 /* y-Scale 2.0=spans display before GL scaling */
       char circleSegments,       /* Number of sides */
-      double *color,             /* Polygon Color */
+      float *color,             /* Polygon Color */
       std::vector<float> &verts, /* Input Vector of x,y coordinates */
       std::vector<float> &colrs  /* Input Vector of r,g,b values */
       ){
@@ -43,7 +43,7 @@ int drawEllipse(
       float by,                  /* Y-Coordinate */
       float bs,                  /* Scale~ 2.0=spans display before GL Transformations */
       char circleSegments,       /* Number of sides */
-      double *color,             /* Polygon Color */
+      float *color,             /* Polygon Color */
       std::vector<float> &verts, /* Input Vector of x,y coordinates */
       std::vector<float> &colrs  /* Input Vector of r,g,b values */
       ){
@@ -55,7 +55,7 @@ int drawCircle(
       float by,                  /* Y-Coordinate */
       float bs,                  /* Scale~ 2.0=spans display before GL Transformations */
       char circleSegments,       /* Number of sides */
-      double *color,             /* Polygon Color */
+      float *color,             /* Polygon Color */
       std::vector<float> &verts, /* Input Vector of x,y coordinates */
       std::vector<float> &colrs  /* Input Vector of r,g,b values */
       ){
