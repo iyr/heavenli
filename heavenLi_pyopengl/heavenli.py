@@ -324,23 +324,27 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
             (0.9*acc, 0.9*acc, 0.9*acc), 
             (0.3*acc, 0.3*acc, 0.3*acc))
 
-    glPushMatrix()
-
     # Draw Ring of Dots with different hues
-    tmr = 0.15
+    glPushMatrix()
     if w2h <= 1.0:
         glScalef(acbic*w2h, acbic*w2h, 1)
     else:
         glScalef(acbic, acbic, 1)
 
+    # Defines locations of each dot
+    tmr = 0.15
     if (not __ringPoints):
         for i in range(12):
+            # Spacing for each Hue-Dot
             tmf = i/12.0
+
+            # Offset so red is 12 o'clock
             ang = 360*tmf + 90
             tmx = cos(radians(ang))*0.67#*acbic
             tmy = sin(radians(ang))*0.67#*acbic
             __ringPoints.append((tmx, tmy))
 
+    # defines vertices of dots
     if (not __ringVerts):
         for i in range(12):
             tmx = __ringPoints[i][0]
@@ -352,9 +356,7 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
                 __ringVerts.append((tmx, tmy))
                 __ringVerts.append((tmx+cos(radians(k*8))*tmr, tmy+sin(radians(k*8))*tmr))
                 __ringVerts.append((tmx+cos(radians((k+1)*8))*tmr, tmy+sin(radians((k+1)*8))*tmr))
-                #__ringVerts.append((tmx, tmy))
 
-    #__ringColrs = []
     for i in range(12):
         tmx = __ringPoints[i][0]
         tmy = __ringPoints[i][1]
@@ -365,7 +367,6 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
                 __ringColrs.append((tmc[0], tmc[1], tmc[2]))
                 __ringColrs.append((tmc[0], tmc[1], tmc[2]))
                 __ringColrs.append((tmc[0], tmc[1], tmc[2]))
-                #__ringColrs.append((tmc[0], tmc[1], tmc[2]))
         else:
             for k in range(45):
                 __ringColrs[i*135  +k  ] = (tmc[0], tmc[1], tmc[2])
@@ -660,8 +661,8 @@ if __name__ == '__main__':
     #global windowDimW, windowDimH, windowPosX, windowPosY
     print("Initializing...")
     glutInit(sys.argv)
-    #glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE)
-    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE)
+    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE)
+    #glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE)
 
     glutInitWindowPosition(windowPosX, windowPosY)
     glutInitWindowSize(windowDimW, windowDimH)
