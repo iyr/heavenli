@@ -384,7 +384,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
    }
    // Vertices / Geometry already calculated
    // Check if colors need to be updated
-   else
+   //else
    {
       /*
        * Iterate through each color channel 

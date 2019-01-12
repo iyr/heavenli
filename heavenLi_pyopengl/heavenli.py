@@ -324,7 +324,7 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
             (0.9*acc, 0.9*acc, 0.9*acc), 
             (0.3*acc, 0.3*acc, 0.3*acc))
 
-    numHues = 15
+    numHues = 12
     # Draw Ring of Dots with different hues
     drawHueRing(numHues, w2h, acbic);
 
