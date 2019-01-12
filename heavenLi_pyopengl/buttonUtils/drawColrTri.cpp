@@ -42,19 +42,19 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       printf("Initializing Geometry for Color Triangle\n");
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
-      float tmx, tmy, tmr;
+      float tmx, tmy, tmr, saturation, value;
       float colors[3] = {0.0, 0.0, 0.0};
 
       tmr = 0.05f;
-      for (int i = 0; i < numLevels; i++) {
-         for (int j = 0; j < numLevels-i; j++) {
+      for (int i = 0; i < numLevels; i++) {        /* Columns */
+         for (int j = 0; j < numLevels-i; j++) {   /* Rows */
+            saturation = float((i+1.0f)/(numLevels)) - float(1.0f/numLevels) + 0.5*float(j+1.0)/float(numLevels+1);
+            value = pow(float(i+1)/float(numLevels), 2) + float(1.0 - j/float(numLevels - 1.0));
             hsv2rgb(
                   float(currentHue), 
-                  float((i+1.0f)/numLevels) - float(1.0f/6.0f), 
-                  float(1.0 - j/float(numLevels - 1.0)), 
+                  saturation,
+                  value, 
                   colors);
-            //tmx = float(-0.23f + (i*0.130f));
-            //tmy = float(+0.37f - (i*0.075f + j*0.15f));
             tmx = float(-0.0383*numLevels + (i*0.13f));
             tmy = float(+0.0616*numLevels - (i*0.075f + j*0.15f));
             drawEllipse(tmx, tmy, tmr, tmr, circleSegments, colors, verts, colrs);
