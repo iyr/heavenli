@@ -15,7 +15,7 @@ GLuint    prevHueRingNumHues;
 
 PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
    float w2h, scale;
-   char circleSegments = 45;
+   char circleSegments = 24;
    char numHues = 12;
 
    // Parse Inputs

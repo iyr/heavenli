@@ -60,6 +60,7 @@ frameLimit = True
 someVar = 0
 someInc = 0.1
 features = 4
+numHues = 12
 #demo = Lamp()
 
 def init():
@@ -324,7 +325,6 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
             (0.9*acc, 0.9*acc, 0.9*acc), 
             (0.3*acc, 0.3*acc, 0.3*acc))
 
-    numHues = 12
     # Draw Ring of Dots with different hues
     drawHueRing(numHues, w2h, acbic);
 
@@ -454,7 +454,7 @@ def special(k, x, y):
     glutPostRedisplay()
 
 def key(ch, x, y):
-    global targetScreen, wereColorsTouched, features
+    global targetScreen, wereColorsTouched, features, numHues
     if ch == as_8_bit('q'):
         sys.exit(0)
     if ord(ch) == 27: # ESC
@@ -471,14 +471,14 @@ def key(ch, x, y):
         targetScreen = 0
 
     if ch == as_8_bit(']'):
-        features += 1
-        if features > 4:
-            features = 4
+        numHues += 3
+        if numHues > 15:
+            numHues = 15
 
     if ch == as_8_bit('['):
-        features -= 1
-        if features < 0:
-            features = 0
+        numHues -= 3
+        if numHues < 9:
+            numHues = 9
 
     #if ch == as_8_bit('m'):
         #glutIconifyWindow()
@@ -517,8 +517,8 @@ if __name__ == '__main__':
     #global windowDimW, windowDimH, windowPosX, windowPosY
     print("Initializing...")
     glutInit(sys.argv)
-    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE)
-    #glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE)
+    #glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE)
+    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE)
 
     glutInitWindowPosition(windowPosX, windowPosY)
     glutInitWindowSize(windowDimW, windowDimH)

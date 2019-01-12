@@ -15,7 +15,7 @@ GLint     prevColrTriNumLevels;
 
 PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    float w2h, scale, currentHue;
-   char circleSegments = 30;
+   char circleSegments = 18;
    char numLevels = 6;
 
    // Parse Inputs
