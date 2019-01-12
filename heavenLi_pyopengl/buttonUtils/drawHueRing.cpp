@@ -47,7 +47,7 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
          ang = 360*tmo + 90;
          tmx = float(cos(degToRad(ang))*0.67*pow(numHues/12.0f, 1.0f/4.0f));
          tmy = float(sin(degToRad(ang))*0.67*pow(numHues/12.0f, 1.0f/4.0f));
-         drawEllipse(tmx, tmy, tmr*(12.0/numHues), tmr*(12.0/numHues), circleSegments, colors, verts, colrs);
+         drawEllipse(tmx, tmy, float(tmr*(12.0/numHues)), float(tmr*(12.0/numHues)), circleSegments, colors, verts, colrs);
       }
 
       hueRingVerts = verts.size()/2;

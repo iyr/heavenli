@@ -48,8 +48,28 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       tmr = 0.05f;
       for (int i = 0; i < numLevels; i++) {        /* Columns */
          for (int j = 0; j < numLevels-i; j++) {   /* Rows */
-            saturation = float((i+1.0f)/(numLevels)) - float(1.0f/numLevels) + 0.5*float(j+1.0)/float(numLevels+1);
-            value = pow(float(i+1)/float(numLevels), 2) + float(1.0 - j/float(numLevels - 1.0));
+            // Set black button for fully off state
+            if (i == 0) {
+               value = float(i+1)/float(numLevels) + float(1.0 - j/float(numLevels - i));
+            }
+            if (j == numLevels-1) {
+               value = 0.0;
+            } else {
+               value = (float(numLevels-1)/float(numLevels))*(float(i)/float(numLevels)) + float(1.0 - j/float(numLevels - i - 1));
+            }
+
+            // Set Saturation for triangle
+            if (i == 0) {
+               saturation = 0.0f;
+            } else {
+               saturation = (float(numLevels+1)/float(numLevels))*(float(i)/float(numLevels));
+            }
+
+            if (i == numLevels-1 && j == 0) {
+               value = 1.0f;
+               saturation = 1.0f;
+            }
+
             hsv2rgb(
                   float(currentHue), 
                   saturation,
