@@ -46,6 +46,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       float colors[3] = {0.0, 0.0, 0.0};
 
       tmr = 0.05f;
+      currentHue = 0.333333f;
       for (int i = 0; i < numLevels; i++) {        /* Columns */
          for (int j = 0; j < numLevels-i; j++) {   /* Rows */
             // Set black button for fully off state
@@ -55,14 +56,14 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
             if (j == numLevels-1) {
                value = 0.0;
             } else {
-               value = (float(numLevels-1)/float(numLevels))*(float(i)/float(numLevels)) + float(1.0 - j/float(numLevels - i - 1));
+               value = (float(i)/float(numLevels)) + float(1.0f - (j)/float(numLevels - 1 - i));
             }
 
             // Set Saturation for triangle
             if (i == 0) {
                saturation = 0.0f;
             } else {
-               saturation = (float(numLevels+1)/float(numLevels))*(float(i)/float(numLevels));
+               saturation = (float(i)/float(numLevels-1)) + 0.5f*(float(j)/float(numLevels+1));
             }
 
             if (i == numLevels-1 && j == 0) {
@@ -78,6 +79,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
             tmx = float(-0.0383*numLevels + (i*0.13f));
             tmy = float(+0.0616*numLevels - (i*0.075f + j*0.15f));
             drawEllipse(tmx, tmy, tmr, tmr, circleSegments, colors, verts, colrs);
+            //drawEllipse(tmx, tmy, tmr*1.5f, tmr*1.5f, 6, colors, verts, colrs);
          }
       }
 
