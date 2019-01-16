@@ -32,6 +32,13 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       Py_RETURN_NONE;
    }
 
+   /*
+    * Granularity Levels:
+    * 5: Low
+    * 6: Medium
+    * 7: High
+    */
+
    if (numLevels < 5)
       numLevels = 5;
    if (numLevels > 7)
@@ -52,37 +59,37 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       currentHue = 0.333333f;
       for (int i = 0; i < numLevels; i++) {        /* Columns */
          for (int j = 0; j < numLevels-i; j++) {   /* Rows */
-            // Set black button for fully off state
-            if (i == 0) {
-               value = float(i+1)/float(numLevels) + float(1.0 - j/float(numLevels - i));
-            }
+            // Set lowest button corner to be black so a light can be turned all the way off
             if (j == numLevels-1) {
                value = 0.0;
             } else {
                value = (float(i)/float(numLevels)) + float(1.0f - (j)/float(numLevels - 1 - i));
             }
 
-            // Set Saturation for triangle
+            // Set Saturation for triangle, left-most column is complete desaturated
             if (i == 0) {
                saturation = 0.0f;
             } else {
                saturation = (float(i)/float(numLevels-1)) + 0.5f*(float(j)/float(numLevels+1));
             }
 
+            // Set right-most button corner to be fully saturated color
             if (i == numLevels-1 && j == 0) {
                value = 1.0f;
                saturation = 1.0f;
             }
 
+            // Convert HSV to RGB
             hsv2rgb(
                   float(currentHue), 
                   saturation,
                   value, 
                   colors);
+
+            // Define relative positions of hue buttons
             tmx = float(-0.0383*numLevels + (i*0.13f));
             tmy = float(+0.0616*numLevels - (i*0.075f + j*0.15f));
             drawEllipse(tmx, tmy, tmr, tmr, circleSegments, colors, verts, colrs);
-            //drawEllipse(tmx, tmy, tmr*1.5f, tmr*1.5f, 6, colors, verts, colrs);
          }
       }
 
@@ -125,6 +132,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    if (w2h <= 1.0) {
          scale = scale*w2h;
    }
+
    glScalef(scale, scale, 1);
    glColorPointer(3, GL_FLOAT, 0, colrTriColorBuffer);
    glVertexPointer(2, GL_FLOAT, 0, colrTriVertexBuffer);
@@ -132,5 +140,4 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    glPopMatrix();
 
    Py_RETURN_NONE;
-
 }
