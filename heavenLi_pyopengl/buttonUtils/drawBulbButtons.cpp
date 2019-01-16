@@ -75,6 +75,11 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
          buttonCoords == NULL
          ) {
 
+      if (numBulbs > 1) {
+         printf("Initializing Geometry for Bulb Buttons\n");
+      } else {
+         printf("Initializing Geometry for Bulb Button\n");
+      }
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
       // Set Number of edges on circles
@@ -433,7 +438,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
       }
    } 
 
-   PyList_ClearFreeList();
+   //PyList_ClearFreeList();
    py_list = PyList_New(numBulbs);
 //#  pragma omp parallel for
    for (int i = 0; i < numBulbs; i++) {

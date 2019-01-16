@@ -10,10 +10,13 @@ using namespace std;
 GLfloat  *colrTriVertexBuffer = NULL;
 GLfloat  *colrTriColorBuffer  = NULL;
 GLushort *colrTriIndices      = NULL;
-GLuint    colrTriVerts;
-GLint     prevColrTriNumLevels;
+GLuint   colrTriVerts;
+GLint    prevColrTriNumLevels;
+float    *triButtonData       = NULL;
 
 PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
+   PyObject *py_list;
+   PyObject *py_tuple;
    float w2h, scale, currentHue;
    char circleSegments = 18;
    char numLevels = 6;

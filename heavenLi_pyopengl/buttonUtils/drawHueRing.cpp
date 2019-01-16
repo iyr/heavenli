@@ -10,10 +10,13 @@ using namespace std;
 GLfloat  *hueRingVertexBuffer = NULL;
 GLfloat  *hueRingColorBuffer  = NULL;
 GLushort *hueRingIndices      = NULL;
-GLuint    hueRingVerts;
-GLuint    prevHueRingNumHues;
+GLuint   hueRingVerts;
+GLuint   prevHueRingNumHues;
+float    *hueButtonData       = NULL;  /* X, Y, hue per button */
 
 PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
+   PyObject *py_list;
+   PyObject *py_tuple;
    float w2h, scale;
    char circleSegments = 24;
    char numHues = 12;
@@ -41,12 +44,22 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
       tmf = float(1.0f / numHues);
       tmr = float(0.15f);
       float colors[3] = {0.0, 0.0, 0.0};
+
+      if (hueButtonData == NULL) {
+         hueButtonData = new float[numHues*2];
+      } else {
+         delete [] hueButtonData;
+         hueButtonData = new float[numHues*2];
+      }
+
       for (int i = 0; i < numHues; i++) {
          tmo = float(i) / float(numHues);
          hsv2rgb(tmo, 1.0f, 1.0f, colors);
          ang = 360*tmo + 90;
          tmx = float(cos(degToRad(ang))*0.67*pow(numHues/12.0f, 1.0f/4.0f));
          tmy = float(sin(degToRad(ang))*0.67*pow(numHues/12.0f, 1.0f/4.0f));
+         hueButtonData[i*2+0] = tmx;
+         hueButtonData[i*2+1] = tmy;
          drawEllipse(tmx, tmy, float(tmr*(12.0/numHues)), float(tmr*(12.0/numHues)), circleSegments, colors, verts, colrs);
       }
 
@@ -85,26 +98,27 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
       prevHueRingNumHues = numHues;
    }
          
-   // Geometry up to date, check if colors need to be updated
-   /*
-   for (int i = 0; i < 3; i++) {
-      if (faceColor[i] != hueRingColorBuffer[i]) {
-         for (int k = 0; k < circleSegments*3; k++) {
-            hueRingColorBuffer[i + k*3] = faceColor[i];
-         }
-      }
-   }
-   */
-   
    glPushMatrix();
    if (w2h <= 1.0) {
          scale = scale*w2h;
    }
+
+   float tmo;
+   py_list = PyList_New(numHues);
+   for (int i = 0; i < numHues; i++) {
+      py_tuple = PyTuple_New(3);
+      tmo = float(i) / float(numHues);
+      PyTuple_SetItem(py_tuple, 0, PyFloat_FromDouble(hueButtonData[i*2+0]));
+      PyTuple_SetItem(py_tuple, 1, PyFloat_FromDouble(hueButtonData[i*2+1]));
+      PyTuple_SetItem(py_tuple, 2, PyFloat_FromDouble(tmo));
+      PyList_SetItem(py_list, i, py_tuple);
+   }
+
    glScalef(scale, scale, 1);
    glColorPointer(3, GL_FLOAT, 0, hueRingColorBuffer);
    glVertexPointer(2, GL_FLOAT, 0, hueRingVertexBuffer);
    glDrawElements( GL_TRIANGLES, hueRingVerts, GL_UNSIGNED_SHORT, hueRingIndices);
    glPopMatrix();
 
-   Py_RETURN_NONE;
+   return py_list;
 }

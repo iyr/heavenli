@@ -326,10 +326,33 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
             (0.3*acc, 0.3*acc, 0.3*acc))
 
     # Draw Ring of Dots with different hues
-    drawHueRing(numHues, w2h, acbic);
+    hueButtons = drawHueRing(numHues, w2h, acbic)
+    for i in range(numHues):
+        tmr = 1.0
+        if (w2h <= 1.0):
+            hueButtons[i] = (hueButtons[i][0]*w2h, hueButtons[i][1]*w2h, hueButtons[i][2])
+            tmr = w2h
+
+        #glBegin(GL_TRIANGLE_FAN)
+        #glColor3f(1.0, 1.0, 1.0)
+        #glVertex2f(hueButtons[i][0], hueButtons[i][1])
+        #for j in range(21):
+            #tmx = hueButtons[i][0]+cos(radians(j*360/20))*tmr*(0.15*(12.0/float(numHues)))
+            #tmy = hueButtons[i][1]+sin(radians(j*360/20))*tmr*(0.15*(12.0/float(numHues)))
+            #glVertex2f(tmx, tmy)
+        #glEnd()
+
+        if (watchPoint(
+            mapRanges(hueButtons[i][0], -1.0*w2h, 1.0*w2h, 0, wx*2), 
+            mapRanges(hueButtons[i][1],      1.0,    -1.0, 0, wy*2),
+            min(wx, wy)*0.15*(12.0/float(numHues)) )):
+            wereColorsTouched = True
+            currentHue = hueButtons[i][2]
+            print("updating current hue to {:}".format(currentHue))
+            #targetLamp.setBulbRGB(targetBulb, 
 
     # Draw Triangle of Dots with different brightness/saturation
-    drawColrTri(currentHue, int(numHues/2), w2h, acbic);
+    satValButtons = drawColrTri(currentHue, int(numHues/2), w2h, acbic)
             #if (watchPoint(
                 #mapRanges(tmx, -1.0*w2h, 1.0*w2h, 0, wx*2),
                 #mapRanges(tmy, 1.0, -1.0, 0, wy*2),

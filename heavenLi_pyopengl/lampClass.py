@@ -38,8 +38,7 @@ class Lamp:
         self.bulbsCurrentHSV = []
         self.bulbsTargetHSV = []
         for i in range(self.numBulbs):
-            self.bulbsCurrentHSV.append((i*(1.0/self.numBulbs)+0.3333, 0.75, 0.75))
-            #self.bulbsCurrentHSV.append((i*(360/numBulbs)+60, 255, 255))
+            self.bulbsCurrentHSV.append((i*(1.0/self.numBulbs)+0.16667, 1.00, 1.00))
         self.bulbsTargetHSV = self.bulbsCurrentHSV.copy()
 
     def getAngle(self):
