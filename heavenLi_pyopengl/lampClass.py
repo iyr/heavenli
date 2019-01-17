@@ -41,11 +41,8 @@ class Lamp:
             self.bulbsCurrentHSV.append((i*(1.0/self.numBulbs)+0.16667, 1.00, 1.00))
         self.bulbsTargetHSV = self.bulbsCurrentHSV.copy()
 
+    # Get/Set angle offset for lamp
     def getAngle(self):
-        #if (self.numBulbs == 1) and (self.arn == 1):
-            #return self.angularOffset + 180
-        #else:
-            #return self.angularOffset
         return self.angularOffset
 
     def setAngle(self, ang):
@@ -53,18 +50,16 @@ class Lamp:
             ang -= 360
         if ang <= 0:
             ang += 360
-        #if (self.numBulbs == 1) and (self.arn == 1):
-            #self.angularOffset = ang + 180
-        #else:
-            #self.angularOffset = ang
         self.angularOffset = ang
 
+    # Set/Get arrangement for lamp
     def getArn(self):
         return self.arn
 
     def setArn(self, n):
         self.arn = n
 
+    # Get list of current RGB values for each bulb
     def getBulbRGB(self, n):
         tmp = colorsys.hsv_to_rgb(
                 self.bulbsCurrentHSV[n][0],
@@ -72,12 +67,23 @@ class Lamp:
                 self.bulbsCurrentHSV[n][2])
         return tmp
 
-    def getBulbtHSV(self, n):
-        return self.bulbsTargetHSV[n]
+    # Set target RGB values for 'bulb'
+    def setBulbRGB(self, bulb, RGBcolor):
+        self.bulbsTargetHSV[bulb] = colorsys.rgb_to_hsv(RGBcolor[0], RGBcolor[1], RGBcolor[2])
 
-    def getBulbHSV(self, n):
-        return self.bulbsCurrentHSV[n]
+    # Set/Get target Hue/Sat/Val for 'bulb'
+    def getBulbtHSV(self, bulb):
+        return self.bulbsTargetHSV[bulb]
 
+    def setBulbtHSV(self, bulb, HSVcolor):
+        self.bulbsTargetHSV[bulb] = HSVcolor
+
+
+    # Get current Hue/Sat/Vale for 'bulb'
+    def getBulbHSV(self, bulb):
+        return self.bulbsCurrentHSV[bulb]
+
+    # Set/Get a list of tuples representing RGB values for each bulb
     def getBulbsRGB(self):
         tmp = []
         for i in range(self.numBulbs):
@@ -87,18 +93,16 @@ class Lamp:
                 self.bulbsCurrentHSV[i][2]))
         return tmp
 
-    def setBulbRGB(self, n, RGB):
-        self.bulbsTargetHSV[n] = colorsys.rgb_to_hsv(RGB[0], RGB[1], RGB[2])
-
     def setBulbsRGB(self, RGBs):
         for i in range(self.numBulbs):
             self.bulbsTargetHSV[i] = colorsys.rgb_to_hsv(RGBs[i])
         return tmp
 
+
+    # If current colors =/= target colors, animate smooth color transition
     def updateBulbs(self, frametime):
 
         for i in range(0, self.numBulbs):
-
             colC = colorsys.hsv_to_rgb(
                     self.bulbsCurrentHSV[i][0],
                     self.bulbsCurrentHSV[i][1],
@@ -168,6 +172,7 @@ class Lamp:
                     #min(self.bulbsTargetHSV[i][2]+frametime, 1.0)
                     #)
 
+    # Returns the control mode for the lamp
     def getControlMode(self, n):
         return self.mainsControlMode
 
@@ -178,6 +183,8 @@ class Lamp:
     def setFrameCursors(self, frameCursors):
         self.frameCursors = frameCursors
 
+
+    # Set/Get functions for turning lamp on/off
     def getMainLight(self):
         return self.mainLightOn
 
@@ -196,6 +203,8 @@ class Lamp:
                     self.bulbsTargetHSV[i] = (0.0, 0.0, 0.0)
         self.mainLightOn = lightOn
 
+
+    # Set/get functions for the number of bulbs belonging to the lamp
     def getNumBulbs(self):
         return self.numBulbs
 
