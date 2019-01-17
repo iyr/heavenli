@@ -277,8 +277,9 @@ wereColorsTouched = False
         
 def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
     global currentBri, currentSat, currentHue, wereColorsTouched, __pickerVerts, __pickerColrs, __ringVerts, __ringColrs, __ringPoints
-    tmcl = targetLamp.getBulbRGB(targetBulb)
-    tmc = colorsys.rgb_to_hsv(tmcl[0], tmcl[1], tmcl[2])
+    #tmcRGB = targetLamp.getBulbRGB(targetBulb)
+    #tmcHSV = colorsys.rgb_to_hsv(tmcRGB[0], tmcRGB[1], tmcRGB[2])
+    tmcHSV = targetLamp.getBulbtHSV(targetBulb)
     acbic = animCurveBounce(1.0-cursor)
     acic = animCurve(1.0-cursor)
     acbc = animCurveBounce(cursor)
@@ -333,15 +334,6 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
             hueButtons[i] = (hueButtons[i][0]*w2h, hueButtons[i][1]*w2h, hueButtons[i][2])
             tmr = w2h
 
-        #glBegin(GL_TRIANGLE_FAN)
-        #glColor3f(1.0, 1.0, 1.0)
-        #glVertex2f(hueButtons[i][0], hueButtons[i][1])
-        #for j in range(21):
-            #tmx = hueButtons[i][0]+cos(radians(j*360/20))*tmr*(0.15*(12.0/float(numHues)))
-            #tmy = hueButtons[i][1]+sin(radians(j*360/20))*tmr*(0.15*(12.0/float(numHues)))
-            #glVertex2f(tmx, tmy)
-        #glEnd()
-
         if (watchPoint(
             mapRanges(hueButtons[i][0], -1.0*w2h, 1.0*w2h, 0, wx*2), 
             mapRanges(hueButtons[i][1],      1.0,    -1.0, 0, wy*2),
@@ -349,7 +341,8 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
             wereColorsTouched = True
             currentHue = hueButtons[i][2]
             print("updating current hue to {:}".format(currentHue))
-            #targetLamp.setBulbRGB(targetBulb, 
+            tmcHSV = (currentHue, tmcHSV[1], tmcHSV[2])
+            targetLamp.setBulbtHSV(targetBulb, tmcHSV)
 
     # Draw Triangle of Dots with different brightness/saturation
     satValButtons = drawColrTri(currentHue, int(numHues/2), w2h, acbic)

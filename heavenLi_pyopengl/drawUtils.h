@@ -3,4 +3,5 @@
 #include "drawUtils/drawEllipse.cpp"
 #include "drawUtils/drawHalo.cpp"
 #include "drawUtils/hsv2rgb.cpp"
+#include "drawUtils/rgb2hsv.cpp"
 // :v

@@ -12,6 +12,7 @@ GLfloat  *colrTriColorBuffer  = NULL;
 GLushort *colrTriIndices      = NULL;
 GLuint   colrTriVerts;
 GLint    prevColrTriNumLevels;
+GLfloat  prevHue;
 float    *triButtonData       = NULL;
 
 PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
@@ -56,10 +57,9 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       float colors[3] = {0.0, 0.0, 0.0};
 
       tmr = 0.05f;
-      currentHue = 0.333333f;
       for (int i = 0; i < numLevels; i++) {        /* Columns */
          for (int j = 0; j < numLevels-i; j++) {   /* Rows */
-            // Set lowest button corner to be black so a light can be turned all the way off
+            // Set lower left corner button to be black so the bulb can be turned all the way off
             if (j == numLevels-1) {
                value = 0.0;
             } else {
@@ -81,7 +81,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
 
             // Convert HSV to RGB
             hsv2rgb(
-                  float(currentHue), 
+                  currentHue,
                   saturation,
                   value, 
                   colors);
@@ -126,6 +126,31 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
          colrTriColorBuffer[i*3+2]  = colrs[i*3+2];
       }
       prevColrTriNumLevels = numLevels;
+      prevHue = currentHue;
+   }
+
+   if ( prevHue != currentHue ) {
+      float rgb[3] = {0.0f, 0.0f, 0.0f};
+      float hsv[3] = {0.0f, 0.0f, 0.0f};
+      for (unsigned int i = 0; i < colrTriVerts; i++) {
+         // Get current RGB values
+         rgb[0] = colrTriColorBuffer[i*3+0];
+         rgb[1] = colrTriColorBuffer[i*3+1];
+         rgb[2] = colrTriColorBuffer[i*3+2];
+
+         // Convert to Hue/Sat/Val
+         rgb2hsv(rgb[0], rgb[1], rgb[2], hsv);
+
+         // Convert to RGB with current Hue
+         hsv2rgb(currentHue, hsv[1], hsv[2], rgb);
+
+         // Update Color buffer
+         colrTriColorBuffer[i*3+0] = rgb[0];
+         colrTriColorBuffer[i*3+1] = rgb[1];
+         colrTriColorBuffer[i*3+2] = rgb[2];
+      }
+
+      prevHue = currentHue;
    }
 
    glPushMatrix();

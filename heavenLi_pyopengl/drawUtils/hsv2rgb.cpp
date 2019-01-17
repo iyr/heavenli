@@ -22,4 +22,6 @@ void hsv2rgb(float h, float s, float v, float rgb[3]) {
    rgb[0] = R;
    rgb[1] = G;
    rgb[2] = B;
+
+   return;
 }
