@@ -8,7 +8,7 @@
 using namespace std;
 
 GLfloat  *colrTriVertexBuffer = NULL;
-GLfloat *colrTriColorBuffer  = NULL;
+GLfloat  *colrTriColorBuffer  = NULL;
 GLushort *colrTriIndices      = NULL;
 GLuint   colrTriVerts;
 GLint    prevColrTriNumLevels;
@@ -24,7 +24,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
 
    // Parse Inputs
    if (!PyArg_ParseTuple(args,
-            "dlff",
+            "flff",
             &currentHue,
             &numLevels,
             &w2h,
@@ -46,7 +46,6 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       numLevels = 7;
 
    if (  prevColrTriNumLevels != numLevels   ||
-         prevHue              != currentHue  ||
          colrTriVertexBuffer  == NULL        ||
          colrTriColorBuffer   == NULL        ||
          colrTriIndices       == NULL        ){
@@ -126,12 +125,6 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
 
          // Convert to Hue/Sat/Val
          rgb2hsv(rgb[0], rgb[1], rgb[2], hsv);
-
-         if (i == colrTriVerts-1) {
-            printf("buffer   Hue: %.9F\n", hsv[0]);
-            printf("previous Hue: %.9F\n", prevHue);
-            printf("current  Hue: %.9F\n", currentHue);
-         }
 
          // Convert to RGB with current Hue
          hsv2rgb(currentHue, hsv[1], hsv[2], rgb);
