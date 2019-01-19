@@ -7,12 +7,12 @@
 
 using namespace std;
 
-GLfloat  *hueRingVertexBuffer = NULL;
-GLfloat  *hueRingColorBuffer  = NULL;
-GLushort *hueRingIndices      = NULL;
-GLuint   hueRingVerts;
-GLuint   prevHueRingNumHues;
-float    *hueButtonData       = NULL;  /* X, Y, hue per button */
+GLfloat*    hueRingVertexBuffer = NULL;
+GLdouble*   hueRingColorBuffer  = NULL;
+GLushort*   hueRingIndices      = NULL;
+GLuint      hueRingVerts;
+GLuint      prevHueRingNumHues;
+float*      hueButtonData       = NULL;  /* X, Y, hue per button */
 
 PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
    PyObject *py_list;
@@ -39,11 +39,12 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
 
       printf("Initializing Geometry for Hue Ring\n");
       vector<GLfloat> verts;
-      vector<GLfloat> colrs;
-      float ang, tmo, tmx, tmy, tmf, tmr;
+      vector<GLdouble> colrs;
+      float ang, tmx, tmy, tmf, tmr;
+      double tmo;
       tmf = float(1.0f / numHues);
       tmr = float(0.15f);
-      float colors[3] = {0.0, 0.0, 0.0};
+      double colors[3] = {0.0, 0.0, 0.0};
 
       if (hueButtonData == NULL) {
          hueButtonData = new float[numHues*2];
@@ -53,14 +54,14 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
       }
 
       for (int i = 0; i < numHues; i++) {
-         tmo = float(i) / float(numHues);
-         hsv2rgb(tmo, 1.0f, 1.0f, colors);
-         ang = 360*tmo + 90;
+         tmo = double(i) / double(numHues);
+         hsv2rgb(tmo, 1.0, 1.0, colors);
+         ang = float(360.0*tmo + 90.0);
          tmx = float(cos(degToRad(ang))*0.67*pow(numHues/12.0f, 1.0f/4.0f));
          tmy = float(sin(degToRad(ang))*0.67*pow(numHues/12.0f, 1.0f/4.0f));
          hueButtonData[i*2+0] = tmx;
          hueButtonData[i*2+1] = tmy;
-         drawEllipse(tmx, tmy, float(tmr*(12.0/numHues)), float(tmr*(12.0/numHues)), circleSegments, colors, verts, colrs);
+         drawEllipse(tmx, tmy, float(tmr*(12.0/numHues)), circleSegments, colors, verts, colrs);
       }
 
       hueRingVerts = verts.size()/2;
@@ -74,10 +75,10 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
       }
 
       if (hueRingColorBuffer == NULL) {
-         hueRingColorBuffer = new GLfloat[hueRingVerts*3];
+         hueRingColorBuffer = new GLdouble[hueRingVerts*3];
       } else {
          delete [] hueRingColorBuffer;
-         hueRingColorBuffer = new GLfloat[hueRingVerts*3];
+         hueRingColorBuffer = new GLdouble[hueRingVerts*3];
       }
 
       if (hueRingIndices == NULL) {
@@ -115,7 +116,7 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
    }
 
    glScalef(scale, scale, 1);
-   glColorPointer(3, GL_FLOAT, 0, hueRingColorBuffer);
+   glColorPointer(3, GL_DOUBLE, 0, hueRingColorBuffer);
    glVertexPointer(2, GL_FLOAT, 0, hueRingVertexBuffer);
    glDrawElements( GL_TRIANGLES, hueRingVerts, GL_UNSIGNED_SHORT, hueRingIndices);
    glPopMatrix();

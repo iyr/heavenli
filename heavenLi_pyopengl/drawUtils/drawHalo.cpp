@@ -10,15 +10,16 @@ int drawHalo(
       float bsy,                 /* y-Scale 2.0=spans display before GL scaling */
       float rs,                  /* Halo thickness */
       char circleSegments,       /* Number of sides */
-      float *color,             /* Polygon Color */
+      double *color,             /* Polygon Color */
       std::vector<float> &verts, /* Input Vector of x,y coordinates */
-      std::vector<float> &colrs  /* Input Vector of r,g,b values */
+      std::vector<double> &colrs  /* Input Vector of r,g,b values */
       ){
-   float tma, R, G, B;
+   float tma; 
+   double R, G, B;
    char degSegment = 360 / circleSegments;
-   R = float(color[0]);
-   G = float(color[1]);
-   B = float(color[2]);
+   R = color[0];
+   G = color[1];
+   B = color[2];
 
 //#  pragma omp parallel for
    for (int i = 0; i < circleSegments; i ++ ) {

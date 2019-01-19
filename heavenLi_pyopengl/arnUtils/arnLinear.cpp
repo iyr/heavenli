@@ -17,7 +17,7 @@ float constrain(float value, float min, float max) {
 }
 
 GLfloat  *homeLinearVertexBuffer = NULL;
-GLfloat  *homeLinearColorBuffer  = NULL;
+GLdouble  *homeLinearColorBuffer  = NULL;
 GLushort *homeLinearIndices      = NULL;
 GLuint   homeLinearVerts;
 int      prevHomeLinearNumbulbs;
@@ -27,8 +27,9 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
    PyObject* py_list;
    PyObject* py_tuple;
    PyObject* py_float;
-   float *bulbColors;
-   float gx, gy, wx, wy, ao, w2h, R, G, B;
+   double *bulbColors;
+   float gx, gy, wx, wy, ao, w2h; 
+   double R, G, B;
    int numBulbs;
    if (!PyArg_ParseTuple(args,
             "fffflffO",
@@ -43,7 +44,7 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
       Py_RETURN_NONE;
    }
    // Parse array of tuples containing RGB Colors of bulbs
-   bulbColors = new float[numBulbs*3];
+   bulbColors = new double[numBulbs*3];
 //#  pragma omp parallel for
    for (int i = 0; i < numBulbs; i++) {
       py_tuple = PyList_GetItem(py_list, i);
@@ -60,12 +61,12 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
 
       printf("Generating geometry for homeLinear\n");
       vector<GLfloat> verts;
-      vector<GLfloat> colrs;
+      vector<GLdouble> colrs;
       float TLx, TRx, BLx, BRx, TLy, TRy, BLy, BRy;
       float offset = float(4.0/60.0);
-      R = float(0.0);
-      G = float(0.0);
-      B = float(0.0);
+      R = 0.0;
+      G = 0.0;
+      B = 0.0;
       for (int i = 0; i < 60; i++) {
          if (i == 0) {
             TLx = -4.0;
@@ -121,10 +122,10 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
       }
 
       if (homeLinearColorBuffer == NULL) {
-         homeLinearColorBuffer = new GLfloat[homeLinearVerts*3];
+         homeLinearColorBuffer = new GLdouble[homeLinearVerts*3];
       } else {
          delete [] homeLinearColorBuffer;
-         homeLinearColorBuffer = new GLfloat[homeLinearVerts*3];
+         homeLinearColorBuffer = new GLdouble[homeLinearVerts*3];
       }
 
       if (homeLinearIndices == NULL) {
@@ -154,11 +155,11 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
             // 3 (R,G,B) color values per vertex
             // 2 Triangles per Quad
             // 3 Vertices per Triangle
-            if (float(bulbColors[i+j*3]) != homeLinearColorBuffer[i + j*(60/numBulbs)*9*2 ] || prevHomeLinearNumbulbs != numBulbs) {
+            if (bulbColors[i+j*3] != homeLinearColorBuffer[i + j*(60/numBulbs)*9*2 ] || prevHomeLinearNumbulbs != numBulbs) {
 //#              pragma omp parallel for
                for (int k = 0; k < (60/numBulbs)*3*2; k++) {  
-                  if (float(bulbColors[i+j*3]) != homeLinearColorBuffer[i + k*3 + j*(60/numBulbs)*9*2 ]) {
-                     homeLinearColorBuffer[ j*(60/numBulbs)*9*2 + k*3 + i ] = float(bulbColors[i+j*3]);
+                  if (bulbColors[i+j*3] != homeLinearColorBuffer[i + k*3 + j*(60/numBulbs)*9*2 ]) {
+                     homeLinearColorBuffer[ j*(60/numBulbs)*9*2 + k*3 + i ] = bulbColors[i+j*3];
                   }
                }
             }
@@ -173,7 +174,7 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
    glRotatef(90, 0, 0, 1);
    glScalef(0.5, float(w2h/2.0), 1);
    glRotatef(ao+90, 0, 0, 1);
-   glColorPointer(3, GL_FLOAT, 0, homeLinearColorBuffer);
+   glColorPointer(3, GL_DOUBLE, 0, homeLinearColorBuffer);
    glVertexPointer(2, GL_FLOAT, 0, homeLinearVertexBuffer);
    glDrawElements( GL_TRIANGLES, homeLinearVerts, GL_UNSIGNED_SHORT, homeLinearIndices);
    glPopMatrix();
@@ -191,7 +192,7 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
  */
 
 GLfloat  *iconLinearVertexBuffer = NULL;
-GLfloat  *iconLinearColorBuffer  = NULL;
+GLdouble *iconLinearColorBuffer  = NULL;
 GLushort *iconLinearIndices      = NULL;
 GLfloat  *iconLinearBulbVertices = NULL;
 GLuint   iconLinearVerts;
@@ -202,10 +203,11 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
    PyObject* detailColorPyTup;
    PyObject* py_list;
    PyObject* py_tuple;
-   PyObject* py_float;
-   float *bulbColors;
-   float detailColor[3];
-   float gx, gy, scale, ao, w2h, R, G, B;
+   PyObject* py_double;
+   double *bulbColors;
+   double detailColor[3];
+   float gx, gy, scale, ao, w2h; 
+   double R, G, B;
    int numBulbs, features;
    int vertIndex = 0;
    if (!PyArg_ParseTuple(args,
@@ -226,21 +228,21 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
    char circleSegments = 20;
 
    // Parse array of tuples containing RGB Colors of bulbs
-   bulbColors = new float[numBulbs*3];
+   bulbColors = new double[numBulbs*3];
 //#  pragma omp parallel for
    for (int i = 0; i < numBulbs; i++) {
       py_tuple = PyList_GetItem(py_list, i);
 
       for (int j = 0; j < 3; j++) {
-         py_float = PyTuple_GetItem(py_tuple, j);
-         bulbColors[i*3+j] = float(PyFloat_AsDouble(py_float));
+         py_double = PyTuple_GetItem(py_tuple, j);
+         bulbColors[i*3+j] = PyFloat_AsDouble(py_double);
       }
    }
 
    // Parse RGB detail colors
-   detailColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 0)));
-   detailColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 1)));
-   detailColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2)));
+   detailColor[0] = PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 0));
+   detailColor[1] = PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 1));
+   detailColor[2] = PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2));
 
    if (iconLinearVertexBuffer == NULL     ||
        iconLinearColorBuffer  == NULL     ||
@@ -248,9 +250,9 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
 
       printf("Generating geometry for iconLinear\n");
       vector<GLfloat> markerVerts;
-      vector<GLfloat> markerColrs;
+      vector<GLdouble> markerColrs;
       vector<GLfloat> verts;
-      vector<GLfloat> colrs;
+      vector<GLdouble> colrs;
       float TLx, TRx, BLx, BRx, TLy, TRy, BLy, BRy, tmx, tmy, ri, ro;
       float offset = float(2.0/60.0);
       float degSegment = float(360.0/float(circleSegments));
@@ -278,9 +280,9 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
          if (i%10 == 0) {
             tmb++;
          }
-         R = float(bulbColors[tmb*3+0]);
-         G = float(bulbColors[tmb*3+1]);
-         B = float(bulbColors[tmb*3+2]);
+         R = bulbColors[tmb*3+0];
+         G = bulbColors[tmb*3+1];
+         B = bulbColors[tmb*3+2];
 
          // Define end-slice with rounded corners
          if (i == 0) {
@@ -398,9 +400,9 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
          }
       }
 
-      R = float(detailColor[0]);
-      G = float(detailColor[1]);
-      B = float(detailColor[2]);
+      R = detailColor[0];
+      G = detailColor[1];
+      B = detailColor[2];
 
       // Define OutLine
       if (features >= 1) {
@@ -702,10 +704,10 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
 
       // Safely (Re)allocate memory for icon Color Buffer
       if (iconLinearColorBuffer == NULL) {
-         iconLinearColorBuffer = new GLfloat[iconLinearVerts*3];
+         iconLinearColorBuffer = new GLdouble[iconLinearVerts*3];
       } else {
          delete [] iconLinearColorBuffer;
-         iconLinearColorBuffer = new GLfloat[iconLinearVerts*3];
+         iconLinearColorBuffer = new GLdouble[iconLinearVerts*3];
       }
 
       // Safely (Re)allocate memory for icon indices
@@ -1047,7 +1049,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       glScalef(scale*w2h, scale*w2h, 1);
    }
    glRotatef(ao+90, 0, 0, 1);
-   glColorPointer(3, GL_FLOAT, 0, iconLinearColorBuffer);
+   glColorPointer(3, GL_DOUBLE, 0, iconLinearColorBuffer);
    glVertexPointer(2, GL_FLOAT, 0, iconLinearVertexBuffer);
    glDrawElements( GL_TRIANGLES, iconLinearVerts, GL_UNSIGNED_SHORT, iconLinearIndices);
    glPopMatrix();

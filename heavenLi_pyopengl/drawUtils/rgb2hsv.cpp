@@ -2,8 +2,8 @@
 
 using namespace std;
 
-void rgb2hsv(float r, float g, float b, float hsv[3]) {
-   float min, max, delta;
+void rgb2hsv(double r, double g, double b, double hsv[3]) {
+   double min, max, delta;
 
    min = r   < g ? r   : g;
    min = min < b ? min : b;
@@ -14,31 +14,31 @@ void rgb2hsv(float r, float g, float b, float hsv[3]) {
    hsv[2] = max;
    delta = max - min;
 
-   if ( delta < 0.00001f ) {
-      hsv[0] = 0.0f;
-      hsv[1] = 0.0f;
+   if ( delta < 0.00001 ) {
+      hsv[0] = 0.0;
+      hsv[1] = 0.0;
       return;
    }
 
-   if ( max > 0.0f ) {
+   if ( max > 0.0 ) {
       hsv[1] = delta / max;
    } else {
-      hsv[0] = 0.0f;
-      hsv[1] = 0.0f;
+      hsv[0] = 0.0;
+      hsv[1] = 0.0;
       return;
    }
 
    if ( r >= max ) {
-      hsv[0] = 0.0f + ( g - b ) / delta;
+      hsv[0] = 0.0 + ( g - b ) / delta;
    } else if ( g >= max ) {
-      hsv[0] = 2.0f + ( b - r ) / delta;
+      hsv[0] = 2.0 + ( b - r ) / delta;
    } else {
-      hsv[0] = 4.0f + ( r - g ) / delta;
+      hsv[0] = 4.0 + ( r - g ) / delta;
    }
 
-   hsv[0] *= 60.0f / 360.0f;
-   if ( hsv[0] < 0.0f )
-      hsv[0] += 1.0f;
+   hsv[0] *= 60.0 / 360.0;
+   if ( hsv[0] < 0.0 )
+      hsv[0] += 1.0;
 
    return;
 }
