@@ -8,7 +8,7 @@
 using namespace std;
 
 GLfloat*    hueRingVertexBuffer = NULL;
-GLdouble*   hueRingColorBuffer  = NULL;
+GLfloat*   hueRingColorBuffer  = NULL;
 GLushort*   hueRingIndices      = NULL;
 GLuint      hueRingVerts;
 GLuint      prevHueRingNumHues;
@@ -39,12 +39,12 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
 
       printf("Initializing Geometry for Hue Ring\n");
       vector<GLfloat> verts;
-      vector<GLdouble> colrs;
+      vector<GLfloat> colrs;
       float ang, tmx, tmy, tmf, tmr;
-      double tmo;
+      float tmo;
       tmf = float(1.0f / numHues);
       tmr = float(0.15f);
-      double colors[3] = {0.0, 0.0, 0.0};
+      float colors[3] = {0.0, 0.0, 0.0};
 
       if (hueButtonData == NULL) {
          hueButtonData = new float[numHues*2];
@@ -54,7 +54,7 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
       }
 
       for (int i = 0; i < numHues; i++) {
-         tmo = double(i) / double(numHues);
+         tmo = float(i) / float(numHues);
          hsv2rgb(tmo, 1.0, 1.0, colors);
          ang = float(360.0*tmo + 90.0);
          tmx = float(cos(degToRad(ang))*0.67*pow(numHues/12.0f, 1.0f/4.0f));
@@ -75,10 +75,10 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
       }
 
       if (hueRingColorBuffer == NULL) {
-         hueRingColorBuffer = new GLdouble[hueRingVerts*3];
+         hueRingColorBuffer = new GLfloat[hueRingVerts*3];
       } else {
          delete [] hueRingColorBuffer;
-         hueRingColorBuffer = new GLdouble[hueRingVerts*3];
+         hueRingColorBuffer = new GLfloat[hueRingVerts*3];
       }
 
       if (hueRingIndices == NULL) {
@@ -116,7 +116,7 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
    }
 
    glScalef(scale, scale, 1);
-   glColorPointer(3, GL_DOUBLE, 0, hueRingColorBuffer);
+   glColorPointer(3, GL_FLOAT, 0, hueRingColorBuffer);
    glVertexPointer(2, GL_FLOAT, 0, hueRingVertexBuffer);
    glDrawElements( GL_TRIANGLES, hueRingVerts, GL_UNSIGNED_SHORT, hueRingIndices);
    glPopMatrix();

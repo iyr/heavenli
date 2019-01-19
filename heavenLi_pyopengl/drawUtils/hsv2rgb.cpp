@@ -2,7 +2,7 @@
 
 using namespace std;
 
-void hsv2rgb(double h, double s, double v, double rgb[3]) {
+void hsv2rgb(float h, float s, float v, float rgb[3]) {
    if ( s <= 0.0 ) {
       rgb[0] = v;
       rgb[1] = v;
@@ -11,13 +11,13 @@ void hsv2rgb(double h, double s, double v, double rgb[3]) {
    }
 
    h *= 360.0;
-   double R, G, B;
+   float R, G, B;
 
    long hi = long(floor(h / 60.0)) % 6;
-   double f = (h / 60.0) - hi;
-   double p = v * (1.0 - s);
-   double q = v * (1.0 - s * f);
-   double t = v * (1.0 - s * (1.0 - f));
+   float f = (h / 60.0f) - hi;
+   float p = v * (1.0f - s);
+   float q = v * (1.0f - s * f);
+   float t = v * (1.0f - s * (1.0f - f));
 
    switch(hi) {
       case 0: R = v, G = t, B = p; break;

@@ -8,7 +8,7 @@
 using namespace std;
 
 GLfloat  *homeCircleVertexBuffer       = NULL;
-GLdouble  *homeCircleColorBuffer        = NULL;
+GLfloat  *homeCircleColorBuffer        = NULL;
 GLushort *homeCircleIndices            = NULL;
 GLuint   homeCircleVerts;
 GLint    prevHomeCircleNumBulbs;
@@ -16,10 +16,10 @@ GLint    prevHomeCircleNumBulbs;
 PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    PyObject* py_list;
    PyObject* py_tuple;
-   PyObject* py_double;
-   double *bulbColors;
+   PyObject* py_float;
+   float *bulbColors;
    float gx, gy, wx, wy, ao, w2h; 
-   double R, G, B;
+   float R, G, B;
    int numBulbs;
    if (!PyArg_ParseTuple(args,
             "fffflffO",
@@ -37,14 +37,14 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    char circleSegments = 60;
 
    // Parse array of tuples containing RGB Colors of bulbs
-   bulbColors = new double[numBulbs*3];
+   bulbColors = new float[numBulbs*3];
 //#  pragma omp parallel for
    for (int i = 0; i < numBulbs; i++) {
       py_tuple = PyList_GetItem(py_list, i);
 
       for (int j = 0; j < 3; j++) {
-         py_double = PyTuple_GetItem(py_tuple, j);
-         bulbColors[i*3+j] = double(PyFloat_AsDouble(py_double));
+         py_float = PyTuple_GetItem(py_tuple, j);
+         bulbColors[i*3+j] = float(PyFloat_AsDouble(py_float));
       }
    }
 
@@ -54,7 +54,7 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
 
       printf("Generating geometry for homeCircle\n");
       vector<GLfloat> verts;
-      vector<GLdouble> colrs;
+      vector<GLfloat> colrs;
 
       //char degSegment = 360 / circleSegments;
       char degSegment = 360 / circleSegments;
@@ -62,9 +62,9 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
       float tma;
       
       for (int j = 0; j < numBulbs; j++) {
-         R = double(bulbColors[j*3+0]);
-         G = double(bulbColors[j*3+1]);
-         B = double(bulbColors[j*3+2]);
+         R = float(bulbColors[j*3+0]);
+         G = float(bulbColors[j*3+1]);
+         B = float(bulbColors[j*3+2]);
 //#        pragma omp parallel for
          for (int i = 0; i < circleSegments/numBulbs; i++) {
             /* X */ verts.push_back(float(0.0));
@@ -95,10 +95,10 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
       }
 
       if (homeCircleColorBuffer == NULL) {
-         homeCircleColorBuffer = new GLdouble[homeCircleVerts*3];
+         homeCircleColorBuffer = new GLfloat[homeCircleVerts*3];
       } else {
          delete [] homeCircleColorBuffer;
-         homeCircleColorBuffer = new GLdouble[homeCircleVerts*3];
+         homeCircleColorBuffer = new GLfloat[homeCircleVerts*3];
       }
 
       if (homeCircleIndices == NULL) {
@@ -131,12 +131,12 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
          
       // Update color, if needed
       for (int j = 0; j < numBulbs; j++) {
-         if (double(bulbColors[ i + j*3 ]) != homeCircleColorBuffer[ i + j*(60/numBulbs)*9 ] ||
+         if (float(bulbColors[ i + j*3 ]) != homeCircleColorBuffer[ i + j*(60/numBulbs)*9 ] ||
                prevHomeCircleNumBulbs != numBulbs) {
 //#           pragma omp parallel for
             for (int k = 0; k < (60/numBulbs)*3; k++) {
-               if (double(bulbColors[ i + j*3 ]) != homeCircleColorBuffer[ i + k*3 + j*(60/numBulbs)*9 ]) {
-                  homeCircleColorBuffer[ j*(60/numBulbs)*9 + k*3 + i ] = double(bulbColors[i+j*3]);
+               if (float(bulbColors[ i + j*3 ]) != homeCircleColorBuffer[ i + k*3 + j*(60/numBulbs)*9 ]) {
+                  homeCircleColorBuffer[ j*(60/numBulbs)*9 + k*3 + i ] = float(bulbColors[i+j*3]);
                }
             }
          }
@@ -149,7 +149,7 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    glPushMatrix();
    glScalef(sqrt(w2h)*hypot(wx, wy), sqrt(wy/wx)*hypot(wx, wy), 1.0);
    glRotatef(ao, 0, 0, 1);
-   glColorPointer(3, GL_DOUBLE, 0, homeCircleColorBuffer);
+   glColorPointer(3, GL_FLOAT, 0, homeCircleColorBuffer);
    glVertexPointer(2, GL_FLOAT, 0, homeCircleVertexBuffer);
    glDrawElements( GL_TRIANGLES, homeCircleVerts, GL_UNSIGNED_SHORT, homeCircleIndices);
    glPopMatrix();
@@ -166,7 +166,7 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
  * <= 4: color representation + outline + bulb markers + bulb marker halos + grand halo
  */
 GLfloat  *iconCircleVertexBuffer = NULL;
-GLdouble  *iconCircleColorBuffer  = NULL;
+GLfloat  *iconCircleColorBuffer  = NULL;
 GLushort *iconCircleIndices      = NULL;
 GLfloat  *iconCircleBulbVertices = NULL;
 GLuint   iconCircleVerts;
@@ -178,9 +178,9 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
    PyObject* detailColorPyTup;
    PyObject* py_list;
    PyObject* py_tuple;
-   PyObject* py_double;
-   double *bulbColors;
-   double detailColor[3];
+   PyObject* py_float;
+   float *bulbColors;
+   float detailColor[3];
    float gx, gy, scale, ao, w2h;
    int numBulbs, features;
    int vertIndex = 0;
@@ -202,21 +202,21 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
    char circleSegments = 60;
 
    // Parse array of tuples containing RGB Colors of bulbs
-   bulbColors = new double[numBulbs*3];
+   bulbColors = new float[numBulbs*3];
 //#  pragma omp parallel for
    for (int i = 0; i < numBulbs; i++) {
       py_tuple = PyList_GetItem(py_list, i);
 
       for (int j = 0; j < 3; j++) {
-         py_double = PyTuple_GetItem(py_tuple, j);
-         bulbColors[i*3+j] = PyFloat_AsDouble(py_double);
+         py_float = PyTuple_GetItem(py_tuple, j);
+         bulbColors[i*3+j] = float(PyFloat_AsDouble(py_float));
       }
    }
 
    // Parse RGB detail colors
-   detailColor[0] = PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 0));
-   detailColor[1] = PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 1));
-   detailColor[2] = PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2));
+   detailColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 0)));
+   detailColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 1)));
+   detailColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2)));
 
    if (iconCircleVertexBuffer == NULL     ||
        iconCircleColorBuffer  == NULL     ||
@@ -225,15 +225,14 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
 
       printf("Generating geometry for iconCircle\n");
       vector<GLfloat> markerVerts;
-      vector<GLdouble> markerColrs;
+      vector<GLfloat> markerColrs;
 
       vector<GLfloat> verts;
-      vector<GLdouble> colrs;
+      vector<GLfloat> colrs;
 
       char degSegment = 360 / circleSegments;
       float angOffset = float(360.0 / float(numBulbs));
-      float tma, tmx, tmy, delta;
-      double R, G, B;
+      float tma, tmx, tmy, delta, R, G, B;
 
       drawEllipse(float(0.0), float(0.0), float(0.16), circleSegments/3, detailColor, markerVerts, markerColrs);
       drawHalo(float(0.0), float(0.0), float(0.22), float(0.22), float(0.07), circleSegments/3, detailColor, markerVerts, markerColrs);
@@ -357,10 +356,10 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
 
       // Safely (Re)allocate memory for icon Color Buffer
       if (iconCircleColorBuffer == NULL) {
-         iconCircleColorBuffer = new GLdouble[iconCircleVerts*3];
+         iconCircleColorBuffer = new GLfloat[iconCircleVerts*3];
       } else {
          delete [] iconCircleColorBuffer;
-         iconCircleColorBuffer = new GLdouble[iconCircleVerts*3];
+         iconCircleColorBuffer = new GLfloat[iconCircleVerts*3];
       }
 
       // Safely (Re)allocate memory for icon indices
@@ -592,7 +591,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       glScalef(scale*w2h, scale*w2h, 1);
    }
    glRotatef(ao, 0, 0, 1);
-   glColorPointer(3, GL_DOUBLE, 0, iconCircleColorBuffer);
+   glColorPointer(3, GL_FLOAT, 0, iconCircleColorBuffer);
    glVertexPointer(2, GL_FLOAT, 0, iconCircleVertexBuffer);
    glDrawElements( GL_TRIANGLES, iconCircleVerts, GL_UNSIGNED_SHORT, iconCircleIndices);
    glPopMatrix();

@@ -7,28 +7,19 @@
 
 using namespace std;
 
-double constrain(double val, double min, double max) {
-   if (val > max) {
-      return max;
-   } else
-   if (val < min) {
-      return min;
-   } else
-   return val;
-}
 GLfloat  *colrTriVertexBuffer = NULL;
-GLdouble *colrTriColorBuffer  = NULL;
+GLfloat *colrTriColorBuffer  = NULL;
 GLushort *colrTriIndices      = NULL;
 GLuint   colrTriVerts;
 GLint    prevColrTriNumLevels;
-GLdouble prevHue;
+GLfloat prevHue;
 float    *triButtonData       = NULL;
 
 PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    //PyObject *py_list;
    //PyObject *py_tuple;
    float w2h, scale;
-   double currentHue;
+   float currentHue;
    char circleSegments = 18;
    char numLevels = 6;
 
@@ -63,16 +54,16 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
 
       printf("Initializing Geometry for Color Triangle\n");
       vector<GLfloat> verts;
-      vector<GLdouble> colrs;
+      vector<GLfloat> colrs;
       float tmx, tmy, tmr; 
-      double saturation, value;
-      double colors[3] = {0.0, 0.0, 0.0};
+      float saturation, value;
+      float colors[3] = {0.0, 0.0, 0.0};
 
       tmr = 0.05f;
       for (int i = 0; i < numLevels; i++) {        /* Columns */
          for (int j = 0; j < numLevels-i; j++) {   /* Rows */
-            value = 1.0 - double(j) / double(numLevels - 1);
-            saturation  = double(i) / double(numLevels - 1 - j);
+            value = 1.0f - float(j) / float(numLevels - 1);
+            saturation  =  float(i) / float(numLevels - 1 - j);
 
             // Convert HSV to RGB
             hsv2rgb(
@@ -99,10 +90,10 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       }
 
       if (colrTriColorBuffer == NULL) {
-         colrTriColorBuffer = new GLdouble[colrTriVerts*3];
+         colrTriColorBuffer = new GLfloat[colrTriVerts*3];
       } else {
          delete [] colrTriColorBuffer;
-         colrTriColorBuffer = new GLdouble[colrTriVerts*3];
+         colrTriColorBuffer = new GLfloat[colrTriVerts*3];
       }
 
       if (colrTriIndices == NULL) {
@@ -125,8 +116,8 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    }
 
    if ( prevHue != currentHue ) {
-      double rgb[3];
-      double hsv[3];
+      float rgb[3];
+      float hsv[3];
       for (unsigned int i = 0; i < colrTriVerts; i++) {
          // Get current RGB values
          rgb[0] = colrTriColorBuffer[i*3+0];
@@ -160,7 +151,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    }
 
    glScalef(scale, scale, 1);
-   glColorPointer(3, GL_DOUBLE, 0, colrTriColorBuffer);
+   glColorPointer(3, GL_FLOAT, 0, colrTriColorBuffer);
    glVertexPointer(2, GL_FLOAT, 0, colrTriVertexBuffer);
    glDrawElements( GL_TRIANGLES, colrTriVerts, GL_UNSIGNED_SHORT, colrTriIndices);
    glPopMatrix();
