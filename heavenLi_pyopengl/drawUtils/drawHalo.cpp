@@ -10,12 +10,11 @@ int drawHalo(
       float bsy,                 /* y-Scale 2.0=spans display before GL scaling */
       float rs,                  /* Halo thickness */
       char circleSegments,       /* Number of sides */
-      float *color,             /* Polygon Color */
+      float *color,              /* Polygon Color */
       std::vector<float> &verts, /* Input Vector of x,y coordinates */
       std::vector<float> &colrs  /* Input Vector of r,g,b values */
       ){
-   float tma; 
-   float R, G, B;
+   float tma, R, G, B;
    char degSegment = 360 / circleSegments;
    R = color[0];
    G = color[1];

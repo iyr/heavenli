@@ -17,7 +17,7 @@ float*      hueButtonData       = NULL;  /* X, Y, hue per button */
 PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
    PyObject *py_list;
    PyObject *py_tuple;
-   float w2h, scale;
+   float w2h, scale, tmo;
    char circleSegments = 24;
    char numHues = 12;
 
@@ -41,10 +41,9 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
       float ang, tmx, tmy, tmf, tmr;
-      float tmo;
+      float colors[3] = {0.0, 0.0, 0.0};
       tmf = float(1.0f / numHues);
       tmr = float(0.15f);
-      float colors[3] = {0.0, 0.0, 0.0};
 
       if (hueButtonData == NULL) {
          hueButtonData = new float[numHues*2];
@@ -104,7 +103,6 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
          scale = scale*w2h;
    }
 
-   float tmo;
    py_list = PyList_New(numHues);
    for (int i = 0; i < numHues; i++) {
       py_tuple = PyTuple_New(3);

@@ -18,8 +18,7 @@ float    *triButtonData       = NULL;
 PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    //PyObject *py_list;
    //PyObject *py_tuple;
-   float w2h, scale;
-   float currentHue;
+   float w2h, scale, currentHue;
    char circleSegments = 18;
    char numLevels = 6;
 
@@ -55,13 +54,14 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       printf("Initializing Geometry for Color Triangle\n");
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
-      float tmx, tmy, tmr; 
-      float saturation, value;
+      float tmx, tmy, tmr, saturation, value;
       float colors[3] = {0.0, 0.0, 0.0};
 
       tmr = 0.05f;
       for (int i = 0; i < numLevels; i++) {        /* Columns */
          for (int j = 0; j < numLevels-i; j++) {   /* Rows */
+
+            // Calculate Discrete Saturation and Value
             value = 1.0f - float(j) / float(numLevels - 1);
             saturation  =  float(i) / float(numLevels - 1 - j);
 
