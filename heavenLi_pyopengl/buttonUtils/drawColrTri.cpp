@@ -19,7 +19,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    //PyObject *py_list;
    //PyObject *py_tuple;
    float w2h, scale, currentHue;
-   char circleSegments = 18;
+   char circleSegments = 24;
    char numLevels = 6;
 
    // Parse Inputs

@@ -507,8 +507,6 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
 
       // Update Grand (Room) Outline
       // Draw Color Wheel + Outline + Bulb Markers + Bulb Halos + Grand Halo if 'features' == 4
-      circleSegments = 60;
-      int degSegment = 360/60;
       if (features >= 4) {
          // Move Outline on-screen if off-screen
          if (iconCircleVertexBuffer[vertIndex] > offScreen/2) {

@@ -8,18 +8,18 @@
 using namespace std;
 
 GLfloat*    hueRingVertexBuffer = NULL;
-GLfloat*   hueRingColorBuffer  = NULL;
+GLfloat*    hueRingColorBuffer  = NULL;
 GLushort*   hueRingIndices      = NULL;
 GLuint      hueRingVerts;
-GLuint      prevHueRingNumHues;
+GLubyte     prevHueRingNumHues;
 float*      hueButtonData       = NULL;  /* X, Y, hue per button */
 
 PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
    PyObject *py_list;
    PyObject *py_tuple;
    float w2h, scale, tmo;
-   char circleSegments = 24;
-   char numHues = 12;
+   char circleSegments = 45;
+   unsigned char numHues = 12;
 
    // Parse Inputs
    if (!PyArg_ParseTuple(args,
@@ -40,9 +40,8 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
       printf("Initializing Geometry for Hue Ring\n");
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
-      float ang, tmx, tmy, tmf, tmr;
+      float ang, tmx, tmy, tmr;
       float colors[3] = {0.0, 0.0, 0.0};
-      tmf = float(1.0f / numHues);
       tmr = float(0.15f);
 
       if (hueButtonData == NULL) {
