@@ -346,6 +346,7 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
 
     # Draw Triangle of Dots with different brightness/saturation
     satValButtons = drawColrTri(targetLamp.getBulbHSV(targetBulb)[0], int(numHues/2), w2h, acbic)
+    #satValButtons = drawColrTri(currentHue, int(numHues/2), w2h, acbic)
             #if (watchPoint(
                 #mapRanges(tmx, -1.0*w2h, 1.0*w2h, 0, wx*2),
                 #mapRanges(tmy, 1.0, -1.0, 0, wy*2),

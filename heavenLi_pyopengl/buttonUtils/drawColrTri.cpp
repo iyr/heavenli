@@ -115,26 +115,30 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    }
 
    if ( prevHue != currentHue ) {
-      float rgb[3];
-      float hsv[3];
-      for (unsigned int i = 0; i < colrTriVerts; i++) {
-         // Get current RGB values
-         rgb[0] = colrTriColorBuffer[i*3+0];
-         rgb[1] = colrTriColorBuffer[i*3+1];
-         rgb[2] = colrTriColorBuffer[i*3+2];
+      float saturation, value;
+      float colors[3] = {0.0, 0.0, 0.0};
+      int colrIndex = 0;
+      for (int i = 0; i < numLevels; i++) {        /* Columns */
+         for (int j = 0; j < numLevels-i; j++) {   /* Rows */
 
-         // Convert to Hue/Sat/Val
-         rgb2hsv(rgb[0], rgb[1], rgb[2], hsv);
+            // Calculate Discrete Saturation and Value
+            value = 1.0f - float(j) / float(numLevels - 1);
+            saturation  =  float(i) / float(numLevels - 1 - j);
 
-         // Convert to RGB with current Hue
-         hsv2rgb(currentHue, hsv[1], hsv[2], rgb);
+            // Convert HSV to RGB
+            hsv2rgb(
+                  currentHue,
+                  saturation,
+                  value, 
+                  colors);
 
-         // Update Color buffer
-         colrTriColorBuffer[i*3+0] = rgb[0];
-         colrTriColorBuffer[i*3+1] = rgb[1];
-         colrTriColorBuffer[i*3+2] = rgb[2];
+            colrIndex = updateEllipseColor(
+                  circleSegments, 
+                  colrIndex, 
+                  colors,
+                  colrTriColorBuffer);
+         }
       }
-
       prevHue = currentHue;
    }
 

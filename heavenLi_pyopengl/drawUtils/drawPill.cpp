@@ -4,16 +4,16 @@ using namespace std;
 
 // Write to pre-allocated input arrays, update pill shape between two points
 int drawPill(
-      float px,         /* x-coordinate of Point P */
-      float py,         /* y-coordinate of Point P */
-      float qx,         /* x-coordinate of Point Q */
-      float qy,         /* y-coordinate of Point Q */
-      float radius,     /* Radius/Thickness of pill */
-      int index,        /* index of where to start writing to input arrays */
-      float *pColor,   /* RGB values of P */
-      float *qColor,   /* RGB values of Q */
-      float *verts,     /* Input Array of x,y coordinates */
-      float *colrs      /* Input Array of r,g,b values */
+      float px,      /* x-coordinate of Point P */
+      float py,      /* y-coordinate of Point P */
+      float qx,      /* x-coordinate of Point Q */
+      float qy,      /* y-coordinate of Point Q */
+      float radius,  /* Radius/Thickness of pill */
+      int   index,   /* index of where to start writing to input arrays */
+      float *pColor, /* RGB values of P */
+      float *qColor, /* RGB values of Q */
+      float *verts,  /* Input Array of x,y coordinates */
+      float *colrs   /* Input Array of r,g,b values */
       ){
    int vertIndex = index*2;   /* index (x, y) */
    int colrIndex = index*3;   /* index (r, g, b) */

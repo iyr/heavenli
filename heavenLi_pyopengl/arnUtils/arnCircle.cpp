@@ -175,15 +175,15 @@ int      prevIconCircleFeatures;
 extern float offScreen;
 
 PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
-   PyObject* detailColorPyTup;
-   PyObject* py_list;
-   PyObject* py_tuple;
-   PyObject* py_float;
-   float *bulbColors;
-   float detailColor[3];
-   float gx, gy, scale, ao, w2h;
-   int numBulbs, features;
-   int vertIndex = 0;
+   PyObject*   detailColorPyTup;
+   PyObject*   py_list;
+   PyObject*   py_tuple;
+   PyObject*   py_float;
+   float*      bulbColors;
+   float       detailColor[3];
+   float       gx, gy, scale, ao, w2h;
+   long        numBulbs, features;
+   int         vertIndex = 0;
    if (!PyArg_ParseTuple(args,
             "ffflOlffO",
             &gx, &gy,
@@ -317,7 +317,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
                detailColor, 
                verts, colrs);
       }
-      
+       
       // Draw Grand (Room) Halo
       // Draw Color Wheel + Outline + Bulb Markers + Bulb Halos + Grand Halo if 'features' == 4
       if (features >= 4) {

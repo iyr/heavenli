@@ -192,7 +192,7 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
  */
 
 GLfloat  *iconLinearVertexBuffer = NULL;
-GLfloat *iconLinearColorBuffer  = NULL;
+GLfloat  *iconLinearColorBuffer  = NULL;
 GLushort *iconLinearIndices      = NULL;
 GLfloat  *iconLinearBulbVertices = NULL;
 GLuint   iconLinearVerts;
@@ -200,16 +200,16 @@ int      prevIconLinearNumBulbs;
 int      prevIconLinearFeatures;
 
 PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
-   PyObject* detailColorPyTup;
-   PyObject* py_list;
-   PyObject* py_tuple;
-   PyObject* py_float;
-   float *bulbColors;
-   float detailColor[3];
-   float gx, gy, scale, ao, w2h; 
-   float R, G, B;
-   int numBulbs, features;
-   int vertIndex = 0;
+   PyObject*   detailColorPyTup;
+   PyObject*   py_list;
+   PyObject*   py_tuple;
+   PyObject*   py_float;
+   float*      bulbColors;
+   float       detailColor[3];
+   float       gx, gy, scale, ao, w2h; 
+   float       R, G, B;
+   long        numBulbs, features;
+   int         vertIndex = 0;
    if (!PyArg_ParseTuple(args,
             "ffflOlffO",
             &gx, &gy,
