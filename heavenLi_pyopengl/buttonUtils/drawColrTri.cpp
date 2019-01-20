@@ -12,15 +12,15 @@ GLfloat  *colrTriColorBuffer  = NULL;
 GLushort *colrTriIndices      = NULL;
 GLuint   colrTriVerts;
 GLint    prevColrTriNumLevels;
-GLfloat prevHue;
+GLfloat  prevHue;
 float    *triButtonData       = NULL;
 
 PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
-   //PyObject *py_list;
-   //PyObject *py_tuple;
+   PyObject *py_list;
+   PyObject *py_tuple;
    float w2h, scale, currentHue;
    char circleSegments = 24;
-   char numLevels = 6;
+   long numLevels = 6;
 
    // Parse Inputs
    if (!PyArg_ParseTuple(args,
@@ -33,6 +33,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       Py_RETURN_NONE;
    }
 
+   long numButtons = (numLevels * (numLevels + 1)) / 2;
    /*
     * Granularity Levels:
     * 5: Low
@@ -53,9 +54,16 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       printf("Initializing Geometry for Color Triangle\n");
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
+      int index = 0;
       float tmx, tmy, tmr, saturation, value;
       float colors[3] = {0.0, 0.0, 0.0};
 
+      if (triButtonData == NULL) {
+         triButtonData = new float[4*numButtons];
+      } else {
+         delete [] triButtonData;
+         triButtonData = new float[4*numButtons];
+      }
       tmr = 0.05f;
       for (int i = 0; i < numLevels; i++) {        /* Columns */
          for (int j = 0; j < numLevels-i; j++) {   /* Rows */
@@ -64,6 +72,11 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
             value = 1.0f - float(j) / float(numLevels - 1);
             saturation  =  float(i) / float(numLevels - 1 - j);
 
+            if (saturation != saturation || saturation <= 0.0)
+               saturation = 0.000001;
+            if (value != value || value <= 0.0)
+               value = 0.000001;
+
             // Convert HSV to RGB
             hsv2rgb(
                   currentHue,
@@ -71,10 +84,15 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
                   value, 
                   colors);
 
-            // Define relative positions of hue buttons
+            // Define relative positions of sat/val buttons
             tmx = float(-0.0383*numLevels + (i*0.13f));
-            tmy = float(+0.0616*numLevels - (i*0.075f + j*0.15f));
+            tmy = float(+0.0616*numLevels - (i*0.075f + j*0.145f));
             drawEllipse(tmx, tmy, tmr, circleSegments, colors, verts, colrs);
+            triButtonData[index*4 + 0] = tmx;
+            triButtonData[index*4 + 1] = tmy;
+            triButtonData[index*4 + 2] = saturation;
+            triButtonData[index*4 + 3] = value;
+            index++;
          }
       }
 
@@ -112,6 +130,17 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       }
       prevColrTriNumLevels = numLevels;
       prevHue = currentHue;
+
+      /*
+      for (int i = 0; i < numButtons; i++) {
+         printf("%.i: X: %.3f, Y: %.3f, S: %.3f, V: %.3f\n",
+               i,
+               triButtonData[i*4+0],
+               triButtonData[i*4+1],
+               triButtonData[i*4+2],
+               triButtonData[i*4+3]);
+      }
+      */
    }
 
    if ( prevHue != currentHue ) {
@@ -142,6 +171,16 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       prevHue = currentHue;
    }
 
+   py_list = PyList_New(numButtons);
+   for (int i = 0; i < numButtons; i++) {
+      py_tuple = PyTuple_New(4);
+      PyTuple_SetItem(py_tuple, 0, PyFloat_FromDouble(triButtonData[i*4+0]));
+      PyTuple_SetItem(py_tuple, 1, PyFloat_FromDouble(triButtonData[i*4+1]));
+      PyTuple_SetItem(py_tuple, 2, PyFloat_FromDouble(triButtonData[i*4+2]));
+      PyTuple_SetItem(py_tuple, 3, PyFloat_FromDouble(triButtonData[i*4+3]));
+      PyList_SetItem(py_list, i, py_tuple);
+   }
+
    glPushMatrix();
    if (w2h <= 1.0) {
          scale = scale*w2h;
@@ -153,5 +192,5 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    glDrawElements( GL_TRIANGLES, colrTriVerts, GL_UNSIGNED_SHORT, colrTriIndices);
    glPopMatrix();
 
-   Py_RETURN_NONE;
+   return py_list;
 }

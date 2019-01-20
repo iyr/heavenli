@@ -267,18 +267,16 @@ __pickerColrs = []
 __ringVerts = []
 __ringColrs = []
 __ringPoints = []
-currentHue = 0
-currentBri = 0
-currentSat = 1
+currentHue = None
+currentVal = None
+currentSat = None
 prevHue = None
 prevBri = None
 prevSat = None
 wereColorsTouched = False
         
 def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
-    global currentBri, currentSat, currentHue, wereColorsTouched, __pickerVerts, __pickerColrs, __ringVerts, __ringColrs, __ringPoints
-    #tmcRGB = targetLamp.getBulbRGB(targetBulb)
-    #tmcHSV = colorsys.rgb_to_hsv(tmcRGB[0], tmcRGB[1], tmcRGB[2])
+    global currentVal, currentSat, currentHue, wereColorsTouched, __pickerVerts, __pickerColrs, __ringVerts, __ringColrs, __ringPoints
     tmcHSV = targetLamp.getBulbtHSV(targetBulb)
     acbic = animCurveBounce(1.0-cursor)
     acic = animCurve(1.0-cursor)
@@ -287,21 +285,12 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
     #cmx = (width >= height ? mx : cx/4)
     #global wx, wy, __bulbsCurrentHSB
     cmx = 0.15
-    tm04 = 0.04
-    tm05 = 0.05
-    tm06 = 0.06
-    tm08 = 0.08
-    tm10 = 0.1
-    tm13 = 0.13
-    tm15 = 0.15
-    tm17 = 0.17
-    tm20 = 0.2
-    tm23 = 0.23
-    tm37 = 0.37
-    tm30 = 0.3
-    tm40 = 0.4
-    tm50 = 0.5
-    tm70 = 0.7
+    if (currentHue == None):
+        currentHue = targetLamp.getBulbHSV(targetBulb)[0]
+    if (currentSat == None):
+        currentSat = targetLamp.getBulbHSV(targetBulb)[1]
+    if (currentVal == None):
+        currentVal = targetLamp.getBulbHSV(targetBulb)[2]
 
     if (cursor != 0.0) and (cursor != 1.0):
         pass
@@ -340,21 +329,26 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
             min(wx, wy)*0.15*(12.0/float(numHues)) )):
             wereColorsTouched = True
             currentHue = hueButtons[i][2]
-            print("updating current hue to {:}".format(currentHue))
-            tmcHSV = (currentHue, tmcHSV[1], tmcHSV[2])
+            tmcHSV = (currentHue, currentSat, currentVal)
             targetLamp.setBulbtHSV(targetBulb, tmcHSV)
 
     # Draw Triangle of Dots with different brightness/saturation
-    satValButtons = drawColrTri(targetLamp.getBulbHSV(targetBulb)[0], int(numHues/2), w2h, acbic)
-    #satValButtons = drawColrTri(currentHue, int(numHues/2), w2h, acbic)
-            #if (watchPoint(
-                #mapRanges(tmx, -1.0*w2h, 1.0*w2h, 0, wx*2),
-                #mapRanges(tmy, 1.0, -1.0, 0, wy*2),
-                #min(wx, wy)*0.5*(tmr+0.1))):
-                #wereColorsTouched = True
-                #targetLamp.setBulbRGB(targetBulb, tmc)
-                #currentBri = (j)/5.0
-                #currentSat = (i+1)/6.0 - 1/6.0
+    satValButtons = drawColrTri(currentHue, int(numHues/2), w2h, acbic)
+    for i in range(int( int(numHues/2)*( int(numHues/2) + 1) / 2 )):
+        tmr = 1.0
+        if (w2h <= 1.0):
+            satValButtons[i] = (satValButtons[i][0]*w2h, satValButtons[i][1]*w2h, satValButtons[i][2], satValButtons[i][3])
+            tmr = w2h
+
+        if (watchPoint(
+            mapRanges(satValButtons[i][0], -1.0*w2h, 1.0*w2h, 0, wx*2), 
+            mapRanges(satValButtons[i][1],      1.0,    -1.0, 0, wy*2),
+            min(wx, wy)*0.0725)):
+            wereColorsTouched = True
+            currentSat = satValButtons[i][2]
+            currentVal = satValButtons[i][3]
+            tmcHSV = (currentHue, currentSat, currentVal)
+            targetLamp.setBulbtHSV(targetBulb, tmcHSV)
 
 def watchPoint(px, py, pr):
     global cursorX, cursorY, touchState, prvState
@@ -488,14 +482,14 @@ def key(ch, x, y):
         targetScreen = 0
 
     if ch == as_8_bit(']'):
-        numHues += 3
-        if numHues > 15:
-            numHues = 15
+        numHues += 2
+        if numHues > 14:
+            numHues = 14
 
     if ch == as_8_bit('['):
-        numHues -= 3
-        if numHues < 9:
-            numHues = 9
+        numHues -= 2
+        if numHues < 10:
+            numHues = 10
 
     #if ch == as_8_bit('m'):
         #glutIconifyWindow()
