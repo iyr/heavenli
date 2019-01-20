@@ -2,6 +2,36 @@
 #include <vector>
 using namespace std;
 
+// Write to pre-allocated input array, updating color only 
+int updateEllipseColor(
+      char circleSegments, /* Number of sides */
+      int   index,         /* Index of where to start writing to input arrays */
+      float *color,        /* Polygon Color */
+      float *colrs         /* Input Vector of r,g,b values */
+      ){
+   int colrIndex = index*3;   /* index (r, g, b) */
+   float R, G, B;
+   R = color[0];
+   G = color[1];
+   B = color[2];
+
+//#  pragma omp parallel for
+   for (char i = 0; i < circleSegments; i++) {
+      /* R */ colrs[colrIndex++] = R;  
+      /* G */ colrs[colrIndex++] = G;  
+      /* B */ colrs[colrIndex++] = B;
+     
+      /* R */ colrs[colrIndex++] = R;  
+      /* G */ colrs[colrIndex++] = G;  
+      /* B */ colrs[colrIndex++] = B;
+      
+      /* R */ colrs[colrIndex++] = R;  
+      /* G */ colrs[colrIndex++] = G;  
+      /* B */ colrs[colrIndex++] = B;
+   }
+   return colrIndex/3;
+}
+
 // Append Ellipse vertices to input vectors
 int drawEllipse(
       float bx,                  /* X-Coordinate */
