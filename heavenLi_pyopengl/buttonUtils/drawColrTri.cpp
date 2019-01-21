@@ -72,7 +72,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       }
 
       int index = 0;
-      float tmx, tmy, tmr, saturation, value, ringX, ringY;
+      float tmx, tmy, tmr, saturation, value, ringX = 100.0f, ringY = 100.0f;
       float colors[3] = {0.0, 0.0, 0.0};
 
       tmr = 0.05f;
@@ -191,8 +191,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    if (  prevTriSat  != currentTriSat  ||
          prevTriVal  != currentTriVal  ){
 
-      float tmx, tmy, tmr, saturation, value, ringX, ringY;
-      float colors[3] = {0.0, 0.0, 0.0};
+      float tmr, saturation, value, ringX = 100.0f, ringY = 100.0f;
 
       tmr = 0.05f;
       for (int i = 0; i < numLevels; i++) {        /* Columns */
@@ -232,7 +231,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    // Check if Selection Ring Color needs to be updated
    for (int i = 0; i < 3; i++) {
       if (colrTriColorBuffer[numButtons*circleSegments*9+i] != ringColor[i]) {
-         for (int k = numButtons*circleSegments*3; k < colrTriVerts; k++) {
+         for (unsigned int k = numButtons*circleSegments*3; k < colrTriVerts; k++) {
             colrTriColorBuffer[k*3+i] = ringColor[i];
          }
       }

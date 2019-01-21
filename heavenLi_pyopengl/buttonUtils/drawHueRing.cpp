@@ -59,7 +59,7 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
          hueButtonData = new float[numHues*2];
       }
 
-      float ringX, ringY;
+      float ringX = 100.0, ringY = 100.0;
       for (int i = 0; i < numHues; i++) {
          tmo = float(i) / float(numHues);
          hsv2rgb(tmo, 1.0, 1.0, colors);
@@ -122,7 +122,7 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
 
    // Update Ring if hue selection has changed
    if (  prevRingHue != currentRingHue ) {
-      float ang, ringX, ringY;
+      float ang, ringX = 100.0, ringY = 100.0;
       float tmr = float(0.15f);
       for (int i = 0; i < numHues; i++) {
          tmo = float(i) / float(numHues);
@@ -148,7 +148,7 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
    // Check if Selection Ring Color needs to be updated
    for (int i = 0; i < 3; i++) {
       if (hueRingColorBuffer[numHues*circleSegments*9+i] != ringColor[i]) {
-         for (int k = numHues*circleSegments*3; k < hueRingVerts; k++) {
+         for (unsigned int k = numHues*circleSegments*3; k < hueRingVerts; k++) {
             hueRingColorBuffer[k*3+i] = ringColor[i];
          }
       }
