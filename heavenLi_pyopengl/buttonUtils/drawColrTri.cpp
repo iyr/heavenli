@@ -12,20 +12,20 @@ GLfloat  *colrTriColorBuffer  = NULL;
 GLushort *colrTriIndices      = NULL;
 GLuint   colrTriVerts;
 GLint    prevColrTriNumLevels;
-GLfloat  prevHue;
 float    *triButtonData       = NULL;
+GLfloat  prevTriHue;
 
 PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    PyObject *py_list;
    PyObject *py_tuple;
-   float w2h, scale, currentHue;
+   float w2h, scale, currentTriHue;
    char circleSegments = 24;
    long numLevels = 6;
 
    // Parse Inputs
    if (!PyArg_ParseTuple(args,
             "flff",
-            &currentHue,
+            &currentTriHue,
             &numLevels,
             &w2h,
             &scale))
@@ -73,13 +73,13 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
             saturation  =  float(i) / float(numLevels - 1 - j);
 
             if (saturation != saturation || saturation <= 0.0)
-               saturation = 0.000001;
+               saturation = 0.000001f;
             if (value != value || value <= 0.0)
-               value = 0.000001;
+               value = 0.000001f;
 
             // Convert HSV to RGB
             hsv2rgb(
-                  currentHue,
+                  currentTriHue,
                   saturation,
                   value, 
                   colors);
@@ -129,7 +129,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
          colrTriColorBuffer[i*3+2]  = colrs[i*3+2];
       }
       prevColrTriNumLevels = numLevels;
-      prevHue = currentHue;
+      //prevTriHue = currentTriHue;
 
       /*
       for (int i = 0; i < numButtons; i++) {
@@ -143,7 +143,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       */
    }
 
-   if ( prevHue != currentHue ) {
+   if ( prevTriHue != currentTriHue ) {
       float saturation, value;
       float colors[3] = {0.0, 0.0, 0.0};
       int colrIndex = 0;
@@ -156,7 +156,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
 
             // Convert HSV to RGB
             hsv2rgb(
-                  currentHue,
+                  currentTriHue,
                   saturation,
                   value, 
                   colors);
@@ -168,7 +168,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
                   colrTriColorBuffer);
          }
       }
-      prevHue = currentHue;
+      //prevTriHue = currentTriHue;
    }
 
    py_list = PyList_New(numButtons);

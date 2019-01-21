@@ -1,6 +1,56 @@
 #include <math.h>
 #include <vector>
 using namespace std;
+int drawHalo(
+      float bx,               /* X-Coordinate */
+      float by,               /* Y-Coordinate */
+      float bsx,              /* x-Scale 2.0=spans display before GL scaling */
+      float bsy,              /* y-Scale 2.0=spans display before GL scaling */
+      float rs,               /* Halo thickness */
+      char  circleSegments,   /* Number of sides */
+      int   index,            /* index of where to start writing to input arrays */
+      float *color,           /* Polygon Color */
+      float *verts,           /* Input Array of x,y coordinates */
+      float *colrs            /* Input Array of r,g,b values */
+      ){
+   int vertIndex = index*2;
+   int colrIndex = index*3;
+   float tma, R, G, B;
+   char degSegment = 360 / circleSegments;
+   R = color[0];
+   G = color[1];
+   B = color[2];
+
+//#  pragma omp parallel for
+   for (int i = 0; i < circleSegments; i ++ ) {
+      tma = float(degToRad((i+0)*float(degSegment)));
+      /* X */ verts[vertIndex++] = float(bx+cos(tma)*bsx);
+      /* Y */ verts[vertIndex++] = float(by+sin(tma)*bsy);
+      /* X */ verts[vertIndex++] = float(bx+cos(tma)*(bsx+rs));
+      /* Y */ verts[vertIndex++] = float(by+sin(tma)*(bsy+rs));
+      tma = float(degToRad((i+1)*float(degSegment)));
+      /* X */ verts[vertIndex++] = float(bx+cos(tma)*bsx);
+      /* Y */ verts[vertIndex++] = float(by+sin(tma)*bsy);
+
+      /* X */ verts[vertIndex++] = float(bx+cos(tma)*(bsx+rs));
+      /* Y */ verts[vertIndex++] = float(by+sin(tma)*(bsy+rs));
+      /* X */ verts[vertIndex++] = float(bx+cos(tma)*bsx);
+      /* Y */ verts[vertIndex++] = float(by+sin(tma)*bsy);
+      tma = float(degToRad((i+0)*float(degSegment)));
+      /* X */ verts[vertIndex++] = float(bx+cos(tma)*(bsx+rs));
+      /* Y */ verts[vertIndex++] = float(by+sin(tma)*(bsy+rs));
+
+      /* R */ colrs[colrIndex++] = R;   /* G */ colrs[colrIndex++] = G;   /* B */ colrs[colrIndex++] = B;
+      /* R */ colrs[colrIndex++] = R;   /* G */ colrs[colrIndex++] = G;   /* B */ colrs[colrIndex++] = B;
+      /* R */ colrs[colrIndex++] = R;   /* G */ colrs[colrIndex++] = G;   /* B */ colrs[colrIndex++] = B;
+      /* R */ colrs[colrIndex++] = R;   /* G */ colrs[colrIndex++] = G;   /* B */ colrs[colrIndex++] = B;
+      /* R */ colrs[colrIndex++] = R;   /* G */ colrs[colrIndex++] = G;   /* B */ colrs[colrIndex++] = B;
+      /* R */ colrs[colrIndex++] = R;   /* G */ colrs[colrIndex++] = G;   /* B */ colrs[colrIndex++] = B;
+   }
+
+   return vertIndex/2;
+}
+
 
 // Append Halo vertices to input vectors
 int drawHalo(

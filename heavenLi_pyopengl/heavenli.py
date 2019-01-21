@@ -295,6 +295,11 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
     if (cursor != 0.0) and (cursor != 1.0):
         pass
 
+    if (wereColorsTouched):
+        selectRingColor = (1.0, 1.0, 1.0)
+    else:
+        selectRingColor = (0.3, 0.3, 0.3)
+
     iconSize = 0.15
     # Draw circularly arranged bulb buttons
     drawBulbButton(
@@ -316,7 +321,7 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
             (0.3*acc, 0.3*acc, 0.3*acc))
 
     # Draw Ring of Dots with different hues
-    hueButtons = drawHueRing(numHues, w2h, acbic)
+    hueButtons = drawHueRing(currentHue, numHues, selectRingColor, w2h, acbic)
     for i in range(numHues):
         tmr = 1.0
         if (w2h <= 1.0):
