@@ -14,24 +14,34 @@ GLuint   colrTriVerts;
 GLint    prevColrTriNumLevels;
 float    *triButtonData       = NULL;
 GLfloat  prevTriHue;
+GLfloat  prevTriSat;
+GLfloat  prevTriVal;
 
 PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    PyObject *py_list;
    PyObject *py_tuple;
-   float w2h, scale, currentTriHue;
+   float w2h, scale, currentTriHue, currentTriSat, currentTriVal;
+   float ringColor[3];
    char circleSegments = 24;
    long numLevels = 6;
 
    // Parse Inputs
    if (!PyArg_ParseTuple(args,
-            "flff",
+            "ffflOff",
             &currentTriHue,
+            &currentTriSat,
+            &currentTriVal,
             &numLevels,
+            &py_tuple,
             &w2h,
             &scale))
    {
       Py_RETURN_NONE;
    }
+
+   ringColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(py_tuple, 0)));
+   ringColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(py_tuple, 1)));
+   ringColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(py_tuple, 2)));
 
    long numButtons = (numLevels * (numLevels + 1)) / 2;
    /*
@@ -54,16 +64,17 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       printf("Initializing Geometry for Color Triangle\n");
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
-      int index = 0;
-      float tmx, tmy, tmr, saturation, value;
-      float colors[3] = {0.0, 0.0, 0.0};
-
       if (triButtonData == NULL) {
          triButtonData = new float[4*numButtons];
       } else {
          delete [] triButtonData;
          triButtonData = new float[4*numButtons];
       }
+
+      int index = 0;
+      float tmx, tmy, tmr, saturation, value, ringX, ringY;
+      float colors[3] = {0.0, 0.0, 0.0};
+
       tmr = 0.05f;
       for (int i = 0; i < numLevels; i++) {        /* Columns */
          for (int j = 0; j < numLevels-i; j++) {   /* Rows */
@@ -93,8 +104,22 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
             triButtonData[index*4 + 2] = saturation;
             triButtonData[index*4 + 3] = value;
             index++;
+            if (  abs(currentTriSat - saturation) <= 1.0f / float(numLevels*2) &&
+                  abs(currentTriVal - value     ) <= 1.0f / float(numLevels*2) ){
+               ringX = tmx;
+               ringY = tmy;
+            }
          }
       }
+
+      drawHalo(
+            ringX, ringY,
+            float(1.06*tmr), float(1.06*tmr),
+            0.03f,
+            circleSegments,
+            ringColor,
+            verts,
+            colrs);
 
       colrTriVerts = verts.size()/2;
 
@@ -128,19 +153,11 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
          colrTriColorBuffer[i*3+1]  = colrs[i*3+1];
          colrTriColorBuffer[i*3+2]  = colrs[i*3+2];
       }
-      prevColrTriNumLevels = numLevels;
-      //prevTriHue = currentTriHue;
 
-      /*
-      for (int i = 0; i < numButtons; i++) {
-         printf("%.i: X: %.3f, Y: %.3f, S: %.3f, V: %.3f\n",
-               i,
-               triButtonData[i*4+0],
-               triButtonData[i*4+1],
-               triButtonData[i*4+2],
-               triButtonData[i*4+3]);
-      }
-      */
+      prevColrTriNumLevels = numLevels;
+      prevTriHue = currentTriHue;
+      prevTriSat = currentTriSat;
+      prevTriVal = currentTriVal;
    }
 
    if ( prevTriHue != currentTriHue ) {
@@ -168,7 +185,57 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
                   colrTriColorBuffer);
          }
       }
-      //prevTriHue = currentTriHue;
+      prevTriHue = currentTriHue;
+   }
+
+   if (  prevTriSat  != currentTriSat  ||
+         prevTriVal  != currentTriVal  ){
+
+      float tmx, tmy, tmr, saturation, value, ringX, ringY;
+      float colors[3] = {0.0, 0.0, 0.0};
+
+      tmr = 0.05f;
+      for (int i = 0; i < numLevels; i++) {        /* Columns */
+         for (int j = 0; j < numLevels-i; j++) {   /* Rows */
+
+            // Calculate Discrete Saturation and Value
+            value = 1.0f - float(j) / float(numLevels - 1);
+            saturation  =  float(i) / float(numLevels - 1 - j);
+
+            if (saturation != saturation || saturation <= 0.0)
+               saturation = 0.000001f;
+            if (value != value || value <= 0.0)
+               value = 0.000001f;
+
+            // Define relative positions of sat/val buttons
+            if (  abs(currentTriSat - saturation) <= 1.0f / float(numLevels*2) &&
+                  abs(currentTriVal - value     ) <= 1.0f / float(numLevels*2) ){
+               ringX = float(-0.0383*numLevels + (i*0.13f));
+               ringY = float(+0.0616*numLevels - (i*0.075f + j*0.145f));
+            }
+         }
+      }
+
+      drawHalo(
+            ringX, ringY,
+            float(1.06*tmr), float(1.06*tmr),
+            0.03f,
+            circleSegments,
+            3*numButtons*circleSegments,
+            ringColor,
+            colrTriVertexBuffer,
+            colrTriColorBuffer);
+      prevTriSat = currentTriSat;
+      prevTriVal = currentTriVal;
+   }
+
+   // Check if Selection Ring Color needs to be updated
+   for (int i = 0; i < 3; i++) {
+      if (colrTriColorBuffer[numButtons*circleSegments*9+i] != ringColor[i]) {
+         for (int k = numButtons*circleSegments*3; k < colrTriVerts; k++) {
+            colrTriColorBuffer[k*3+i] = ringColor[i];
+         }
+      }
    }
 
    py_list = PyList_New(numButtons);

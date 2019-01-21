@@ -78,7 +78,7 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
       drawHalo(
             ringX, ringY,
             float(1.06*tmr*(12.0/numHues)), float(1.06*tmr*(12.0/numHues)),
-            0.02f,
+            0.03f,
             circleSegments,
             ringColor,
             verts,
@@ -136,7 +136,7 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
       drawHalo(
             ringX, ringY,
             float(1.06*tmr*(12.0/numHues)), float(1.06*tmr*(12.0/numHues)),
-            0.02f,
+            0.03f,
             circleSegments,
             3*numHues*circleSegments,
             ringColor,
