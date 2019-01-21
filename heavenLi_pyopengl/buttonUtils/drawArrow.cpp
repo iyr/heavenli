@@ -50,8 +50,8 @@ PyObject* drawArrow_drawButtons(PyObject* self, PyObject *args) {
 
    // Allocate and Define Geometry/Color buffers
    if (  arrowVertexBuffer == NULL  ||
-         arrowColorBuffer   == NULL  ||
-         arrowIndices       == NULL  ){
+         arrowColorBuffer  == NULL  ||
+         arrowIndices      == NULL  ){
 
       printf("Initializing Geometry for Arrow Button\n");
       vector<GLfloat> verts;
@@ -61,19 +61,19 @@ PyObject* drawArrow_drawButtons(PyObject* self, PyObject *args) {
       int circleSegments = 60;
       drawEllipse(0.0f, 0.0f, 1.0f, circleSegments, faceColor, verts, colrs);
 
-      px = 0.125f, py = 0.625f;
-      qx = -0.50f, qy =  0.00f;
+      px = -0.125f, py = 0.625f;
+      qx =  0.500f, qy =  0.00f;
       radius = float(sqrt(2.0)*0.125f);
       drawPill(px, py, qx, qy, radius, detailColor, verts, colrs);
 
-      px = 0.125f, py = -0.625f;
+      px = -0.125f, py = -0.625f;
       extraArrowVerts = drawPill(px, py, qx, qy, radius, detailColor, verts, colrs);
 
-      px = 0.125f, py = 0.625f;
+      px = -0.125f, py =  0.625f;
       radius = 0.125f;
       drawPill(px, py, qx, qy, radius, extraColor, verts, colrs);
 
-      px = 0.125f, py = -0.625f;
+      px = -0.125f, py = -0.625f;
       drawPill(px, py, qx, qy, radius, extraColor, verts, colrs);
 
       arrowVerts = verts.size()/2;
@@ -119,13 +119,13 @@ PyObject* drawArrow_drawButtons(PyObject* self, PyObject *args) {
    }
 
    glPushMatrix();
-   glRotatef(degToRad(ang), 0, 0, 1);
    glTranslatef(posX*w2h, posY, 0.0f);
    if (w2h <= 1.0) {
          scale = scale*w2h;
    }
 
    glScalef(scale, scale, 1);
+   glRotatef(ang, 0.0, 0.0, 1.0);
    glColorPointer(3, GL_FLOAT, 0, arrowColorBuffer);
    glVertexPointer(2, GL_FLOAT, 0, arrowVertexBuffer);
    glDrawElements( GL_TRIANGLES, arrowVerts, GL_UNSIGNED_SHORT, arrowIndices);

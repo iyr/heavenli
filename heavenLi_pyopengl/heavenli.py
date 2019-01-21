@@ -280,7 +280,6 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
     faceColor = (0.3, 0.3, 0.3)
     detailColor = (0.9, 0.9, 0.9)
     #cmx = (width >= height ? mx : cx/4)
-    #global wx, wy, __bulbsCurrentHSB
     cmx = 0.15
     if (currentHue == None):
         currentHue = targetLamp.getBulbHSV(targetBulb)[0]
@@ -289,13 +288,6 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
     if (currentVal == None):
         currentVal = targetLamp.getBulbHSV(targetBulb)[2]
         
-    #if (prevHue == None):
-        #prevHue = targetLamp.getBulbHSV(targetBulb)[0]
-    #if (prevSat == None):
-        #prevSat = targetLamp.getBulbHSV(targetBulb)[1]
-    #if (prevVal == None):
-        #prevVal = targetLamp.getBulbHSV(targetBulb)[2]
-
     if (cursor != 0.0) and (cursor != 1.0):
         pass
 
@@ -382,9 +374,6 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
         min(wx, wy)*0.2)):
         wereColorsTouched = False
         targetLamp.setBulbtHSV(targetBulb, (currentHue, currentSat, currentVal))
-        #prevHue = None
-        #prevSat = None
-        #prevVal = None
         targetScreen = 0
 
     if ( wereColorsTouched ):
@@ -394,7 +383,7 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
     drawArrow(
             -0.75+0.4*(1.0-acbic), 
             -0.75-0.5*acbc, 
-            0.0,
+            180.0,
             0.2*(1.0-acbc), w2h, 
             faceColor, 
             extraColor, 
@@ -405,16 +394,11 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
         min(wx, wy)*0.2)):
         wereColorsTouched = False
         targetLamp.setBulbtHSV(targetBulb, (prevHue, prevSat, prevVal))
-        #prevHue = None
-        #prevSat = None
-        #prevVal = None
         targetScreen = 0
 
 def watchPoint(px, py, pr):
     global cursorX, cursorY, touchState, prvState
     if (1.0 >= pow((cursorX-px/2), 2) / pow(pr/2, 2) + pow((cursorY-py/2), 2) / pow(pr/2, 2)):
-        #os.system('cls' if os.name == 'nt' else "printf '\033c'")
-        #print("cursorX: {}, cursorY: {}, px: {:.3f}, py: {:.3f}, pr: {:.3f}, touchState: {}".format(cursorX, cursorY, px, py, pr, touchState))
         if prvState == 0:
             prvState = touchState
             return True
