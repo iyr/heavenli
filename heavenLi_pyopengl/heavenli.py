@@ -61,6 +61,13 @@ someVar = 0
 someInc = 0.1
 features = 4
 numHues = 12
+currentHue = None
+currentVal = None
+currentSat = None
+prevHue = None
+prevVal = None
+prevSat = None
+wereColorsTouched = False
 #demo = Lamp()
 
 def init():
@@ -117,7 +124,7 @@ def drawBackground(Light = 0 # Currently Selected Lamp, Space, or *
 prvState = touchState
 
 def drawHome():
-    global lamps, wx, wy, w2h, screen, touchState, lightOn, prvState, targetScreen, targetBulb, colrSettingCursor, features
+    global lamps, wx, wy, w2h, screen, touchState, lightOn, prvState, targetScreen, targetBulb, colrSettingCursor, features, prevHue, prevSat, prevVal
 
     iconSize = 0.15
     drawClock(
@@ -154,7 +161,7 @@ def drawHome():
                 targetBulb = i
                 prevHue = lamps[0].getBulbHSV(i)[0]
                 prevSat = lamps[0].getBulbHSV(i)[1]
-                prevBri = lamps[0].getBulbHSV(i)[2]
+                prevVal = lamps[0].getBulbHSV(i)[2]
 
     #drawIconCircle(0.75-0.25*(someVar/100), 0.75, 
     drawIconCircle(0.75, 0.75, 
@@ -262,26 +269,16 @@ def drawHome():
     #cProfile.run('drawIconLinear(-0.75, -0.75, 0.15*0.875, 0.15*0.875, lamps[0].getNumBulbs(), lamps[0].getAngle(), w2h, lamps[0].getBulbsRGB())')
 
 __bulbsCurrentHSB = []
-__pickerVerts = []
-__pickerColrs = []
-__ringVerts = []
-__ringColrs = []
-__ringPoints = []
-currentHue = None
-currentVal = None
-currentSat = None
-prevHue = None
-prevBri = None
-prevSat = None
-wereColorsTouched = False
         
 def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
-    global currentVal, currentSat, currentHue, wereColorsTouched, __pickerVerts, __pickerColrs, __ringVerts, __ringColrs, __ringPoints
+    global prevHue, prevSat, prevVal, currentVal, currentSat, currentHue, wereColorsTouched, targetScreen
     tmcHSV = targetLamp.getBulbtHSV(targetBulb)
     acbic = animCurveBounce(1.0-cursor)
     acic = animCurve(1.0-cursor)
     acbc = animCurveBounce(cursor)
     acc = animCurve(cursor)
+    faceColor = (0.3, 0.3, 0.3)
+    detailColor = (0.9, 0.9, 0.9)
     #cmx = (width >= height ? mx : cx/4)
     #global wx, wy, __bulbsCurrentHSB
     cmx = 0.15
@@ -291,6 +288,13 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
         currentSat = targetLamp.getBulbHSV(targetBulb)[1]
     if (currentVal == None):
         currentVal = targetLamp.getBulbHSV(targetBulb)[2]
+        
+    #if (prevHue == None):
+        #prevHue = targetLamp.getBulbHSV(targetBulb)[0]
+    #if (prevSat == None):
+        #prevSat = targetLamp.getBulbHSV(targetBulb)[1]
+    #if (prevVal == None):
+        #prevVal = targetLamp.getBulbHSV(targetBulb)[2]
 
     if (cursor != 0.0) and (cursor != 1.0):
         pass
@@ -360,6 +364,51 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
             currentVal = satValButtons[i][3]
             tmcHSV = (currentHue, currentSat, currentVal)
             targetLamp.setBulbtHSV(targetBulb, tmcHSV)
+
+    if ( wereColorsTouched ):
+        extraColor = colorsys.hsv_to_rgb(currentHue, currentSat, currentVal)
+    else:
+        extraColor = detailColor
+    drawConfirm(
+            0.75-0.4*(1.0-acbic), 
+            -0.75-0.5*acbc, 
+            0.2*(1.0-acbc), w2h, 
+            faceColor, 
+            extraColor, 
+            detailColor);
+    if (watchPoint(
+        mapRanges( 0.75, -1.0,  1.0, 0, wx*2),
+        mapRanges(-0.75,  1.0, -1.0, 0, wy*2),
+        min(wx, wy)*0.2)):
+        wereColorsTouched = False
+        targetLamp.setBulbtHSV(targetBulb, (currentHue, currentSat, currentVal))
+        #prevHue = None
+        #prevSat = None
+        #prevVal = None
+        targetScreen = 0
+
+    if ( wereColorsTouched ):
+        extraColor = colorsys.hsv_to_rgb(prevHue, prevSat, prevVal)
+    else:
+        extraColor = detailColor
+    drawArrow(
+            -0.75+0.4*(1.0-acbic), 
+            -0.75-0.5*acbc, 
+            0.0,
+            0.2*(1.0-acbc), w2h, 
+            faceColor, 
+            extraColor, 
+            detailColor);
+    if (watchPoint(
+        mapRanges(-0.75, -1.0,  1.0, 0, wx*2),
+        mapRanges(-0.75,  1.0, -1.0, 0, wy*2),
+        min(wx, wy)*0.2)):
+        wereColorsTouched = False
+        targetLamp.setBulbtHSV(targetBulb, (prevHue, prevSat, prevVal))
+        #prevHue = None
+        #prevSat = None
+        #prevVal = None
+        targetScreen = 0
 
 def watchPoint(px, py, pr):
     global cursorX, cursorY, touchState, prvState
