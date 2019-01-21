@@ -125,7 +125,7 @@ class Lamp:
                 rd = 0
                 gd = 0
                 bd = 0
-                threshold = 0.01
+                threshold = 0.05
                 #delta = frametime + i/self.numBulbs
                 #delta /= 2
                 delta = frametime
