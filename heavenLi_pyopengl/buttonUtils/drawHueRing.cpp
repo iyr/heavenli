@@ -148,7 +148,6 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
    // Check if Selection Ring Color needs to be updated
    for (int i = 0; i < 3; i++) {
       if (hueRingColorBuffer[numHues*circleSegments*9+i] != ringColor[i]) {
-         printf("quack\n");
          for (int k = numHues*circleSegments*3; k < hueRingVerts; k++) {
             hueRingColorBuffer[k*3+i] = ringColor[i];
          }
