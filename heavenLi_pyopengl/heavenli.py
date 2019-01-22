@@ -29,275 +29,145 @@ import colorsys
 from animUtils import *
 from drawArn import *
 from drawButtons import *
-#from drawUtils import *
 from lampClass import *
 from rangeUtils import *
 print("Done!")
 
-tStart = t0 = time.time()
-frames = 0
-lamps = []
-screen = 0
-lightOn = False
-fps = 60
-windowPosX = 0
-windowPosY = 0
-windowDimW = 800
-windowDimH = 480
-#windowDimW = 320
-#windowDimH = 240
-cursorX = 0
-cursorY = 0
-isFullScreen = False
-isAnimating = False
-wx = 0
-wy = 0
-colrSettingCursor = 0
-targetScreen = 0
-touchState = 0
-targetBulb = 0
-frameLimit = True
-someVar = 0
-someInc = 0.1
-features = 4
-numHues = 12
-currentHue = None
-currentVal = None
-currentSat = None
-prevHue = None
-prevVal = None
-prevSat = None
-wereColorsTouched = False
-#demo = Lamp()
-
 def init():
-    global wx, wy, w2h, lamps
+    global statMac
 
     glEnableClientState(GL_VERTEX_ARRAY)
     glEnableClientState(GL_COLOR_ARRAY)
 
-    wx = glutGet(GLUT_WINDOW_WIDTH)
-    wy = glutGet(GLUT_WINDOW_HEIGHT)
-    w2h = wx/wy
+    statMac['wx'] = glutGet(GLUT_WINDOW_WIDTH)
+    statMac['wy'] = glutGet(GLUT_WINDOW_HEIGHT)
+    statMac['w2h'] = statMac['wx']/statMac['wy']
     demo = Lamp()
-    lamps.append(demo)
+    statMac['lamps'].append(demo)
 
 def framerate():
-    global t0, frames, w2h, fps, someVar, someInc
+    global statMac
     t = time.time()
-    frames += 1.0
-    seconds = t - t0
-    someVar += someInc
-    if (someVar > 100) or (someVar < 0):
-        someInc = -someInc
+    statMac['frames'] += 1.0
+    seconds = t - statMac['t0']
+    statMac['someVar'] += statMac['someInc']
+    if (statMac['someVar'] > 100) or (statMac['someVar'] < 0):
+        statMac['someInc'] = -statMac['someInc']
 
     try:
-        fps = frames/seconds
+        statMac['fps'] = statMac['frames']/seconds
     except:
         print("Too Fast, Too Quick!!")
-    if t - t0 >= 1.0:
-        print("%.0f frames in %3.1f seconds = %6.3f FPS" % (frames,seconds,fps))
-        t0 = t
-        frames = 0
-    if frameLimit and (fps > 60):
-        time.sleep(2*float(fps)/10000.0)
+    if t - statMac['t0'] >= 1.0:
+        print("%.0f frames in %3.1f seconds = %6.3f FPS" % (statMac['frames'],seconds,statMac['fps']))
+        statMac['t0'] = t
+        statMac['frames'] = 0
+    if statMac['frameLimit'] and (statMac['fps'] > 60):
+        time.sleep(2*float(statMac['fps'])/10000.0)
 
 def drawBackground(Light = 0 # Currently Selected Lamp, Space, or *
         ):
-    global wx, wy
-    if (lamps[Light].getArn() == 0):
+    global statMac
+    if (statMac['lamps'][Light].getArn() == 0):
          drawHomeCircle(0.0, 0.0, 
-                 wx, wy, 
-                 lamps[Light].getNumBulbs(), 
-                 lamps[Light].getAngle(), 
-                 w2h,
-                 lamps[Light].getBulbsRGB());
+                 statMac['wx'], statMac['wy'], 
+                 statMac['lamps'][Light].getNumBulbs(), 
+                 statMac['lamps'][Light].getAngle(), 
+                 statMac['w2h'],
+                 statMac['lamps'][Light].getBulbsRGB());
 
-    elif (lamps[Light].getArn() == 1):
+    elif (statMac['lamps'][Light].getArn() == 1):
          drawHomeLinear(0.0, 0.0, 
-                 wx, wy,
-                 lamps[Light].getNumBulbs(), 
-                 lamps[Light].getAngle(), 
-                 w2h,
-                 lamps[Light].getBulbsRGB());
-
-prvState = touchState
+                 statMac['wx'], statMac['wy'],
+                 statMac['lamps'][Light].getNumBulbs(), 
+                 statMac['lamps'][Light].getAngle(), 
+                 statMac['w2h'],
+                 statMac['lamps'][Light].getBulbsRGB());
 
 def drawHome():
-    global lamps, wx, wy, w2h, screen, touchState, lightOn, prvState, targetScreen, targetBulb, colrSettingCursor, features, prevHue, prevSat, prevVal
+    global statMac
 
     iconSize = 0.15
     drawClock(
-            12*(someVar/100),
-            60*(1.0-(someVar/100)), 1.0, w2h, (0.95, 0.95, 0.95), (0.3, 0.3, 0.3))
+            12*(statMac['someVar']/100),
+            60*(1.0-(statMac['someVar']/100)), 1.0, statMac['w2h'], (0.95, 0.95, 0.95), (0.3, 0.3, 0.3))
 
     # We are at the home screen
-    if (screen == 0) and (touchState != prvState):
-        #wx = glutGet(GLUT_WINDOW_WIDTH)
-        #wy = glutGet(GLUT_WINDOW_HEIGHT)
-        dBias = min(wx, wy)/2
-        if watchPoint(wx, wy, dBias):
-            lightOn = not lightOn
-            for i in range(len(lamps)):
-                lamps[i].setMainLight(lightOn)
+    if (statMac['screen'] == 0) and (statMac['touchState'] != statMac['prvState']):
+        dBias = min(statMac['wx'], statMac['wy'])/2
+        if watchPoint(statMac['wx'], statMac['wy'], dBias):
+            statMac['lightOn'] = not statMac['lightOn']
+            for i in range(len(statMac['lamps'])):
+                statMac['lamps'][i].setMainLight(statMac['lightOn'])
 
     buttons = drawBulbButton(
-            lamps[0].getArn(),
-            lamps[0].getNumBulbs(),
-            lamps[0].getAngle(),
+            statMac['lamps'][0].getArn(),
+            statMac['lamps'][0].getNumBulbs(),
+            statMac['lamps'][0].getAngle(),
             iconSize*2.66,
             (0.3, 0.3, 0.3),
             (0.8, 0.8, 0.8),
-            lamps[0].getBulbsRGB(),
-            w2h)
+            statMac['lamps'][0].getBulbsRGB(),
+            statMac['w2h'])
 
     for i in range(len(buttons)):
-        if (screen == 0) and (touchState != prvState):
+        if (statMac['screen'] == 0) and (statMac['touchState'] != statMac['prvState']):
             if (watchPoint(
-                mapRanges(buttons[i][0], -1.0*w2h, 1.0*w2h, 0, wx*2), 
-                mapRanges(buttons[i][1],      1.0,    -1.0, 0, wy*2),
-                min(wx, wy)*0.5*0.3)):
-                targetScreen = 1
-                targetBulb = i
-                prevHue = lamps[0].getBulbHSV(i)[0]
-                prevSat = lamps[0].getBulbHSV(i)[1]
-                prevVal = lamps[0].getBulbHSV(i)[2]
+                mapRanges(buttons[i][0], -1.0*statMac['w2h'], 1.0*statMac['w2h'], 0, statMac['wx']*2), 
+                mapRanges(buttons[i][1],      1.0,    -1.0, 0, statMac['wy']*2),
+                min(statMac['wx'], statMac['wy'])*0.5*0.3)):
+                statMac['targetScreen'] = 1
+                statMac['targetBulb'] = i
+                statMac['prevHue'] = statMac['lamps'][0].getBulbHSV(i)[0]
+                statMac['prevSat'] = statMac['lamps'][0].getBulbHSV(i)[1]
+                statMac['prevVal'] = statMac['lamps'][0].getBulbHSV(i)[2]
 
-    #drawIconCircle(0.75-0.25*(someVar/100), 0.75, 
-    drawIconCircle(0.75, 0.75, 
-            iconSize*0.85, 
-            4,
-            #features,
-            ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
-            lamps[0].getNumBulbs(), 
-            lamps[0].getAngle(), 
-            w2h, 
-            lamps[0].getBulbsRGB())
+    #drawIconCircle(0.75, 0.75, 
+            #iconSize*0.85, 
+            #4,
+            #( 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100)),
+            #statMac['lamps'][0].getNumBulbs(), 
+            #statMac['lamps'][0].getAngle(), 
+            #statMac['w2h'], 
+            #statMac['lamps'][0].getBulbsRGB())
 
-    drawIconCircle(0.37, 0.75, 
-            iconSize*0.85, 
-            3,
-            #features,
-            ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
-            lamps[0].getNumBulbs(), 
-            lamps[0].getAngle(), 
-            w2h, 
-            lamps[0].getBulbsRGB())
-
-    drawIconCircle(0.0, 0.75, 
-            iconSize*0.85, 
-            4,
-            #features,
-            ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
-            lamps[0].getNumBulbs(), 
-            lamps[0].getAngle(), 
-            w2h, 
-            lamps[0].getBulbsRGB())
-
-    drawIconCircle(-0.37, 0.75, 
-            iconSize*0.85, 
-            2,
-            #features,
-            ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
-            lamps[0].getNumBulbs(), 
-            lamps[0].getAngle(), 
-            w2h, 
-            lamps[0].getBulbsRGB())
-
-    drawIconCircle(-0.75, 0.75, 
-            iconSize*0.85, 
-            1,
-            #features,
-            ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
-            lamps[0].getNumBulbs(), 
-            lamps[0].getAngle(), 
-            w2h, 
-            lamps[0].getBulbsRGB())
-
-    #cProfile.run('drawIconCircle(0.75, 0.75, 0.15, 0.15, lamps[0].getNumBulbs(), lamps[0].getAngle(), w2h, lamps[0].getBulbsRGB())')
-
-    drawIconLinear(0.75, -0.75, 
-            iconSize*0.85, 
-            4,
-            #features,
-            ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
-            lamps[0].getNumBulbs(), 
-            lamps[0].getAngle(), 
-            w2h, 
-            lamps[0].getBulbsRGB())
-
-    drawIconLinear(0.37, -0.75, 
-            iconSize*0.85, 
-            3,
-            #features,
-            ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
-            lamps[0].getNumBulbs(), 
-            lamps[0].getAngle(), 
-            w2h, 
-            lamps[0].getBulbsRGB())
-
-    drawIconLinear(0.0, -0.75, 
-            iconSize*0.85, 
-            4,
-            #features,
-            ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
-            lamps[0].getNumBulbs(), 
-            lamps[0].getAngle(), 
-            w2h, 
-            lamps[0].getBulbsRGB())
-
-    drawIconLinear(-0.37, -0.75, 
-            iconSize*0.85, 
-            2,
-            #features,
-            ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
-            lamps[0].getNumBulbs(), 
-            lamps[0].getAngle(), 
-            w2h, 
-            lamps[0].getBulbsRGB())
-
-    drawIconLinear(-0.75, -0.75, 
-            iconSize*0.85, 
-            1,
-            #features,
-            ( 0.9*(someVar/100), 0.9*(someVar/100), 0.9*(someVar/100)),
-            lamps[0].getNumBulbs(), 
-            lamps[0].getAngle(), 
-            w2h, 
-            lamps[0].getBulbsRGB())
-
-    #cProfile.run('drawIconLinear(-0.75, -0.75, 0.15*0.875, 0.15*0.875, lamps[0].getNumBulbs(), lamps[0].getAngle(), w2h, lamps[0].getBulbsRGB())')
+    #drawIconLinear(0.75, -0.75, 
+            #iconSize*0.85, 
+            #4,
+            #( 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100)),
+            #statMac['lamps'][0].getNumBulbs(), 
+            #statMac['lamps'][0].getAngle(), 
+            #statMac['w2h'], 
+            #statMac['lamps'][0].getBulbsRGB())
 
 __bulbsCurrentHSB = []
         
-def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
-    global prevHue, prevSat, prevVal, currentVal, currentSat, currentHue, wereColorsTouched, targetScreen
-    tmcHSV = targetLamp.getBulbtHSV(targetBulb)
+def drawSettingColor(cursor, targetLamp, targetBulb):
+    global statMac
+    tmcHSV = targetLamp.getBulbtHSV(statMac['targetBulb'])
     acbic = animCurveBounce(1.0-cursor)
     acic = animCurve(1.0-cursor)
     acbc = animCurveBounce(cursor)
     acc = animCurve(cursor)
     faceColor = (0.3, 0.3, 0.3)
     detailColor = (0.9, 0.9, 0.9)
-    #cmx = (width >= height ? mx : cx/4)
     cmx = 0.15
-    if (currentHue == None):
-        currentHue = targetLamp.getBulbHSV(targetBulb)[0]
-    if (currentSat == None):
-        currentSat = targetLamp.getBulbHSV(targetBulb)[1]
-    if (currentVal == None):
-        currentVal = targetLamp.getBulbHSV(targetBulb)[2]
+    if (statMac['currentHue'] == None):
+        statMac['currentHue'] = targetLamp.getBulbHSV(targetBulb)[0]
+    if (statMac['currentSat'] == None):
+        statMac['currentSat'] = targetLamp.getBulbHSV(targetBulb)[1]
+    if (statMac['currentVal'] == None):
+        statMac['currentVal'] = targetLamp.getBulbHSV(targetBulb)[2]
         
     if (cursor != 0.0) and (cursor != 1.0):
         pass
 
-    if (wereColorsTouched):
+    if (statMac['wereColorsTouched']):
         selectRingColor = (1.0, 1.0, 1.0)
     else:
         selectRingColor = (0.3, 0.3, 0.3)
 
     iconSize = 0.15
-    # Draw circularly arranged bulb buttons
     drawBulbButton(
             targetLamp.getArn(),
             targetLamp.getNumBulbs(),
@@ -306,158 +176,178 @@ def drawSettingColor(cursor, targetLamp, targetBulb, w2h):
             (0.3, 0.3, 0.3),
             (0.8, 0.8, 0.8),
             targetLamp.getBulbsRGB(),
-            w2h)
+            statMac['w2h'])
 
     drawClock(
-            12*(someVar/100),
-            60*(1.0-(someVar/100)),
+            12*(statMac['someVar']/100),
+            60*(1.0-(statMac['someVar']/100)),
             1.0+acic*0.75, 
-            w2h, 
+            statMac['w2h'], 
             (0.9*acc, 0.9*acc, 0.9*acc), 
             (0.3*acc, 0.3*acc, 0.3*acc))
 
     # Draw Ring of Dots with different hues
-    hueButtons = drawHueRing(currentHue, numHues, selectRingColor, w2h, acbic)
-    for i in range(numHues):
+    hueButtons = drawHueRing(statMac['currentHue'], statMac['numHues'], selectRingColor, statMac['w2h'], acbic)
+    for i in range(statMac['numHues']):
         tmr = 1.0
-        if (w2h <= 1.0):
-            hueButtons[i] = (hueButtons[i][0]*w2h, hueButtons[i][1]*w2h, hueButtons[i][2])
-            tmr = w2h
+        if (statMac['w2h'] <= 1.0):
+            hueButtons[i] = (
+                    hueButtons[i][0]*statMac['w2h'], 
+                    hueButtons[i][1]*statMac['w2h'], 
+                    hueButtons[i][2])
+            tmr = statMac['w2h']
 
         if (watchPoint(
-            mapRanges(hueButtons[i][0], -1.0*w2h, 1.0*w2h, 0, wx*2), 
-            mapRanges(hueButtons[i][1],      1.0,    -1.0, 0, wy*2),
-            min(wx, wy)*0.15*(12.0/float(numHues)) )):
-            wereColorsTouched = True
-            currentHue = hueButtons[i][2]
-            tmcHSV = (currentHue, currentSat, currentVal)
-            targetLamp.setBulbtHSV(targetBulb, tmcHSV)
+            mapRanges(hueButtons[i][0], -1.0*statMac['w2h'], 1.0*statMac['w2h'],    0, statMac['wx']*2), 
+            mapRanges(hueButtons[i][1],  1.0,               -1.0,                   0, statMac['wy']*2),
+            min(statMac['wx'], statMac['wy'])*0.15*(12.0/float(statMac['numHues'])) )):
+            statMac['wereColorsTouched'] = True
+            statMac['currentHue'] = hueButtons[i][2]
+            tmcHSV = (
+                    statMac['currentHue'], 
+                    statMac['currentSat'], 
+                    statMac['currentVal'])
+            targetLamp.setBulbtHSV(statMac['targetBulb'], tmcHSV)
 
     # Draw Triangle of Dots with different brightness/saturation
     satValButtons = drawColrTri(
-            currentHue, 
-            currentSat, 
-            currentVal,
-            int(numHues/2), 
+            statMac['currentHue'], 
+            statMac['currentSat'], 
+            statMac['currentVal'],
+            int(statMac['numHues']/2), 
             selectRingColor,
-            w2h, acbic)
-    for i in range(int( int(numHues/2)*( int(numHues/2) + 1) / 2 )):
+            statMac['w2h'], acbic)
+    for i in range(int( int(statMac['numHues']/2)*( int(statMac['numHues']/2) + 1) / 2 )):
         tmr = 1.0
-        if (w2h <= 1.0):
-            satValButtons[i] = (satValButtons[i][0]*w2h, satValButtons[i][1]*w2h, satValButtons[i][2], satValButtons[i][3])
-            tmr = w2h
+        if (statMac['w2h'] <= 1.0):
+            satValButtons[i] = (
+                    satValButtons[i][0]*statMac['w2h'],     # X-Coord of Button
+                    satValButtons[i][1]*statMac['w2h'],     # Y-Coord of Button
+                    satValButtons[i][2],                    # Saturation of Button
+                    satValButtons[i][3])                    # Value of Button
+            tmr = statMac['w2h']
 
         if (watchPoint(
-            mapRanges(satValButtons[i][0], -1.0*w2h, 1.0*w2h, 0, wx*2), 
-            mapRanges(satValButtons[i][1],      1.0,    -1.0, 0, wy*2),
-            min(wx, wy)*0.0725)):
-            wereColorsTouched = True
-            currentSat = satValButtons[i][2]
-            currentVal = satValButtons[i][3]
-            tmcHSV = (currentHue, currentSat, currentVal)
-            targetLamp.setBulbtHSV(targetBulb, tmcHSV)
+            mapRanges(satValButtons[i][0], -1.0*statMac['w2h'], 1.0*statMac['w2h'], 0, statMac['wx']*2), 
+            mapRanges(satValButtons[i][1],      1.0,    -1.0, 0, statMac['wy']*2),
+            min(statMac['wx'], statMac['wy'])*0.0725)):
+            statMac['wereColorsTouched'] = True
+            statMac['currentSat'] = satValButtons[i][2]
+            statMac['currentVal'] = satValButtons[i][3]
+            tmcHSV = (
+                    statMac['currentHue'], 
+                    statMac['currentSat'], 
+                    statMac['currentVal'])
+            targetLamp.setBulbtHSV(statMac['targetBulb'], tmcHSV)
 
-    if ( wereColorsTouched ):
-        extraColor = colorsys.hsv_to_rgb(currentHue, currentSat, currentVal)
+    if ( statMac['wereColorsTouched'] ):
+        extraColor = colorsys.hsv_to_rgb(
+                statMac['currentHue'], 
+                statMac['currentSat'], 
+                statMac['currentVal'])
     else:
         extraColor = detailColor
     drawConfirm(
             0.75-0.4*(1.0-acbic), 
             -0.75-0.5*acbc, 
-            0.2*(1.0-acbc), w2h, 
+            0.2*(1.0-acbc), statMac['w2h'], 
             faceColor, 
             extraColor, 
             detailColor);
     if (watchPoint(
-        mapRanges( 0.75, -1.0,  1.0, 0, wx*2),
-        mapRanges(-0.75,  1.0, -1.0, 0, wy*2),
-        min(wx, wy)*0.2)):
-        wereColorsTouched = False
-        targetLamp.setBulbtHSV(targetBulb, (currentHue, currentSat, currentVal))
-        targetScreen = 0
+        mapRanges( 0.75, -1.0,  1.0, 0, statMac['wx']*2),
+        mapRanges(-0.75,  1.0, -1.0, 0, statMac['wy']*2),
+        min(statMac['wx'], statMac['wy'])*0.2)):
+        statMac['wereColorsTouched'] = False
+        targetLamp.setBulbtHSV(statMac['targetBulb'], (
+            statMac['currentHue'], 
+            statMac['currentSat'], 
+            statMac['currentVal'] ) )
+        statMac['targetScreen'] = 0
 
-    if ( wereColorsTouched ):
-        extraColor = colorsys.hsv_to_rgb(prevHue, prevSat, prevVal)
+    if ( statMac['wereColorsTouched'] ):
+        extraColor = colorsys.hsv_to_rgb(
+                statMac['prevHue'], 
+                statMac['prevSat'], 
+                statMac['prevVal'])
     else:
         extraColor = detailColor
+
     drawArrow(
             -0.75+0.4*(1.0-acbic), 
             -0.75-0.5*acbc, 
             180.0,
-            0.2*(1.0-acbc), w2h, 
+            0.2*(1.0-acbc), statMac['w2h'], 
             faceColor, 
             extraColor, 
             detailColor);
     if (watchPoint(
-        mapRanges(-0.75, -1.0,  1.0, 0, wx*2),
-        mapRanges(-0.75,  1.0, -1.0, 0, wy*2),
-        min(wx, wy)*0.2)):
-        wereColorsTouched = False
-        targetLamp.setBulbtHSV(targetBulb, (prevHue, prevSat, prevVal))
-        targetScreen = 0
+        mapRanges(-0.75, -1.0,  1.0, 0, statMac['wx']*2),
+        mapRanges(-0.75,  1.0, -1.0, 0, statMac['wy']*2),
+        min(statMac['wx'], statMac['wy'])*0.2)):
+        statMac['wereColorsTouched'] = False
+        targetLamp.setBulbtHSV(statMac['targetBulb'], (
+            statMac['prevHue'], 
+            statMac['prevSat'], 
+            statMac['prevVal'] ) )
+        statMac['targetScreen'] = 0
 
 def watchPoint(px, py, pr):
-    global cursorX, cursorY, touchState, prvState
-    if (1.0 >= pow((cursorX-px/2), 2) / pow(pr/2, 2) + pow((cursorY-py/2), 2) / pow(pr/2, 2)):
-        if prvState == 0:
-            prvState = touchState
+    global statMac
+    if (1.0 >= pow((statMac['cursorX']-px/2), 2) / pow(pr/2, 2) + pow((statMac['cursorY']-py/2), 2) / pow(pr/2, 2)):
+        if statMac['prvState'] == 0:
+            statMac['prvState'] = statMac['touchState']
             return True
         else:
-            prvState = touchState
+            statMac['prvState'] = statMac['touchState']
             return False
 
 def mousePassive(mouseX, mouseY):
-    global cursorX, cursorY, touchState
-    if (touchState == 0):
-        cursorX = mouseX
-        cursorY = mouseY
+    global statMac
+    if (statMac['touchState'] == 0):
+        statMac['cursorX'] = mouseX
+        statMac['cursorY'] = mouseY
         
 def mouseInteraction(button, state, mouseX, mouseY):
-    global lightOn, lamps, cursorX, cursorY, wx, wy, touchState, prvState
+    global statMac
     # State = 0: button is depressed, low
     # State = 1: button is released, high
     if (state == 0):
-        cursorX = mouseX
-        cursorY = mouseY
-    if (touchState == 1) and (state != 1) and (prvState == 1):
-        #glutPostRedisplay()
-        #touchState = not touchState
-        prvState = not touchState
+        statMac['cursorX'] = mouseX
+        statMac['cursorY'] = mouseY
+    if (statMac['touchState'] == 1) and (state != 1) and (statMac['prvState'] == 1):
+        statMac['prvState'] = not statMac['touchState']
         return
-    elif (touchState == 0) and (state != 0) and (prvState == 0):
-        #glutPostRedisplay()
-        touchState = not touchState
-        prvState = not touchState
+    elif (statMac['touchState'] == 0) and (state != 0) and (statMac['prvState'] == 0):
+        statMac['touchState'] = not statMac['touchState']
+        statMac['prvState'] = not statMac['touchState']
         return
 
 # Main screen drawing routine
 # Passed to glutDisplayFunc()
 # Called with glutPostRedisplay()
 def display():
-    global colrSettingCursor, targetScreen, targetBulb, fps, lamps
+    global statMac
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
 
-    #glDisable(GL_LIGHTING)
     drawBackground(0)
 
-    tDiff = 3/fps
-    if (targetScreen == 0):
-        if (colrSettingCursor > 0):
-            colrSettingCursor = constrain(colrSettingCursor-tDiff, 0, 1)
-            #cProfile.run('drawSettingColor(colrSettingCursor, lamps[0], targetBulb, w2h)')
-            drawSettingColor(colrSettingCursor, lamps[0], targetBulb, w2h)
-        if (targetScreen == 0) and (colrSettingCursor == 0):
+    tDiff = 2.71828/statMac['fps']
+    if (statMac['targetScreen'] == 0):
+        if (statMac['colrSettingCursor'] > 0):
+            statMac['colrSettingCursor'] = constrain(statMac['colrSettingCursor']-tDiff, 0, 1)
+            drawSettingColor(statMac['colrSettingCursor'], statMac['lamps'][0], statMac['targetBulb'])
+        if (statMac['targetScreen'] == 0) and (statMac['colrSettingCursor'] == 0):
             drawHome()
 
-    elif (targetScreen == 1):
-        if (colrSettingCursor < 1):
-            colrSettingCursor = constrain(colrSettingCursor+tDiff, 0, 1)
-        #cProfile.run('drawSettingColor(colrSettingCursor, lamps[0], targetBulb, w2h)')
-        drawSettingColor(colrSettingCursor, lamps[0], targetBulb, w2h)
+    elif (statMac['targetScreen'] == 1):
+        if (statMac['colrSettingCursor'] < 1):
+            statMac['colrSettingCursor'] = constrain(statMac['colrSettingCursor']+tDiff, 0, 1)
+        drawSettingColor(statMac['colrSettingCursor'], statMac['lamps'][0], statMac['targetBulb'])
 
-    for i in range(len(lamps)):
-        lamps[i].updateBulbs(tDiff/2)
+    for i in range(len(statMac['lamps'])):
+        statMac['lamps'][i].updateBulbs(tDiff/2)
 
     #glFlush()
     glutSwapBuffers()
@@ -471,92 +361,92 @@ def idle():
 # change view angle
 # Respond to user input from "special" keys
 def special(k, x, y):
-    global angB, frameLimit, nz, windowPosX, windowPosY, windowDimW, windowDimH, isFullScreen, targetScreen, targetBulb
+    global statMac
 
     if k == GLUT_KEY_LEFT:
-        lamps[0].setAngle(lamps[0].getAngle() + 5)
+        statMac['lamps'][0].setAngle(statMac['lamps'][0].getAngle() + 5)
     elif k == GLUT_KEY_RIGHT:
-        lamps[0].setAngle(lamps[0].getAngle() - 5)
+        statMac['lamps'][0].setAngle(statMac['lamps'][0].getAngle() - 5)
     elif k == GLUT_KEY_UP:
-        lamps[0].setNumBulbs(lamps[0].getNumBulbs()+1)
+        statMac['lamps'][0].setNumBulbs(statMac['lamps'][0].getNumBulbs()+1)
     elif k == GLUT_KEY_DOWN:
-        lamps[0].setNumBulbs(lamps[0].getNumBulbs()-1)
+        statMac['lamps'][0].setNumBulbs(statMac['lamps'][0].getNumBulbs()-1)
     elif k == GLUT_KEY_F11:
         if isFullScreen == False:
-            windowPosX = glutGet(GLUT_WINDOW_X)
-            windowPosY = glutGet(GLUT_WINDOW_Y)
-            windowDimW = glutGet(GLUT_WINDOW_WIDTH)
-            windowDimH = glutGet(GLUT_WINDOW_HEIGHT)
+            statMac['windowPosX'] = glutGet(GLUT_WINDOW_X)
+            statMac['windowPosY'] = glutGet(GLUT_WINDOW_Y)
+            statMac['windowDimW'] = glutGet(GLUT_WINDOW_WIDTH)
+            statMac['windowDimH'] = glutGet(GLUT_WINDOW_HEIGHT)
             isFullScreen = True
             glutFullScreen()
         elif isFullScreen == True:
-            glutPositionWindow(windowPosX, windowPosY)
-            glutReshapeWindow(windowDimW, windowDimH)
+            glutPositionWindow(statMac['windowPosX'], statMac['windowPosY'])
+            glutReshapeWindow(statMac['windowDimW'], statMac['windowDimH'])
             isFullScreen = False
     elif k == GLUT_KEY_F1:
-        if targetScreen == 0:
-            targetScreen = 1
-            targetBulb = 0
-        elif targetScreen == 1:
-            targetScreen = 0
+        if statMac['targetScreen'] == 0:
+            statMac['targetScreen'] = 1
+            statMac['targetBulb'] = 0
+        elif statMac['targetScreen'] == 1:
+            statMac['targetScreen'] = 0
     
     if k == GLUT_KEY_F12:
-        frameLimit = not frameLimit
-        print("frameLimit is now {}".format("ON" if frameLimit else "OFF"))
+        statMac['frameLimit'] = not statMac['frameLimit']
+        print("frameLimit is now {}".format("ON" if statMac['frameLimit'] else "OFF"))
 
     else:
         return
     glutPostRedisplay()
 
 def key(ch, x, y):
-    global targetScreen, wereColorsTouched, features, numHues
+    global statMac
     if ch == as_8_bit('q'):
         sys.exit(0)
     if ord(ch) == 27: # ESC
         sys.exit(0)
 
     if ch == as_8_bit('a'):
-        if lamps[0].getArn() == 0:
-            lamps[0].setArn(1)
-        elif lamps[0].getArn() == 1:
-            lamps[0].setArn(0)
+        if statMac['lamps'][0].getArn() == 0:
+            statMac['lamps'][0].setArn(1)
+        elif statMac['lamps'][0].getArn() == 1:
+            statMac['lamps'][0].setArn(0)
 
     if ch == as_8_bit('h'):
-        wereColorsTouched = False
-        targetScreen = 0
+        statMac['wereColorsTouched'] = False
+        statMac['targetScreen'] = 0
 
     if ch == as_8_bit(']'):
-        numHues += 2
-        if numHues > 14:
-            numHues = 14
+        statMac['numHues'] += 2
+        if statMac['numHues'] > 14:
+            statMac['numHues'] = 14
 
     if ch == as_8_bit('['):
-        numHues -= 2
-        if numHues < 10:
-            numHues = 10
+        statMac['numHues'] -= 2
+        if statMac['numHues'] < 10:
+            statMac['numHues'] = 10
 
-    #if ch == as_8_bit('m'):
-        #glutIconifyWindow()
+    if ch == as_8_bit('m'):
+        glutIconifyWindow()
 
 # new window size or exposure
 # this function is called everytime the window is resized
 def reshape(width, height):
-    global wx, wy, dBias, w2h
+    global statMac
 
     if height > 0:
-        w2h = width/height
+        statMac['w2h'] = width/height
     else:
-        w2h = 1
-    wx = width
-    wy = height
-    windowDimW = width
-    windowDimH = height
-    windowPosX = glutGet(GLUT_WINDOW_X)
-    windowPosY = glutGet(GLUT_WINDOW_Y)
+        statMac['w2h'] = 1
+    statMac['wx'] = width
+    statMac['wy'] = height
+    statMac['windowDimW'] = width
+    statMac['windowDimH'] = height
+    statMac['windowPosX'] = glutGet(GLUT_WINDOW_X)
+    statMac['windowPosY'] = glutGet(GLUT_WINDOW_Y)
     glViewport(0, 0, width, height)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    glOrtho(-1.0*w2h, 1.0*w2h, -1.0, 1.0, -1.0, 1.0) 
+    glOrtho(-1.0*statMac['w2h'], 1.0*statMac['w2h'], -1.0, 1.0, -1.0, 1.0) 
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
 
@@ -569,14 +459,49 @@ def visible(vis):
 
 # Equivalent to "main()" in C/C++
 if __name__ == '__main__':
-    #global windowDimW, windowDimH, windowPosX, windowPosY
+    global statMac
+    statMac = {}
     print("Initializing...")
+    statMac['tStart']          = time.time()
+    statMac['t0']              = time.time()
+    statMac['frames']          = 0
+    statMac['lamps']           = []
+    statMac['screen']          = 0
+    statMac['lightOn']         = False
+    statMac['fps']             = 60
+    statMac['windowPosX']      = 0
+    statMac['windowPosY']      = 0
+    statMac['windowDimW']      = 800
+    statMac['windowDimH']      = 480
+    statMac['cursorX']         = 0
+    statMac['cursorY']         = 0
+    statMac['isFullScreen']    = False
+    statMac['isAnimating']     = False
+    statMac['wx']              = 0
+    statMac['wy']              = 0
+    statMac['targetScreen']    = 0
+    statMac['touchState']      = 0
+    statMac['prvState']        = statMac['touchState']
+    statMac['targetBulb']      = 0
+    statMac['frameLimit']      = True
+    statMac['someVar']         = 0
+    statMac['someInc']         = 0.1
+    statMac['features']        = 4
+    statMac['numHues']         = 12
+    statMac['currentHue']      = None
+    statMac['currentSat']      = None
+    statMac['currentVal']      = None
+    statMac['prevHue']         = None
+    statMac['prevVal']         = None
+    statMac['prevSat']         = None
+    statMac['wereColorsTouched']   = False
+    statMac['colrSettingCursor']   = 0
     glutInit(sys.argv)
-    #glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE)
-    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE)
+    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE)
+    #glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE)
 
-    glutInitWindowPosition(windowPosX, windowPosY)
-    glutInitWindowSize(windowDimW, windowDimH)
+    glutInitWindowPosition(statMac['windowPosX'], statMac['windowPosY'])
+    glutInitWindowSize(statMac['windowDimW'], statMac['windowDimH'])
 
     glutCreateWindow("HeavenLi")
     glutMouseFunc(mouseInteraction)
