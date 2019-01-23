@@ -13,24 +13,26 @@ GLushort*   hueRingIndices       = NULL;
 GLuint      hueRingVerts;
 GLubyte     prevRingHueRingNumHues;
 GLfloat     prevRingHue          = 0.0;
+float       prevInteractionCursor;
 float*      hueButtonData        = NULL;  /* X, Y, hue per button */
 
 PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
    PyObject *py_list;
    PyObject *py_tuple;
-   float w2h, scale, tmo, currentRingHue;
+   float w2h, scale, tmo, currentRingHue, interactionCursor;
    float ringColor[3];
    char circleSegments = 45;
    unsigned char numHues = 12;
 
    // Parse Inputs
    if (!PyArg_ParseTuple(args,
-            "flOff",
+            "flOfff",
             &currentRingHue,
             &numHues,
             &py_tuple,
             &w2h,
-            &scale))
+            &scale,
+            &interactionCursor))
    {
       Py_RETURN_NONE;
    }
@@ -40,10 +42,10 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
    ringColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(py_tuple, 2)));
 
    // Allocate and Define Geometry/Color buffers
-   if (  prevRingHueRingNumHues   != numHues  ||
-         hueRingVertexBuffer  == NULL     ||
-         hueRingColorBuffer   == NULL     ||
-         hueRingIndices       == NULL     ){
+   if (  prevRingHueRingNumHues  != numHues  ||
+         hueRingVertexBuffer     == NULL     ||
+         hueRingColorBuffer      == NULL     ||
+         hueRingIndices          == NULL     ){
 
       printf("Initializing Geometry for Hue Ring\n");
       vector<GLfloat> verts;
@@ -118,20 +120,28 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
       }
       prevRingHue = currentRingHue;
       prevRingHueRingNumHues = numHues;
+      prevInteractionCursor = 0.0;
    }
 
    // Update Ring if hue selection has changed
    if (  prevRingHue != currentRingHue ) {
-      float ang, ringX = 100.0, ringY = 100.0;
+      float curAng, prevAng, deltaAng, ringX = 100.0, ringY = 100.0;
       float tmr = float(0.15f);
       for (int i = 0; i < numHues; i++) {
          tmo = float(i) / float(numHues);
+         if (abs(prevRingHue - tmo) <= 1.0f / float(numHues*2)) {
+            prevAng  = float(360.0*tmo + 90.0);
+         }
          if (abs(currentRingHue - tmo) <= 1.0f / float(numHues*2)) {
-            ang = float(360.0*tmo + 90.0);
-            ringX = float(cos(degToRad(ang))*0.67*pow(numHues/12.0f, 1.0f/4.0f));
-            ringY = float(sin(degToRad(ang))*0.67*pow(numHues/12.0f, 1.0f/4.0f));
+            curAng   = float(360.0*tmo + 90.0);
          }
       }
+
+      deltaAng = prevAng-curAng;
+      deltaAng *= pow(interactionCursor, 2);
+
+      ringX = float(cos(degToRad(curAng+deltaAng))*0.67*pow(numHues/12.0f, 1.0f/4.0f));
+      ringY = float(sin(degToRad(curAng+deltaAng))*0.67*pow(numHues/12.0f, 1.0f/4.0f));
 
       drawHalo(
             ringX, ringY,
@@ -142,7 +152,18 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
             ringColor,
             hueRingVertexBuffer,
             hueRingColorBuffer);
-      prevRingHue = currentRingHue;
+      if (  interactionCursor < 0.00001   &&
+            interactionCursor >= 0.0000   ){
+         prevRingHue = currentRingHue;
+      }
+      /*
+      if ( ((interactionCursor < 0.00001) && (interactionCursor >= 0.0000))  ||
+            ((prevInteractionCursor < interactionCursor) && (interactionCursor == 1.0))){
+         prevRingHue = currentRingHue;
+         prevInteractionCursor = interactionCursor;
+      }
+      */
+      prevInteractionCursor = interactionCursor;
    }
 
    // Check if Selection Ring Color needs to be updated

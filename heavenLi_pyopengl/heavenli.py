@@ -159,9 +159,6 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
     if (statMac['currentVal'] == None):
         statMac['currentVal'] = targetLamp.getBulbHSV(targetBulb)[2]
         
-    if (cursor != 0.0) and (cursor != 1.0):
-        pass
-
     if (statMac['wereColorsTouched']):
         selectRingColor = (1.0, 1.0, 1.0)
     else:
@@ -187,7 +184,14 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
             (0.3*acc, 0.3*acc, 0.3*acc))
 
     # Draw Ring of Dots with different hues
-    hueButtons = drawHueRing(statMac['currentHue'], statMac['numHues'], selectRingColor, statMac['w2h'], acbic)
+    hueButtons = drawHueRing(
+            statMac['currentHue'], 
+            statMac['numHues'], 
+            selectRingColor, 
+            statMac['w2h'], 
+            acbic, 
+            statMac['interactionCursor'])
+
     for i in range(statMac['numHues']):
         tmr = 1.0
         if (statMac['w2h'] <= 1.0):
@@ -312,9 +316,11 @@ def mouseInteraction(button, state, mouseX, mouseY):
     global statMac
     # State = 0: button is depressed, low
     # State = 1: button is released, high
+    statMac['currentState'] = state
     if (state == 0):
         statMac['cursorX'] = mouseX
         statMac['cursorY'] = mouseY
+
     if (statMac['touchState'] == 1) and (state != 1) and (statMac['prvState'] == 1):
         statMac['prvState'] = not statMac['touchState']
         return
@@ -325,15 +331,22 @@ def mouseInteraction(button, state, mouseX, mouseY):
 
 # Main screen drawing routine
 # Passed to glutDisplayFunc()
-# Called with glutPostRedisplay()
 def display():
     global statMac
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
 
     drawBackground(0)
+    #if (statMac['interactionCursor'] > 0.0):
+        #print(statMac['interactionCursor'])
 
-    tDiff = 2.71828/statMac['fps']
+    tDiff = 0.71828/statMac['fps']
+    #tDiff = 2.71828/statMac['fps']
+    if (statMac['currentState'] == 0 or statMac['prvState'] == 0):
+        statMac['interactionCursor'] = 1.0
+    else:
+        statMac['interactionCursor'] = constrain(statMac['interactionCursor'] - tDiff, 0.0, 1.0)
+
     if (statMac['targetScreen'] == 0):
         if (statMac['colrSettingCursor'] > 0):
             statMac['colrSettingCursor'] = constrain(statMac['colrSettingCursor']-tDiff, 0, 1)
@@ -354,9 +367,12 @@ def display():
 
     framerate()
 
-def idle():
+def idleWindowOpen():
     #lamps[0].updateBulbs(constrain(60.0/fps, 1, 2.4))
     glutPostRedisplay()
+
+def idleWindowMinimized():
+    pass
 
 # change view angle
 # Respond to user input from "special" keys
@@ -372,17 +388,17 @@ def special(k, x, y):
     elif k == GLUT_KEY_DOWN:
         statMac['lamps'][0].setNumBulbs(statMac['lamps'][0].getNumBulbs()-1)
     elif k == GLUT_KEY_F11:
-        if isFullScreen == False:
+        if statMac['isFullScreen'] == False:
             statMac['windowPosX'] = glutGet(GLUT_WINDOW_X)
             statMac['windowPosY'] = glutGet(GLUT_WINDOW_Y)
             statMac['windowDimW'] = glutGet(GLUT_WINDOW_WIDTH)
             statMac['windowDimH'] = glutGet(GLUT_WINDOW_HEIGHT)
-            isFullScreen = True
+            statMac['isFullScreen'] = True
             glutFullScreen()
-        elif isFullScreen == True:
+        elif statMac['isFullScreen'] == True:
             glutPositionWindow(statMac['windowPosX'], statMac['windowPosY'])
             glutReshapeWindow(statMac['windowDimW'], statMac['windowDimH'])
-            isFullScreen = False
+            statMac['isFullScreen'] = False
     elif k == GLUT_KEY_F1:
         if statMac['targetScreen'] == 0:
             statMac['targetScreen'] = 1
@@ -453,49 +469,51 @@ def reshape(width, height):
 # Only Render if the window (any pixel of it at all) is visible
 def visible(vis):
     if vis == GLUT_VISIBLE:
-        glutIdleFunc(idle)
+        glutIdleFunc(idleWindowOpen)
     else:
-        glutIdleFunc(None)
+        glutIdleFunc(idleWindowMinimized)
 
 # Equivalent to "main()" in C/C++
 if __name__ == '__main__':
     global statMac
     statMac = {}
     print("Initializing...")
-    statMac['tStart']          = time.time()
-    statMac['t0']              = time.time()
-    statMac['frames']          = 0
-    statMac['lamps']           = []
-    statMac['screen']          = 0
-    statMac['lightOn']         = False
-    statMac['fps']             = 60
-    statMac['windowPosX']      = 0
-    statMac['windowPosY']      = 0
-    statMac['windowDimW']      = 800
-    statMac['windowDimH']      = 480
-    statMac['cursorX']         = 0
-    statMac['cursorY']         = 0
-    statMac['isFullScreen']    = False
-    statMac['isAnimating']     = False
-    statMac['wx']              = 0
-    statMac['wy']              = 0
-    statMac['targetScreen']    = 0
-    statMac['touchState']      = 0
-    statMac['prvState']        = statMac['touchState']
-    statMac['targetBulb']      = 0
-    statMac['frameLimit']      = True
-    statMac['someVar']         = 0
-    statMac['someInc']         = 0.1
-    statMac['features']        = 4
-    statMac['numHues']         = 12
-    statMac['currentHue']      = None
-    statMac['currentSat']      = None
-    statMac['currentVal']      = None
-    statMac['prevHue']         = None
-    statMac['prevVal']         = None
-    statMac['prevSat']         = None
-    statMac['wereColorsTouched']   = False
-    statMac['colrSettingCursor']   = 0
+    statMac['tStart']           = time.time()
+    statMac['t0']               = time.time()
+    statMac['frames']           = 0
+    statMac['lamps']            = []
+    statMac['screen']           = 0
+    statMac['lightOn']          = False
+    statMac['fps']              = 60
+    statMac['windowPosX']       = 0
+    statMac['windowPosY']       = 0
+    statMac['windowDimW']       = 800
+    statMac['windowDimH']       = 480
+    statMac['cursorX']          = 0
+    statMac['cursorY']          = 0
+    statMac['isFullScreen']     = False
+    statMac['isAnimating']      = False
+    statMac['wx']               = 0
+    statMac['wy']               = 0
+    statMac['targetScreen']     = 0
+    statMac['touchState']       = 1
+    statMac['currentState']     = 1
+    statMac['prvState']         = statMac['touchState']
+    statMac['targetBulb']       = 0
+    statMac['frameLimit']       = True
+    statMac['someVar']          = 0
+    statMac['someInc']          = 0.1
+    statMac['features']         = 4
+    statMac['numHues']          = 12
+    statMac['currentHue']       = None
+    statMac['currentSat']       = None
+    statMac['currentVal']       = None
+    statMac['prevHue']          = None
+    statMac['prevVal']          = None
+    statMac['prevSat']          = None
+    statMac['wereColorsTouched']    = False
+    statMac['colrSettingCursor']    = 0.0
+    statMac['interactionCursor']    = 0.0
     glutInit(sys.argv)
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE)
     #glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE)
