@@ -203,10 +203,10 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    deltaY = ringY-prevTriY;
    if (abs(deltaX) > tDiff*0.01) {
       if (deltaX < -0.0) {
-         prevTriX -= float(2.0*tDiff*abs(deltaX));
+         prevTriX -= float(3.0*tDiff*abs(deltaX));
       }
       if (deltaX > -0.0) {
-         prevTriX += float(2.0*tDiff*abs(deltaX));
+         prevTriX += float(3.0*tDiff*abs(deltaX));
       }
    } else {
       prevTriX = ringX;
@@ -214,10 +214,10 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
 
    if (abs(deltaY) > tDiff*0.01) {
       if (deltaY < -0.0) {
-         prevTriY -= float(2.0*tDiff*abs(deltaY));
+         prevTriY -= float(3.0*tDiff*abs(deltaY));
       }
       if (deltaY > -0.0) {
-         prevTriY += float(2.0*tDiff*abs(deltaY));
+         prevTriY += float(3.0*tDiff*abs(deltaY));
       }
    } else {
       prevTriY = ringY;
