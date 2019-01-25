@@ -14,8 +14,6 @@ GLuint      confirmVerts;
 GLuint      extraConfirmVerts;
 
 PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
-   PyObject *py_list;
-   PyObject *py_tuple;
    PyObject *faceColorPyTup;
    PyObject *extraColorPyTup;
    PyObject *detailColorPyTup;

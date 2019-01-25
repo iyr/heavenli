@@ -190,6 +190,7 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
             selectRingColor, 
             statMac['w2h'], 
             acbic, 
+            statMac['tDiff'],
             statMac['interactionCursor'])
 
     for i in range(statMac['numHues']):
@@ -340,27 +341,31 @@ def display():
     #if (statMac['interactionCursor'] > 0.0):
         #print(statMac['interactionCursor'])
 
-    tDiff = 0.71828/statMac['fps']
-    #tDiff = 2.71828/statMac['fps']
+    #statMac['tDiff'] = 0.70568/statMac['fps']
+    #statMac['tDiff'] = 1.30568/statMac['fps']
+    statMac['tDiff'] = 2.71828/statMac['fps']
+    #statMac['tDiff'] = 3.14159/statMac['fps']
+    #statMac['tDiff'] = 6.28318/statMac['fps']
     if (statMac['currentState'] == 0 or statMac['prvState'] == 0):
         statMac['interactionCursor'] = 1.0
     else:
-        statMac['interactionCursor'] = constrain(statMac['interactionCursor'] - tDiff, 0.0, 1.0)
+        statMac['interactionCursor'] = constrain(statMac['interactionCursor'] - statMac['tDiff'], 0.0, 1.0)
 
     if (statMac['targetScreen'] == 0):
         if (statMac['colrSettingCursor'] > 0):
-            statMac['colrSettingCursor'] = constrain(statMac['colrSettingCursor']-tDiff, 0, 1)
+            statMac['colrSettingCursor'] = constrain(statMac['colrSettingCursor']-statMac['tDiff'], 0, 1)
             drawSettingColor(statMac['colrSettingCursor'], statMac['lamps'][0], statMac['targetBulb'])
         if (statMac['targetScreen'] == 0) and (statMac['colrSettingCursor'] == 0):
             drawHome()
 
     elif (statMac['targetScreen'] == 1):
         if (statMac['colrSettingCursor'] < 1):
-            statMac['colrSettingCursor'] = constrain(statMac['colrSettingCursor']+tDiff, 0, 1)
+            statMac['colrSettingCursor'] = constrain(statMac['colrSettingCursor']+statMac['tDiff'], 0, 1)
         drawSettingColor(statMac['colrSettingCursor'], statMac['lamps'][0], statMac['targetBulb'])
 
+    statMac['tDiff'] = 3.14159/statMac['fps']
     for i in range(len(statMac['lamps'])):
-        statMac['lamps'][i].updateBulbs(tDiff/2)
+        statMac['lamps'][i].updateBulbs(statMac['tDiff']/2)
 
     #glFlush()
     glutSwapBuffers()
