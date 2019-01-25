@@ -221,7 +221,8 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
             statMac['currentVal'],
             int(statMac['numHues']/2), 
             selectRingColor,
-            statMac['w2h'], acbic)
+            statMac['w2h'], acbic, 
+            statMac['tDiff'])
     for i in range(int( int(statMac['numHues']/2)*( int(statMac['numHues']/2) + 1) / 2 )):
         tmr = 1.0
         if (statMac['w2h'] <= 1.0):
@@ -235,7 +236,7 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
         if (watchPoint(
             mapRanges(satValButtons[i][0], -1.0*statMac['w2h'], 1.0*statMac['w2h'], 0, statMac['wx']*2), 
             mapRanges(satValButtons[i][1],      1.0,    -1.0, 0, statMac['wy']*2),
-            min(statMac['wx'], statMac['wy'])*0.0725)):
+            min(statMac['wx'], statMac['wy'])*0.073)):
             statMac['wereColorsTouched'] = True
             statMac['currentSat'] = satValButtons[i][2]
             statMac['currentVal'] = satValButtons[i][3]

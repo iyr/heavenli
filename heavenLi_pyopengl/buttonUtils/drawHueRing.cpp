@@ -128,8 +128,7 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
       prevHueRingAng = float(prevHueRingAni*360.0 + 90.0);
    }
 
-   if (  prevHueRingSel != currentHue ||
-        (prevInteractionCursor < interactionCursor)  ) {
+   if (  prevHueRingSel != currentHue  ) {
          prevHueRingAni = prevHueRingSel;
    }
 
@@ -137,8 +136,8 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
    float curAng, deltaAng, ringX = 100.0, ringY = 100.0;
    float tmr = float(0.15f);
    curAng = float(currentHue*360.0 + 90.0);
-
    deltaAng = curAng - prevHueRingAng;
+
    if (deltaAng < -180.0)
       deltaAng += 360.0;
    if (deltaAng > 180.0)

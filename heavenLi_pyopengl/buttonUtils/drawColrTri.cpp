@@ -13,6 +13,10 @@ GLushort *colrTriIndices      = NULL;
 GLuint   colrTriVerts;
 GLint    prevColrTriNumLevels;
 float    *triButtonData       = NULL;
+float    prevTriX             = 0.0;
+float    prevTriY             = 0.0;
+GLfloat  prevTriSatSel        = 0.0;
+GLfloat  prevTriValSel        = 0.0;
 GLfloat  prevTriHue;
 GLfloat  prevTriSat;
 GLfloat  prevTriVal;
@@ -20,21 +24,22 @@ GLfloat  prevTriVal;
 PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    PyObject *py_list;
    PyObject *py_tuple;
-   float w2h, scale, currentTriHue, currentTriSat, currentTriVal;
+   float w2h, scale, currentTriHue, currentTriSat, currentTriVal, tDiff;
    float ringColor[3];
    char circleSegments = 24;
    long numLevels = 6;
 
    // Parse Inputs
    if (!PyArg_ParseTuple(args,
-            "ffflOff",
+            "ffflOfff",
             &currentTriHue,
             &currentTriSat,
             &currentTriVal,
             &numLevels,
             &py_tuple,
             &w2h,
-            &scale))
+            &scale,
+            &tDiff))
    {
       Py_RETURN_NONE;
    }
@@ -158,44 +163,96 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       prevTriHue = currentTriHue;
       prevTriSat = currentTriSat;
       prevTriVal = currentTriVal;
+      prevTriSatSel = currentTriSat;
+      prevTriValSel = currentTriVal;
    }
 
-   if ( prevTriHue != currentTriHue ) {
-      float saturation, value;
-      float colors[3] = {0.0, 0.0, 0.0};
-      int colrIndex = 0;
-      for (int i = 0; i < numLevels; i++) {        /* Columns */
-         for (int j = 0; j < numLevels-i; j++) {   /* Rows */
+   if (  prevTriSatSel  != currentTriSat  ){
+      prevTriSat = prevTriSatSel;
+   }
+   if (  prevTriValSel  != currentTriVal  ){
+      prevTriVal = prevTriValSel;
+   }
 
-            // Calculate Discrete Saturation and Value
-            value = 1.0f - float(j) / float(numLevels - 1);
-            saturation  =  float(i) / float(numLevels - 1 - j);
+   float tmr, saturation, value, ringX = 100.0f, ringY = 100.0f;
+   float deltaX, deltaY;
 
-            // Convert HSV to RGB
-            hsv2rgb(
-                  currentTriHue,
-                  saturation,
-                  value, 
-                  colors);
+   tmr = 0.05f;
+   for (int i = 0; i < numLevels; i++) {        // Columns
+      for (int j = 0; j < numLevels-i; j++) {   // Rows
 
-            colrIndex = updateEllipseColor(
-                  circleSegments, 
-                  colrIndex, 
-                  colors,
-                  colrTriColorBuffer);
+         // Calculate Discrete Saturation and Value
+         value = 1.0f - float(j) / float(numLevels - 1);
+         saturation  =  float(i) / float(numLevels - 1 - j);
+
+         if (saturation != saturation || saturation <= 0.0)
+            saturation = 0.000001f;
+         if (value != value || value <= 0.0)
+            value = 0.000001f;
+
+         // Define relative positions of sat/val buttons
+         if (  abs(currentTriSat - saturation) <= 1.0f / float(numLevels*2) &&
+               abs(currentTriVal - value     ) <= 1.0f / float(numLevels*2) ){
+            ringX = float(-0.0383*numLevels + (i*0.13f));
+            ringY = float(+0.0616*numLevels - (i*0.075f + j*0.145f));
          }
       }
-      prevTriHue = currentTriHue;
    }
 
+   deltaX = ringX-prevTriX;
+   deltaY = ringY-prevTriY;
+   if (abs(deltaX) > tDiff*0.01) {
+      if (deltaX < -0.0) {
+         prevTriX -= float(2.0*tDiff*abs(deltaX));
+      }
+      if (deltaX > -0.0) {
+         prevTriX += float(2.0*tDiff*abs(deltaX));
+      }
+   } else {
+      prevTriX = ringX;
+   }
+
+   if (abs(deltaY) > tDiff*0.01) {
+      if (deltaY < -0.0) {
+         prevTriY -= float(2.0*tDiff*abs(deltaY));
+      }
+      if (deltaY > -0.0) {
+         prevTriY += float(2.0*tDiff*abs(deltaY));
+      }
+   } else {
+      prevTriY = ringY;
+   }
+
+   if (  prevTriSat  != currentTriSat  ||
+         prevTriVal  != currentTriVal  ){
+      drawHalo(
+            prevTriX, prevTriY,
+            float(1.06*tmr), float(1.06*tmr),
+            0.03f,
+            circleSegments,
+            3*numButtons*circleSegments,
+            ringColor,
+            colrTriVertexBuffer,
+            colrTriColorBuffer);
+   }
+
+   if (  abs(deltaX) <= tDiff*0.01 &&
+         abs(deltaY) <= tDiff*0.01 ){
+      prevTriSat = currentTriSat;
+      prevTriVal = currentTriVal;
+   }
+
+   prevTriSatSel = currentTriSat;
+   prevTriValSel = currentTriVal;
+   /*
    if (  prevTriSat  != currentTriSat  ||
          prevTriVal  != currentTriVal  ){
 
       float tmr, saturation, value, ringX = 100.0f, ringY = 100.0f;
 
       tmr = 0.05f;
-      for (int i = 0; i < numLevels; i++) {        /* Columns */
-         for (int j = 0; j < numLevels-i; j++) {   /* Rows */
+      for (int i = 0; i < numLevels; i++) {        // Columns
+         for (int j = 0; j < numLevels-i; j++) {   // Rows
 
             // Calculate Discrete Saturation and Value
             value = 1.0f - float(j) / float(numLevels - 1);
@@ -226,6 +283,36 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
             colrTriColorBuffer);
       prevTriSat = currentTriSat;
       prevTriVal = currentTriVal;
+   }
+   */
+
+   // Update colors if current Hue has changed
+   if ( prevTriHue != currentTriHue ) {
+      float saturation, value;
+      float colors[3] = {0.0, 0.0, 0.0};
+      int colrIndex = 0;
+      for (int i = 0; i < numLevels; i++) {        /* Columns */
+         for (int j = 0; j < numLevels-i; j++) {   /* Rows */
+
+            // Calculate Discrete Saturation and Value
+            value = 1.0f - float(j) / float(numLevels - 1);
+            saturation  =  float(i) / float(numLevels - 1 - j);
+
+            // Convert HSV to RGB
+            hsv2rgb(
+                  currentTriHue,
+                  saturation,
+                  value, 
+                  colors);
+
+            colrIndex = updateEllipseColor(
+                  circleSegments, 
+                  colrIndex, 
+                  colors,
+                  colrTriColorBuffer);
+         }
+      }
+      prevTriHue = currentTriHue;
    }
 
    // Check if Selection Ring Color needs to be updated
