@@ -92,8 +92,8 @@ def drawHome():
             12*(statMac['someVar']/100),
             60*(1.0-(statMac['someVar']/100)), 
             1.0, statMac['w2h'], 
-            statMac['detailColor'], 
-            statMac['faceColor'])
+            statMac['faceColor'],
+            statMac['detailColor'])
 
     # We are at the home screen
     if (statMac['screen'] == 0) and (statMac['touchState'] != statMac['prvState']):
@@ -152,6 +152,12 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
     acic = animCurve(1.0-cursor)
     acbc = animCurveBounce(cursor)
     acc = animCurve(cursor)
+    faceColor = (statMac['faceColor'][0]*acc, 
+            statMac['faceColor'][1]*acc,
+            statMac['faceColor'][2]*acc)
+    detailColor = (statMac['detailColor'][0]*acc, 
+            statMac['detailColor'][1]*acc,
+            statMac['detailColor'][2]*acc)
     cmx = 0.15
     if (statMac['currentHue'] == None):
         statMac['currentHue'] = targetLamp.getBulbHSV(targetBulb)[0]
@@ -171,12 +177,8 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
             targetLamp.getNumBulbs(),
             targetLamp.getAngle(),
             iconSize*2.66*pow(acc, 4),
-            (statMac['faceColor'][0]*acc, 
-                statMac['faceColor'][1]*acc, 
-                statMac['faceColor'][2]*acc),
-            (statMac['detailColor'][0]*acc, 
-                statMac['detailColor'][1]*acc, 
-                statMac['detailColor'][2]*acc),
+            faceColor,
+            detailColor,
             targetLamp.getBulbsRGB(),
             statMac['w2h'])
 
@@ -184,12 +186,8 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
     if (cursor < limit):
         drawGranRocker(
                 0.0, -0.91*acbic,
-                (statMac['faceColor'][0]*acc, 
-                    statMac['faceColor'][1]*acc, 
-                    statMac['faceColor'][2]*acc),
-                (statMac['detailColor'][0]*acc, 
-                    statMac['detailColor'][1]*acc, 
-                    statMac['detailColor'][2]*acc),
+                faceColor,
+                detailColor,
                 statMac['numHues'],
                 0.0,
                 statMac['w2h'],
@@ -201,27 +199,36 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
             60*(1.0-(statMac['someVar']/100)),
             1.0+acic*0.75, 
             statMac['w2h'], 
-            (statMac['detailColor'][0]*acc, 
-                statMac['detailColor'][1]*acc, 
-                statMac['detailColor'][2]*acc),
-            (statMac['faceColor'][0]*acc, 
-                statMac['faceColor'][1]*acc, 
-                statMac['faceColor'][2]*acc))
+            faceColor,
+            detailColor)
 
     if (cursor >= limit):
         drawGranRocker(
                 0.0, -0.91*acbic,
-                (statMac['faceColor'][0]*acc, 
-                    statMac['faceColor'][1]*acc, 
-                    statMac['faceColor'][2]*acc),
-                (statMac['detailColor'][0]*acc, 
-                    statMac['detailColor'][1]*acc, 
-                    statMac['detailColor'][2]*acc),
+                faceColor,
+                detailColor,
                 statMac['numHues'],
                 0.0,
                 statMac['w2h'],
                 0.30*acic,
                 statMac['tDiff'])
+
+    # Watch Granularity Rocker for Input
+    if (watchPoint(
+        mapRanges(0.3*24.0/36.0, -1.0*statMac['w2h'], 1.0*statMac['w2h'],   0, statMac['wx']*2),
+        mapRanges(0.0-0.91,  1.0               ,-1.0               ,   0, statMac['wy']*2),
+        min(statMac['wx'],statMac['wy']*(12.0/36.0)*0.3) )):
+            statMac['numHues'] += 2
+            if statMac['numHues'] > 14:
+                statMac['numHues'] = 14
+    # Watch Granularity Rocker for Input
+    if (watchPoint(
+        mapRanges(-0.3*24.0/36.0, -1.0*statMac['w2h'], 1.0*statMac['w2h'], 0, statMac['wx']*2),
+        mapRanges(-0.91, 1.0, -1.0, 0, statMac['wy']*2),
+        min(statMac['wx'],statMac['wy']*(12.0/36.0)*0.3) )):
+            statMac['numHues'] -= 2
+            if statMac['numHues'] < 10:
+                statMac['numHues'] = 10
 
     # Draw Ring of Dots with different hues
     hueButtons = drawHueRing(

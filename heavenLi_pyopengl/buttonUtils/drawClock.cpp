@@ -32,8 +32,8 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
             &minute,
             &scale,
             &w2h,
-            &detailColorPyTup,
-            &faceColorPyTup)) 
+            &faceColorPyTup,
+            &detailColorPyTup))
    {
       Py_RETURN_NONE;
    }
