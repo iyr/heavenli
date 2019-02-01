@@ -7,16 +7,16 @@
 
 using namespace std;
 
-GLfloat*    hueRingVertexBuffer  = NULL;
-GLfloat*    hueRingColorBuffer   = NULL;
-GLushort*   hueRingIndices       = NULL;
-GLuint      hueRingVerts;
-GLubyte     prevHueRingNumHues;
-GLfloat     prevHueRingAni       = 0.0;
-GLfloat     prevHueRingSel       = 0.0;
-//float       prevInteractionCursor;        // not entirely sure if I still need this
+
+GLfloat*    hueRingVertexBuffer  = NULL;  // Stores (X, Y) (float) for each vertex
+GLfloat*    hueRingColorBuffer   = NULL;  // Stores (R, G, B) (float) for each vertex
+GLushort*   hueRingIndices       = NULL;  // Stores index corresponding to each vertex, could be more space efficient, but meh
+GLuint      hueRingVerts;                 // Total number of vertices
+GLubyte     prevHueRingNumHues;           // Used for updating Granularity changes
+float       prevHueRingAng       = 0.0;   // Used for animating selection ring
+GLfloat     prevHueRingAni       = 0.0;   // Used to resolve edge-case bug for animating selection ring
+GLfloat     prevHueRingSel       = 0.0;   // Used to resolve edge-case bug for animating selection ring
 float*      hueButtonData        = NULL;  /* X, Y, hue per button */
-float       prevHueRingAng       = 0.0;
 
 PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
    PyObject *py_list;
@@ -149,7 +149,6 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
       prevHueRingAni = currentHue;
       prevHueRingSel = currentHue;
       prevHueRingNumHues = numHues;
-      //prevInteractionCursor = 0.0;
       prevHueRingAng = float(prevHueRingAni*360.0 + 90.0);
    }
 
@@ -201,7 +200,6 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
             hueRingColorBuffer);
    }
 
-   //prevInteractionCursor = interactionCursor;
    prevHueRingSel = currentHue;
 
    // Check if selection Ring Color needs to be updated

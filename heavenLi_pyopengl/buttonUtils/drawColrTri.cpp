@@ -7,18 +7,20 @@
 
 using namespace std;
 
-GLfloat  *colrTriVertexBuffer = NULL;
-GLfloat  *colrTriColorBuffer  = NULL;
-GLushort *colrTriIndices      = NULL;
-GLuint   colrTriVerts;
-GLint    prevColrTriNumLevels;
-float    *triButtonData       = NULL;
-float    prevTriX             = 0.0;
-float    prevTriY             = 0.0;
-GLfloat  prevTriHue;
-GLfloat  prevTriSat;
-GLfloat  prevTriVal;
-bool     updateGeometry       = false;
+GLfloat  *colrTriVertexBuffer = NULL;  // Stores (X, Y) (float) for each vertex
+GLfloat  *colrTriColorBuffer  = NULL;  // Stores (R, G, B) (float) for each vertex
+GLushort *colrTriIndices      = NULL;  // Stores index corresponding to each vertex, could be more space efficient, but meh
+GLuint   colrTriVerts;                 // Total number of vertices
+GLint    prevColrTriNumLevels;         // Used for updating Granularity changes
+float    *triButtonData       = NULL;  // Stores data (X, Y, sat, val) for each button dot
+float    prevTriX             = 0.0;   // Used for animating selection ring
+float    prevTriY             = 0.0;   // Used for animating selection ring
+GLfloat  prevTriHue;                   // Used for animating selection ring
+GLfloat  prevTriSat;                   // Used for animating selection ring
+GLfloat  prevTriVal;                   // Used for animating selection ring
+GLfloat  prevTriSatSel        = 0.0;   // Used to resolve edge-case bug for animating selection ring
+GLfloat  prevTriValSel        = 0.0;   // Used to resolve edge-case bug for animating selection ring
+bool     updateGeometry       = false; // Used for animating granularity changes
 
 PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    PyObject *py_list;
@@ -60,7 +62,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    if (numLevels > 7)
       numLevels = 7;
 
-   // (Re)Allocate buffers for color and vertices
+   // (Re)Allocate and Define Geometry/Color buffers
    if (  prevColrTriNumLevels != numLevels   ||
          colrTriVertexBuffer  == NULL        ||
          colrTriColorBuffer   == NULL        ||
@@ -71,7 +73,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       vector<GLfloat> colrs;
 
       // Allocate buffer for storing relative positions of each button
-      // (Used for processing user inpue)
+      // (Used for processing user input)
       if (triButtonData == NULL) {
          triButtonData = new float[4*numButtons];
       } else {
@@ -79,10 +81,10 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
          triButtonData = new float[4*numButtons];
       }
 
+      // Actual meat of drawing saturation/value triangle
       int index = 0;
       float tmx, tmy, tmr, saturation, value, ringX = 100.0f, ringY = 100.0f;
       float colors[3] = {0.0, 0.0, 0.0};
-
       tmr = 0.05f;
       for (int i = 0; i < numLevels; i++) {        /* Columns */
          for (int j = 0; j < numLevels-i; j++) {   /* Rows */
@@ -123,7 +125,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
          }
       }
 
-      // Draw a circle around the currently selected button dot corresponding to saturation/value
+      // Draw a circle around the button dot corresponding to the selected saturation/value
       drawHalo(
             ringX, ringY,
             float(1.06*tmr), float(1.06*tmr),
@@ -175,11 +177,20 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       prevTriHue = currentTriHue;
       prevTriSat = currentTriSat;
       prevTriVal = currentTriVal;
+      prevTriSatSel = currentTriSat;
+      prevTriValSel = currentTriVal;
    }
+
+   // Resolves edge case bug animating selection ring
+   if (  prevTriSatSel  != currentTriSat  ){
+      prevTriSat = prevTriSatSel;
+   } 
+   if (  prevTriValSel  != currentTriVal  ){
+      prevTriVal = prevTriValSel;
+   } 
 
    float tmr, saturation, value, ringX = 100.0f, ringY = 100.0f;
    float deltaX, deltaY;
-
    tmr = 0.05f;
    for (int i = 0; i < numLevels; i++) {        // Columns
       for (int j = 0; j < numLevels-i; j++) {   // Rows
@@ -188,7 +199,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
          value = 1.0f - float(j) / float(numLevels - 1);
          saturation  =  float(i) / float(numLevels - 1 - j);
 
-         // Define relative positions of sat/val button dots
+         // Resolve issues that occur when saturation or value are less than zero or NULL
          if (saturation != saturation || saturation <= 0.0)
             saturation = 0.000001f;
          if (value != value || value <= 0.0)
@@ -232,7 +243,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       prevTriY = ringY;
    }
 
-   // Update position of the selection ring using if needed
+   // Update position of the selection ring if needed
    if (  prevTriSat  != currentTriSat  ||
          prevTriVal  != currentTriVal  ){
       drawHalo(
@@ -246,12 +257,15 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
             colrTriColorBuffer);
    }
 
-   // Selection Ring in place, stop updating position
+   // selection Ring in place, stop updating position
    if (  abs(deltaX) <= tDiff*0.01 &&
          abs(deltaY) <= tDiff*0.01 ){
       prevTriSat = currentTriSat;
       prevTriVal = currentTriVal;
    }
+
+   prevTriSatSel = currentTriSat;
+   prevTriValSel = currentTriVal;
 
    // Update colors if current Hue has changed
    if ( prevTriHue != currentTriHue ) {
