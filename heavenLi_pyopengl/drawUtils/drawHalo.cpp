@@ -1,6 +1,8 @@
 #include <math.h>
 #include <vector>
 using namespace std;
+
+// Update to pre-existing input arrays staring at index
 int drawHalo(
       float bx,               /* X-Coordinate */
       float by,               /* Y-Coordinate */
@@ -51,6 +53,20 @@ int drawHalo(
    return vertIndex/2;
 }
 
+// Update to pre-existing input arrays staring at index
+int drawHalo(
+      float bx,               /* X-Coordinate */
+      float by,               /* Y-Coordinate */
+      float bs,               /* Scale 2.0=spans display before GL scaling */
+      float rs,               /* Halo thickness */
+      char  circleSegments,   /* Number of sides */
+      int   index,            /* index of where to start writing to input arrays */
+      float *color,           /* Polygon Color */
+      float *verts,           /* Input Array of x,y coordinates */
+      float *colrs            /* Input Array of r,g,b values */
+      ){
+   return drawHalo(bx, by, bs, bs, rs, circleSegments, index, color, verts, colrs);
+}
 
 // Append Halo vertices to input vectors
 int drawHalo(

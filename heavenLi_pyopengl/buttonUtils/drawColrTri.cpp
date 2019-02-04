@@ -20,7 +20,8 @@ GLfloat  prevTriSat;                   // Used for animating selection ring
 GLfloat  prevTriVal;                   // Used for animating selection ring
 GLfloat  prevTriSatSel        = 0.0;   // Used to resolve edge-case bug for animating selection ring
 GLfloat  prevTriValSel        = 0.0;   // Used to resolve edge-case bug for animating selection ring
-bool     updateGeometry       = false; // Used for animating granularity changes
+bool     updateTriGeometry    = true;  // Used for animating granularity changes
+GLfloat  prevTriDotScale      = 1.0;   // Used for animating granularity changes
 
 PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    PyObject *py_list;
@@ -63,7 +64,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       numLevels = 7;
 
    // (Re)Allocate and Define Geometry/Color buffers
-   if (  prevColrTriNumLevels != numLevels   ||
+   if (  updateTriGeometry                   ||
          colrTriVertexBuffer  == NULL        ||
          colrTriColorBuffer   == NULL        ||
          colrTriIndices       == NULL        ){
@@ -85,7 +86,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       int index = 0;
       float tmx, tmy, tmr, saturation, value, ringX = 100.0f, ringY = 100.0f;
       float colors[3] = {0.0, 0.0, 0.0};
-      tmr = 0.05f;
+      tmr = 0.05f*prevTriDotScale;
       for (int i = 0; i < numLevels; i++) {        /* Columns */
          for (int j = 0; j < numLevels-i; j++) {   /* Rows */
 
@@ -173,12 +174,13 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       }
 
       // Update State Machine variables
-      prevColrTriNumLevels = numLevels;
       prevTriHue = currentTriHue;
       prevTriSat = currentTriSat;
       prevTriVal = currentTriVal;
       prevTriSatSel = currentTriSat;
       prevTriValSel = currentTriVal;
+      updateTriGeometry = false;
+      prevColrTriNumLevels = numLevels;
    }
 
    // Resolves edge case bug animating selection ring
@@ -189,6 +191,8 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       prevTriVal = prevTriValSel;
    } 
 
+   // Determine distance of selection ring from 
+   // current location (prevTri) to target location (ring)
    float tmr, saturation, value, ringX = 100.0f, ringY = 100.0f;
    float deltaX, deltaY;
    tmr = 0.05f;
@@ -214,8 +218,6 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       }
    }
 
-   // Determine distance of selection ring from 
-   // current location (prevTri) to target location (ring)
    deltaX = ringX-prevTriX;
    deltaY = ringY-prevTriY;
 
@@ -244,8 +246,9 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    }
 
    // Update position of the selection ring if needed
-   if (  prevTriSat  != currentTriSat  ||
-         prevTriVal  != currentTriVal  ){
+   if ( (prevTriSat  != currentTriSat  ||
+         prevTriVal  != currentTriVal) &&
+         prevTriDotScale == 1.0        ){
       drawHalo(
             prevTriX, prevTriY,
             float(1.06*tmr), float(1.06*tmr),
@@ -267,8 +270,108 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    prevTriSatSel = currentTriSat;
    prevTriValSel = currentTriVal;
 
+   //  Animate granularity changes
+   if (  prevColrTriNumLevels != numLevels   || 
+         prevTriDotScale      != 1.0         ){
+
+      float tmx, tmy, tmr, value, saturation;
+      float ringX = prevTriX;
+      float ringY = prevTriY;
+      tmr = 0.05f*prevTriDotScale;
+      int index = 0;
+
+      // Begin shrinking sat/val button dots
+      if ( prevColrTriNumLevels != numLevels ){
+
+         // Update button dot size
+         if ( prevTriDotScale > 0.0 ){
+            prevTriDotScale -= float(3.0*tDiff*prevTriDotScale+0.01);
+
+            // Lower Limit
+            if ( prevTriDotScale < 0.0 )
+               prevTriDotScale = 0.0;
+         } 
+      }
+
+      // Update geometry while dots are invisible
+      if ( prevTriDotScale <= 0.0) {
+         updateTriGeometry = true;
+         prevTriDotScale = 0.000001f;
+      }
+
+      // Begin enlarging sat/val button dots
+      if ( prevColrTriNumLevels == numLevels ){
+
+         // Update button dot size
+         if ( prevTriDotScale < 1.0 ){
+            prevTriDotScale += float(3.0*tDiff*prevTriDotScale+0.01);
+
+            // Upper limit
+            if ( prevTriDotScale > 1.0 )
+               prevTriDotScale = 1.0;
+               //updateTriGeometry = true;
+         } 
+      }
+
+      if (!updateTriGeometry) {
+         // Actual meat of updating saturation/value triangle
+         for (int i = 0; i < prevColrTriNumLevels; i++) {        /* Columns */
+            for (int j = 0; j < prevColrTriNumLevels-i; j++) {   /* Rows */
+
+               // Define relative positions of sat/val button dots
+               tmx = float(-0.0383*prevColrTriNumLevels + (i*0.13f));
+               tmy = float(+0.0616*prevColrTriNumLevels - (i*0.075f + j*0.145f));
+
+               // Draw dot
+               try {
+                  index = updateEllipseGeometry(
+                        tmx, tmy, 
+                        tmr, 
+                        circleSegments, 
+                        index, colrTriVertexBuffer);
+               } catch (...) {
+                  printf("error updating vertex buffer\n");
+               }
+
+               // Calculate Discrete Saturation and Value
+               value = 1.0f - float(j) / float(prevColrTriNumLevels - 1);
+               saturation  =  float(i) / float(prevColrTriNumLevels - 1 - j);
+
+               // Resolve issues that occur when saturation or value are less than zero or NULL
+               if (saturation != saturation || saturation <= 0.0)
+                  saturation = 0.000001f;
+               if (value != value || value <= 0.0)
+                  value = 0.000001f;
+
+               // Determine which button dot represents the currently selected saturation and value
+               if (  abs(currentTriSat - saturation) <= 1.0f / float(prevColrTriNumLevels*2) &&
+                     abs(currentTriVal - value     ) <= 1.0f / float(prevColrTriNumLevels*2) ){
+                  ringX = tmx;
+                  ringY = tmy;
+               }
+            }
+         }
+
+         // Draw a circle around the button dot corresponding to the selected saturation/value
+         try {
+            drawHalo(
+                  ringX, ringY,
+                  float(1.06*tmr),
+                  0.03f,
+                  circleSegments,
+                  index,
+                  ringColor,
+                  colrTriVertexBuffer,
+                  colrTriColorBuffer);
+         } catch (...) {
+            printf("error updating vertex buffer\n");
+         }
+      }
+   }
+
    // Update colors if current Hue has changed
-   if ( prevTriHue != currentTriHue ) {
+   if (  prevTriHue != currentTriHue   &&
+         prevTriDotScale == 1.0        ){
       float saturation, value;
       float colors[3] = {0.0, 0.0, 0.0};
       int colrIndex = 0;
@@ -294,7 +397,8 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
 
    // Check if selection Ring Color needs to be updated
    for (int i = 0; i < 3; i++) {
-      if (colrTriColorBuffer[numButtons*circleSegments*9+i] != ringColor[i]) {
+      if (colrTriColorBuffer[numButtons*circleSegments*9+i] != ringColor[i]
+            && prevTriDotScale == 1.0 ) {
          for (unsigned int k = numButtons*circleSegments*3; k < colrTriVerts; k++) {
             colrTriColorBuffer[k*3+i] = ringColor[i];
          }

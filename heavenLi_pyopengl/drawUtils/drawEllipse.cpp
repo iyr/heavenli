@@ -32,6 +32,45 @@ int updateEllipseColor(
    return colrIndex/3;
 }
 
+// Write to pre-allocated input array, updating vertices only 
+int updateEllipseGeometry(
+      float bx,               /* X-Coordinate */
+      float by,               /* Y-Coordinate */
+      float bsx,              /* x-Scale 2.0=spans display before GL scaling */
+      float bsy,              /* y-Scale 2.0=spans display before GL scaling */
+      char  circleSegments,   /* Number of sides */
+      int   index,            /* Index of where to start writing to input arrays */
+      float *verts            /* Input Vector of x,y values */
+      ){
+   int vertIndex = index*2;   /* index (x, y) */
+   char degSegment = 360 / circleSegments;
+
+//#  pragma omp parallel for
+   for (char i = 0; i < circleSegments; i++) {
+      /* X */ verts[vertIndex++] = float(bx);
+      /* Y */ verts[vertIndex++] = float(by);
+
+      /* X */ verts[vertIndex++] = float(bx + bsx*cos(degToRad(90+i*degSegment)));
+      /* Y */ verts[vertIndex++] = float(by + bsy*sin(degToRad(90+i*degSegment)));
+
+      /* X */ verts[vertIndex++] = float(bx + bsx*cos(degToRad(90+(i+1)*degSegment)));
+      /* Y */ verts[vertIndex++] = float(by + bsy*sin(degToRad(90+(i+1)*degSegment)));
+   }
+   return vertIndex/2;
+}
+
+// Write to pre-allocated input array, updating vertices only 
+int updateEllipseGeometry(
+      float bx,               /* X-Coordinate */
+      float by,               /* Y-Coordinate */
+      float bs,               /* Scale 2.0=spans display before GL scaling */
+      char  circleSegments,   /* Number of sides */
+      int   index,            /* Index of where to start writing to input arrays */
+      float *verts            /* Input Vector of x,y values */
+      ){
+   return updateEllipseGeometry(bx, by, bs, bs, circleSegments, index, verts);
+}
+
 // Append Ellipse vertices to input vectors
 int drawEllipse(
       float bx,                  /* X-Coordinate */

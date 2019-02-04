@@ -15,7 +15,7 @@ GLuint      granRockerVerts;
 PyObject* drawGranRocker_drawButtons(PyObject *self, PyObject *args) {
    PyObject *py_faceColor;
    PyObject *py_detailColor;
-   PyObject *py_tuple;
+   //PyObject *py_tuple;
    int   numHues;
    float posX, posY, rotation, w2h, scale, tDiff;
    float faceColor[3];
@@ -53,7 +53,7 @@ PyObject* drawGranRocker_drawButtons(PyObject *self, PyObject *args) {
          granRockerIndices       == NULL  ){
       printf("Initializing Geometry for Granularity Rocker\n");
       float unit = float(1.0/36.0);
-      float R, G, B, buttonSize = 0.8;
+      float R, G, B, buttonSize = 0.8f;
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
 
