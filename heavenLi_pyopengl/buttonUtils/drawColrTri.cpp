@@ -71,7 +71,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
          colrTriColorBuffer   == NULL        ||
          colrTriIndices       == NULL        ){
 
-      printf("Initializing Geometry for Color Triangle\n");
+      //printf("Initializing Geometry for Color Triangle\n");
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
 
@@ -190,7 +190,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       prevTriSatSel = currentTriSat;
       prevTriValSel = currentTriVal;
       prevColrTriNumLevels = numLevels;
-      printf("Done!\n");
+      //printf("Done!\n");
    }
 
    // Resolves edge case bug animating selection ring
@@ -280,12 +280,12 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    prevTriValSel = currentTriVal;
 
    //  Animate granularity changes
+   // Update position of hue/sat dot triangle
    float triX = float(-0.0383f*numLevels); 
    float triY = float(+0.0616f*numLevels);
    deltaX = triX - prevTriX;
    deltaY = triY - prevTriY;
 
-   // Update position of hue/sat dot triangle
    if (  abs(deltaX) > tDiff*0.01   ||
          abs(deltaY) > tDiff*0.01   ){
       if (deltaX < -0.0) {
@@ -328,7 +328,12 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
 
             // Draw dot
             //drawEllipse(tmx, tmy, tmr, circleSegments, colors, verts, colrs);
-            index = updateEllipseGeometry(tmx, tmy, tmr, circleSegments, index, colrTriVertexBuffer);
+            index = updateEllipseGeometry(
+                  tmx, tmy, 
+                  tmr, 
+                  circleSegments, 
+                  index, 
+                  colrTriVertexBuffer);
 
             // Determine which button dot represents the currently selected saturation and value
             if (  abs(currentTriSat - saturation) <= 1.0f / float(numLevels) &&

@@ -13,6 +13,8 @@ GLfloat*    hueRingColorBuffer   = NULL;  // Stores (R, G, B) (float) for each v
 GLushort*   hueRingIndices       = NULL;  // Stores index corresponding to each vertex, could be more space efficient, but meh
 GLuint      hueRingVerts;                 // Total number of vertices
 GLubyte     prevHueRingNumHues;           // Used for updating Granularity changes
+float       prevHueDotScale      = 0.0;   // Used for animating granularity changes
+float       prevHueDotDist       = 0.0;   // Used for animating granularity changes
 float       prevHueRingAng       = 0.0;   // Used for animating selection ring
 GLfloat     prevHueRingAni       = 0.0;   // Used to resolve edge-case bug for animating selection ring
 GLfloat     prevHueRingSel       = 0.0;   // Used to resolve edge-case bug for animating selection ring
@@ -50,10 +52,10 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
          hueRingColorBuffer      == NULL     ||
          hueRingIndices          == NULL     ){
 
-      printf("Initializing Geometry for Hue Ring\n");
+      //printf("Initializing Geometry for Hue Ring\n");
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
-      float ang, tmx, tmy;
+      float ang, tmx, tmy, azi;
       float colors[3] = {0.0, 0.0, 0.0};
       float tmr = float(0.15f);
 
@@ -70,28 +72,34 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
       float ringX = 100.0, ringY = 100.0;
       for (int i = 0; i < numHues; i++) {
 
-         // Calculate hue of dot to be drawn
-         tmo = float(i) / float(numHues);
+         if (  prevHueDotScale   == 0.0   )
+            prevHueDotScale = float(tmr*(12.0/numHues));
+
+         if (  prevHueDotDist    == 0.0   )
+            prevHueDotDist = float(0.67*pow(numHues/12.0f, 1.0f/4.0f));
+
+         // Calculate distance between dots about the center
+         azi = 1.0f / float(numHues);
 
          // Convert HSV to RGB
-         hsv2rgb(tmo, 1.0, 1.0, colors);
+         hsv2rgb(float(azi*i), 1.0, 1.0, colors);
 
          // Calculate angle (from screen center) of dot
-         ang = float(360.0*tmo + 90.0);
+         ang = float(360.0*float(azi*i) + 90.0);
 
          // Define relative positions of hue button dots
-         tmx = float(cos(degToRad(ang))*0.67*pow(numHues/12.0f, 1.0f/4.0f));
-         tmy = float(sin(degToRad(ang))*0.67*pow(numHues/12.0f, 1.0f/4.0f));
+         tmx = float(cos(degToRad(ang))*prevHueDotDist);
+         tmy = float(sin(degToRad(ang))*prevHueDotDist);
 
          // Store position and related data of button dot
          hueButtonData[i*2+0] = tmx;
          hueButtonData[i*2+1] = tmy;
          
          // Draw dot
-         drawEllipse(tmx, tmy, float(tmr*(12.0/numHues)), circleSegments, colors, verts, colrs);
+         drawEllipse(tmx, tmy, prevHueDotScale, circleSegments, colors, verts, colrs);
 
          // Determine which button dot represents the currently selected hue
-         if (abs(currentHue - tmo) <= 1.0f / float(numHues*2)) {
+         if (abs(currentHue - float(azi*i)) <= 1.0f / float(numHues*2)) {
             ringX = tmx;
             ringY = tmy;
          }
@@ -200,6 +208,80 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
    }
 
    prevHueRingSel = currentHue;
+
+   // Animate Granularity changes
+   float hueDotScale, hueDotDist, deltaScale, deltaDist;
+   hueDotScale = float(tmr*(12.0/numHues));
+   hueDotDist  = float(0.67*pow(numHues/12.0f, 1.0f/4.0f));
+   deltaScale  = hueDotScale - prevHueDotScale;
+   deltaDist   = hueDotDist - prevHueDotDist;
+
+   if (  abs(deltaScale) > tDiff*0.01   ||
+         abs(deltaDist)  > tDiff*0.01   ){
+      if (deltaScale < -0.0) {
+         prevHueDotScale -= float(0.8*tDiff*abs(deltaScale));
+      }
+      if (deltaScale > -0.0) {
+         prevHueDotScale += float(0.8*tDiff*abs(deltaScale));
+      }
+      if (deltaDist < -0.0) {
+         prevHueDotDist -= float(0.8*tDiff*abs(deltaDist));
+      }
+      if (deltaDist > -0.0) {
+         prevHueDotDist += float(0.8*tDiff*abs(deltaDist));
+      }
+
+      // Actual meat of drawing hue ring
+      float ang, tmx, tmy, azi;
+      float colors[3] = {0.0, 0.0, 0.0};
+      float tmr = float(0.15f);
+      int index = 0;
+      float ringX = 100.0, ringY = 100.0;
+      for (int i = 0; i < numHues; i++) {
+
+         // Calculate distance between dots about the center
+         azi   = 1.0f / float(numHues);
+
+         // Convert HSV to RGB
+         hsv2rgb(float(azi*i), 1.0, 1.0, colors);
+
+         // Calculate angle (from screen center) of dot
+         ang = float(360.0*float(azi*i) + 90.0);
+
+         // Define relative positions of hue button dots
+         tmx = float(cos(degToRad(ang))*prevHueDotDist);
+         tmy = float(sin(degToRad(ang))*prevHueDotDist);
+
+         // Draw dot
+         index = updateEllipseGeometry(
+               tmx, tmy, 
+               prevHueDotScale, 
+               circleSegments, 
+               index, 
+               hueRingVertexBuffer);
+
+         // Determine which button dot represents the currently selected hue
+         if (abs(currentHue - float(azi*i)) <= 1.0f / float(numHues*2)) {
+            ringX = tmx;
+            ringY = tmy;
+         }
+      }
+
+      // Draw a circle around the button dot corresponding to the currently selected hue
+      index = drawHalo(
+            ringX, ringY,
+            float(1.06*tmr*(12.0/numHues)), float(1.06*tmr*(12.0/numHues)),
+            0.03f,
+            circleSegments,
+            index,
+            ringColor,
+            hueRingVertexBuffer,
+            hueRingColorBuffer);
+
+   } else {
+      prevHueDotScale   = hueDotScale;
+      prevHueDotDist    = hueDotDist;
+   }
 
    // Check if selection Ring Color needs to be updated
    for (int i = 0; i < 3; i++) {

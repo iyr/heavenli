@@ -410,9 +410,9 @@ def display():
     #if (statMac['interactionCursor'] > 0.0):
         #print(statMac['interactionCursor'])
 
-    statMac['tDiff'] = 0.70568/statMac['fps']
+    #statMac['tDiff'] = 0.70568/statMac['fps']
     #statMac['tDiff'] = 1.30568/statMac['fps']
-    #statMac['tDiff'] = 2.71828/statMac['fps']
+    statMac['tDiff'] = 2.71828/statMac['fps']
     #statMac['tDiff'] = 3.14159/statMac['fps']
     #statMac['tDiff'] = 6.28318/statMac['fps']
     if (statMac['currentState'] == 0 or statMac['prvState'] == 0):
