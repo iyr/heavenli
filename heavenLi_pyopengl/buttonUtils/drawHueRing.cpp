@@ -144,7 +144,6 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
          hueRingColorBuffer[i*3+2]  = colrs[i*3+2];
       }
 
-
       // Update State Machine variables
       prevHueRingAni = currentHue;
       prevHueRingSel = currentHue;

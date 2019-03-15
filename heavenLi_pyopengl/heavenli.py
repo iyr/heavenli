@@ -231,35 +231,36 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
                 statMac['numHues'] = 10
 
     # Draw Ring of Dots with different hues
-    hueButtons = drawHueRing(
-            statMac['currentHue'], 
-            statMac['numHues'], 
-            selectRingColor, 
-            statMac['w2h'], 
-            acbic, 
-            statMac['tDiff'],
-            statMac['interactionCursor'])
+    #hueButtons = drawHueRing(
+            #statMac['currentHue'], 
+            #statMac['numHues'], 
+            #selectRingColor, 
+            #statMac['w2h'], 
+            #acbic, 
+            #statMac['tDiff'],
+            #statMac['interactionCursor'])
 
-    for i in range(statMac['numHues']):
-        tmr = 1.0
-        if (statMac['w2h'] <= 1.0):
-            hueButtons[i] = (
-                    hueButtons[i][0]*statMac['w2h'], 
-                    hueButtons[i][1]*statMac['w2h'], 
-                    hueButtons[i][2])
-            tmr = statMac['w2h']
+    #for i in range(len(hueButtons)):
+        #tmr = 1.0
+        #if (statMac['w2h'] <= 1.0):
+            #hueButtons[i] = (
+                    #hueButtons[i][0]*statMac['w2h'], 
+                    #hueButtons[i][1]*statMac['w2h'], 
+                    #hueButtons[i][2])
+            #tmr = statMac['w2h']
 
-        if (watchPoint(
-            mapRanges(hueButtons[i][0], -1.0*statMac['w2h'], 1.0*statMac['w2h'],    0, statMac['wx']*2), 
-            mapRanges(hueButtons[i][1],  1.0,               -1.0,                   0, statMac['wy']*2),
-            min(statMac['wx'], statMac['wy'])*0.15*(12.0/float(statMac['numHues'])) )):
-            statMac['wereColorsTouched'] = True
-            statMac['currentHue'] = hueButtons[i][2]
-            tmcHSV = (
-                    statMac['currentHue'], 
-                    statMac['currentSat'], 
-                    statMac['currentVal'])
-            targetLamp.setBulbtHSV(statMac['targetBulb'], tmcHSV)
+        #xLim = mapRanges(hueButtons[i][0], -1.0*statMac['w2h'], 1.0*statMac['w2h'],    0, statMac['wx']*2)
+        #yLim = mapRanges(hueButtons[i][1],  1.0,               -1.0,                   0, statMac['wy']*2)
+        #if (watchPoint(
+            #xLim, yLim,
+            #min(statMac['wx'], statMac['wy'])*0.15*(12.0/float(statMac['numHues'])) )):
+            #statMac['wereColorsTouched'] = True
+            #statMac['currentHue'] = hueButtons[i][2]
+            #tmcHSV = (
+                    #statMac['currentHue'], 
+                    #statMac['currentSat'], 
+                    #statMac['currentVal'])
+            #targetLamp.setBulbtHSV(statMac['targetBulb'], tmcHSV)
 
     # Draw Triangle of Dots with different brightness/saturation
     satValButtons = drawColrTri(
@@ -270,7 +271,8 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
             selectRingColor,
             statMac['w2h'], acbic, 
             statMac['tDiff'])
-    for i in range(int( int(statMac['numHues']/2)*( int(statMac['numHues']/2) + 1) / 2 )):
+
+    for i in range(len(satValButtons)):
         tmr = 1.0
         if (statMac['w2h'] <= 1.0):
             satValButtons[i] = (
@@ -280,10 +282,26 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
                     satValButtons[i][3])                    # Value of Button
             tmr = statMac['w2h']
 
+        # Map relative x-Coord to screen x-Coord
+        xLim = mapRanges(
+                satValButtons[i][0], 
+                -1.0*statMac['w2h'], 
+                1.0*statMac['w2h'], 
+                0, 
+                statMac['wx']*2)
+
+        # Map relative y-Coord to screen y-Coord
+        yLim = mapRanges(
+                satValButtons[i][1],      
+                1.0,    
+                -1.0, 
+                0, 
+                statMac['wy']*2)
+
         if (watchPoint(
-            mapRanges(satValButtons[i][0], -1.0*statMac['w2h'], 1.0*statMac['w2h'], 0, statMac['wx']*2), 
-            mapRanges(satValButtons[i][1],      1.0,    -1.0, 0, statMac['wy']*2),
+            xLim, yLim,
             min(statMac['wx'], statMac['wy'])*0.073)):
+
             statMac['wereColorsTouched'] = True
             statMac['currentSat'] = satValButtons[i][2]
             statMac['currentVal'] = satValButtons[i][3]
@@ -300,6 +318,7 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
                 statMac['currentVal'])
     else:
         extraColor = statMac['detailColor']
+
     drawConfirm(
             0.75-0.4*(1.0-acbic), 
             -0.75-0.5*acbc, 
@@ -307,6 +326,8 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
             statMac['faceColor'], 
             extraColor, 
             statMac['detailColor']);
+
+    # Watch Confirm Button for input
     if (watchPoint(
         mapRanges( 0.75, -1.0,  1.0, 0, statMac['wx']*2),
         mapRanges(-0.75,  1.0, -1.0, 0, statMac['wy']*2),
