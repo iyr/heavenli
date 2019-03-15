@@ -15,8 +15,7 @@ GLint    prevColrTriNumLevels;         // Used for updating Granularity changes
 float    *triButtonData       = NULL;  // Stores data (X, Y, sat, val) for each button dot
 float    prevTriX             = 0.0;   // Used for animating granularity changes
 float    prevTriY             = 0.0;   // Used for animating granularity changes
-float    prevTriMedScale      = 1.0;   // Used for animating granularity changes
-float    prevTriHigScale      = 1.0;   // Used for animating granularity changes
+float    prevTriDotScale      = 1.0;   // Used for animating granularity changes
 float    prevRingX            = 0.0;   // Used for animating selection ring
 float    prevRingY            = 0.0;   // Used for animating selection ring
 GLfloat  prevTriHue;                   // Used for animating selection ring
@@ -97,7 +96,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       int index = 0;
       float tmx, tmy, tmr, saturation, value, ringX = 0.0f, ringY = 0.0f;
       float colors[3] = {0.0, 0.0, 0.0};
-      tmr = 0.05f*prevTriMedScale;
+      tmr = 0.05f*prevTriDotScale;
       for (int i = 0; i < numLevels; i++) {        /* Columns */
          for (int j = 0; j < numLevels-i; j++) {   /* Rows */
 
@@ -306,7 +305,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       int index = 0;
       float tmx, tmy, tmr, saturation, value, ringX = 0.0f, ringY = 0.0f;
       float colors[3] = {0.0, 0.0, 0.0};
-      tmr = 0.05f*prevTriMedScale;
+      tmr = 0.05f*prevTriDotScale;
       for (int i = 0; i < numLevels; i++) {        /* Columns */
          for (int j = 0; j < numLevels-i; j++) {   /* Rows */
 
@@ -386,7 +385,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    for (int i = 0; i < 3; i++) {
       if ( (colrTriColorBuffer[numButtons*circleSegments*9+i] != ringColor[i])   && 
            (prevColrTriNumLevels == numLevels)                                   &&
-           (prevTriMedScale == 1.0)                                              ){
+           (prevTriDotScale == 1.0)                                              ){
          for (unsigned int k = numButtons*circleSegments*3; k < colrTriVerts; k++) {
             colrTriColorBuffer[k*3+i] = ringColor[i];
          }
