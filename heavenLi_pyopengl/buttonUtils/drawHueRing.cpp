@@ -242,9 +242,6 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
          // Calculate distance between dots about the center
          azi   = 1.0f / float(numHues);
 
-         // Convert HSV to RGB
-         hsv2rgb(float(azi*i), 1.0, 1.0, colors);
-
          // Calculate angle (from screen center) of dot
          ang = float(360.0*float(azi*i) + 90.0);
 
