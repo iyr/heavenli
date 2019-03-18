@@ -23,7 +23,6 @@ void draw_b(
          color, 
          verts, 
          colrs);
-
    *lineWidth += 2.0f*(bs+bt)+b_;
 
    return;

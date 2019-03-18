@@ -18,27 +18,18 @@ void draw_z(
    drawPill(
          bx+1.0f, by+1.0f, 
          bx-1.0f, by+1.0f, 
-         bt, 
-         color, 
-         verts, 
-         colrs);
-
+         bt, color, 
+         verts, colrs);
    drawPill(
          bx+1.0f, by-1.0f, 
          bx-1.0f, by-1.0f, 
-         bt, 
-         color, 
-         verts, 
-         colrs);
-
+         bt, color, 
+         verts, colrs);
    drawPill(
          bx+1.0f, by+1.0f, 
          bx-1.0f, by-1.0f, 
-         bt, 
-         color, 
-         verts, 
-         colrs);
-
+         bt, color, 
+         verts, colrs);
    *lineWidth += 2.0f*(bs+bt)+b_;
 
    return;

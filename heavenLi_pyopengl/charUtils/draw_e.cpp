@@ -31,7 +31,6 @@ void draw_e(
          color,
          verts,
          colrs);
-
    *lineWidth += 2.2f*(bs+bt)+b_;
 
    return;

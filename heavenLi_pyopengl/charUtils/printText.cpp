@@ -48,46 +48,8 @@ PyObject* printText_drawButtons(PyObject* self, PyObject *args) {
       stringVerts          = 0;
 
       ///*
-      draw_a(
-            lineWidth, 0.0f,  // X, Y coordinates 
-            charScale,        // Scale 
-            charThickness,    // Thickness/boldness 
-            charSpacing,      // Amount of empty space after character 
-            circleSegments, 
-            textColor, 
-            &lineWidth, 
-            verts, 
-            colrs);
-      //*/
-
-      ///*
-      draw_b(
-            lineWidth, 0.0f,  // X, Y coordinates 
-            charScale,        // Scale 
-            charThickness,    // Thickness/boldness 
-            charSpacing,      // Amount of empty space after character 
-            circleSegments, 
-            textColor, 
-            &lineWidth, 
-            verts, 
-            colrs);
-      //*/
-
-      ///*
-      draw_c(
-            lineWidth, 0.0f,  // X, Y coordinates 
-            charScale,        // Scale 
-            charThickness,    // Thickness/boldness 
-            charSpacing,      // Amount of empty space after character 
-            circleSegments, 
-            textColor, 
-            &lineWidth, 
-            verts, 
-            colrs);
-      //*/
-
-      ///*
-      draw_d(
+      draw_char(
+            'a',
             lineWidth, 0.0f,  // X, Y coordinates 
             charScale,        // Scale 
             charThickness,    // Thickness/boldness 
@@ -98,62 +60,8 @@ PyObject* printText_drawButtons(PyObject* self, PyObject *args) {
             verts, 
             colrs);
 
-      draw_e(
-            lineWidth, 0.0f,  // X, Y coordinates 
-            charScale,        // Scale 
-            charThickness,    // Thickness/boldness 
-            charSpacing,      // Amount of empty space after character 
-            circleSegments, 
-            textColor, 
-            &lineWidth, 
-            verts, 
-            colrs);
-
-      draw_f(
-            lineWidth, 0.0f,  // X, Y coordinates 
-            charScale,        // Scale 
-            charThickness,    // Thickness/boldness 
-            charSpacing,      // Amount of empty space after character 
-            circleSegments, 
-            textColor, 
-            &lineWidth, 
-            verts, 
-            colrs);
-
-      draw_w(
-            lineWidth, 0.0f,  // X, Y coordinates 
-            charScale,        // Scale 
-            charThickness,    // Thickness/boldness 
-            charSpacing,      // Amount of empty space after character 
-            circleSegments, 
-            textColor, 
-            &lineWidth, 
-            verts, 
-            colrs);
-
-      draw_x(
-            lineWidth, 0.0f,  // X, Y coordinates 
-            charScale,        // Scale 
-            charThickness,    // Thickness/boldness 
-            charSpacing,      // Amount of empty space after character 
-            circleSegments, 
-            textColor, 
-            &lineWidth, 
-            verts, 
-            colrs);
-
-      draw_y(
-            lineWidth, 0.0f,  // X, Y coordinates 
-            charScale,        // Scale 
-            charThickness,    // Thickness/boldness 
-            charSpacing,      // Amount of empty space after character 
-            circleSegments, 
-            textColor, 
-            &lineWidth, 
-            verts, 
-            colrs);
-
-      draw_z(
+      draw_char(
+            'b',
             lineWidth, 0.0f,  // X, Y coordinates 
             charScale,        // Scale 
             charThickness,    // Thickness/boldness 

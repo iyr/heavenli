@@ -18,19 +18,13 @@ void draw_x(
    drawPill(
          bx+1.0f, by-1.0f, 
          bx-1.0f, by+1.0f, 
-         bt, 
-         color, 
-         verts, 
-         colrs);
-
+         bt, color, 
+         verts, colrs);
    drawPill(
          bx+1.0f, by+1.0f, 
          bx-1.0f, by-1.0f, 
-         bt, 
-         color, 
-         verts, 
-         colrs);
-
+         bt, color, 
+         verts, colrs);
    *lineWidth += 1.8f*(bs+bt)+b_;
 
    return;
