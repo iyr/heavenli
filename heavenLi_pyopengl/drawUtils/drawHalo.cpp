@@ -3,7 +3,7 @@
 using namespace std;
 
 // Update to pre-existing input arrays staring at index
-int drawHalo(
+unsigned int drawHalo(
       float bx,               /* X-Coordinate */
       float by,               /* Y-Coordinate */
       float bsx,              /* x-Scale 2.0=spans display before GL scaling */
@@ -54,7 +54,7 @@ int drawHalo(
 }
 
 // Update to pre-existing input arrays staring at index
-int drawHalo(
+unsigned int drawHalo(
       float bx,               /* X-Coordinate */
       float by,               /* Y-Coordinate */
       float bs,               /* Scale 2.0=spans display before GL scaling */
@@ -69,7 +69,7 @@ int drawHalo(
 }
 
 // Append Halo vertices to input vectors
-int drawHalo(
+unsigned int drawHalo(
       float bx,                  /* X-Coordinate */
       float by,                  /* Y-Coordinate */
       float bsx,                 /* x-Scale 2.0=spans display before GL scaling */

@@ -3,7 +3,7 @@
 using namespace std;
 
 // Write to pre-allocated input arrays, update pill shape between two points
-int drawPill(
+unsigned int drawPill(
       float px,      /* x-coordinate of Point P */
       float py,      /* y-coordinate of Point P */
       float qx,      /* x-coordinate of Point Q */
@@ -121,7 +121,7 @@ int drawPill(
 }
 
 // Appending to input arrays, define vertices for a pill shape between two points
-int drawPill(
+unsigned int drawPill(
       float px,                  /* x-coordinate of Point P */
       float py,                  /* y-coordinate of Point P */
       float qx,                  /* x-coordinate of Point Q */
@@ -234,11 +234,12 @@ int drawPill(
       /* qR */ colrs.push_back(qR);  /* qG */ colrs.push_back(qG);  /* qB */ colrs.push_back(qB);
       /* qR */ colrs.push_back(qR);  /* qG */ colrs.push_back(qG);  /* qB */ colrs.push_back(qB);
    }
+   //printf("Pill verts (v, c): %i, %i\n", verts.size()/2, colrs.size()/3);
    return verts.size()/2;
 }
 
 // Writing to pre-allocated input arrays, update pill shape between two points
-int drawPill(
+unsigned int drawPill(
       float px,         /* x-coordinate of Point P */
       float py,         /* y-coordinate of Point P */
       float qx,         /* x-coordinate of Point Q */
@@ -252,8 +253,8 @@ int drawPill(
    return drawPill(px, py, qx, qy, radius, index, color, color, verts, colrs);
 }
 
-// Appending to input arrays, define vertices for a pill shape between two points
-int drawPill(
+// Appending to input vectors, define vertices for a pill shape between two points
+unsigned int drawPill(
       float px,                  /* x-coordinate of Point P */
       float py,                  /* y-coordinate of Point P */
       float qx,                  /* x-coordinate of Point Q */

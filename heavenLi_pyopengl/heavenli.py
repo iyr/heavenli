@@ -125,6 +125,8 @@ def drawHome():
                 statMac['prevSat'] = statMac['lamps'][0].getBulbHSV(i)[1]
                 statMac['prevVal'] = statMac['lamps'][0].getBulbHSV(i)[2]
 
+    printText(-0.9, 0.0, 0.1, statMac['w2h'], (1.0, 1.0, 1.0))
+
     #drawIconCircle(0.75, 0.75, 
             #iconSize*0.85, 
             #4,

@@ -7,7 +7,7 @@
 
 using namespace std;
 
-GLfloat*    confirmVertexBuffer = NULL;
+GLfloat*    confirmVertexBuffer  = NULL;
 GLfloat*    confirmColorBuffer   = NULL;
 GLushort*   confirmIndices       = NULL;
 GLuint      confirmVerts;
@@ -48,7 +48,7 @@ PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
    detailColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2)));
 
    // Allocate and Define Geometry/Color buffers
-   if (  confirmVertexBuffer == NULL  ||
+   if (  confirmVertexBuffer  == NULL  ||
          confirmColorBuffer   == NULL  ||
          confirmIndices       == NULL  ){
 
