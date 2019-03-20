@@ -16,12 +16,14 @@ void draw_char(
       std::vector<float> &colrs  /* Input Vector of r,g,b values */
       ){
 
+   bt *= bs;
+
    switch (character) {
       case 'a':
          drawHalo(bx, by, bs, bs, 2.0f*bt, bc, color, verts, colrs);
          drawPill(
-               bx+1.0f+bt, by+ 1.0f+bt, 
-               bx+1.0f+bt, by+-1.0f-bt, 
+               bx+bs+bt, by+ bs+bt, 
+               bx+bs+bt, by+-bs-bt, 
                bt, color, 
                verts, colrs);
          *lineWidth += 2.0f*(bs+bt)+b_;
@@ -30,8 +32,8 @@ void draw_char(
       case 'b':
          drawHalo(bx, by, bs, bs, 2.0f*bt, bc, color, verts, colrs);
          drawPill(
-               bx+-1.0f-bt, by+ 2.0f+bt, 
-               bx+-1.0f-bt, by+-1.0f-bt, 
+               bx+-bs-bt, by+ bs*2.0f+bt, 
+               bx+-bs-bt, by+-bs-bt, 
                bt, color, 
                verts, colrs);
          *lineWidth += 2.0f*(bs+bt)+b_;
@@ -43,22 +45,18 @@ void draw_char(
                bs, bs, 
                45.0f, 315.0f,
                2.0f*bt, 
-               bc, 
-               color, 
-               verts, 
-               colrs);
+               bc, color, 
+               verts, colrs);
          *lineWidth += 1.6f*(bs+bt)+b_;
          break;
 
       case 'd':
          drawHalo(bx, by, bs, bs, 2.0f*bt, bc, color, verts, colrs);
          drawPill(
-               bx +1.0f+bt, by+ 2.0f+bt, 
-               bx +1.0f+bt, by+-1.0f-bt, 
-               bt, 
-               color, 
-               verts, 
-               colrs);
+               bx +bs+bt, by+ bs*2.0f+bt, 
+               bx +bs+bt, by+-bs-bt, 
+               bt, color, 
+               verts, colrs);
          *lineWidth += 2.0f*(bs+bt)+b_;
          break;
 
@@ -80,23 +78,24 @@ void draw_char(
 
       case 'f':
          drawArch(
-               bx, by+1.125f, 
+               bx, by+bs*1.125f, 
                bs, bs, 
                65.0f, 180.0f,
                2.0f*bt, 
                bc, color, 
                verts, colrs);
          drawPill(
-               bx -1.0f-bt, by +1.125f+bt, 
-               bx -1.0f-bt, by -1.0f-bt, 
+               bx-bs-bt, by+bs*1.125f+bt, 
+               bx-bs-bt, by-bs-bt, 
                bt, color, 
                verts, colrs);
          drawPill(
-               bx+0.3f-bt, by+0.66f, 
-               bx-1.5f+bt, by+0.66f, 
+               bx+bs*0.3f-bt, by+bs*0.5f, 
+               bx-bs*1.5f+bt, by+bs*0.5f, 
                bt, color, 
                verts, colrs);
-         *lineWidth += ((bx+bs)-(bx-0.5f+bt))+b_;
+         //*lineWidth += ((bx+bs)-(bx-bs*0.5f+bt))+b_;
+         *lineWidth += 1.7f*(bs+bt)+b_;
          break;
 
       case 'g':
@@ -136,36 +135,98 @@ void draw_char(
          break;
 
       case 's':
+         drawArch(
+               bx, by+bs/2.0f, 
+               bs/2.0f, bs/2.0f, 
+               45.0f, 270.0f,
+               2.0f*bt, 
+               bc, color, 
+               verts, colrs);
+         drawArch(
+               bx, by-bs/2.0f, 
+               bs/2.0f, bs/2.0f, 
+               270.0f, 45.0f, 
+               2.0f*bt, 
+               bc, color, 
+               verts, colrs);
+         *lineWidth += 2.0f*(bs+bt)+b_;
          break;
 
       case 't':
+         drawArch(
+               bx+bs/2.0f+bt, by-bs, 
+               bs/2.0f, bs/2.0f, 
+               180.0f, 270.0f,
+               2.0f*bt, 
+               bc, color, 
+               verts, colrs);
+         drawPill(
+               bx, by+bs*2.0f+bt, 
+               bx, by-bs-bt, 
+               bt, color, 
+               verts, colrs);
+         drawPill(
+               bx+bs-bt, by+bs, 
+               bx-bs+bt, by+bs, 
+               bt, color, 
+               verts, colrs);
+         *lineWidth += 1.9f*(bs+bt)+b_;
          break;
 
       case 'u':
+         drawArch(
+               bx, by, 
+               bs, bs, 
+               180.0f, 360.0f,
+               2.0f*bt, 
+               bc, color, 
+               verts, colrs);
+         drawPill(
+               bx-bs-bt, by+bs, 
+               bx-bs-bt, by+bs*0.125f-bt, 
+               bt, color, 
+               verts, colrs);
+         drawPill(
+               bx+bs+bt, by+ bs, 
+               bx+bs+bt, by+-bs-bt, 
+               bt, color, 
+               verts, colrs);
+         *lineWidth += 2.0f*(bs+bt)+b_;
          break;
 
       case 'v':
+         drawPill(
+               bx+bs, by+bs, 
+               bx, by-bs, 
+               bt, color, 
+               verts, colrs);
+         drawPill(
+               bx-bs, by+bs, 
+               bx, by-bs, 
+               bt, color, 
+               verts, colrs);
+         *lineWidth += 2.0f*(bs+bt)+b_;
          break;
 
       case 'w':
          drawPill(
-               bx+1.2f, by+1.0f, 
-               bx+0.6f, by-1.0f, 
+               bx+bs*1.2f, by+bs, 
+               bx+bs*0.6f, by-bs, 
                bt, color, 
                verts, colrs);
          drawPill(
-               bx+0.0f, by+1.0f, 
-               bx+0.6f, by-1.0f, 
+               bx, by+bs, 
+               bx+bs*0.6f, by-bs, 
                bt, color, 
                verts, colrs);
          drawPill(
-               bx-1.2f, by+1.0f, 
-               bx-0.6f, by-1.0f, 
+               bx-bs*1.2f, by+bs, 
+               bx-bs*0.6f, by-bs, 
                bt, color, 
                verts, colrs);
          drawPill(
-               bx+0.0f, by+1.0f, 
-               bx-0.6f, by-1.0f, 
+               bx, by+bs, 
+               bx-bs*0.6f, by-bs, 
                bt, color, 
                verts, colrs);
          *lineWidth += 2.0f*(bs+bt)+b_;
@@ -173,13 +234,13 @@ void draw_char(
 
       case 'x':
          drawPill(
-               bx+1.0f, by-1.0f, 
-               bx-1.0f, by+1.0f, 
+               bx+bs, by-bs, 
+               bx-bs, by+bs, 
                bt, color, 
                verts, colrs);
          drawPill(
-               bx+1.0f, by+1.0f, 
-               bx-1.0f, by-1.0f, 
+               bx+bs, by+bs, 
+               bx-bs, by-bs, 
                bt, color, 
                verts, colrs);
          *lineWidth += 1.8f*(bs+bt)+b_;
@@ -187,13 +248,13 @@ void draw_char(
 
       case 'y':
          drawPill(
-               bx+0.0f, by-0.5f, 
-               bx-1.0f, by+1.0f, 
+               bx, by-bs*0.5f, 
+               bx-bs, by+bs, 
                bt, color, 
                verts, colrs);
          drawPill(
-               bx+1.0f, by+1.0f, 
-               bx-1.0f, by-2.0f, 
+               bx+bs, by+bs, 
+               bx-bs, by-bs*2.0f, 
                bt, color, 
                verts, colrs);
          *lineWidth += 1.8f*(bs+bt)+b_;
@@ -201,18 +262,18 @@ void draw_char(
 
       case 'z':
          drawPill(
-               bx+1.0f, by+1.0f, 
-               bx-1.0f, by+1.0f, 
+               bx+bs, by+bs, 
+               bx-bs, by+bs, 
                bt, color, 
                verts, colrs);
          drawPill(
-               bx+1.0f, by-1.0f, 
-               bx-1.0f, by-1.0f, 
+               bx+bs, by-bs, 
+               bx-bs, by-bs, 
                bt, color, 
                verts, colrs);
          drawPill(
-               bx+1.0f, by+1.0f, 
-               bx-1.0f, by-1.0f, 
+               bx+bs, by+bs, 
+               bx-bs, by-bs, 
                bt, color, 
                verts, colrs);
          *lineWidth += 2.0f*(bs+bt)+b_;

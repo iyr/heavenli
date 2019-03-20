@@ -10,44 +10,69 @@ GLuint      stringVerts;
 
 PyObject* printText_drawButtons(PyObject* self, PyObject *args) {
    PyObject *colourPyTup;
-   //PyObject *stringPyTup;
+   PyObject *Pystring;
+   PyObject *stringRep;
 
    float posX, posY, scale, w2h;
    float textColor[3];
 
    // Parse Inputs
    if ( !PyArg_ParseTuple(args,
-            "ffffO",
+            "ffffOO",
             &posX, &posY,
             &scale,
             &w2h,
-            //&stringPyTup,
+            &Pystring,
             &colourPyTup) )
    {
       Py_RETURN_NONE;
    }
 
-   textColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(colourPyTup, 0)));
-   textColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(colourPyTup, 1)));
-   textColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(colourPyTup, 2)));
+   const char* inputChars = PyUnicode_AsUTF8(Pystring);
+   string inputString = inputChars;
+
+   textColor[0]   = float(PyFloat_AsDouble(PyTuple_GetItem(colourPyTup, 0)));
+   textColor[1]   = float(PyFloat_AsDouble(PyTuple_GetItem(colourPyTup, 1)));
+   textColor[2]   = float(PyFloat_AsDouble(PyTuple_GetItem(colourPyTup, 2)));
 
    // (Re)allocate and Define Geometry/Color buffers
    if (  stringVertexBuffer   == NULL  ||
          stringColourBuffer   == NULL  ||
          stringIndices        == NULL  ){
 
+      printf("Input String: %s\n", inputString.c_str());
+
       //printf("Initializing Geometry for Confirm Button\n");
       vector<float> verts;
       vector<float> colrs;
-      char circleSegments  = 30;
+      char circleSegments  = 20;
       float lineWidth      = 0.0f;
       float charSpacing    = 0.5f;
+      float charThickness  = 0.15f;
       //float charThickness  = 0.125f;
-      float charThickness  = 0.1f;
+      //float charThickness  = 0.1f;
       float charScale      = 1.0f;
       stringVerts          = 0;
+      unsigned int charsSize = sizeof(inputChars) / sizeof(char);
+      unsigned int stringSize = sizeof(inputString) / sizeof(char);
+      printf("charsSize: %i\n", charsSize);
+      printf("stringSize: %i\n", stringSize);
 
-      ///*
+      for (unsigned int i = 0; i < stringSize/2; i++) {
+         draw_char(
+               inputChars[i],
+               lineWidth, 0.0f,  // X, Y coordinates 
+               charScale,        // Scale 
+               charThickness,    // Thickness/boldness 
+               charSpacing,      // Amount of empty space after character 
+               circleSegments, 
+               textColor, 
+               &lineWidth, 
+               verts, 
+               colrs);
+      }
+
+      /*
       draw_char(
             'a',
             lineWidth, 0.0f,  // X, Y coordinates 
@@ -71,6 +96,67 @@ PyObject* printText_drawButtons(PyObject* self, PyObject *args) {
             &lineWidth, 
             verts, 
             colrs);
+
+      draw_char(
+            'c',
+            lineWidth, 0.0f,  // X, Y coordinates 
+            charScale,        // Scale 
+            charThickness,    // Thickness/boldness 
+            charSpacing,      // Amount of empty space after character 
+            circleSegments, 
+            textColor, 
+            &lineWidth, 
+            verts, 
+            colrs);
+
+      draw_char(
+            'd',
+            lineWidth, 0.0f,  // X, Y coordinates 
+            charScale,        // Scale 
+            charThickness,    // Thickness/boldness 
+            charSpacing,      // Amount of empty space after character 
+            circleSegments, 
+            textColor, 
+            &lineWidth, 
+            verts, 
+            colrs);
+
+      draw_char(
+            'e',
+            lineWidth, 0.0f,  // X, Y coordinates 
+            charScale,        // Scale 
+            charThickness,    // Thickness/boldness 
+            charSpacing,      // Amount of empty space after character 
+            circleSegments, 
+            textColor, 
+            &lineWidth, 
+            verts, 
+            colrs);
+
+      draw_char(
+            'v',
+            lineWidth, 0.0f,  // X, Y coordinates 
+            charScale,        // Scale 
+            charThickness,    // Thickness/boldness 
+            charSpacing,      // Amount of empty space after character 
+            circleSegments, 
+            textColor, 
+            &lineWidth, 
+            verts, 
+            colrs);
+
+      draw_char(
+            'z',
+            lineWidth, 0.0f,  // X, Y coordinates 
+            charScale,        // Scale 
+            charThickness,    // Thickness/boldness 
+            charSpacing,      // Amount of empty space after character 
+            circleSegments, 
+            textColor, 
+            &lineWidth, 
+            verts, 
+            colrs);
+      */
 
       stringVerts = verts.size()/2;
       printf("stringVerts: %i\n", stringVerts);
