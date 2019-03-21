@@ -136,16 +136,16 @@ void draw_char(
 
       case 's':
          drawArch(
-               bx, by+bs/2.0f, 
-               bs/2.0f, bs/2.0f, 
-               45.0f, 270.0f,
+               bx, by+bs/1.7f, 
+               bs/2.0f, bs/2.2f, 
+               40.0f, 280.0f,
                2.0f*bt, 
                bc, color, 
                verts, colrs);
          drawArch(
-               bx, by-bs/2.0f, 
-               bs/2.0f, bs/2.0f, 
-               270.0f, 45.0f, 
+               bx-bs/4.0f, by-bs/1.7f, 
+               bs/2.0f, bs/2.2f, 
+               270.0f, 40.0f, 
                2.0f*bt, 
                bc, color, 
                verts, colrs);
@@ -278,9 +278,7 @@ void draw_char(
                verts, colrs);
          *lineWidth += 2.0f*(bs+bt)+b_;
          break;
-
    }
-
    return;
 }
 

@@ -21,15 +21,20 @@ void drawArch(
    R = color[0];
    G = color[1];
    B = color[2];
+   float begin;
+   if (start <= end)
+      begin = start;
+   else
+      begin = -start;
 
 //#  pragma omp parallel for
    for (int i = 0; i < circleSegments; i ++ ) {
-      tma = float(degToRad(start+(i+0)*degSegment));
+      tma = float(degToRad(begin+(i+0)*degSegment));
       /* X */ verts.push_back(float(bx+cos(tma)*bsx));
       /* Y */ verts.push_back(float(by+sin(tma)*bsy));
       /* X */ verts.push_back(float(bx+cos(tma)*(bsx+rs)));
       /* Y */ verts.push_back(float(by+sin(tma)*(bsy+rs)));
-      tma = float(degToRad(start+(i+1)*degSegment));
+      tma = float(degToRad(begin+(i+1)*degSegment));
       /* X */ verts.push_back(float(bx+cos(tma)*bsx));
       /* Y */ verts.push_back(float(by+sin(tma)*bsy));
 
@@ -37,7 +42,7 @@ void drawArch(
       /* Y */ verts.push_back(float(by+sin(tma)*(bsy+rs)));
       /* X */ verts.push_back(float(bx+cos(tma)*bsx));
       /* Y */ verts.push_back(float(by+sin(tma)*bsy));
-      tma = float(degToRad(start+(i+0)*degSegment));
+      tma = float(degToRad(begin+(i+0)*degSegment));
       /* X */ verts.push_back(float(bx+cos(tma)*(bsx+rs)));
       /* Y */ verts.push_back(float(by+sin(tma)*(bsy+rs)));
 
@@ -49,7 +54,5 @@ void drawArch(
       /* R */ colrs.push_back(R);   /* G */ colrs.push_back(G);   /* B */ colrs.push_back(B);
    }
 
-   //printf("arch verts (v, c): %i, %i\n", verts.size()/2, colrs.size()/3);
-   //return verts.size()/2;
    return;
 }

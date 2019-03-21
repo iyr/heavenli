@@ -11,7 +11,6 @@ GLuint      stringVerts;
 PyObject* printText_drawButtons(PyObject* self, PyObject *args) {
    PyObject *colourPyTup;
    PyObject *Pystring;
-   PyObject *stringRep;
 
    float posX, posY, scale, w2h;
    float textColor[3];
@@ -53,12 +52,13 @@ PyObject* printText_drawButtons(PyObject* self, PyObject *args) {
       //float charThickness  = 0.1f;
       float charScale      = 1.0f;
       stringVerts          = 0;
-      unsigned int charsSize = sizeof(inputChars) / sizeof(char);
-      unsigned int stringSize = sizeof(inputString) / sizeof(char);
-      printf("charsSize: %i\n", charsSize);
-      printf("stringSize: %i\n", stringSize);
+      //unsigned int charsSize = sizeof(inputChars) / sizeof(char);
+      //unsigned int stringSize = sizeof(inputString) / sizeof(char);
+      //printf("charsSize: %i\n", charsSize);
+      //printf("stringSize: %i\n", stringSize);
+      printf("stringSize: %i\n", inputString.size());
 
-      for (unsigned int i = 0; i < stringSize/2; i++) {
+      for (unsigned int i = 0; i < inputString.size(); i++) {
          draw_char(
                inputChars[i],
                lineWidth, 0.0f,  // X, Y coordinates 
