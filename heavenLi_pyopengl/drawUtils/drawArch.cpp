@@ -17,15 +17,18 @@ void drawArch(
       std::vector<float> &colrs  /* Input Vector of r,g,b values */
       ){
    float tma, R, G, B;
-   float degSegment = float(end - start) / float(circleSegments);
+   float degSegment;// = abs(end - start) / float(circleSegments);
    R = color[0];
    G = color[1];
    B = color[2];
    float begin;
-   if (start <= end)
+   if (start <= end) {
+      degSegment = abs(end - start) / float(circleSegments);
       begin = start;
-   else
-      begin = -start;
+   } else {
+      degSegment = ((360.0f-start) + end) / float(circleSegments);
+      begin = start;
+   }
 
 //#  pragma omp parallel for
    for (int i = 0; i < circleSegments; i ++ ) {

@@ -7,6 +7,7 @@ GLfloat*    stringVertexBuffer   =  NULL;
 GLfloat*    stringColourBuffer   =  NULL;
 GLuint*     stringIndices        =  NULL;
 GLuint      stringVerts;
+string      prevString;
 
 PyObject* printText_drawButtons(PyObject* self, PyObject *args) {
    PyObject *colourPyTup;
@@ -37,7 +38,8 @@ PyObject* printText_drawButtons(PyObject* self, PyObject *args) {
    // (Re)allocate and Define Geometry/Color buffers
    if (  stringVertexBuffer   == NULL  ||
          stringColourBuffer   == NULL  ||
-         stringIndices        == NULL  ){
+         stringIndices        == NULL  ||
+         prevString           != inputString){
 
       printf("Input String: %s\n", inputString.c_str());
 
@@ -71,92 +73,6 @@ PyObject* printText_drawButtons(PyObject* self, PyObject *args) {
                verts, 
                colrs);
       }
-
-      /*
-      draw_char(
-            'a',
-            lineWidth, 0.0f,  // X, Y coordinates 
-            charScale,        // Scale 
-            charThickness,    // Thickness/boldness 
-            charSpacing,      // Amount of empty space after character 
-            circleSegments, 
-            textColor, 
-            &lineWidth, 
-            verts, 
-            colrs);
-
-      draw_char(
-            'b',
-            lineWidth, 0.0f,  // X, Y coordinates 
-            charScale,        // Scale 
-            charThickness,    // Thickness/boldness 
-            charSpacing,      // Amount of empty space after character 
-            circleSegments, 
-            textColor, 
-            &lineWidth, 
-            verts, 
-            colrs);
-
-      draw_char(
-            'c',
-            lineWidth, 0.0f,  // X, Y coordinates 
-            charScale,        // Scale 
-            charThickness,    // Thickness/boldness 
-            charSpacing,      // Amount of empty space after character 
-            circleSegments, 
-            textColor, 
-            &lineWidth, 
-            verts, 
-            colrs);
-
-      draw_char(
-            'd',
-            lineWidth, 0.0f,  // X, Y coordinates 
-            charScale,        // Scale 
-            charThickness,    // Thickness/boldness 
-            charSpacing,      // Amount of empty space after character 
-            circleSegments, 
-            textColor, 
-            &lineWidth, 
-            verts, 
-            colrs);
-
-      draw_char(
-            'e',
-            lineWidth, 0.0f,  // X, Y coordinates 
-            charScale,        // Scale 
-            charThickness,    // Thickness/boldness 
-            charSpacing,      // Amount of empty space after character 
-            circleSegments, 
-            textColor, 
-            &lineWidth, 
-            verts, 
-            colrs);
-
-      draw_char(
-            'v',
-            lineWidth, 0.0f,  // X, Y coordinates 
-            charScale,        // Scale 
-            charThickness,    // Thickness/boldness 
-            charSpacing,      // Amount of empty space after character 
-            circleSegments, 
-            textColor, 
-            &lineWidth, 
-            verts, 
-            colrs);
-
-      draw_char(
-            'z',
-            lineWidth, 0.0f,  // X, Y coordinates 
-            charScale,        // Scale 
-            charThickness,    // Thickness/boldness 
-            charSpacing,      // Amount of empty space after character 
-            circleSegments, 
-            textColor, 
-            &lineWidth, 
-            verts, 
-            colrs);
-      */
 
       stringVerts = verts.size()/2;
       printf("stringVerts: %i\n", stringVerts);
@@ -192,6 +108,8 @@ PyObject* printText_drawButtons(PyObject* self, PyObject *args) {
          stringColourBuffer[i*3+1]  = colrs[i*3+1];
          stringColourBuffer[i*3+2]  = colrs[i*3+2];
       }
+
+      prevString = inputString;
    }
    glPushMatrix();
    glTranslatef(posX*w2h, posY, 0.0f);
