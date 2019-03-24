@@ -77,6 +77,8 @@ void draw_char(
          break;
 
       case 'f':
+         bx += 0.2f*bs;
+         *lineWidth += 0.2f*bs;
          drawArch(
                bx, by+bs*1.125f, 
                bs, bs, 
@@ -139,7 +141,7 @@ void draw_char(
          bx -= 1.1f*bs;
          *lineWidth -= 1.1f*bs;
          drawCircle(
-               bx, by+bs+bt*2.2f,
+               bx, by+bs*1.3f+bt,
                bt*2.0f, bc, color,
                verts, colrs);
          drawPill(
@@ -154,7 +156,7 @@ void draw_char(
          bx -= 0.3f*bs;
          *lineWidth -= 0.3f*bs;
          drawCircle(
-               bx+bs+bt, by+bs+bt*2.2f,
+               bx+bs+bt, by+bs*1.3f+bt,
                bt*2.0f, bc, color,
                verts, colrs);
          drawPill(
@@ -206,7 +208,7 @@ void draw_char(
                bx, by-bs-bt, 
                bt, color, 
                verts, colrs);
-         *lineWidth += 1.3f*(bs+bt)+b_;
+         *lineWidth += 1.4f*(bs+bt)+b_;
          break;
 
       case 'm':
@@ -310,15 +312,15 @@ void draw_char(
          bx -= 0.2f*bs;
          *lineWidth -= 0.2f*bs;
          drawArch(
-               bx, by+bs/1.85f, 
-               bs/1.2f, bs/2.5f, 
-               20.0f, 280.0f,
+               bx, by+bs/2.08f, 
+               bs/1.2f, bs/2.2f, 
+               20.0f, 270.0f,
                2.0f*bt, 
                bc, color, 
                verts, colrs);
          drawArch(
-               bx, by-bs/1.8f, 
-               bs/1.2f, bs/2.5f, 
+               bx, by-bs/2.09f, 
+               bs/1.2f, bs/2.2f, 
                200.0f, 90.0f, 
                2.0f*bt, 
                bc, color, 
@@ -359,7 +361,7 @@ void draw_char(
                verts, colrs);
          drawPill(
                bx-bs-bt, by+bs+bt, 
-               bx-bs-bt, by+bs*0.125f-bt, 
+               bx-bs-bt, by+bs*0.075f-bt, 
                bt, color, 
                verts, colrs);
          drawPill(
@@ -455,8 +457,64 @@ void draw_char(
          *lineWidth += 2.0f*(bs+bt)+b_;
          break;
 
+      case '0':
+         drawHalo(
+               bx, by+bs*0.59f-bt, 
+               bs, bs*1.6f, 
+               2.0f*bt, 
+               bc, color, 
+               verts, colrs);
+         *lineWidth += 2.2f*(bs+bt)+b_;
+         break;
+
+      case '1':
+         bx -= 0.8f*bs;
+         *lineWidth -= 0.8f*bs;
+         drawArch(
+               bx-bs/2.0f-bt, by+bs*1.5f+bt, 
+               bs/2.0f, bs/2.0f, 
+               0.0f, 75.0f,
+               2.0f*bt, 
+               bc, color, 
+               verts, colrs);
+         drawPill(
+               bx, by+bs*1.5f+bt, 
+               bx, by-bs-bt, 
+               bt, color, 
+               verts, colrs);
+         drawPill(
+               bx+bs/2.0f-bt, by-bs-bt, 
+               bx-bs/2.0f+bt, by-bs-bt, 
+               bt, color, 
+               verts, colrs);
+         *lineWidth += 1.4f*(bs+bt)+b_;
+         break;
+
+      case '2':
+         break;
+
+      case '3':
+         break;
+
+      case '4':
+         break;
+
+      case '5':
+         break;
+
+      case '6':
+         break;
+
+      case '7':
+         break;
+
+      case '8':
+         break;
+
+      case '9':
+         break;
+
       default:
-         *lineWidth += b_;
          break;
    }
    return;
