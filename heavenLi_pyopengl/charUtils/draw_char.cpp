@@ -458,6 +458,7 @@ void draw_char(
          break;
 
       case '0':
+         by -= bs*0.2f;
          drawHalo(
                bx, by+bs*0.59f-bt, 
                bs, bs*1.6f, 
@@ -491,27 +492,152 @@ void draw_char(
          break;
 
       case '2':
+         drawArch(
+               bx, by+bs,
+               bs, bs, 
+               330.0f, 170.0f,
+               2.0f*bt, 
+               bc, color, 
+               verts, colrs);
+         drawPill(
+               bx-bs, by-bs-bt,
+               bx+bs*cos(float(degToRad(330.0f)))+bt, 
+               by+bs+bs*sin(float(degToRad(330.0f))),
+               bt, color,
+               verts, colrs);
+         drawPill(
+               bx-bs, by-bs-bt,
+               bx+bs, by-bs-bt,
+               bt, color,
+               verts, colrs);
+         *lineWidth += 2.1f*(bs+bt)+b_;
          break;
 
       case '3':
+         drawArch(
+               bx, by+bs*1.25f+bt/2.0f,
+               bs/1.0f, bs/1.3f-bt/2.0f, 
+               270.0f, 170.0f,
+               2.0f*bt, 
+               bc, color, 
+               verts, colrs);
+         drawArch(
+               bx, by-bs*0.35f-bt/2.0f,
+               bs/1.0f, bs/1.3f-bt/2.0f, 
+               190.0f, 90.0f,
+               2.0f*bt, 
+               bc, color, 
+               verts, colrs);
+         *lineWidth += 2.1f*(bs+bt)+b_;
          break;
 
       case '4':
+         drawPill(
+               bx+bs/2.0f, by+bs*2.0f+bt, 
+               bx+bs/2.0f, by-bs*1.2f-bt, 
+               bt, color, 
+               verts, colrs);
+         drawPill(
+               bx+bs/2.0f, by+bs*2.0f+bt, 
+               bx-bs, by, 
+               bt, color, 
+               verts, colrs);
+         drawPill(
+               bx+bs+bt, by, 
+               bx-bs, by, 
+               bt, color, 
+               verts, colrs);
+         *lineWidth += 2.1f*(bs+bt)+b_;
          break;
 
       case '5':
+         bx -= 0.35f*bs;
+         *lineWidth -= 0.35f*bs;
+         drawPill(
+               bx-bs*0.3f, by+bs*2.0f,
+               bx+bs*1.0f, by+bs*2.0f,
+               bt, color,
+               verts, colrs);
+         drawPill(
+               bx-bs*0.3f, by+bs*2.0f,
+               bx+bs*cos(float(degToRad(120.0f)))*1.1f, 
+               by+bs*sin(float(degToRad(120.0f)))*0.6f,
+               bt, color,
+               verts, colrs);
+         drawArch(
+               bx, by-bs*0.30f-bt/2.0f,
+               bs/0.9f, bs/1.1f-bt/2.0f, 
+               225.0f, 120.0f,
+               2.0f*bt, 
+               bc, color, 
+               verts, colrs);
+         *lineWidth += 2.2f*(bs+bt)+b_;
          break;
 
       case '6':
+         drawHalo(bx, by-bs/4.0f, bs, bs, 2.0f*bt, bc, color, verts, colrs);
+         drawPill(
+               bx-bs-bt, by+bs*1.1f+bt, 
+               bx-bs-bt, by-bs/4.0f, 
+               bt, color, 
+               verts, colrs);
+         drawArch(
+               bx, by+bs*1.1f+bt, 
+               bs, bs, 
+               30.0f, 180.0f, 
+               2.0f*bt, 
+               bc, color, 
+               verts, colrs);
+         *lineWidth += 2.0f*(bs+bt)+b_;
          break;
 
       case '7':
+         drawPill(
+               bx+bs, by+bs*2.0f+bt, 
+               bx-bs/2.0f, by-bs-bt, 
+               bt, color, 
+               verts, colrs);
+         drawPill(
+               bx+bs, by+bs*2.0f+bt, 
+               bx-bs, by+bs*2.0f+bt, 
+               bt, color, 
+               verts, colrs);
+         *lineWidth += 2.1f*(bs+bt)+b_;
          break;
 
       case '8':
+         drawArch(
+               bx, by+bs*1.25f+bt/2.0f,
+               bs/1.1f, bs/1.3f-bt/2.0f, 
+               0.0f, 360.0f,
+               2.0f*bt, 
+               bc, color, 
+               verts, colrs);
+         drawArch(
+               bx, by-bs*0.35f-bt/2.0f,
+               bs/1.0f, bs/1.3f-bt/2.0f, 
+               0.0f, 360.0f,
+               2.0f*bt, 
+               bc, color, 
+               verts, colrs);
+         *lineWidth += 2.1f*(bs+bt)+b_;
          break;
 
       case '9':
+         drawHalo(bx, by+bs, bs, bs, 2.0f*bt, bc, color, verts, colrs);
+         drawPill(
+               bx+bs+bt, by+bs+bt, 
+               bx+bs+bt, by-bs/4.0f, 
+               bt, color, 
+               verts, colrs);
+         drawArch(
+               bx, by-bs/4.0f, 
+               bs, bs, 
+               225.0f, 360.0f,
+               2.0f*bt, 
+               bc, color, 
+               verts, colrs);
+         *lineWidth += 2.1f*(bs+bt)+b_;
          break;
 
       default:
