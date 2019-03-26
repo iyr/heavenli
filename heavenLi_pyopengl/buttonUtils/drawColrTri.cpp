@@ -79,11 +79,9 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       // (Used for processing user input)
       if (triButtonData == NULL) {
          triButtonData = new float[4*numButtons];
-         printf("numButtons: %.i\n", numButtons);
       } else {
          delete [] triButtonData;
          triButtonData = new float[4*numButtons];
-         printf("numButtons: %.i\n", numButtons);
       }
 
       if (  prevTriX == 0.0   )

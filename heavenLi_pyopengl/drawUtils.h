@@ -5,7 +5,6 @@
 #include "drawUtils/drawArch.cpp"
 #include "drawUtils/hsv2rgb.cpp"
 #include "drawUtils/rgb2hsv.cpp"
+#include "drawUtils/draw_char.cpp"
 
-// Character Utilities
-#include "charUtils/draw_char.cpp"
 // :v

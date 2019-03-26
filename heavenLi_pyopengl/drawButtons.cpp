@@ -8,7 +8,7 @@
 #include "buttonUtils/drawHueRing.cpp"
 #include "buttonUtils/drawColrTri.cpp"
 #include "buttonUtils/drawConfirm.cpp"
-#include "charUtils/printText.cpp"
+#include "infoUtils/printText.cpp"
 
 PyObject* drawClock_drawButtons     (PyObject *self, PyObject *args);
 PyObject* drawArrow_drawButtons     (PyObject *self, PyObject *args);
