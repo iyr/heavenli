@@ -58,7 +58,7 @@ PyObject* printText_drawButtons(PyObject* self, PyObject *args) {
       //printf("stringSize: %i\n", inputString.size());
 
       for (unsigned int i = 0; i < inputString.size(); i++) {
-         draw_char(
+         drawChar(
                inputChars[i],
                lineWidth, 0.0f,  // X, Y coordinates 
                charScale,        // Scale 
