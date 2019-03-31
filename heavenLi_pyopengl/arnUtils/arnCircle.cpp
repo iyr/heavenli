@@ -147,8 +147,8 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    delete [] bulbColors;
 
    glPushMatrix();
-   glScalef(sqrt(w2h)*hypot(wx, wy), sqrt(wy/wx)*hypot(wx, wy), 1.0);
-   glRotatef(ao, 0, 0, 1);
+   //glScalef(sqrt(w2h)*hypot(wx, wy), sqrt(wy/wx)*hypot(wx, wy), 1.0);
+   //glRotatef(ao, 0, 0, 1);
    glColorPointer(3, GL_FLOAT, 0, homeCircleColorBuffer);
    glVertexPointer(2, GL_FLOAT, 0, homeCircleVertexBuffer);
    glDrawElements( GL_TRIANGLES, homeCircleVerts, GL_UNSIGNED_SHORT, homeCircleIndices);

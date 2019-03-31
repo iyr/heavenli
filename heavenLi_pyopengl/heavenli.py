@@ -88,12 +88,12 @@ def drawHome():
     global statMac
 
     iconSize = 0.15
-    drawClock(
-            12*(statMac['someVar']/100),
-            60*(1.0-(statMac['someVar']/100)), 
-            1.0, statMac['w2h'], 
-            statMac['faceColor'],
-            statMac['detailColor'])
+    #drawClock(
+            #12*(statMac['someVar']/100),
+            #60*(1.0-(statMac['someVar']/100)), 
+            #1.0, statMac['w2h'], 
+            #statMac['faceColor'],
+            #statMac['detailColor'])
 
     # We are at the home screen
     if (statMac['screen'] == 0) and (statMac['touchState'] != statMac['prvState']):
@@ -103,47 +103,40 @@ def drawHome():
             for i in range(len(statMac['lamps'])):
                 statMac['lamps'][i].setMainLight(statMac['lightOn'])
 
-    buttons = drawBulbButton(
-            statMac['lamps'][0].getArn(),
-            statMac['lamps'][0].getNumBulbs(),
-            statMac['lamps'][0].getAngle(),
-            iconSize*2.66,
-            statMac['faceColor'],
-            statMac['detailColor'],
-            statMac['lamps'][0].getBulbsRGB(),
-            statMac['w2h'])
+    #buttons = drawBulbButton(
+            #statMac['lamps'][0].getArn(),
+            #statMac['lamps'][0].getNumBulbs(),
+            #statMac['lamps'][0].getAngle(),
+            #iconSize*2.66,
+            #statMac['faceColor'],
+            #statMac['detailColor'],
+            #statMac['lamps'][0].getBulbsRGB(),
+            #statMac['w2h'])
 
-    for i in range(len(buttons)):
-        if (statMac['screen'] == 0) and (statMac['touchState'] != statMac['prvState']):
-            if (watchPoint(
-                mapRanges(buttons[i][0], -1.0*statMac['w2h'], 1.0*statMac['w2h'], 0, statMac['wx']*2), 
-                mapRanges(buttons[i][1],      1.0,    -1.0, 0, statMac['wy']*2),
-                min(statMac['wx'], statMac['wy'])*0.5*0.3)):
-                statMac['targetScreen'] = 1
-                statMac['targetBulb'] = i
-                statMac['prevHue'] = statMac['lamps'][0].getBulbHSV(i)[0]
-                statMac['prevSat'] = statMac['lamps'][0].getBulbHSV(i)[1]
-                statMac['prevVal'] = statMac['lamps'][0].getBulbHSV(i)[2]
+    #for i in range(len(buttons)):
+        #if (statMac['screen'] == 0) and (statMac['touchState'] != statMac['prvState']):
+            #if (watchPoint(
+                #mapRanges(buttons[i][0], -1.0*statMac['w2h'], 1.0*statMac['w2h'], 0, statMac['wx']*2), 
+                #mapRanges(buttons[i][1],      1.0,    -1.0, 0, statMac['wy']*2),
+                #min(statMac['wx'], statMac['wy'])*0.5*0.3)):
+                #statMac['targetScreen'] = 1
+                #statMac['targetBulb'] = i
+                #statMac['prevHue'] = statMac['lamps'][0].getBulbHSV(i)[0]
+                #statMac['prevSat'] = statMac['lamps'][0].getBulbHSV(i)[1]
+                #statMac['prevVal'] = statMac['lamps'][0].getBulbHSV(i)[2]
 
-    printText(
-            -0.9, -0.6,
-            #0.05+0.1*(statMac['someVar']/100), 
-            0.05, 
-            statMac['w2h'], 
-            #'abcdefghijklmnopqrstuvwxyz',
-            #'1234567890',
-            #'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-            'AaBbCcDdEeFfGgHhIiJjKkLlMm',
+    #printText(
+            #-0.9, -0.6,
+            #0.05, 
+            #statMac['w2h'], 
+            #'AaBbCcDdEeFfGgHhIiJjKkLlMm',
+            #(1.0, 1.0, 1.0))
+    #printText(
+            #-0.9, -0.875,
+            #0.05, 
+            #statMac['w2h'], 
             #'NnOoPpQqRrSsTtUuVvWwXxYyZz',
-            (1.0, 1.0, 1.0))
-    printText(
-            -0.9, -0.875,
-            #0.05+0.1*(statMac['someVar']/100), 
-            0.05, 
-            statMac['w2h'], 
-            #'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-            'NnOoPpQqRrSsTtUuVvWwXxYyZz',
-            (1.0, 1.0, 1.0))
+            #(1.0, 1.0, 1.0))
 
     #drawIconCircle(0.75, 0.75, 
             #iconSize*0.85, 
@@ -554,11 +547,11 @@ def reshape(width, height):
     statMac['windowPosX'] = glutGet(GLUT_WINDOW_X)
     statMac['windowPosY'] = glutGet(GLUT_WINDOW_Y)
     glViewport(0, 0, width, height)
-    glMatrixMode(GL_PROJECTION)
-    glLoadIdentity()
-    glOrtho(-1.0*statMac['w2h'], 1.0*statMac['w2h'], -1.0, 1.0, -1.0, 1.0) 
-    glMatrixMode(GL_MODELVIEW)
-    glLoadIdentity()
+    #glMatrixMode(GL_PROJECTION)
+    #glLoadIdentity()
+    #glOrtho(-1.0*statMac['w2h'], 1.0*statMac['w2h'], -1.0, 1.0, -1.0, 1.0) 
+    #glMatrixMode(GL_MODELVIEW)
+    #glLoadIdentity()
 
 # Only Render if the window (any pixel of it at all) is visible
 def visible(vis):
@@ -635,5 +628,6 @@ if __name__ == '__main__':
         print("GL_VERSION    = ", glGetString(GL_VERSION))
         print("GL_VENDOR     = ", glGetString(GL_VENDOR))
         print("GL_EXTENSIONS = ", glGetString(GL_EXTENSIONS))
+        print("GL_SHADING_LANGUAGE_VERSION = ", glGetString(GL_SHADING_LANGUAGE_VERSION))
 
     glutMainLoop()
