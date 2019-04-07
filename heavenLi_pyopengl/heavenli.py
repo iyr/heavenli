@@ -31,6 +31,7 @@ from drawArn import *
 from drawButtons import *
 from lampClass import *
 from rangeUtils import *
+from shaderUtils import *
 print("Done!")
 
 def init():
@@ -39,6 +40,7 @@ def init():
     glEnableClientState(GL_VERTEX_ARRAY)
     glEnableClientState(GL_COLOR_ARRAY)
 
+    initShaders()
     statMac['wx'] = glutGet(GLUT_WINDOW_WIDTH)
     statMac['wy'] = glutGet(GLUT_WINDOW_HEIGHT)
     statMac['w2h'] = statMac['wx']/statMac['wy']

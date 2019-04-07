@@ -1,17 +1,107 @@
 #include <Python.h>
+#define GL_GLEXT_PROTOTYPES
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
    #include <windows.h>
 #endif
 #include <GL/gl.h>
+#include <GL/glext.h>
 #include <vector>
 #include <math.h>
 using namespace std;
+
+//GLenum err = glewInit();
 
 GLfloat  *homeCircleVertexBuffer       = NULL;
 GLfloat  *homeCircleColorBuffer        = NULL;
 GLushort *homeCircleIndices            = NULL;
 GLuint   homeCircleVerts;
+GLuint   homeCircleBuffer;
+GLuint   homeCircleIBO;
 GLint    prevHomeCircleNumBulbs;
+GLint    attribVertexPosition;
+GLint    attribVertexColor;
+
+const GLchar *vertexShaderSource = R"(
+   attribute vec2 vertsVBO
+   attribute vec3 colrsVBO
+   
+   varying vec3 color
+   void main() 
+   {
+      color = colrsVBO;
+      gl_Position = vec4(vertsVBO, 0.0, 1.0);
+   }
+)";
+
+const GLchar *fragmentShaderSource = R"(
+   precision mediump float;
+   varying vec3 color;
+
+   void main() 
+   {
+      gl_FragColor = vec4(color, 1.0);
+   }  
+)";
+
+/*
+const GLchar *vertexShaderSource = R"glsl(
+   attribute vec2 vCoord;
+   attribute vec3 vColor;
+
+   varying vec3 color
+   void main() 
+   {
+      gl_Position = vec4(vCoord, 0.0, 1.0);
+   }
+)glsl";
+
+const GLchar *fragmentShaderSource = R"glsl(
+   precision mediump float;
+   varying vec3 color;
+
+   void main() 
+   {
+      gl_FragColor = vec4(color, 1.0);
+   }  
+)glsl";
+*/
+
+/*
+const GLchar *vertexShaderSource = R"glsl(
+   //#version 150 core
+   //#version 110
+   //in vec2 position;
+   //in vec3 color;
+   //out vec3 Color
+
+   attribute vec2 vertexPosition;
+   attribute vec3 vertexColor;
+
+   varying vec3 Color;
+   void main() 
+   {
+      Color = vertexColor;
+      //gl_Position = vec4(position, 0.0, 1.0);
+      gl_Position = vec4(vertexPosition, 0.0, 1.0);
+   }
+)glsl";
+
+const GLchar *fragmentShaderSource = R"glsl(
+   //#version 150 core
+   //#version 110
+   //in vec3 Color;
+   //out vec4 outColor;
+   //varying vec3 Color;
+   //varying vec4 gl_Color;
+   varying vec3 Color;
+   void main() 
+   {
+      //outColor = vec4(Color, 1.0);
+      gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+      //gl_FragColor = vec4(Color, 1.0);
+   }  
+)glsl";
+*/
 
 PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    PyObject* py_list;
@@ -21,6 +111,7 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    float gx, gy, wx, wy, ao, w2h; 
    float R, G, B;
    int numBulbs;
+
    if (!PyArg_ParseTuple(args,
             "fffflffO",
             &gx, &gy,
@@ -119,6 +210,7 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
       }
 
       prevHomeCircleNumBulbs = numBulbs;
+
    } 
    // Geometry already calculated, update colors
    /*
@@ -146,13 +238,134 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    prevHomeCircleNumBulbs = numBulbs;
    delete [] bulbColors;
 
-   glPushMatrix();
+   /*
+   // Create and Compile vertex shader
+   GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+   glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+   glCompileShader(vertexShader);
+
+   // Create and Compile fragment shader
+   GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+   glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+   glCompileShader(fragmentShader);
+
+   // Link Vertex and Fragment Shaders to a single program
+   GLuint shaderProgram = glCreateProgram();
+   glAttachShader(shaderProgram, vertexShader);
+   glAttachShader(shaderProgram, fragmentShader);
+   //glBindFragDataLocation(shaderProgram, 0, "outColor");
+   glLinkProgram(shaderProgram);
+   glUseProgram(shaderProgram);
+
+   GLuint vertsVBO = 0;
+   glGenBuffers(1, &vertsVBO);
+   glBindBuffer(GL_ARRAY_BUFFER, vertsVBO);
+   glBufferData(GL_ARRAY_BUFFER, 
+         2*homeCircleVerts*sizeof(GLfloat), 
+         homeCircleVertexBuffer,
+         GL_STATIC_DRAW);
+
+   GLuint colrsVBO = 0;
+   glGenBuffers(1, &colrsVBO);
+   glBindBuffer(GL_ARRAY_BUFFER, colrsVBO);
+   glBufferData(GL_ARRAY_BUFFER, 
+         2*homeCircleVerts*sizeof(GLfloat), 
+         homeCircleColorBuffer,
+         GL_STATIC_DRAW);
+
+   GLuint vao = 0;
+   glGenVertexArrays(1, &vao);
+   glBindVertexArray(vao);
+   glBindBuffer(GL_ARRAY_BUFFER, vertsVBO);
+   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+   glBindBuffer(GL_ARRAY_BUFFER, colrsVBO);
+   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+   glEnableVertexAttribArray(0);
+   glEnableVertexAttribArray(1);
+
+   glBindVertexArray(vao);
+
+   GLuint vao;
+   glGenVertexArrays(1, &vao);
+   glBindVertexArray(vao);
+
+   // Reserve Name for buffer object
+   glGenBuffers(1, &homeCircleBuffer);
+
+   // Bind buffer object to GL_ARRAY_BUFFER target
+   glBindBuffer(GL_ARRAY_BUFFER, homeCircleBuffer);
+
+   // Allocate space for the buffer of size vertices + colors
+   glBufferData(GL_ARRAY_BUFFER,
+         sizeof(GLfloat)*homeCircleVerts*5,
+         NULL,
+         GL_STATIC_DRAW);
+
+   // Ferry Vertex Coordinate data to buffer object at offset 0
+   glBufferSubData(GL_ARRAY_BUFFER,
+         0,
+         sizeof(GLfloat)*homeCircleVerts*2,
+         homeCircleVertexBuffer);
+
+   // Ferry Vertex Color data to buffer object offset where vertex coordinates end
+   glBufferSubData(GL_ARRAY_BUFFER,
+         sizeof(GLfloat)*homeCircleVerts*2,
+         sizeof(GLfloat)*homeCircleVerts*5,
+         homeCircleColorBuffer);
+
+   */
+   /*
+   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (const GLvoid*) (5*homeCircleVerts*sizeof(GLfloat)));
+
+   glEnableVertexAttribArray(0);
+   glEnableVertexAttribArray(1);
+   */
+
+   /*
+   attribVertexPosition = glGetAttribLocation(shaderProgram, "vertexPosition");
+   attribVertexColor    = glGetAttribLocation(shaderProgram, "vertexColor");
+   glEnableVertexAttribArray(attribVertexPosition);
+   glEnableVertexAttribArray(attribVertexColor);
+   glVertexAttribPointer(attribVertexPosition,  2, GL_FLOAT, GL_FALSE, 0, 0);
+   glVertexAttribPointer(attribVertexColor,     3, GL_FLOAT, GL_FALSE, 0, (void*)(2*homeCircleVerts*sizeof(GLfloat)));
+   */
+
+   // Specify Layout of vertex data
+   //GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
+   //glEnableVertexAttribArray(posAttrib);
+   //glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 5*homeCircleVerts*sizeof(GLfloat), 0);
+   //glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+   //GLint colAttrib = glGetAttribLocation(shaderProgram, "color");
+   //glEnableVertexAttribArray(colAttrib);
+   //glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 5*homeCircleVerts*sizeof(GLfloat), (void*)(2 * sizeof(GLfloat)));
+   //glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 0, (void*)(2*homeCircleVerts*sizeof(GLfloat)));
+
+   //glPushMatrix();
    //glScalef(sqrt(w2h)*hypot(wx, wy), sqrt(wy/wx)*hypot(wx, wy), 1.0);
    //glRotatef(ao, 0, 0, 1);
-   glColorPointer(3, GL_FLOAT, 0, homeCircleColorBuffer);
-   glVertexPointer(2, GL_FLOAT, 0, homeCircleVertexBuffer);
-   glDrawElements( GL_TRIANGLES, homeCircleVerts, GL_UNSIGNED_SHORT, homeCircleIndices);
-   glPopMatrix();
+   //glColorPointer(3, GL_FLOAT, 0, homeCircleColorBuffer);
+   //glVertexPointer(2, GL_FLOAT, 0, homeCircleVertexBuffer);
+   //glDrawElements( GL_TRIANGLES, homeCircleVerts, GL_UNSIGNED_SHORT, homeCircleIndices);
+   //glPopMatrix();
+   glUseProgram(1);
+   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, homeCircleVertexBuffer);
+   glEnableVertexAttribArray(0);
+   glDrawArrays(GL_TRIANGLES, 0, homeCircleVerts);
+   //glDrawElements( GL_TRIANGLES, homeCircleVerts, GL_UNSIGNED_SHORT, 0);
+
+   /*
+   glDisableVertexAttribArray(attribVertexPosition);
+   glDisableVertexAttribArray(attribVertexColor);
+   glDeleteProgram(shaderProgram);
+   glDeleteShader(fragmentShader);
+   glDeleteShader(vertexShader);
+   glDeleteBuffers(1, &homeCircleBuffer);
+   //glDeleteBuffers(1, &homeCircleIBO);
+   glDeleteVertexArrays(1, &vao);
+   */
 
    Py_RETURN_NONE;
 }
