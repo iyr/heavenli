@@ -1,11 +1,3 @@
-#def mapRanges(val, iMin, iMax, fMin, fMax):
-    #iRange = iMax - iMin
-    #fRange = fMax - fMax
-
-    #oVal = float(val - iMin) / float(iRange)
-    #oVal = fMin + (oVal*fRange)
-
-    #return oVal
 def mapRanges(value, leftMin, leftMax, rightMin, rightMax):
     # Figure out how 'wide' each range is
     leftSpan = leftMax - leftMin
@@ -22,5 +14,3 @@ def constrain(val, min_val, max_val):
         return max_val
     else:
         return val
-    #return min(max_val, max(min_val, val))
-
