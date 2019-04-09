@@ -40,7 +40,9 @@ def init():
     glEnableClientState(GL_VERTEX_ARRAY)
     glEnableClientState(GL_COLOR_ARRAY)
 
+    print("Loading Shaders...")
     initShaders()
+    print("Done!")
     statMac['wx'] = glutGet(GLUT_WINDOW_WIDTH)
     statMac['wy'] = glutGet(GLUT_WINDOW_HEIGHT)
     statMac['w2h'] = statMac['wx']/statMac['wy']

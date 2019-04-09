@@ -1,10 +1,13 @@
+#include <Python.h>
+#define GL_GLEXT_PROTOTYPES
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
    #include <windows.h>
 #endif
 #include <GL/gl.h>
+#include <GL/glext.h>
 GLuint shaderProgram;
 
-GLuint LoadShader(const char *shadersrc, GLenum type) {
+GLuint LoadShader(const GLchar *shadersrc, GLenum type) {
    GLuint shader;
    GLint compiled;
 
@@ -40,18 +43,22 @@ GLuint LoadShader(const char *shadersrc, GLenum type) {
 }
 
 PyObject* initShaders_shaderUtils(PyObject* self, PyObject *args) {
-   GLbyte vertShaderSource[] = 
-      "attribute vec4 vPostion;  \n"
-      "void main() {             \n"
-      "gl_Position = vPostion;   \n"
-      "}                         \n";
-   GLbyte fragShaderSource[] = 
-      "precision mediump float;  \n"
-      "void main() {             \n"
-      "gl_FragColor = vec4(0.33, 0.05, 0.90, 1.0); \n"
-      "}                         \n";
+   const GLchar vertShaderSource[] = 
+      "attribute vec4 vertCoord;    \n"
+      "attribute vec4 vertColor;    \n"
+      "varying   vec4 color;        \n"
+      "void main() {                \n"
+         "color = vertColor;        \n"
+         "gl_Position = vertCoord;  \n"
+      "}                            \n";
+   const GLchar fragShaderSource[] = 
+      "precision mediump float;     \n"
+      "varying   vec4 color;        \n"
+      "void main() {                \n"
+         "gl_FragColor = color;     \n"
+      "}                            \n";
 
-   GLuint linked;
+   GLint linked;
    GLuint vertShader;
    GLuint fragShader;
 
@@ -66,7 +73,8 @@ PyObject* initShaders_shaderUtils(PyObject* self, PyObject *args) {
    glAttachShader(shaderProgram, vertShader);
    glAttachShader(shaderProgram, fragShader);
 
-   glBindAttribLocation(shaderProgram, "vertCoord");
+   glBindAttribLocation(shaderProgram, 0, "vertCoord");
+   glBindAttribLocation(shaderProgram, 1, "vertColor");
 
    glLinkProgram(shaderProgram);
 
@@ -81,7 +89,7 @@ PyObject* initShaders_shaderUtils(PyObject* self, PyObject *args) {
       if (infoLen > 1) {
          char *infoLog = new char[infoLen];
 
-         glGetShaderInfoLog(shader, infoLen, NULL, infoLog);
+         glGetShaderInfoLog(shaderProgram, infoLen, NULL, infoLog);
          printf("Shader Program Linking Failed :(  \n%s\n", infoLog);
          delete [] infoLog;
       }
@@ -89,6 +97,12 @@ PyObject* initShaders_shaderUtils(PyObject* self, PyObject *args) {
       glDeleteProgram(shaderProgram);
       return 0;
    }
+
+   printf("shaderProgram ID: %i\n", shaderProgram);
+
+   glUseProgram(3);
+   glEnableVertexAttribArray(0);
+   glEnableVertexAttribArray(1);
 
    Py_RETURN_NONE;
 }
