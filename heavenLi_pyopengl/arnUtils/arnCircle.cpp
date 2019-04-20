@@ -9,8 +9,6 @@
 #include <math.h>
 using namespace std;
 
-//GLenum err = glewInit();
-
 GLfloat  *homeCircleVertexBuffer       = NULL;
 GLfloat  *homeCircleColorBuffer        = NULL;
 GLushort *homeCircleIndices            = NULL;
@@ -20,88 +18,8 @@ GLuint   homeCircleIBO;
 GLint    prevHomeCircleNumBulbs;
 GLint    attribVertexPosition;
 GLint    attribVertexColor;
-
-/*
-const GLchar *vertexShaderSource = R"(
-   attribute vec2 vertsVBO
-   attribute vec3 colrsVBO
-   
-   varying vec3 color
-   void main() 
-   {
-      color = colrsVBO;
-      gl_Position = vec4(vertsVBO, 0.0, 1.0);
-   }
-)";
-
-const GLchar *fragmentShaderSource = R"(
-   precision mediump float;
-   varying vec3 color;
-
-   void main() 
-   {
-      gl_FragColor = vec4(color, 1.0);
-   }  
-)";
-
-const GLchar *vertexShaderSource = R"glsl(
-   attribute vec2 vCoord;
-   attribute vec3 vColor;
-
-   varying vec3 color
-   void main() 
-   {
-      gl_Position = vec4(vCoord, 0.0, 1.0);
-   }
-)glsl";
-
-const GLchar *fragmentShaderSource = R"glsl(
-   precision mediump float;
-   varying vec3 color;
-
-   void main() 
-   {
-      gl_FragColor = vec4(color, 1.0);
-   }  
-)glsl";
-*/
-
-/*
-const GLchar *vertexShaderSource = R"glsl(
-   //#version 150 core
-   //#version 110
-   //in vec2 position;
-   //in vec3 color;
-   //out vec3 Color
-
-   attribute vec2 vertexPosition;
-   attribute vec3 vertexColor;
-
-   varying vec3 Color;
-   void main() 
-   {
-      Color = vertexColor;
-      //gl_Position = vec4(position, 0.0, 1.0);
-      gl_Position = vec4(vertexPosition, 0.0, 1.0);
-   }
-)glsl";
-
-const GLchar *fragmentShaderSource = R"glsl(
-   //#version 150 core
-   //#version 110
-   //in vec3 Color;
-   //out vec4 outColor;
-   //varying vec3 Color;
-   //varying vec4 gl_Color;
-   varying vec3 Color;
-   void main() 
-   {
-      //outColor = vec4(Color, 1.0);
-      gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-      //gl_FragColor = vec4(Color, 1.0);
-   }  
-)glsl";
-*/
+GLfloat  ModelViewMatrix[4][4];
+GLfloat  PerspectiveMatrix[4][4];
 
 PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    PyObject* py_list;
@@ -211,6 +129,20 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
 
       prevHomeCircleNumBulbs = numBulbs;
 
+      // Set Identity Matrices
+      memset(ModelViewMatrix, 0x0, sizeof(ModelViewMatrix));
+      ModelViewMatrix[0][0] = 1.0f;
+      ModelViewMatrix[1][1] = 1.0f;
+      ModelViewMatrix[2][2] = 1.0f;
+      ModelViewMatrix[3][3] = 1.0f;
+
+      memset(PerspectiveMatrix, 0x0, sizeof(PerspectiveMatrix));
+      PerspectiveMatrix[0][0] = 1.0f;
+      PerspectiveMatrix[1][1] = 1.0f;
+      PerspectiveMatrix[2][2] = 1.0f;
+      PerspectiveMatrix[3][3] = 1.0f;
+
+      j
    } 
    // Geometry already calculated, update colors
    /*
@@ -247,8 +179,7 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    glDrawElements( GL_TRIANGLES, homeCircleVerts, GL_UNSIGNED_SHORT, homeCircleIndices);
    glPopMatrix();
    */
-
-   //glUseProgram(3);
+   
    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, homeCircleVertexBuffer);
    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, homeCircleColorBuffer);
    //glEnableVertexAttribArray(0);
