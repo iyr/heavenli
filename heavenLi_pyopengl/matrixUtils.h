@@ -18,7 +18,7 @@ extern "C" {
 
 typedef struct
 {
-    float   m[4][4];
+   float mat[4][4];
 } Matrix;
 
 //

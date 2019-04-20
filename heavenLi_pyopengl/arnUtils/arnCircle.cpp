@@ -213,7 +213,7 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
 
    GLint mvpLoc;
    mvpLoc = glGetUniformLocation( 3, "MVP" );
-   glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &MVP.m[0][0] );
+   glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &MVP.mat[0][0] );
    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, homeCircleVertexBuffer);
    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, homeCircleColorBuffer);
    //glEnableVertexAttribArray(0);
