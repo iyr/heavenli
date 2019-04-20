@@ -44,19 +44,20 @@ GLuint LoadShader(const GLchar *shadersrc, GLenum type) {
 
 PyObject* initShaders_shaderUtils(PyObject* self, PyObject *args) {
    const GLchar vertShaderSource[] = 
-      "attribute vec4 vertCoord;    \n"
-      "attribute vec4 vertColor;    \n"
-      "varying   vec4 color;        \n"
-      "void main() {                \n"
-         "color = vertColor;        \n"
-         "gl_Position = vertCoord;  \n"
-      "}                            \n";
+      "uniform    mat4 MVP;               \n"
+      "attribute  vec4 vertCoord;         \n"
+      "attribute  vec4 vertColor;         \n"
+      "varying    vec4 color;             \n"
+      "void main() {                      \n"
+         "color = vertColor;              \n"
+         "gl_Position = MVP * vertCoord;  \n"
+      "}                                  \n";
    const GLchar fragShaderSource[] = 
-      "precision mediump float;     \n"
-      "varying   vec4 color;        \n"
-      "void main() {                \n"
-         "gl_FragColor = color;     \n"
-      "}                            \n";
+      "precision  mediump float;          \n"
+      "varying    vec4 color;             \n"
+      "void main() {                      \n"
+         "gl_FragColor = color;           \n"
+      "}                                  \n";
 
    GLint linked;
    GLuint vertShader;
@@ -100,7 +101,7 @@ PyObject* initShaders_shaderUtils(PyObject* self, PyObject *args) {
 
    printf("shaderProgram ID: %i\n", shaderProgram);
 
-   glUseProgram(3);
+   glUseProgram(shaderProgram);
    glEnableVertexAttribArray(0);
    glEnableVertexAttribArray(1);
 

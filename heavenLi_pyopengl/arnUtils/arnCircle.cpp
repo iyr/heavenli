@@ -5,6 +5,7 @@
 #endif
 #include <GL/gl.h>
 #include <GL/glext.h>
+//#include "matrixUtils.h"
 #include <vector>
 #include <math.h>
 using namespace std;
@@ -18,8 +19,9 @@ GLuint   homeCircleIBO;
 GLint    prevHomeCircleNumBulbs;
 GLint    attribVertexPosition;
 GLint    attribVertexColor;
-GLfloat  ModelViewMatrix[4][4];
-GLfloat  PerspectiveMatrix[4][4];
+Matrix MVP;
+//GLfloat  ModelViewMatrix[4][4];
+//GLfloat  OrthoMatrix[4][4];
 
 PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    PyObject* py_list;
@@ -129,20 +131,35 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
 
       prevHomeCircleNumBulbs = numBulbs;
 
-      // Set Identity Matrices
+      //glScalef(sqrt(w2h)*hypot(wx, wy), sqrt(wy/wx)*hypot(wx, wy), 1.0);
+      //glRotatef(ao, 0, 0, 1);
+      /*
+      // Set Identity Matrix
       memset(ModelViewMatrix, 0x0, sizeof(ModelViewMatrix));
       ModelViewMatrix[0][0] = 1.0f;
       ModelViewMatrix[1][1] = 1.0f;
       ModelViewMatrix[2][2] = 1.0f;
       ModelViewMatrix[3][3] = 1.0f;
 
-      memset(PerspectiveMatrix, 0x0, sizeof(PerspectiveMatrix));
-      PerspectiveMatrix[0][0] = 1.0f;
-      PerspectiveMatrix[1][1] = 1.0f;
-      PerspectiveMatrix[2][2] = 1.0f;
-      PerspectiveMatrix[3][3] = 1.0f;
+      // Set Identity Matrix
+      memset(OrthoMatrix, 0x0, sizeof(OrthoMatrix));
+      OrthoMatrix[0][0] = 1.0f;
+      OrthoMatrix[1][1] = 1.0f;
+      OrthoMatrix[2][2] = 1.0f;
+      OrthoMatrix[3][3] = 1.0f;
 
-      j
+      float deltaX = right*w2h - left*w2h;
+      float deltaY = top - bottom;
+      float deltaZ = far - near;
+
+      OrthoMatrix[0][0] = 2.0f / deltaX;
+      OrthoMatrix[3][0] = -(right - left) / deltaX;
+      OrthoMatrix[1][1] = 2.0f / deltaY;
+      OrthoMatrix[3][1] = -(top - bottom) / deltaY;
+      OrthoMatrix[2][2] = 2.0f / deltaZ;
+      OrthoMatrix[3][2] = -(near - far)   / deltaZ;
+      */
+      
    } 
    // Geometry already calculated, update colors
    /*
@@ -180,6 +197,23 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    glPopMatrix();
    */
    
+   Matrix Ortho;
+   Matrix ModelView;
+
+   float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
+   MatrixLoadIdentity( &Ortho );
+   MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
+
+   MatrixLoadIdentity( &ModelView );
+
+   MatrixScale( &ModelView, 2.0f, 2.0f , 1.0f );
+   MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
+
+   MatrixMultiply( &MVP, &ModelView, &Ortho );
+
+   GLint mvpLoc;
+   mvpLoc = glGetUniformLocation( 3, "MVP" );
+   glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &MVP.m[0][0] );
    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, homeCircleVertexBuffer);
    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, homeCircleColorBuffer);
    //glEnableVertexAttribArray(0);

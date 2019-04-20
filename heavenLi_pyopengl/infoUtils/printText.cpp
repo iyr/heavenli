@@ -1,13 +1,14 @@
 // Draw a lower-case a
 #include <math.h>
 #include <vector>
+#include <string>
 using namespace std;
 
 GLfloat*    stringVertexBuffer   =  NULL;
 GLfloat*    stringColourBuffer   =  NULL;
 GLuint*     stringIndices        =  NULL;
 GLuint      stringVerts;
-string      prevString;
+std::string      prevString;
 
 PyObject* printText_drawButtons(PyObject* self, PyObject *args) {
    PyObject *colourPyTup;
@@ -29,7 +30,7 @@ PyObject* printText_drawButtons(PyObject* self, PyObject *args) {
    }
 
    const char* inputChars = PyUnicode_AsUTF8(Pystring);
-   string inputString = inputChars;
+   std::string inputString = inputChars;
 
    textColor[0]   = float(PyFloat_AsDouble(PyTuple_GetItem(colourPyTup, 0)));
    textColor[1]   = float(PyFloat_AsDouble(PyTuple_GetItem(colourPyTup, 1)));

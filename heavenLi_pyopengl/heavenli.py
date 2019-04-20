@@ -1,5 +1,4 @@
-#! /usr/bin/env python
-#import cProfile
+#! /usr/bin/env python3
 print("Now Loading...")
 
 print("Loading OpenGL...")
@@ -135,6 +134,7 @@ def drawHome():
             #statMac['w2h'], 
             #'AaBbCcDdEeFfGgHhIiJjKkLlMm',
             #(1.0, 1.0, 1.0))
+
     #printText(
             #-0.9, -0.875,
             #0.05, 
