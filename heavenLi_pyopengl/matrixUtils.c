@@ -4,7 +4,7 @@
 #include "matrixUtils.h"
 #include <math.h>
 
-#define PI 3.1415926535897932384626433832795f
+#define PI 3.14159265358979f
 
 void MatrixScale(Matrix *Output, float ScaleX, float ScaleY, float ScaleZ)
 {
