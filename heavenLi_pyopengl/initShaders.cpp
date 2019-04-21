@@ -39,21 +39,24 @@ GLuint LoadShader(const GLchar *shadersrc, GLenum type) {
       return 0;
    }
 
+   printf("Shader Compiled Successfully\n");
    return shader;
 }
 
 PyObject* initShaders_shaderUtils(PyObject* self, PyObject *args) {
    const GLchar vertShaderSource[] = 
-      "uniform    mat4 MVP;               \n"
+      "#version 100			  \n"
       "attribute  vec4 vertCoord;         \n"
       "attribute  vec4 vertColor;         \n"
+      "uniform    mat4 MVP;               \n"
       "varying    vec4 color;             \n"
       "void main() {                      \n"
          "color = vertColor;              \n"
          "gl_Position = MVP * vertCoord;  \n"
       "}                                  \n";
    const GLchar fragShaderSource[] = 
-      "precision  mediump float;          \n"
+      "#version 100			  \n"
+      "precision mediump float;		  \n"
       "varying    vec4 color;             \n"
       "void main() {                      \n"
          "gl_FragColor = color;           \n"

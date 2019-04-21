@@ -20,8 +20,6 @@ GLint    prevHomeCircleNumBulbs;
 GLint    attribVertexPosition;
 GLint    attribVertexColor;
 Matrix MVP;
-//GLfloat  ModelViewMatrix[4][4];
-//GLfloat  OrthoMatrix[4][4];
 
 PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    PyObject* py_list;
@@ -130,36 +128,6 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
       }
 
       prevHomeCircleNumBulbs = numBulbs;
-
-      //glScalef(sqrt(w2h)*hypot(wx, wy), sqrt(wy/wx)*hypot(wx, wy), 1.0);
-      //glRotatef(ao, 0, 0, 1);
-      /*
-      // Set Identity Matrix
-      memset(ModelViewMatrix, 0x0, sizeof(ModelViewMatrix));
-      ModelViewMatrix[0][0] = 1.0f;
-      ModelViewMatrix[1][1] = 1.0f;
-      ModelViewMatrix[2][2] = 1.0f;
-      ModelViewMatrix[3][3] = 1.0f;
-
-      // Set Identity Matrix
-      memset(OrthoMatrix, 0x0, sizeof(OrthoMatrix));
-      OrthoMatrix[0][0] = 1.0f;
-      OrthoMatrix[1][1] = 1.0f;
-      OrthoMatrix[2][2] = 1.0f;
-      OrthoMatrix[3][3] = 1.0f;
-
-      float deltaX = right*w2h - left*w2h;
-      float deltaY = top - bottom;
-      float deltaZ = far - near;
-
-      OrthoMatrix[0][0] = 2.0f / deltaX;
-      OrthoMatrix[3][0] = -(right - left) / deltaX;
-      OrthoMatrix[1][1] = 2.0f / deltaY;
-      OrthoMatrix[3][1] = -(top - bottom) / deltaY;
-      OrthoMatrix[2][2] = 2.0f / deltaZ;
-      OrthoMatrix[3][2] = -(near - far)   / deltaZ;
-      */
-      
    } 
    // Geometry already calculated, update colors
    /*
@@ -216,8 +184,8 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &MVP.mat[0][0] );
    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, homeCircleVertexBuffer);
    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, homeCircleColorBuffer);
-   //glEnableVertexAttribArray(0);
-   //glEnableVertexAttribArray(1);
+   glEnableVertexAttribArray(0);
+   glEnableVertexAttribArray(1);
    glDrawArrays(GL_TRIANGLES, 0, homeCircleVerts);
    //glDisableVertexAttribArray(0);
    //glDisableVertexAttribArray(1);
