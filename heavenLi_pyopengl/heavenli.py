@@ -142,14 +142,14 @@ def drawHome():
             #'NnOoPpQqRrSsTtUuVvWwXxYyZz',
             #(1.0, 1.0, 1.0))
 
-    #drawIconCircle(0.75, 0.75, 
-            #iconSize*0.85, 
-            #4,
-            #( 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100)),
-            #statMac['lamps'][0].getNumBulbs(), 
-            #statMac['lamps'][0].getAngle(), 
-            #statMac['w2h'], 
-            #statMac['lamps'][0].getBulbsRGB())
+    drawIconCircle(0.75, 0.75, 
+            iconSize*0.85, 
+            4,
+            ( 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100)),
+            statMac['lamps'][0].getNumBulbs(), 
+            statMac['lamps'][0].getAngle(), 
+            statMac['w2h'], 
+            statMac['lamps'][0].getBulbsRGB())
 
     #drawIconLinear(0.75, -0.75, 
             #iconSize*0.85, 

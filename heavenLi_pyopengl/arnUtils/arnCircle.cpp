@@ -19,7 +19,7 @@ GLuint   homeCircleIBO;
 GLint    prevHomeCircleNumBulbs;
 GLint    attribVertexPosition;
 GLint    attribVertexColor;
-Matrix MVP;
+Matrix   homeCircleMVP;
 
 PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    PyObject* py_list;
@@ -155,6 +155,7 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    prevHomeCircleNumBulbs = numBulbs;
    delete [] bulbColors;
 
+   // Old, Fixed Function ES 1.1 code
    /*
    glPushMatrix();
    glScalef(sqrt(w2h)*hypot(wx, wy), sqrt(wy/wx)*hypot(wx, wy), 1.0);
@@ -171,17 +172,14 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
    MatrixLoadIdentity( &Ortho );
    MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
-
    MatrixLoadIdentity( &ModelView );
-
    MatrixScale( &ModelView, 2.0f, 2.0f , 1.0f );
    MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
-
-   MatrixMultiply( &MVP, &ModelView, &Ortho );
+   MatrixMultiply( &homeCircleMVP, &ModelView, &Ortho );
 
    GLint mvpLoc;
    mvpLoc = glGetUniformLocation( 3, "MVP" );
-   glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &MVP.mat[0][0] );
+   glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &homeCircleMVP.mat[0][0] );
    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, homeCircleVertexBuffer);
    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, homeCircleColorBuffer);
    glEnableVertexAttribArray(0);
@@ -209,6 +207,7 @@ GLuint   iconCircleVerts;
 int      prevIconCircleNumBulbs;
 int      prevIconCircleFeatures;
 extern float offScreen;
+Matrix   iconCircleMVP;
 
 PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
    PyObject*   detailColorPyTup;
@@ -617,6 +616,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
    prevIconCircleNumBulbs = numBulbs;
    delete [] bulbColors;
 
+   /*
    glPushMatrix();
    glTranslatef(gx*w2h, gy, 0);
    if (w2h >= 1) {
@@ -629,6 +629,35 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
    glVertexPointer(2, GL_FLOAT, 0, iconCircleVertexBuffer);
    glDrawElements( GL_TRIANGLES, iconCircleVerts, GL_UNSIGNED_SHORT, iconCircleIndices);
    glPopMatrix();
+   */
+
+   Matrix Ortho;
+   Matrix ModelView;
+   Matrix Tmp;
+
+   float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
+   MatrixLoadIdentity( &Ortho );
+   MatrixLoadIdentity( &ModelView );
+   MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
+   MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
+   if (w2h <= 1.0f) {
+      MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
+   } else {
+      MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
+   }
+   MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
+   MatrixMultiply( &iconCircleMVP, &ModelView, &Ortho );
+
+   GLint mvpLoc;
+   mvpLoc = glGetUniformLocation( 3, "MVP" );
+   glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &iconCircleMVP.mat[0][0] );
+   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, iconCircleVertexBuffer);
+   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, iconCircleColorBuffer);
+   glEnableVertexAttribArray(0);
+   glEnableVertexAttribArray(1);
+   glDrawArrays(GL_TRIANGLES, 0, iconCircleVerts);
+   //glDisableVertexAttribArray(0);
+   //glDisableVertexAttribArray(1);
 
    Py_RETURN_NONE;
 }
