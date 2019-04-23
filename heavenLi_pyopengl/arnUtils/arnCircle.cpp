@@ -2,12 +2,15 @@
 #define GL_GLEXT_PROTOTYPES
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
    #include <windows.h>
+   // These undefs necessary because microsoft
+   #undef near
+   #undef far
 #endif
 #include <GL/gl.h>
 #include <GL/glext.h>
-//#include "matrixUtils.h"
 #include <vector>
 #include <math.h>
+
 using namespace std;
 
 GLfloat  *homeCircleVertexBuffer       = NULL;
@@ -182,8 +185,8 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &homeCircleMVP.mat[0][0] );
    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, homeCircleVertexBuffer);
    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, homeCircleColorBuffer);
-   glEnableVertexAttribArray(0);
-   glEnableVertexAttribArray(1);
+   //glEnableVertexAttribArray(0);
+   //glEnableVertexAttribArray(1);
    glDrawArrays(GL_TRIANGLES, 0, homeCircleVerts);
    //glDisableVertexAttribArray(0);
    //glDisableVertexAttribArray(1);
@@ -633,7 +636,6 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
 
    Matrix Ortho;
    Matrix ModelView;
-   Matrix Tmp;
 
    float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
    MatrixLoadIdentity( &Ortho );
@@ -653,8 +655,8 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
    glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &iconCircleMVP.mat[0][0] );
    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, iconCircleVertexBuffer);
    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, iconCircleColorBuffer);
-   glEnableVertexAttribArray(0);
-   glEnableVertexAttribArray(1);
+   //glEnableVertexAttribArray(0);
+   //glEnableVertexAttribArray(1);
    glDrawArrays(GL_TRIANGLES, 0, iconCircleVerts);
    //glDisableVertexAttribArray(0);
    //glDisableVertexAttribArray(1);
