@@ -132,6 +132,7 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
          clockColorBuffer[i*3+2]  = colrs[i*3+2];
       }
 
+      // Calculate Initial Transformation Matrix
       Matrix Ortho;
       Matrix ModelView;
 
