@@ -354,33 +354,33 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
     else:
         extraColor = statMac['detailColor']
 
-    #drawConfirm(
-            #0.75-0.4*(1.0-acbic), 
-            #-0.75-0.5*acbc, 
-            #0.2*(1.0-acbc), statMac['w2h'], 
-            #statMac['faceColor'], 
-            #extraColor, 
-            #statMac['detailColor']);
+    drawConfirm(
+            0.75-0.4*(1.0-acbic), 
+            -0.75-0.5*acbc, 
+            0.2*(1.0-acbc), statMac['w2h'], 
+            statMac['faceColor'], 
+            extraColor, 
+            statMac['detailColor']);
 
     # Watch Confirm Button for input
-    #if (watchPoint(
-        #mapRanges( 0.75, -1.0,  1.0, 0, statMac['wx']*2),
-        #mapRanges(-0.75,  1.0, -1.0, 0, statMac['wy']*2),
-        #min(statMac['wx'], statMac['wy'])*0.2)):
-        #statMac['wereColorsTouched'] = False
-        #targetLamp.setBulbtHSV(statMac['targetBulb'], (
-            #statMac['currentHue'], 
-            #statMac['currentSat'], 
-            #statMac['currentVal'] ) )
-        #statMac['targetScreen'] = 0
+    if (watchPoint(
+        mapRanges( 0.75, -1.0,  1.0, 0, statMac['wx']*2),
+        mapRanges(-0.75,  1.0, -1.0, 0, statMac['wy']*2),
+        min(statMac['wx'], statMac['wy'])*0.2)):
+        statMac['wereColorsTouched'] = False
+        targetLamp.setBulbtHSV(statMac['targetBulb'], (
+            statMac['currentHue'], 
+            statMac['currentSat'], 
+            statMac['currentVal'] ) )
+        statMac['targetScreen'] = 0
 
-    #if ( statMac['wereColorsTouched'] ):
-        #extraColor = colorsys.hsv_to_rgb(
-                #statMac['prevHue'], 
-                #statMac['prevSat'], 
-                #statMac['prevVal'])
-    #else:
-        #extraColor = statMac['detailColor']
+    if ( statMac['wereColorsTouched'] ):
+        extraColor = colorsys.hsv_to_rgb(
+                statMac['prevHue'], 
+                statMac['prevSat'], 
+                statMac['prevVal'])
+    else:
+        extraColor = statMac['detailColor']
 
     # Draw Back Button
     #drawArrow(
