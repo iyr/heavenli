@@ -6,7 +6,7 @@ if (system() == 'Windows'):
     drawArn_sfc_module = Extension(
             'drawArn', 
             sources         = ['drawArn.cpp'],
-            extra_link_args = ['opengl32.lib', 'glext.lib'])#, 'glew32.lib'])
+            extra_link_args = ['opengl32.lib', 'glext.lib'])
     drawButtons_sfc_module = Extension(
             'drawButtons', 
             sources         = ['drawButtons.cpp'],
@@ -14,7 +14,7 @@ if (system() == 'Windows'):
     shaderUtils_sfc_module = Extension(
             'shaderUtils', 
             sources         = ['shaderUtils.cpp'],
-            extra_link_args = ['opengl32.lib', 'glext.lib'])#, 'glew32.lib'])
+            extra_link_args = ['opengl32.lib', 'glext.lib'])
 else:
     drawButtons_sfc_module = Extension(
             'drawButtons', 
