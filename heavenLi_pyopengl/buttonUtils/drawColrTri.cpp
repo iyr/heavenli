@@ -1,7 +1,12 @@
+#define GL_GLEXT_PROTOTYPES
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
    #include <windows.h>
+   // These undefs necessary because microsoft
+   #undef near
+   #undef far
 #endif
 #include <GL/gl.h>
+#include <GL/glext.h>
 #include <vector>
 #include <math.h>
 
@@ -12,22 +17,24 @@ GLfloat  *colrTriColorBuffer  = NULL;  // Stores (R, G, B) (float) for each vert
 GLushort *colrTriIndices      = NULL;  // Stores index corresponding to each vertex, could be more space efficient, but meh
 GLuint   colrTriVerts;                 // Total number of vertices
 GLint    prevColrTriNumLevels;         // Used for updating Granularity changes
-float    *triButtonData       = NULL;  // Stores data (X, Y, sat, val) for each button dot
-float    prevTriX             = 0.0;   // Used for animating granularity changes
-float    prevTriY             = 0.0;   // Used for animating granularity changes
-float    prevTriDotScale      = 1.0;   // Used for animating granularity changes
-float    prevRingX            = 0.0;   // Used for animating selection ring
-float    prevRingY            = 0.0;   // Used for animating selection ring
+GLfloat  *triButtonData       = NULL;  // Stores data (X, Y, sat, val) for each button dot
+GLfloat  prevTriX             = 0.0;   // Used for animating granularity changes
+GLfloat  prevTriY             = 0.0;   // Used for animating granularity changes
+GLfloat  prevTriDotScale      = 1.0;   // Used for animating granularity changes
+GLfloat  prevRingX            = 0.0;   // Used for animating selection ring
+GLfloat  prevRingY            = 0.0;   // Used for animating selection ring
 GLfloat  prevTriHue;                   // Used for animating selection ring
 GLfloat  prevTriSat;                   // Used for animating selection ring
 GLfloat  prevTriVal;                   // Used for animating selection ring
 GLfloat  prevTriSatSel        = 0.0;   // Used to resolve edge-case bug for animating selection ring
 GLfloat  prevTriValSel        = 0.0;   // Used to resolve edge-case bug for animating selection ring
+Matrix   colrTriMVP;
+Params   colrTriPrevState;
 
 PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    PyObject *py_list;
    PyObject *py_tuple;
-   float w2h, scale, currentTriHue, currentTriSat, currentTriVal, tDiff;
+   float w2h, scale, currentTriHue, currentTriSat, currentTriVal, tDiff, gx=0.0f, gy=0.0f;
    float ringColor[3];
    char circleSegments = 24;
    long numLevels = 6;
@@ -180,6 +187,30 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
          colrTriColorBuffer[i*3+1]  = colrs[i*3+1];
          colrTriColorBuffer[i*3+2]  = colrs[i*3+2];
       }
+
+      // Calculate initial transformation matrix
+      Matrix Ortho;
+      Matrix ModelView;
+
+      float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
+      MatrixLoadIdentity( &Ortho );
+      MatrixLoadIdentity( &ModelView );
+      MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
+      MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
+      if (w2h <= 1.0f) {
+         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
+      } else {
+         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
+      }
+      //MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
+      MatrixMultiply( &colrTriMVP, &ModelView, &Ortho );
+
+      //colrTriPrevState.ao = ao;
+      colrTriPrevState.dx = gx;
+      colrTriPrevState.dy = gy;
+      colrTriPrevState.sx = scale;
+      colrTriPrevState.sy = scale;
+      colrTriPrevState.w2h = w2h;
 
       // Update State Machine variables
       prevTriHue = currentTriHue;
@@ -411,11 +442,55 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
          scale = scale*w2h;
    }
 
+   // Old, Fixed-function ES 1.1 code
+   /*
    glScalef(scale, scale, 1);
    glColorPointer(3, GL_FLOAT, 0, colrTriColorBuffer);
    glVertexPointer(2, GL_FLOAT, 0, colrTriVertexBuffer);
    glDrawElements( GL_TRIANGLES, colrTriVerts, GL_UNSIGNED_SHORT, colrTriIndices);
    glPopMatrix();
+   */
 
+   // Update Transfomation Matrix if any change in parameters
+   if (  //colrTriPrevState.ao != ao     ||
+         colrTriPrevState.dx != gx     ||
+         colrTriPrevState.dy != gy     ||
+         colrTriPrevState.sx != scale  ||
+         colrTriPrevState.sy != scale  ||
+         colrTriPrevState.w2h != w2h   ){
+      
+      Matrix Ortho;
+      Matrix ModelView;
+
+      float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
+      MatrixLoadIdentity( &Ortho );
+      MatrixLoadIdentity( &ModelView );
+      MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
+      MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
+      if (w2h <= 1.0f) {
+         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
+      } else {
+         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
+      }
+      //MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
+      MatrixMultiply( &colrTriMVP, &ModelView, &Ortho );
+
+      //colrTriPrevState.ao = ao;
+      colrTriPrevState.dx = gx;
+      colrTriPrevState.dy = gy;
+      colrTriPrevState.sx = scale;
+      colrTriPrevState.sy = scale;
+      colrTriPrevState.w2h = w2h;
+   }
+
+   //GLint mvpLoc;
+   //mvpLoc = glGetUniformLocation( 3, "MVP" );
+   //glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &colrTriMVP.mat[0][0] );
+   glUniformMatrix4fv( 0, 1, GL_FALSE, &colrTriMVP.mat[0][0] );
+   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, colrTriVertexBuffer);
+   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, colrTriColorBuffer);
+   //glEnableVertexAttribArray(0);
+   //glEnableVertexAttribArray(1);
+   glDrawArrays(GL_TRIANGLES, 0, colrTriVerts);
    return py_list;
 }
