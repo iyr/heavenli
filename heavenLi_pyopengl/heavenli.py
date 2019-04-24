@@ -383,24 +383,24 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
         extraColor = statMac['detailColor']
 
     # Draw Back Button
-    #drawArrow(
-            #-0.75+0.4*(1.0-acbic), 
-            #-0.75-0.5*acbc, 
-            #180.0,
-            #0.2*(1.0-acbc), statMac['w2h'], 
-            #statMac['faceColor'], 
-            #extraColor, 
-            #statMac['detailColor']);
-    #if (watchPoint(
-        #mapRanges(-0.75, -1.0,  1.0, 0, statMac['wx']*2),
-        #mapRanges(-0.75,  1.0, -1.0, 0, statMac['wy']*2),
-        #min(statMac['wx'], statMac['wy'])*0.2)):
-        #statMac['wereColorsTouched'] = False
-        #targetLamp.setBulbtHSV(statMac['targetBulb'], (
-            #statMac['prevHue'], 
-            #statMac['prevSat'], 
-            #statMac['prevVal'] ) )
-        #statMac['targetScreen'] = 0
+    drawArrow(
+            -0.75+0.4*(1.0-acbic), 
+            -0.75-0.5*acbc, 
+            180.0,
+            0.2*(1.0-acbc), statMac['w2h'], 
+            statMac['faceColor'], 
+            extraColor, 
+            statMac['detailColor']);
+    if (watchPoint(
+        mapRanges(-0.75, -1.0,  1.0, 0, statMac['wx']*2),
+        mapRanges(-0.75,  1.0, -1.0, 0, statMac['wy']*2),
+        min(statMac['wx'], statMac['wy'])*0.2)):
+        statMac['wereColorsTouched'] = False
+        targetLamp.setBulbtHSV(statMac['targetBulb'], (
+            statMac['prevHue'], 
+            statMac['prevSat'], 
+            statMac['prevVal'] ) )
+        statMac['targetScreen'] = 0
 
 def watchPoint(px, py, pr):
     global statMac
