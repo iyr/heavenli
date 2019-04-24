@@ -298,61 +298,60 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
             targetLamp.setBulbtHSV(statMac['targetBulb'], tmcHSV)
 
     # Draw Triangle of Dots with different brightness/saturation
-    #satValButtons = drawColrTri(
-            #statMac['currentHue'], 
-            #statMac['currentSat'], 
-            #statMac['currentVal'],
-            #int(statMac['numHues']/2), 
-            #selectRingColor,
-            #statMac['w2h'], acbic, 
-            #statMac['tDiff'])
+    satValButtons = drawColrTri(
+            statMac['currentHue'], 
+            statMac['currentSat'], 
+            statMac['currentVal'],
+            int(statMac['numHues']/2), 
+            selectRingColor,
+            statMac['w2h'], acbic, 
+            statMac['tDiff'])
 
-    #for i in range(len(satValButtons)):
-        #tmr = 1.0
-        #if (statMac['w2h'] <= 1.0):
-            #satValButtons[i] = (
-                    #satValButtons[i][0]*statMac['w2h'],     # X-Coord of Button
-                    #satValButtons[i][1]*statMac['w2h'],     # Y-Coord of Button
-                    #satValButtons[i][2],                    # Saturation of Button
-                    #satValButtons[i][3])                    # Value of Button
-            #tmr = statMac['w2h']
+    for i in range(len(satValButtons)):
+        tmr = 1.0
+        if (statMac['w2h'] <= 1.0):
+            satValButtons[i] = (
+                    satValButtons[i][0]*statMac['w2h'],     # X-Coord of Button
+                    satValButtons[i][1]*statMac['w2h'],     # Y-Coord of Button
+                    satValButtons[i][2],                    # Saturation of Button
+                    satValButtons[i][3])                    # Value of Button
+            tmr = statMac['w2h']
 
         # Map relative x-Coord to screen x-Coord
-        #xLim = mapRanges(
-                #satValButtons[i][0], 
-                #-1.0*statMac['w2h'], 
-                #1.0*statMac['w2h'], 
-                #0, 
-                #statMac['wx']*2)
+        xLim = mapRanges(
+                satValButtons[i][0], 
+                -1.0*statMac['w2h'], 
+                1.0*statMac['w2h'], 
+                0, 
+                statMac['wx']*2)
 
         # Map relative y-Coord to screen y-Coord
-        #yLim = mapRanges(
-                #satValButtons[i][1],      
-                #1.0,    
-                #-1.0, 
-                #0, 
-                #statMac['wy']*2)
+        yLim = mapRanges(
+                satValButtons[i][1],      
+                1.0,    
+                -1.0, 
+                0, 
+                statMac['wy']*2)
 
-        #if (watchPoint(
-            #xLim, yLim,
-            #min(statMac['wx'], statMac['wy'])*0.073)):
+        if (watchPoint(
+            xLim, yLim,
+            min(statMac['wx'], statMac['wy'])*0.073)):
+            statMac['wereColorsTouched'] = True
+            statMac['currentSat'] = satValButtons[i][2]
+            statMac['currentVal'] = satValButtons[i][3]
+            tmcHSV = (
+                    statMac['currentHue'], 
+                    statMac['currentSat'], 
+                    statMac['currentVal'])
+            targetLamp.setBulbtHSV(statMac['targetBulb'], tmcHSV)
 
-            #statMac['wereColorsTouched'] = True
-            #statMac['currentSat'] = satValButtons[i][2]
-            #statMac['currentVal'] = satValButtons[i][3]
-            #tmcHSV = (
-                    #statMac['currentHue'], 
-                    #statMac['currentSat'], 
-                    #statMac['currentVal'])
-            #targetLamp.setBulbtHSV(statMac['targetBulb'], tmcHSV)
-
-    #if ( statMac['wereColorsTouched'] ):
-        #extraColor = colorsys.hsv_to_rgb(
-                #statMac['currentHue'], 
-                #statMac['currentSat'], 
-                #statMac['currentVal'])
-    #else:
-        #extraColor = statMac['detailColor']
+    if ( statMac['wereColorsTouched'] ):
+        extraColor = colorsys.hsv_to_rgb(
+                statMac['currentHue'], 
+                statMac['currentSat'], 
+                statMac['currentVal'])
+    else:
+        extraColor = statMac['detailColor']
 
     #drawConfirm(
             #0.75-0.4*(1.0-acbic), 
