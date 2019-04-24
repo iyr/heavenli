@@ -17,6 +17,8 @@ GLfloat*    arrowColorBuffer   = NULL;
 GLushort*   arrowIndices       = NULL;
 GLuint      arrowVerts;
 GLuint      extraArrowVerts;
+Matrix      arrowMVP;
+Params      arrowPrevState;
 
 PyObject* drawArrow_drawButtons(PyObject* self, PyObject *args) {
    PyObject *faceColorPyTup;
