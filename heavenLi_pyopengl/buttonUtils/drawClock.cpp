@@ -1,4 +1,3 @@
-#include <Python.h>
 #define GL_GLEXT_PROTOTYPES
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
    #include <windows.h>
@@ -199,6 +198,12 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
       if (faceColor[i] != clockColorBuffer[i]) {
          for (int k = 0; k < circleSegments*3; k++) {
             clockColorBuffer[i + k*3] = faceColor[i];
+         }
+      }
+
+      if (detailColor[i] != clockColorBuffer[i + circleSegments*3]) {
+         for (int k = circleSegments*3; k < clockVerts; k++) {
+            clockColorBuffer[i + k*3] = detailColor[i];
          }
       }
    }
