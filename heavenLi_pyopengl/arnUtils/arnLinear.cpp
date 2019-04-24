@@ -158,9 +158,8 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
       MatrixLoadIdentity( &Ortho );
       MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
       MatrixLoadIdentity( &ModelView );
-      MatrixRotate( &ModelView, 90, 0.0f, 0.0f, 1.0f);
       MatrixScale( &ModelView, 0.5f, 0.5f, 1.0f );
-      MatrixRotate( &ModelView, -(ao+90), 0.0f, 0.0f, 1.0f);
+      MatrixRotate( &ModelView, 180-ao, 0.0f, 0.0f, 1.0f);
       MatrixMultiply( &homeLinearMVP, &ModelView, &Ortho );
       homeLinearPrevState.ao = ao;
 
@@ -212,9 +211,8 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
       MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
       MatrixLoadIdentity( &ModelView );
 
-      MatrixRotate( &ModelView, 90, 0.0f, 0.0f, 1.0f);
       MatrixScale( &ModelView, 0.5f, 0.5f, 1.0f );
-      MatrixRotate( &ModelView, -(ao+90), 0.0f, 0.0f, 1.0f);
+      MatrixRotate( &ModelView, 180-ao, 0.0f, 0.0f, 1.0f);
 
       MatrixMultiply( &homeLinearMVP, &ModelView, &Ortho );
       homeLinearPrevState.ao = ao;
@@ -793,7 +791,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       } else {
          MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
       }
-      MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
+      MatrixRotate( &ModelView, 180-ao, 0.0f, 0.0f, 1.0f);
       MatrixMultiply( &iconLinearMVP, &ModelView, &Ortho );
 
       iconLinearPrevState.ao = ao;
@@ -1151,7 +1149,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       } else {
          MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
       }
-      MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
+      MatrixRotate( &ModelView, 180-ao, 0.0f, 0.0f, 1.0f);
       MatrixMultiply( &iconLinearMVP, &ModelView, &Ortho );
 
       iconLinearPrevState.ao = ao;
