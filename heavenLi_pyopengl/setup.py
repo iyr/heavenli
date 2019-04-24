@@ -9,7 +9,7 @@ if (platform.system() == 'Windows'):
     drawButtons_sfc_module = Extension(
             'drawButtons', 
             sources         = ['drawButtons.cpp'],
-            extra_link_args = ['opengl32.lib'])
+            extra_link_args = ['opengl32.lib', 'glext.lib'])
     shaderUtils_sfc_module = Extension(
             'shaderUtils', 
             sources         = ['shaderUtils.cpp'],
