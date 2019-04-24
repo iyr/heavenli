@@ -45,8 +45,8 @@ def init():
     print("Done!")
 
     statMac['minute'] = datetime.datetime.now().minute
-    statMac['hour'] = datetime.datetime.now().hour + 1
-    if (statMac['hour'] > 12):
+    statMac['hour'] = datetime.datetime.now().hour
+    if (statMac['hour'] > 11):
         statMac['hour'] -= 12
     print(statMac['hour'])
     print(statMac['minute'])
@@ -75,8 +75,8 @@ def framerate():
         statMac['t0'] = t
         statMac['frames'] = 0
         statMac['minute'] = datetime.datetime.now().minute
-        statMac['hour'] = datetime.datetime.now().hour + 1
-        if (statMac['hour'] > 12):
+        statMac['hour'] = datetime.datetime.now().hour
+        if (statMac['hour'] > 11):
             statMac['hour'] -= 12
     if statMac['frameLimit'] and (statMac['fps'] > 60):
         time.sleep(2*float(statMac['fps'])/10000.0)
@@ -266,36 +266,36 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
                 #statMac['numHues'] = 10
 
     # Draw Ring of Dots with different hues
-    #hueButtons = drawHueRing(
-            #statMac['currentHue'], 
-            #statMac['numHues'], 
-            #selectRingColor, 
-            #statMac['w2h'], 
-            #acbic, 
-            #statMac['tDiff'],
-            #statMac['interactionCursor'])
+    hueButtons = drawHueRing(
+            statMac['currentHue'], 
+            statMac['numHues'], 
+            selectRingColor, 
+            statMac['w2h'], 
+            acbic, 
+            statMac['tDiff'],
+            statMac['interactionCursor'])
 
-    #for i in range(len(hueButtons)):
-        #tmr = 1.0
-        #if (statMac['w2h'] <= 1.0):
-            #hueButtons[i] = (
-                    #hueButtons[i][0]*statMac['w2h'], 
-                    #hueButtons[i][1]*statMac['w2h'], 
-                    #hueButtons[i][2])
-            #tmr = statMac['w2h']
+    for i in range(len(hueButtons)):
+        tmr = 1.0
+        if (statMac['w2h'] <= 1.0):
+            hueButtons[i] = (
+                    hueButtons[i][0]*statMac['w2h'], 
+                    hueButtons[i][1]*statMac['w2h'], 
+                    hueButtons[i][2])
+            tmr = statMac['w2h']
 
-        #xLim = mapRanges(hueButtons[i][0], -1.0*statMac['w2h'], 1.0*statMac['w2h'],    0, statMac['wx']*2)
-        #yLim = mapRanges(hueButtons[i][1],  1.0,               -1.0,                   0, statMac['wy']*2)
-        #if (watchPoint(
-            #xLim, yLim,
-            #min(statMac['wx'], statMac['wy'])*0.15*(12.0/float(statMac['numHues'])) )):
-            #statMac['wereColorsTouched'] = True
-            #statMac['currentHue'] = hueButtons[i][2]
-            #tmcHSV = (
-                    #statMac['currentHue'], 
-                    #statMac['currentSat'], 
-                    #statMac['currentVal'])
-            #targetLamp.setBulbtHSV(statMac['targetBulb'], tmcHSV)
+        xLim = mapRanges(hueButtons[i][0], -1.0*statMac['w2h'], 1.0*statMac['w2h'],    0, statMac['wx']*2)
+        yLim = mapRanges(hueButtons[i][1],  1.0,               -1.0,                   0, statMac['wy']*2)
+        if (watchPoint(
+            xLim, yLim,
+            min(statMac['wx'], statMac['wy'])*0.15*(12.0/float(statMac['numHues'])) )):
+            statMac['wereColorsTouched'] = True
+            statMac['currentHue'] = hueButtons[i][2]
+            tmcHSV = (
+                    statMac['currentHue'], 
+                    statMac['currentSat'], 
+                    statMac['currentVal'])
+            targetLamp.setBulbtHSV(statMac['targetBulb'], tmcHSV)
 
     # Draw Triangle of Dots with different brightness/saturation
     #satValButtons = drawColrTri(
