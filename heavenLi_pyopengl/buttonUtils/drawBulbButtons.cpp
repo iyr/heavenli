@@ -271,6 +271,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
          bulbButtonColorBuffer[i*3+2]  = colrs[i*3+2];
       }
 
+      // Calculate initial Transformation matrix
       Matrix Ortho;
       Matrix ModelView;
 
