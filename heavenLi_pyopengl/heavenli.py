@@ -20,6 +20,7 @@ print("Done!")
 print("Loading System Utilities...")
 import sys, time
 from math import sin,cos,sqrt,pi,radians
+import datetime
 import os
 print("Done!")
 
@@ -42,6 +43,14 @@ def init():
     print("Loading Shaders...")
     initShaders()
     print("Done!")
+
+    statMac['minute'] = datetime.datetime.now().minute
+    statMac['hour'] = datetime.datetime.now().hour + 1
+    if (statMac['hour'] > 12):
+        statMac['hour'] -= 12
+    print(statMac['hour'])
+    print(statMac['minute'])
+
     statMac['wx'] = glutGet(GLUT_WINDOW_WIDTH)
     statMac['wy'] = glutGet(GLUT_WINDOW_HEIGHT)
     statMac['w2h'] = statMac['wx']/statMac['wy']
@@ -65,6 +74,10 @@ def framerate():
         print("%.0f frames in %3.1f seconds = %6.3f FPS" % (statMac['frames'],seconds,statMac['fps']))
         statMac['t0'] = t
         statMac['frames'] = 0
+        statMac['minute'] = datetime.datetime.now().minute
+        statMac['hour'] = datetime.datetime.now().hour + 1
+        if (statMac['hour'] > 12):
+            statMac['hour'] -= 12
     if statMac['frameLimit'] and (statMac['fps'] > 60):
         time.sleep(2*float(statMac['fps'])/10000.0)
 
@@ -91,12 +104,15 @@ def drawHome():
     global statMac
 
     iconSize = 0.15
-    #drawClock(
+    drawClock(
+            0.0, 0.0,
+            statMac['hour'],
+            statMac['minute'],
             #12*(statMac['someVar']/100),
             #60*(1.0-(statMac['someVar']/100)), 
-            #1.0, statMac['w2h'], 
-            #statMac['faceColor'],
-            #statMac['detailColor'])
+            1.0, statMac['w2h'], 
+            statMac['faceColor'],
+            statMac['detailColor'])
 
     # We are at the home screen
     if (statMac['screen'] == 0) and (statMac['touchState'] != statMac['prvState']):
@@ -212,8 +228,11 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
                 statMac['tDiff'])
     
     drawClock(
-            12*(statMac['someVar']/100),
-            60*(1.0-(statMac['someVar']/100)),
+            0.0, 0.0,
+            statMac['hour'],
+            statMac['minute'],
+            #12*(statMac['someVar']/100),
+            #60*(1.0-(statMac['someVar']/100)),
             1.0+acic*0.75, 
             statMac['w2h'], 
             faceColor,
