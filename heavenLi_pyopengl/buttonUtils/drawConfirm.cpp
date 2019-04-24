@@ -17,12 +17,14 @@ GLfloat*    confirmColorBuffer   = NULL;
 GLushort*   confirmIndices       = NULL;
 GLuint      confirmVerts;
 GLuint      extraConfirmVerts;
+Matrix      confirmMVP;
+Params      confirmPrevState;
 
 PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
    PyObject *faceColorPyTup;
    PyObject *extraColorPyTup;
    PyObject *detailColorPyTup;
-   float posX, posY, scale, w2h;
+   float gx, gy, scale, w2h;
    float faceColor[3];
    float extraColor[3];
    float detailColor[3];
@@ -30,7 +32,7 @@ PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
    // Parse Inputs
    if ( !PyArg_ParseTuple(args,
             "ffffOOO",
-            &posX, &posY,
+            &gx, &gy,
             &scale,
             &w2h,
             &faceColorPyTup,
@@ -112,6 +114,30 @@ PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
          confirmColorBuffer[i*3+1]  = colrs[i*3+1];
          confirmColorBuffer[i*3+2]  = colrs[i*3+2];
       }
+
+      // Calculate Initial Transformation Matrix
+      Matrix Ortho;
+      Matrix ModelView;
+
+      float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
+      MatrixLoadIdentity( &Ortho );
+      MatrixLoadIdentity( &ModelView );
+      MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
+      MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
+      if (w2h <= 1.0f) {
+         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
+      } else {
+         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
+      }
+      //MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
+      MatrixMultiply( &confirmMVP, &ModelView, &Ortho );
+
+      //confirmPrevState.ao = ao;
+      confirmPrevState.dx = gx;
+      confirmPrevState.dy = gy;
+      confirmPrevState.sx = scale;
+      confirmPrevState.sy = scale;
+      confirmPrevState.w2h = w2h;
    }
 
    for (int i = 0; i < 3; i++) {
@@ -122,8 +148,10 @@ PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
       }
    }
 
+   // Old, Fixed-Function ES 1.1 code
+   /*
    glPushMatrix();
-   glTranslatef(posX*w2h, posY, 0.0f);
+   glTranslatef(gx*w2h, gy, 0.0f);
    if (w2h <= 1.0) {
          scale = scale*w2h;
    }
@@ -133,6 +161,49 @@ PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
    glVertexPointer(2, GL_FLOAT, 0, confirmVertexBuffer);
    glDrawElements( GL_TRIANGLES, confirmVerts, GL_UNSIGNED_SHORT, confirmIndices);
    glPopMatrix();
+   */
+
+   // Update Transfomation Matrix if any change in parameters
+   if (  //confirmPrevState.ao != ao     ||
+         confirmPrevState.dx != gx     ||
+         confirmPrevState.dy != gy     ||
+         confirmPrevState.sx != scale  ||
+         confirmPrevState.sy != scale  ||
+         confirmPrevState.w2h != w2h   ){
+      
+      Matrix Ortho;
+      Matrix ModelView;
+
+      float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
+      MatrixLoadIdentity( &Ortho );
+      MatrixLoadIdentity( &ModelView );
+      MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
+      MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
+      if (w2h <= 1.0f) {
+         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
+      } else {
+         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
+      }
+      //MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
+      MatrixMultiply( &confirmMVP, &ModelView, &Ortho );
+
+      //confirmPrevState.ao = ao;
+      confirmPrevState.dx = gx;
+      confirmPrevState.dy = gy;
+      confirmPrevState.sx = scale;
+      confirmPrevState.sy = scale;
+      confirmPrevState.w2h = w2h;
+   }
+
+   //GLint mvpLoc;
+   //mvpLoc = glGetUniformLocation( 3, "MVP" );
+   //glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &confirmMVP.mat[0][0] );
+   glUniformMatrix4fv( 0, 1, GL_FALSE, &confirmMVP.mat[0][0] );
+   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, confirmVertexBuffer);
+   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, confirmColorBuffer);
+   //glEnableVertexAttribArray(0);
+   //glEnableVertexAttribArray(1);
+   glDrawArrays(GL_TRIANGLES, 0, confirmVerts);
 
    Py_RETURN_NONE;
 }
