@@ -1059,10 +1059,12 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
    for (int i = 0; i < 3; i++) {
       for (int j = 0; j < numBulbs; j++) {
          float tmc = float(bulbColors[j*3+i]);
+         int tmp = (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6);
          // Special Case for Rounded Corner Segments
          if (j == 0) {
-            if (tmc != iconLinearColorBuffer[i] || prevIconLinearNumBulbs != numBulbs) {
-               for (int k = 0; k < (j*(60/numBulbs)*3*2 + circleSegments*2*3 + 6)*3; k++) {
+            if (  tmc != iconLinearColorBuffer[i]     || 
+                  prevIconLinearNumBulbs != numBulbs  ){
+               for (int k = 0; k < tmp*3; k++) {
                   if (tmc != iconLinearColorBuffer[i + k*3]) {
                      iconLinearColorBuffer[i + k*3] = tmc;
                   }
@@ -1072,10 +1074,16 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
    
          // Special Case for Rounded Corner Segments
          if (j == numBulbs-1) {
-            if (tmc != iconLinearColorBuffer[i + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] || prevIconLinearNumBulbs != numBulbs ) {
+
+            // Fixes edge-case bug
+            if (numBulbs == 1)
+               tmp *= 3;
+
+            if (  tmc != iconLinearColorBuffer[i + tmp*3] || 
+                  prevIconLinearNumBulbs != numBulbs ) {
                for (int k = 0; k < ((60/numBulbs)*3*2 + 2*3*circleSegments + 2*3); k++) {
-                  if (tmc != iconLinearColorBuffer[i + k*3 + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] ) {
-                     iconLinearColorBuffer[i + k*3 + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] = tmc;
+                  if (tmc != iconLinearColorBuffer[i + k*3 + tmp*3] ) {
+                     iconLinearColorBuffer[i + k*3 + tmp*3] = tmc;
                   }
                }
             }
@@ -1083,7 +1091,8 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
          else
          // General Case for middle segments
          {
-            if (tmc != iconLinearColorBuffer[i + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] || prevIconLinearNumBulbs != numBulbs) {
+            if (  tmc != iconLinearColorBuffer[i + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] || 
+                  prevIconLinearNumBulbs != numBulbs) {
                for (int k = 0; k < (60/numBulbs)*3*2; k++) {
                   if (tmc != iconLinearColorBuffer[i + k*3 + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] ) {
                      iconLinearColorBuffer[i + k*3 + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] = tmc;
