@@ -1,4 +1,4 @@
-#include <Python.h>
+//#include <Python.h>
 #define GL_GLEXT_PROTOTYPES
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
    #include <windows.h>

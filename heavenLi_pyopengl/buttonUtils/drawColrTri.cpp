@@ -332,14 +332,15 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
 
       // Actual meat of drawing saturation/value triangle
       int index = 0;
-      float tmx, tmy, tmr, saturation, value, ringX, ringY;
+      float tmx, tmy, tmr, saturation, value, ringX=0.0f, ringY=0.0f;
       float colors[3] = {0.0, 0.0, 0.0};
 
-      // Bogus comparison that get rid of compiler warnings (-_-)
+      // Bogus comparison to get rid of compiler warnings (-_-)
       if (ringX != ringX)
          ringX = 0.0f;
       if (ringY != ringY)
          ringY = 0.0f;
+
       tmr = 0.05f*prevTriDotScale;
       for (int i = 0; i < numLevels; i++) {        /* Columns */
          for (int j = 0; j < numLevels-i; j++) {   /* Rows */
