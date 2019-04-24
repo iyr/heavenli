@@ -1,7 +1,12 @@
+#define GL_GLEXT_PROTOTYPES
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
    #include <windows.h>
+   // These undefs necessary because microsoft
+   #undef near
+   #undef far
 #endif
 #include <GL/gl.h>
+#include <GL/glext.h>
 #include <vector>
 #include <math.h>
 
@@ -19,11 +24,13 @@ float       prevHueRingAng       = 0.0;   // Used for animating selection ring
 GLfloat     prevHueRingAni       = 0.0;   // Used to resolve edge-case bug for animating selection ring
 GLfloat     prevHueRingSel       = 0.0;   // Used to resolve edge-case bug for animating selection ring
 float*      hueButtonData        = NULL;  /* X, Y, hue per button */
+Matrix      hueRingMVP;
+Params      hueRingPrevState;
 
 PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
    PyObject *py_list;
    PyObject *py_tuple;
-   float w2h, scale, tmo, currentHue, interactionCursor, tDiff;
+   float w2h, scale, tmo, currentHue, interactionCursor, tDiff, gx=0.0f, gy=0.0f;
    float ringColor[3];
    char circleSegments = 45;
    unsigned char numHues = 12;
@@ -151,6 +158,30 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
          hueRingColorBuffer[i*3+1]  = colrs[i*3+1];
          hueRingColorBuffer[i*3+2]  = colrs[i*3+2];
       }
+
+      // Calculate initial transformation matrix
+      Matrix Ortho;
+      Matrix ModelView;
+
+      float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
+      MatrixLoadIdentity( &Ortho );
+      MatrixLoadIdentity( &ModelView );
+      MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
+      MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
+      if (w2h <= 1.0f) {
+         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
+      } else {
+         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
+      }
+      //MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
+      MatrixMultiply( &hueRingMVP, &ModelView, &Ortho );
+
+      //hueRingPrevState.ao = ao;
+      hueRingPrevState.dx = gx;
+      hueRingPrevState.dy = gy;
+      hueRingPrevState.sx = scale;
+      hueRingPrevState.sy = scale;
+      hueRingPrevState.w2h = w2h;
 
       // Update State Machine variables
       prevHueRingAni = currentHue;
@@ -299,16 +330,60 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
       PyList_SetItem(py_list, i, py_tuple);
    }
 
+   // Old, Fixed-Function ES 1.1 code
+   /*
    glPushMatrix();
    if (w2h <= 1.0) {
-         scale = scale*w2h;
+      scale = scale*w2h;
    }
-
    glScalef(scale, scale, 1);
    glColorPointer(3, GL_FLOAT, 0, hueRingColorBuffer);
    glVertexPointer(2, GL_FLOAT, 0, hueRingVertexBuffer);
    glDrawElements( GL_TRIANGLES, hueRingVerts, GL_UNSIGNED_SHORT, hueRingIndices);
    glPopMatrix();
+   */
+
+   // Update Transfomation Matrix if any change in parameters
+   if (  //hueRingPrevState.ao != ao     ||
+         hueRingPrevState.dx != gx     ||
+         hueRingPrevState.dy != gy     ||
+         hueRingPrevState.sx != scale  ||
+         hueRingPrevState.sy != scale  ||
+         hueRingPrevState.w2h != w2h   ){
+      
+      Matrix Ortho;
+      Matrix ModelView;
+
+      float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
+      MatrixLoadIdentity( &Ortho );
+      MatrixLoadIdentity( &ModelView );
+      MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
+      MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
+      if (w2h <= 1.0f) {
+         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
+      } else {
+         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
+      }
+      //MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
+      MatrixMultiply( &hueRingMVP, &ModelView, &Ortho );
+
+      //hueRingPrevState.ao = ao;
+      hueRingPrevState.dx = gx;
+      hueRingPrevState.dy = gy;
+      hueRingPrevState.sx = scale;
+      hueRingPrevState.sy = scale;
+      hueRingPrevState.w2h = w2h;
+   }
+
+   //GLint mvpLoc;
+   //mvpLoc = glGetUniformLocation( 3, "MVP" );
+   //glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &hueRingMVP.mat[0][0] );
+   glUniformMatrix4fv( 0, 1, GL_FALSE, &hueRingMVP.mat[0][0] );
+   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, hueRingVertexBuffer);
+   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, hueRingColorBuffer);
+   //glEnableVertexAttribArray(0);
+   //glEnableVertexAttribArray(1);
+   glDrawArrays(GL_TRIANGLES, 0, hueRingVerts);
 
    return py_list;
 }
