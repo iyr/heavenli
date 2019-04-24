@@ -1,7 +1,8 @@
 from distutils.core import setup, Extension
-import platform
+from platform import system, machine
+print("Building for", system(), machine())
 
-if (platform.system() == 'Windows'):
+if (system() == 'Windows'):
     drawArn_sfc_module = Extension(
             'drawArn', 
             sources         = ['drawArn.cpp'],
