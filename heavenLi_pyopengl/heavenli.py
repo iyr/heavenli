@@ -122,27 +122,27 @@ def drawHome():
             for i in range(len(statMac['lamps'])):
                 statMac['lamps'][i].setMainLight(statMac['lightOn'])
 
-    #buttons = drawBulbButton(
-            #statMac['lamps'][0].getArn(),
-            #statMac['lamps'][0].getNumBulbs(),
-            #statMac['lamps'][0].getAngle(),
-            #iconSize*2.66,
-            #statMac['faceColor'],
-            #statMac['detailColor'],
-            #statMac['lamps'][0].getBulbsRGB(),
-            #statMac['w2h'])
+    buttons = drawBulbButton(
+            statMac['lamps'][0].getArn(),
+            statMac['lamps'][0].getNumBulbs(),
+            statMac['lamps'][0].getAngle(),
+            iconSize*2.66,
+            statMac['faceColor'],
+            statMac['detailColor'],
+            statMac['lamps'][0].getBulbsRGB(),
+            statMac['w2h'])
 
-    #for i in range(len(buttons)):
-        #if (statMac['screen'] == 0) and (statMac['touchState'] != statMac['prvState']):
-            #if (watchPoint(
-                #mapRanges(buttons[i][0], -1.0*statMac['w2h'], 1.0*statMac['w2h'], 0, statMac['wx']*2), 
-                #mapRanges(buttons[i][1],      1.0,    -1.0, 0, statMac['wy']*2),
-                #min(statMac['wx'], statMac['wy'])*0.5*0.3)):
-                #statMac['targetScreen'] = 1
-                #statMac['targetBulb'] = i
-                #statMac['prevHue'] = statMac['lamps'][0].getBulbHSV(i)[0]
-                #statMac['prevSat'] = statMac['lamps'][0].getBulbHSV(i)[1]
-                #statMac['prevVal'] = statMac['lamps'][0].getBulbHSV(i)[2]
+    for i in range(len(buttons)):
+        if (statMac['screen'] == 0) and (statMac['touchState'] != statMac['prvState']):
+            if (watchPoint(
+                mapRanges(buttons[i][0], -1.0*statMac['w2h'], 1.0*statMac['w2h'], 0, statMac['wx']*2), 
+                mapRanges(buttons[i][1],      1.0,    -1.0, 0, statMac['wy']*2),
+                min(statMac['wx'], statMac['wy'])*0.5*0.3)):
+                statMac['targetScreen'] = 1
+                statMac['targetBulb'] = i
+                statMac['prevHue'] = statMac['lamps'][0].getBulbHSV(i)[0]
+                statMac['prevSat'] = statMac['lamps'][0].getBulbHSV(i)[1]
+                statMac['prevVal'] = statMac['lamps'][0].getBulbHSV(i)[2]
 
     #printText(
             #-0.9, -0.6,
@@ -215,192 +215,192 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
             targetLamp.getBulbsRGB(),
             statMac['w2h'])
 
-    limit = 0.85
-    if (cursor < limit):
-        drawGranRocker(
-                0.0, -0.91*acbic,
-                faceColor,
-                detailColor,
-                statMac['numHues'],
-                0.0,
-                statMac['w2h'],
-                0.30*acic,
-                statMac['tDiff'])
+    #limit = 0.85
+    #if (cursor < limit):
+        #drawGranRocker(
+                #0.0, -0.91*acbic,
+                #faceColor,
+                #detailColor,
+                #statMac['numHues'],
+                #0.0,
+                #statMac['w2h'],
+                #0.30*acic,
+                #statMac['tDiff'])
     
     drawClock(
             0.0, 0.0,
             statMac['hour'],
             statMac['minute'],
-            #12*(statMac['someVar']/100),
-            #60*(1.0-(statMac['someVar']/100)),
             1.0+acic*0.75, 
             statMac['w2h'], 
             faceColor,
-            detailColor)
+            #detailColor)
+            tuple([acc*x for x in detailColor]))
 
-    if (cursor >= limit):
-        drawGranRocker(
-                0.0, -0.91*acbic,
-                faceColor,
-                detailColor,
-                statMac['numHues'],
-                0.0,
-                statMac['w2h'],
-                0.30*acic,
-                statMac['tDiff'])
+    #if (cursor >= limit):
+        #drawGranRocker(
+                #0.0, -0.91*acbic,
+                #faceColor,
+                #detailColor,
+                #statMac['numHues'],
+                #0.0,
+                #statMac['w2h'],
+                #0.30*acic,
+                #statMac['tDiff'])
 
     # Watch Granularity Rocker for Input
-    if (watchPoint(
-        mapRanges(0.3*24.0/36.0, -1.0*statMac['w2h'], 1.0*statMac['w2h'],   0, statMac['wx']*2),
-        mapRanges(0.0-0.91,  1.0               ,-1.0               ,   0, statMac['wy']*2),
-        min(statMac['wx'],statMac['wy']*(12.0/36.0)*0.3) )):
-            statMac['numHues'] += 2
-            if statMac['numHues'] > 14:
-                statMac['numHues'] = 14
+    #if (watchPoint(
+        #mapRanges(0.3*24.0/36.0, -1.0*statMac['w2h'], 1.0*statMac['w2h'],   0, statMac['wx']*2),
+        #mapRanges(0.0-0.91,  1.0               ,-1.0               ,   0, statMac['wy']*2),
+        #min(statMac['wx'],statMac['wy']*(12.0/36.0)*0.3) )):
+            #statMac['numHues'] += 2
+            #if statMac['numHues'] > 14:
+                #statMac['numHues'] = 14
     # Watch Granularity Rocker for Input
-    if (watchPoint(
-        mapRanges(-0.3*24.0/36.0, -1.0*statMac['w2h'], 1.0*statMac['w2h'], 0, statMac['wx']*2),
-        mapRanges(-0.91, 1.0, -1.0, 0, statMac['wy']*2),
-        min(statMac['wx'],statMac['wy']*(12.0/36.0)*0.3) )):
-            statMac['numHues'] -= 2
-            if statMac['numHues'] < 10:
-                statMac['numHues'] = 10
+    #if (watchPoint(
+        #mapRanges(-0.3*24.0/36.0, -1.0*statMac['w2h'], 1.0*statMac['w2h'], 0, statMac['wx']*2),
+        #mapRanges(-0.91, 1.0, -1.0, 0, statMac['wy']*2),
+        #min(statMac['wx'],statMac['wy']*(12.0/36.0)*0.3) )):
+            #statMac['numHues'] -= 2
+            #if statMac['numHues'] < 10:
+                #statMac['numHues'] = 10
 
     # Draw Ring of Dots with different hues
-    hueButtons = drawHueRing(
-            statMac['currentHue'], 
-            statMac['numHues'], 
-            selectRingColor, 
-            statMac['w2h'], 
-            acbic, 
-            statMac['tDiff'],
-            statMac['interactionCursor'])
+    #hueButtons = drawHueRing(
+            #statMac['currentHue'], 
+            #statMac['numHues'], 
+            #selectRingColor, 
+            #statMac['w2h'], 
+            #acbic, 
+            #statMac['tDiff'],
+            #statMac['interactionCursor'])
 
-    for i in range(len(hueButtons)):
-        tmr = 1.0
-        if (statMac['w2h'] <= 1.0):
-            hueButtons[i] = (
-                    hueButtons[i][0]*statMac['w2h'], 
-                    hueButtons[i][1]*statMac['w2h'], 
-                    hueButtons[i][2])
-            tmr = statMac['w2h']
+    #for i in range(len(hueButtons)):
+        #tmr = 1.0
+        #if (statMac['w2h'] <= 1.0):
+            #hueButtons[i] = (
+                    #hueButtons[i][0]*statMac['w2h'], 
+                    #hueButtons[i][1]*statMac['w2h'], 
+                    #hueButtons[i][2])
+            #tmr = statMac['w2h']
 
-        xLim = mapRanges(hueButtons[i][0], -1.0*statMac['w2h'], 1.0*statMac['w2h'],    0, statMac['wx']*2)
-        yLim = mapRanges(hueButtons[i][1],  1.0,               -1.0,                   0, statMac['wy']*2)
-        if (watchPoint(
-            xLim, yLim,
-            min(statMac['wx'], statMac['wy'])*0.15*(12.0/float(statMac['numHues'])) )):
-            statMac['wereColorsTouched'] = True
-            statMac['currentHue'] = hueButtons[i][2]
-            tmcHSV = (
-                    statMac['currentHue'], 
-                    statMac['currentSat'], 
-                    statMac['currentVal'])
-            targetLamp.setBulbtHSV(statMac['targetBulb'], tmcHSV)
+        #xLim = mapRanges(hueButtons[i][0], -1.0*statMac['w2h'], 1.0*statMac['w2h'],    0, statMac['wx']*2)
+        #yLim = mapRanges(hueButtons[i][1],  1.0,               -1.0,                   0, statMac['wy']*2)
+        #if (watchPoint(
+            #xLim, yLim,
+            #min(statMac['wx'], statMac['wy'])*0.15*(12.0/float(statMac['numHues'])) )):
+            #statMac['wereColorsTouched'] = True
+            #statMac['currentHue'] = hueButtons[i][2]
+            #tmcHSV = (
+                    #statMac['currentHue'], 
+                    #statMac['currentSat'], 
+                    #statMac['currentVal'])
+            #targetLamp.setBulbtHSV(statMac['targetBulb'], tmcHSV)
 
     # Draw Triangle of Dots with different brightness/saturation
-    satValButtons = drawColrTri(
-            statMac['currentHue'], 
-            statMac['currentSat'], 
-            statMac['currentVal'],
-            int(statMac['numHues']/2), 
-            selectRingColor,
-            statMac['w2h'], acbic, 
-            statMac['tDiff'])
+    #satValButtons = drawColrTri(
+            #statMac['currentHue'], 
+            #statMac['currentSat'], 
+            #statMac['currentVal'],
+            #int(statMac['numHues']/2), 
+            #selectRingColor,
+            #statMac['w2h'], acbic, 
+            #statMac['tDiff'])
 
-    for i in range(len(satValButtons)):
-        tmr = 1.0
-        if (statMac['w2h'] <= 1.0):
-            satValButtons[i] = (
-                    satValButtons[i][0]*statMac['w2h'],     # X-Coord of Button
-                    satValButtons[i][1]*statMac['w2h'],     # Y-Coord of Button
-                    satValButtons[i][2],                    # Saturation of Button
-                    satValButtons[i][3])                    # Value of Button
-            tmr = statMac['w2h']
+    #for i in range(len(satValButtons)):
+        #tmr = 1.0
+        #if (statMac['w2h'] <= 1.0):
+            #satValButtons[i] = (
+                    #satValButtons[i][0]*statMac['w2h'],     # X-Coord of Button
+                    #satValButtons[i][1]*statMac['w2h'],     # Y-Coord of Button
+                    #satValButtons[i][2],                    # Saturation of Button
+                    #satValButtons[i][3])                    # Value of Button
+            #tmr = statMac['w2h']
 
         # Map relative x-Coord to screen x-Coord
-        xLim = mapRanges(
-                satValButtons[i][0], 
-                -1.0*statMac['w2h'], 
-                1.0*statMac['w2h'], 
-                0, 
-                statMac['wx']*2)
+        #xLim = mapRanges(
+                #satValButtons[i][0], 
+                #-1.0*statMac['w2h'], 
+                #1.0*statMac['w2h'], 
+                #0, 
+                #statMac['wx']*2)
 
         # Map relative y-Coord to screen y-Coord
-        yLim = mapRanges(
-                satValButtons[i][1],      
-                1.0,    
-                -1.0, 
-                0, 
-                statMac['wy']*2)
+        #yLim = mapRanges(
+                #satValButtons[i][1],      
+                #1.0,    
+                #-1.0, 
+                #0, 
+                #statMac['wy']*2)
 
-        if (watchPoint(
-            xLim, yLim,
-            min(statMac['wx'], statMac['wy'])*0.073)):
+        #if (watchPoint(
+            #xLim, yLim,
+            #min(statMac['wx'], statMac['wy'])*0.073)):
 
-            statMac['wereColorsTouched'] = True
-            statMac['currentSat'] = satValButtons[i][2]
-            statMac['currentVal'] = satValButtons[i][3]
-            tmcHSV = (
-                    statMac['currentHue'], 
-                    statMac['currentSat'], 
-                    statMac['currentVal'])
-            targetLamp.setBulbtHSV(statMac['targetBulb'], tmcHSV)
+            #statMac['wereColorsTouched'] = True
+            #statMac['currentSat'] = satValButtons[i][2]
+            #statMac['currentVal'] = satValButtons[i][3]
+            #tmcHSV = (
+                    #statMac['currentHue'], 
+                    #statMac['currentSat'], 
+                    #statMac['currentVal'])
+            #targetLamp.setBulbtHSV(statMac['targetBulb'], tmcHSV)
 
-    if ( statMac['wereColorsTouched'] ):
-        extraColor = colorsys.hsv_to_rgb(
-                statMac['currentHue'], 
-                statMac['currentSat'], 
-                statMac['currentVal'])
-    else:
-        extraColor = statMac['detailColor']
+    #if ( statMac['wereColorsTouched'] ):
+        #extraColor = colorsys.hsv_to_rgb(
+                #statMac['currentHue'], 
+                #statMac['currentSat'], 
+                #statMac['currentVal'])
+    #else:
+        #extraColor = statMac['detailColor']
 
-    drawConfirm(
-            0.75-0.4*(1.0-acbic), 
-            -0.75-0.5*acbc, 
-            0.2*(1.0-acbc), statMac['w2h'], 
-            statMac['faceColor'], 
-            extraColor, 
-            statMac['detailColor']);
+    #drawConfirm(
+            #0.75-0.4*(1.0-acbic), 
+            #-0.75-0.5*acbc, 
+            #0.2*(1.0-acbc), statMac['w2h'], 
+            #statMac['faceColor'], 
+            #extraColor, 
+            #statMac['detailColor']);
 
     # Watch Confirm Button for input
-    if (watchPoint(
-        mapRanges( 0.75, -1.0,  1.0, 0, statMac['wx']*2),
-        mapRanges(-0.75,  1.0, -1.0, 0, statMac['wy']*2),
-        min(statMac['wx'], statMac['wy'])*0.2)):
-        statMac['wereColorsTouched'] = False
-        targetLamp.setBulbtHSV(statMac['targetBulb'], (
-            statMac['currentHue'], 
-            statMac['currentSat'], 
-            statMac['currentVal'] ) )
-        statMac['targetScreen'] = 0
+    #if (watchPoint(
+        #mapRanges( 0.75, -1.0,  1.0, 0, statMac['wx']*2),
+        #mapRanges(-0.75,  1.0, -1.0, 0, statMac['wy']*2),
+        #min(statMac['wx'], statMac['wy'])*0.2)):
+        #statMac['wereColorsTouched'] = False
+        #targetLamp.setBulbtHSV(statMac['targetBulb'], (
+            #statMac['currentHue'], 
+            #statMac['currentSat'], 
+            #statMac['currentVal'] ) )
+        #statMac['targetScreen'] = 0
 
-    if ( statMac['wereColorsTouched'] ):
-        extraColor = colorsys.hsv_to_rgb(
-                statMac['prevHue'], 
-                statMac['prevSat'], 
-                statMac['prevVal'])
-    else:
-        extraColor = statMac['detailColor']
+    #if ( statMac['wereColorsTouched'] ):
+        #extraColor = colorsys.hsv_to_rgb(
+                #statMac['prevHue'], 
+                #statMac['prevSat'], 
+                #statMac['prevVal'])
+    #else:
+        #extraColor = statMac['detailColor']
 
-    drawArrow(
-            -0.75+0.4*(1.0-acbic), 
-            -0.75-0.5*acbc, 
-            180.0,
-            0.2*(1.0-acbc), statMac['w2h'], 
-            statMac['faceColor'], 
-            extraColor, 
-            statMac['detailColor']);
-    if (watchPoint(
-        mapRanges(-0.75, -1.0,  1.0, 0, statMac['wx']*2),
-        mapRanges(-0.75,  1.0, -1.0, 0, statMac['wy']*2),
-        min(statMac['wx'], statMac['wy'])*0.2)):
-        statMac['wereColorsTouched'] = False
-        targetLamp.setBulbtHSV(statMac['targetBulb'], (
-            statMac['prevHue'], 
-            statMac['prevSat'], 
-            statMac['prevVal'] ) )
-        statMac['targetScreen'] = 0
+    # Draw Back Button
+    #drawArrow(
+            #-0.75+0.4*(1.0-acbic), 
+            #-0.75-0.5*acbc, 
+            #180.0,
+            #0.2*(1.0-acbc), statMac['w2h'], 
+            #statMac['faceColor'], 
+            #extraColor, 
+            #statMac['detailColor']);
+    #if (watchPoint(
+        #mapRanges(-0.75, -1.0,  1.0, 0, statMac['wx']*2),
+        #mapRanges(-0.75,  1.0, -1.0, 0, statMac['wy']*2),
+        #min(statMac['wx'], statMac['wy'])*0.2)):
+        #statMac['wereColorsTouched'] = False
+        #targetLamp.setBulbtHSV(statMac['targetBulb'], (
+            #statMac['prevHue'], 
+            #statMac['prevSat'], 
+            #statMac['prevVal'] ) )
+        #statMac['targetScreen'] = 0
 
 def watchPoint(px, py, pr):
     global statMac
