@@ -195,12 +195,14 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
 
    // Geometry up to date, check if colors need to be updated
    for (int i = 0; i < 3; i++) {
+      // Update Clock Face Color
       if (faceColor[i] != clockColorBuffer[i]) {
          for (int k = 0; k < circleSegments*3; k++) {
             clockColorBuffer[i + k*3] = faceColor[i];
          }
       }
 
+      // Update Hand Colors
       if (detailColor[i] != clockColorBuffer[i + circleSegments*3]) {
          for (int k = circleSegments*3; k < clockVerts; k++) {
             clockColorBuffer[i + k*3] = detailColor[i];
