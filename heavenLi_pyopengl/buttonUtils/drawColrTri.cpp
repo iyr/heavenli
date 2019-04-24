@@ -398,7 +398,6 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    // Update colors if current Hue has changed
    if ( (prevTriHue != currentTriHue)        &&
         (prevColrTriNumLevels == numLevels)  ){
-      printf("Updating Hue");
       float saturation, value;
       float colors[3] = {0.0, 0.0, 0.0};
       int colrIndex = 0;
