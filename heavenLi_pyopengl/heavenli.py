@@ -22,7 +22,7 @@ import sys, time
 from math import sin,cos,sqrt,pi,radians
 import datetime
 import os
-#from platform import system
+from platform import machine
 print("Done!")
 
 print("Loading heavenLi Utilities...")
@@ -627,8 +627,13 @@ if __name__ == '__main__':
     statMac['colrSettingCursor']    = 0.0
     statMac['interactionCursor']    = 0.0
     glutInit(sys.argv)
-    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE)
-    #glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE)
+
+    # Disable anti-aliasing if running on a Raspberry Pi Zero
+    if (machine() == "armv6l"):
+        print("Disabling Antialiasing")
+        glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE)
+    else:
+        glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE)
 
     glutInitWindowPosition(statMac['windowPosX'], statMac['windowPosY'])
     glutInitWindowSize(statMac['windowDimW'], statMac['windowDimH'])
