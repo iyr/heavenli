@@ -233,7 +233,6 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
 
       // Actual meat of drawing hue ring
       float ang, tmx, tmy, azi;
-      float colors[3] = {0.0, 0.0, 0.0};
       float tmr = float(0.15f);
       int index = 0;
       float ringX = 100.0, ringY = 100.0;

@@ -13,12 +13,12 @@
 
 typedef struct
 {
-   GLfloat  dx          = NULL;
-   GLfloat  dy          = NULL;
-   GLfloat  sx          = NULL;
-   GLfloat  sy          = NULL;
-   GLfloat  ao          = NULL;
-   GLint    numBulbs    = NULL;
+   GLfloat  dx          = 0.0f;
+   GLfloat  dy          = 0.0f;
+   GLfloat  sx          = 0.0f;
+   GLfloat  sy          = 0.0f;
+   GLfloat  ao          = 0.0f;
+   GLfloat  w2h         = 0.0f;
 } Params;
 
 using namespace std;
@@ -152,8 +152,7 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
       MatrixMultiply( &homeCircleMVP, &ModelView, &Ortho );
       homeCirclePrevState.ao = ao;
 
-      //prevHomeCircleNumBulbs = numBulbs;
-      homeCirclePrevState.numBulbs = numBulbs;
+      prevHomeCircleNumBulbs = numBulbs;
       homeCirclePrevState.ao = ao;
    } 
    // Geometry already calculated, update colors
@@ -168,8 +167,7 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
       // Update color, if needed
       for (int j = 0; j < numBulbs; j++) {
          if (float(bulbColors[ i + j*3 ]) != homeCircleColorBuffer[ i + j*(60/numBulbs)*9 ] ||
-               homeCirclePrevState.numBulbs != numBulbs) {
-               //prevHomeCircleNumBulbs != numBulbs) {
+               prevHomeCircleNumBulbs != numBulbs) {
 //#           pragma omp parallel for
             for (int k = 0; k < (60/numBulbs)*3; k++) {
                if (float(bulbColors[ i + j*3 ]) != homeCircleColorBuffer[ i + k*3 + j*(60/numBulbs)*9 ]) {
@@ -180,8 +178,7 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
       }
    }
 
-   homeCirclePrevState.numBulbs = numBulbs;
-   //prevHomeCircleNumBulbs = numBulbs;
+   prevHomeCircleNumBulbs = numBulbs;
    delete [] bulbColors;
 
    // Old, Fixed Function ES 1.1 code
@@ -220,8 +217,6 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    //glEnableVertexAttribArray(0);
    //glEnableVertexAttribArray(1);
    glDrawArrays(GL_TRIANGLES, 0, homeCircleVerts);
-   //glDisableVertexAttribArray(0);
-   //glDisableVertexAttribArray(1);
 
    Py_RETURN_NONE;
 }
@@ -457,6 +452,28 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
          iconCircleIndices[i]          = i;
       }
 
+      // Calculate initial transformation matrix
+      Matrix Ortho;
+      Matrix ModelView;
+      float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
+      MatrixLoadIdentity( &Ortho );
+      MatrixLoadIdentity( &ModelView );
+      MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
+      MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
+      if (w2h <= 1.0f) {
+         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
+      } else {
+         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
+      }
+      MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
+      MatrixMultiply( &iconCircleMVP, &ModelView, &Ortho );
+
+      iconCirclePrevState.ao = ao;
+      iconCirclePrevState.dx = gx;
+      iconCirclePrevState.dy = gy;
+      iconCirclePrevState.sx = scale;
+      iconCirclePrevState.sy = scale;
+      iconCirclePrevState.w2h = w2h;
       prevIconCircleNumBulbs = numBulbs;
       prevIconCircleFeatures = features;
    } 
@@ -667,32 +684,47 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
    glPopMatrix();
    */
 
-   Matrix Ortho;
-   Matrix ModelView;
+   // Update Transfomation Matrix if any change in parameters
+   if (  iconCirclePrevState.ao != ao     ||
+         iconCirclePrevState.dx != gx     ||
+         iconCirclePrevState.dy != gy     ||
+         iconCirclePrevState.sx != scale  ||
+         iconCirclePrevState.sy != scale  ||
+         iconCirclePrevState.w2h != w2h   ){
+      
+      Matrix Ortho;
+      Matrix ModelView;
 
-   float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
-   MatrixLoadIdentity( &Ortho );
-   MatrixLoadIdentity( &ModelView );
-   MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
-   MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
-   if (w2h <= 1.0f) {
-      MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
-   } else {
-      MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
+      float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
+      MatrixLoadIdentity( &Ortho );
+      MatrixLoadIdentity( &ModelView );
+      MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
+      MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
+      if (w2h <= 1.0f) {
+         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
+      } else {
+         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
+      }
+      MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
+      MatrixMultiply( &iconCircleMVP, &ModelView, &Ortho );
+
+      iconCirclePrevState.ao = ao;
+      iconCirclePrevState.dx = gx;
+      iconCirclePrevState.dy = gy;
+      iconCirclePrevState.sx = scale;
+      iconCirclePrevState.sy = scale;
+      iconCirclePrevState.w2h = w2h;
    }
-   MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
-   MatrixMultiply( &iconCircleMVP, &ModelView, &Ortho );
 
-   GLint mvpLoc;
-   mvpLoc = glGetUniformLocation( 3, "MVP" );
-   glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &iconCircleMVP.mat[0][0] );
+   //GLint mvpLoc;
+   //mvpLoc = glGetUniformLocation( 3, "MVP" );
+   //glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &iconCircleMVP.mat[0][0] );
+   glUniformMatrix4fv( 0, 1, GL_FALSE, &iconCircleMVP.mat[0][0] );
    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, iconCircleVertexBuffer);
    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, iconCircleColorBuffer);
    //glEnableVertexAttribArray(0);
    //glEnableVertexAttribArray(1);
    glDrawArrays(GL_TRIANGLES, 0, iconCircleVerts);
-   //glDisableVertexAttribArray(0);
-   //glDisableVertexAttribArray(1);
 
    Py_RETURN_NONE;
 }
