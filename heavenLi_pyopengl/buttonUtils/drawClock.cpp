@@ -1,33 +1,43 @@
+#include <Python.h>
+#define GL_GLEXT_PROTOTYPES
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
    #include <windows.h>
+   // These undefs necessary because microsoft
+   #undef near
+   #undef far
 #endif
 #include <GL/gl.h>
+#include <GL/glext.h>
 #include <vector>
 #include <math.h>
 
 using namespace std;
 
-GLfloat  *clockVertexBuffer = NULL;
-GLfloat  *clockColorBuffer  = NULL;
-GLushort *clockIndices      = NULL;
-GLuint    clockVerts;
-GLuint    faceVerts;
-float     prevClockHour;
-float     prevClockMinute;
+GLfloat*    clockVertexBuffer = NULL;
+GLfloat*    clockColorBuffer  = NULL;
+GLushort*   clockIndices      = NULL;
+GLuint      clockVerts;
+GLuint      faceVerts;
+float       prevClockHour;
+float       prevClockMinute;
+Matrix      clockMVP;
+Params      clockPrevState;
+
 PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
 {
    PyObject* faceColorPyTup;
    PyObject* detailColorPyTup;
-   GLfloat px, py, qx, qy, radius;
-   float scale, w2h, hour, minute;
-   float detailColor[3];
-   float faceColor[3];
+   GLfloat gx, gy, px, py, qx, qy, radius;
+   GLfloat scale, w2h, hour, minute;
+   GLfloat detailColor[3];
+   GLfloat faceColor[3];
    // Set Number of edges on circles
    char circleSegments = 60;
 
    // Parse Inputs
    if (!PyArg_ParseTuple(args,
-            "ffffOO",
+            "ffffffOO",
+            &gx, &gy,
             &hour,
             &minute,
             &scale,
@@ -122,6 +132,30 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
          clockColorBuffer[i*3+1]  = colrs[i*3+1];
          clockColorBuffer[i*3+2]  = colrs[i*3+2];
       }
+
+      Matrix Ortho;
+      Matrix ModelView;
+
+      float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
+      MatrixLoadIdentity( &Ortho );
+      MatrixLoadIdentity( &ModelView );
+      MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
+      MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
+      if (w2h <= 1.0f) {
+         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
+      } else {
+         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
+      }
+      //MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
+      MatrixMultiply( &clockMVP, &ModelView, &Ortho );
+
+      //clockPrevState.ao = ao;
+      clockPrevState.dx = gx;
+      clockPrevState.dy = gy;
+      clockPrevState.sx = scale;
+      clockPrevState.sy = scale;
+      clockPrevState.w2h = w2h;
+
       prevClockHour     = hour;
       prevClockMinute   = minute;
    } 
@@ -169,6 +203,8 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
       }
    }
    
+   // Old, Fixed-Function ES 1.1 code
+   /*
    glPushMatrix();
    if (w2h <= 1.0) {
          scale = scale*w2h;
@@ -178,6 +214,49 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
    glVertexPointer(2, GL_FLOAT, 0, clockVertexBuffer);
    glDrawElements( GL_TRIANGLES, clockVerts, GL_UNSIGNED_SHORT, clockIndices);
    glPopMatrix();
+   */
+
+   // Update Transfomation Matrix if any change in parameters
+   if (  //clockPrevState.ao != ao     ||
+         clockPrevState.dx != gx     ||
+         clockPrevState.dy != gy     ||
+         clockPrevState.sx != scale  ||
+         clockPrevState.sy != scale  ||
+         clockPrevState.w2h != w2h   ){
+      
+      Matrix Ortho;
+      Matrix ModelView;
+
+      float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
+      MatrixLoadIdentity( &Ortho );
+      MatrixLoadIdentity( &ModelView );
+      MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
+      MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
+      if (w2h <= 1.0f) {
+         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
+      } else {
+         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
+      }
+      //MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
+      MatrixMultiply( &clockMVP, &ModelView, &Ortho );
+
+      //clockPrevState.ao = ao;
+      clockPrevState.dx = gx;
+      clockPrevState.dy = gy;
+      clockPrevState.sx = scale;
+      clockPrevState.sy = scale;
+      clockPrevState.w2h = w2h;
+   }
+
+   //GLint mvpLoc;
+   //mvpLoc = glGetUniformLocation( 3, "MVP" );
+   //glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &clockMVP.mat[0][0] );
+   glUniformMatrix4fv( 0, 1, GL_FALSE, &clockMVP.mat[0][0] );
+   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, clockVertexBuffer);
+   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, clockColorBuffer);
+   //glEnableVertexAttribArray(0);
+   //glEnableVertexAttribArray(1);
+   glDrawArrays(GL_TRIANGLES, 0, clockVerts);
 
    Py_RETURN_NONE;
 }

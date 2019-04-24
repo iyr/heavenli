@@ -1,4 +1,6 @@
 #include <Python.h>
+#include "matrixUtils.c"
+#include "Params.h"
 #include "primUtils.h"
 
 #include "buttonUtils/drawClock.cpp"
