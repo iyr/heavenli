@@ -11,16 +11,6 @@
 #include <vector>
 #include <math.h>
 
-typedef struct
-{
-   GLfloat  dx          = 0.0f;
-   GLfloat  dy          = 0.0f;
-   GLfloat  sx          = 0.0f;
-   GLfloat  sy          = 0.0f;
-   GLfloat  ao          = 0.0f;
-   GLfloat  w2h         = 0.0f;
-} Params;
-
 using namespace std;
 
 GLfloat  *homeCircleVertexBuffer       = NULL;
@@ -141,6 +131,7 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
          homeCircleIndices[i]          = i;
       }
 
+      // Calculate initial transformation matrix
       Matrix Ortho;
       Matrix ModelView;
       float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
@@ -474,6 +465,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       iconCirclePrevState.sx = scale;
       iconCirclePrevState.sy = scale;
       iconCirclePrevState.w2h = w2h;
+
       prevIconCircleNumBulbs = numBulbs;
       prevIconCircleFeatures = features;
    } 
@@ -669,6 +661,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
    prevIconCircleNumBulbs = numBulbs;
    delete [] bulbColors;
 
+   // Old, Fixed-Fuinction ES 1.1 code
    /*
    glPushMatrix();
    glTranslatef(gx*w2h, gy, 0);

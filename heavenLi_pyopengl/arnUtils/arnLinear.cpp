@@ -1,6 +1,10 @@
 #include <Python.h>
+#define GL_GLEXT_PROTOTYPES
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
    #include <windows.h>
+   // These undefs necessary because microsoft
+   #undef near
+   #undef far
 #endif
 #include <GL/gl.h>
 #include <vector>
@@ -22,6 +26,8 @@ GLushort *homeLinearIndices      = NULL;
 GLuint   homeLinearVerts;
 int      prevHomeLinearNumbulbs;
 extern float offScreen;
+Matrix   homeLinearMVP;
+Params   homeLinearPrevState;
 
 PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
    PyObject* py_list;
@@ -145,6 +151,20 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
          homeLinearIndices[i]          = i;
       }
 
+      // Calculate initial transformation matrix
+      Matrix Ortho;
+      Matrix ModelView;
+      float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
+      MatrixLoadIdentity( &Ortho );
+      MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
+      MatrixLoadIdentity( &ModelView );
+      MatrixRotate( &ModelView, 90, 0.0f, 0.0f, 1.0f);
+      MatrixScale( &ModelView, 0.5f, 0.5f, 1.0f );
+      MatrixRotate( &ModelView, -(ao+90), 0.0f, 0.0f, 1.0f);
+      MatrixMultiply( &homeLinearMVP, &ModelView, &Ortho );
+      homeLinearPrevState.ao = ao;
+
+      homeLinearPrevState.ao = ao;
       prevHomeLinearNumbulbs = numBulbs;
    } 
    // Geometry already calculated, check if any colors need to be updated.
@@ -170,6 +190,8 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
    prevHomeLinearNumbulbs = numBulbs;
    delete [] bulbColors;
 
+   // Old, Fixed Function ES 1.1 code
+   /*
    glPushMatrix();
    glRotatef(90, 0, 0, 1);
    glScalef(0.5, float(w2h/2.0), 1);
@@ -178,6 +200,36 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
    glVertexPointer(2, GL_FLOAT, 0, homeLinearVertexBuffer);
    glDrawElements( GL_TRIANGLES, homeLinearVerts, GL_UNSIGNED_SHORT, homeLinearIndices);
    glPopMatrix();
+   */
+
+   // Update Transfomation Matrix if any change in parameters
+   if (  homeLinearPrevState.ao != ao  ||
+         homeLinearPrevState.ao != homeLinearPrevState.ao   ) {
+      Matrix Ortho;
+      Matrix ModelView;
+      float left = -w2h, right = w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
+      MatrixLoadIdentity( &Ortho );
+      MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
+      MatrixLoadIdentity( &ModelView );
+
+      MatrixRotate( &ModelView, 90, 0.0f, 0.0f, 1.0f);
+      MatrixScale( &ModelView, 0.5f, 0.5f, 1.0f );
+      MatrixRotate( &ModelView, -(ao+90), 0.0f, 0.0f, 1.0f);
+
+      MatrixMultiply( &homeLinearMVP, &ModelView, &Ortho );
+      homeLinearPrevState.ao = ao;
+   }
+
+   //GLint mvpLoc;
+   //mvpLoc = glGetUniformLocation( 3, "MVP" );
+   //printf("mvpLoc: %i\n", mvpLoc);
+   //glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &homeLinearMVP.mat[0][0] );
+   glUniformMatrix4fv( 0, 1, GL_FALSE, &homeLinearMVP.mat[0][0] );
+   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, homeLinearVertexBuffer);
+   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, homeLinearColorBuffer);
+   //glEnableVertexAttribArray(0);
+   //glEnableVertexAttribArray(1);
+   glDrawArrays(GL_TRIANGLES, 0, homeLinearVerts);
 
    Py_RETURN_NONE;
 }
@@ -198,6 +250,8 @@ GLfloat  *iconLinearBulbVertices = NULL;
 GLuint   iconLinearVerts;
 int      prevIconLinearNumBulbs;
 int      prevIconLinearFeatures;
+Matrix   iconLinearMVP;
+Params   iconLinearPrevState;
 
 PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
    PyObject*   detailColorPyTup;
@@ -229,7 +283,6 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
 
    // Parse array of tuples containing RGB Colors of bulbs
    bulbColors = new float[numBulbs*3];
-//#  pragma omp parallel for
    for (int i = 0; i < numBulbs; i++) {
       py_tuple = PyList_GetItem(py_list, i);
 
@@ -718,7 +771,6 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
          iconLinearIndices = new GLushort[iconLinearVerts];
       }
 
-//#     pragma omp parallel for
       for (unsigned int i = 0; i < iconLinearVerts; i++) {
          iconLinearVertexBuffer[i*2+0] = verts[i*2+0];
          iconLinearVertexBuffer[i*2+1] = verts[i*2+1];
@@ -727,6 +779,29 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
          iconLinearColorBuffer[i*3+2]  = colrs[i*3+2];
          iconLinearIndices[i]          = i;
       }
+
+      // Calculate initial transformation matrix
+      Matrix Ortho;
+      Matrix ModelView;
+      float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
+      MatrixLoadIdentity( &Ortho );
+      MatrixLoadIdentity( &ModelView );
+      MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
+      MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
+      if (w2h <= 1.0f) {
+         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
+      } else {
+         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
+      }
+      MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
+      MatrixMultiply( &iconLinearMVP, &ModelView, &Ortho );
+
+      iconLinearPrevState.ao = ao;
+      iconLinearPrevState.dx = gx;
+      iconLinearPrevState.dy = gy;
+      iconLinearPrevState.sx = scale;
+      iconLinearPrevState.sy = scale;
+      iconLinearPrevState.w2h = w2h;
 
       prevIconLinearNumBulbs = numBulbs;
       prevIconLinearFeatures = features;
@@ -744,7 +819,6 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       vertIndex = 0;
 
       // Define Square of Stripes with Rounded Corners
-//#     pragma omp parallel for
       for (int i = 0; i < 60; i++) {
          if (i == 0 || i == 60-1) {
             vertIndex += 12;
@@ -758,7 +832,6 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
          // Draw normal rectangular strip for non-end segments
          vertIndex += 12;
       }
-
 
       // Define OutLine
       // Move outline on-screen if off-screen
@@ -785,7 +858,6 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       /*
        * Draw Outer Straights
        */
-//#     pragma omp parallel for
       for (int i = 0; i < 4; i++ ) {
          /* X */ iconLinearVertexBuffer[vertIndex +  0] = iconLinearVertexBuffer[vertIndex +  0] + tmx;
          /* Y */ iconLinearVertexBuffer[vertIndex +  1] = iconLinearVertexBuffer[vertIndex +  1] + tmy;
@@ -807,7 +879,6 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
        * Draw Rounded Corners
        */
       for (int i = 0; i < 4; i++) {
-//#        pragma omp parallel for
          for (int j = 0; j < circleSegments; j++) {
             /* X */ iconLinearVertexBuffer[vertIndex +  0] = iconLinearVertexBuffer[vertIndex +  0] + tmx;
             /* Y */ iconLinearVertexBuffer[vertIndex +  1] = iconLinearVertexBuffer[vertIndex +  1] + tmy;
@@ -868,7 +939,6 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
          }
          limit = float(1.0/float(numBulbs));
          int tmj;
-//#        pragma omp parallel for
          for (int j = 0; j < circleSegments; j++) {
             tmj = 6*circleSegments + j*12;
             if (i == 0) {
@@ -943,7 +1013,6 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
        * Draw Outer Straights
        */
 
-//#     pragma omp parallel for
       for (int i = 0; i < 4; i++ ) {
          /* X */ iconLinearVertexBuffer[vertIndex +  0] = iconLinearVertexBuffer[vertIndex +  0] + tmx;
          /* Y */ iconLinearVertexBuffer[vertIndex +  1] = iconLinearVertexBuffer[vertIndex +  1] + tmy;
@@ -965,7 +1034,6 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
        * Draw Rounded Corners
        */
       for (int i = 0; i < 4; i++) {
-//#        pragma omp parallel for
          for (int j = 0; j < circleSegments; j++) {
             /* X */ iconLinearVertexBuffer[vertIndex +  0] = iconLinearVertexBuffer[vertIndex +  0] + tmx;
             /* Y */ iconLinearVertexBuffer[vertIndex +  1] = iconLinearVertexBuffer[vertIndex +  1] + tmy;
@@ -994,7 +1062,6 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
          // Special Case for Rounded Corner Segments
          if (j == 0) {
             if (tmc != iconLinearColorBuffer[i] || prevIconLinearNumBulbs != numBulbs) {
-//#              pragma omp parallel for
                for (int k = 0; k < (j*(60/numBulbs)*3*2 + circleSegments*2*3 + 6)*3; k++) {
                   if (tmc != iconLinearColorBuffer[i + k*3]) {
                      iconLinearColorBuffer[i + k*3] = tmc;
@@ -1006,7 +1073,6 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
          // Special Case for Rounded Corner Segments
          if (j == numBulbs-1) {
             if (tmc != iconLinearColorBuffer[i + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] || prevIconLinearNumBulbs != numBulbs ) {
-//#              pragma omp parallel for
                for (int k = 0; k < ((60/numBulbs)*3*2 + 2*3*circleSegments + 2*3); k++) {
                   if (tmc != iconLinearColorBuffer[i + k*3 + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] ) {
                      iconLinearColorBuffer[i + k*3 + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] = tmc;
@@ -1018,7 +1084,6 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
          // General Case for middle segments
          {
             if (tmc != iconLinearColorBuffer[i + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] || prevIconLinearNumBulbs != numBulbs) {
-//#              pragma omp parallel for
                for (int k = 0; k < (60/numBulbs)*3*2; k++) {
                   if (tmc != iconLinearColorBuffer[i + k*3 + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] ) {
                      iconLinearColorBuffer[i + k*3 + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] = tmc;
@@ -1030,7 +1095,6 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
 
       // Check if detail color needs to be updated
       if (float(detailColor[i]) != iconLinearColorBuffer[i+(60*2*3 + 4*circleSegments*3 + 2*6)*3]) {
-//#           pragma omp parallel for
          for (unsigned int k = (60*2*3 + 4*circleSegments*3 + 2*6); k < iconLinearVerts; k++) {
             iconLinearColorBuffer[k*3+i] = float(detailColor[i]);
          }
@@ -1040,6 +1104,8 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
    
    delete [] bulbColors;
 
+   // Old, Fixed-Fuinction ES 1.1 code
+   /*
    glPushMatrix();
    glTranslatef(gx*w2h, gy, 0);
    glRotatef(90, 0, 0, 1);
@@ -1053,6 +1119,49 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
    glVertexPointer(2, GL_FLOAT, 0, iconLinearVertexBuffer);
    glDrawElements( GL_TRIANGLES, iconLinearVerts, GL_UNSIGNED_SHORT, iconLinearIndices);
    glPopMatrix();
+   */
+
+   // Update Transfomation Matrix if any change in parameters
+   if (  iconLinearPrevState.ao != ao     ||
+         iconLinearPrevState.dx != gx     ||
+         iconLinearPrevState.dy != gy     ||
+         iconLinearPrevState.sx != scale  ||
+         iconLinearPrevState.sy != scale  ||
+         iconLinearPrevState.w2h != w2h   ){
+      
+      Matrix Ortho;
+      Matrix ModelView;
+
+      float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
+      MatrixLoadIdentity( &Ortho );
+      MatrixLoadIdentity( &ModelView );
+      MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
+      MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
+      if (w2h <= 1.0f) {
+         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
+      } else {
+         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
+      }
+      MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
+      MatrixMultiply( &iconLinearMVP, &ModelView, &Ortho );
+
+      iconLinearPrevState.ao = ao;
+      iconLinearPrevState.dx = gx;
+      iconLinearPrevState.dy = gy;
+      iconLinearPrevState.sx = scale;
+      iconLinearPrevState.sy = scale;
+      iconLinearPrevState.w2h = w2h;
+   }
+
+   //GLint mvpLoc;
+   //mvpLoc = glGetUniformLocation( 3, "MVP" );
+   //glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &iconLinearMVP.mat[0][0] );
+   glUniformMatrix4fv( 0, 1, GL_FALSE, &iconLinearMVP.mat[0][0] );
+   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, iconLinearVertexBuffer);
+   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, iconLinearColorBuffer);
+   //glEnableVertexAttribArray(0);
+   //glEnableVertexAttribArray(1);
+   glDrawArrays(GL_TRIANGLES, 0, iconLinearVerts);
 
    Py_RETURN_NONE;
 }

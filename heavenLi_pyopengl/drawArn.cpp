@@ -2,6 +2,7 @@
 //#define degToRad(angleInDegrees) ((angleInDegrees) * 3.1415926535 / 180.0)
 #include "matrixUtils.c"
 #include "drawUtils.h"
+#include "Params.h"
 #include "arnUtils/arnCircle.cpp"
 #include "arnUtils/arnLinear.cpp"
 
