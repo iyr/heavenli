@@ -1,7 +1,12 @@
+#define GL_GLEXT_PROTOTYPES
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
    #include <windows.h>
+   // These undefs necessary because microsoft
+   #undef near
+   #undef far
 #endif
 #include <GL/gl.h>
+#include <GL/glext.h>
 #include <vector>
 #include <math.h>
 
@@ -21,6 +26,9 @@ int      prevArn;
 float    prevAngOffset;
 float    prevBulbButtonScale;
 float    prevBulbButtonW2H;
+Matrix   bulbButtonMVP;
+Params   bulbButtonPrevState;
+
 PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
 {
    PyObject* faceColorPyTup;
@@ -32,7 +40,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
    double detailColor[3]; 
    double *bulbColors;
    //double bulbColor[3];
-   float angularOffset, scale, w2h;
+   float angularOffset, buttonScale, w2h, gx=0.0f, gy=0.0f, scale=1.0f;
    int arn, numBulbs;
 
    // Parse input arguments
@@ -41,7 +49,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
             &arn,
             &numBulbs,
             &angularOffset,
-            &scale,
+            &buttonScale,
             &faceColorPyTup,
             &detailColorPyTup,
             &py_list,
@@ -89,7 +97,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
       // Setup Transformations
       if (w2h <= 1.0)
       {
-         scale = w2h*scale;
+         buttonScale = w2h*buttonScale;
       }
 
       if (buttonCoords == NULL) {
@@ -136,14 +144,14 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
             /* G */ colrs.push_back(float(faceColor[1]));
             /* B */ colrs.push_back(float(faceColor[2]));
 
-            /* X */ verts.push_back(float(tmx+0.4*cos(degToRad(i*degSegment))*scale));
-            /* Y */ verts.push_back(float(tmy+0.4*sin(degToRad(i*degSegment))*scale));
+            /* X */ verts.push_back(float(tmx+0.4*cos(degToRad(i*degSegment))*buttonScale));
+            /* Y */ verts.push_back(float(tmy+0.4*sin(degToRad(i*degSegment))*buttonScale));
             /* R */ colrs.push_back(float(faceColor[0]));
             /* G */ colrs.push_back(float(faceColor[1]));
             /* B */ colrs.push_back(float(faceColor[2]));
 
-            /* X */ verts.push_back(float(tmx+0.4*cos(degToRad((i+1)*degSegment))*scale));
-            /* Y */ verts.push_back(float(tmy+0.4*sin(degToRad((i+1)*degSegment))*scale));
+            /* X */ verts.push_back(float(tmx+0.4*cos(degToRad((i+1)*degSegment))*buttonScale));
+            /* Y */ verts.push_back(float(tmy+0.4*sin(degToRad((i+1)*degSegment))*buttonScale));
             /* R */ colrs.push_back(float(faceColor[0]));
             /* G */ colrs.push_back(float(faceColor[1]));
             /* B */ colrs.push_back(float(faceColor[2]));
@@ -155,20 +163,20 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
          // Define Vertices for Bulb Icon
 //#        pragma omp parallel for
          for (int i = 0; i < circleSegments+1; i++){
-            /* X */ verts.push_back(float(tmx+0.0*scale));
-            /* Y */ verts.push_back(float(tmy+0.1*scale));
+            /* X */ verts.push_back(float(tmx+0.0*buttonScale));
+            /* Y */ verts.push_back(float(tmy+0.1*buttonScale));
             /* R */ colrs.push_back(float(bulbColors[j*3+0]));
             /* G */ colrs.push_back(float(bulbColors[j*3+1]));
             /* B */ colrs.push_back(float(bulbColors[j*3+2]));
 
-            /* X */ verts.push_back(float(tmx+0.2*cos(degToRad(i*degSegment))*scale));
-            /* Y */ verts.push_back(float(tmy+(0.1+0.2*sin(degToRad(i*degSegment)))*scale));
+            /* X */ verts.push_back(float(tmx+0.2*cos(degToRad(i*degSegment))*buttonScale));
+            /* Y */ verts.push_back(float(tmy+(0.1+0.2*sin(degToRad(i*degSegment)))*buttonScale));
             /* R */ colrs.push_back(float(bulbColors[j*3+0]));
             /* G */ colrs.push_back(float(bulbColors[j*3+1]));
             /* B */ colrs.push_back(float(bulbColors[j*3+2]));
 
-            /* X */ verts.push_back(float(tmx+0.2*cos(degToRad((i+1)*degSegment))*scale));
-            /* Y */ verts.push_back(float(tmy+(0.1+0.2*sin(degToRad((i+1)*degSegment)))*scale));
+            /* X */ verts.push_back(float(tmx+0.2*cos(degToRad((i+1)*degSegment))*buttonScale));
+            /* Y */ verts.push_back(float(tmy+(0.1+0.2*sin(degToRad((i+1)*degSegment)))*buttonScale));
             /* R */ colrs.push_back(float(bulbColors[j*3+0]));
             /* G */ colrs.push_back(float(bulbColors[j*3+1]));
             /* B */ colrs.push_back(float(bulbColors[j*3+2]));
@@ -179,37 +187,37 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
 
          // Define Verts for bulb screw base
          GLfloat tmp[54] = {
-            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.085*scale),
-            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.085*scale),
-            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.119*scale),
-            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.085*scale),
-            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.119*scale),
-            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.119*scale),
+            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.085*buttonScale),
+            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.085*buttonScale),
+            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.119*buttonScale),
+            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.085*buttonScale),
+            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.119*buttonScale),
+            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.119*buttonScale),
    
-            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.119*scale),
-            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.119*scale),
-            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.153*scale),
+            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.119*buttonScale),
+            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.119*buttonScale),
+            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.153*buttonScale),
    
-            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.136*scale),
-            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.170*scale),
-            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.204*scale),
-            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.136*scale),
-            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.170*scale),
-            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.204*scale),
+            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.136*buttonScale),
+            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.170*buttonScale),
+            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.204*buttonScale),
+            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.136*buttonScale),
+            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.170*buttonScale),
+            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.204*buttonScale),
    
-            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.187*scale),
-            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.221*scale),
-            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.255*scale),
-            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.187*scale),
-            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.221*scale),
-            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.255*scale),
+            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.187*buttonScale),
+            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.221*buttonScale),
+            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.255*buttonScale),
+            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.187*buttonScale),
+            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.221*buttonScale),
+            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.255*buttonScale),
    
-            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.238*scale),
-            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.272*scale),
-            /* X, Y */ float(tmx-0.051*scale), float(tmy-0.306*scale),
-            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.238*scale),
-            /* X, Y */ float(tmx+0.051*scale), float(tmy-0.306*scale),
-            /* X, Y */ float(tmx-0.051*scale), float(tmy-0.306*scale),
+            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.238*buttonScale),
+            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.272*buttonScale),
+            /* X, Y */ float(tmx-0.051*buttonScale), float(tmy-0.306*buttonScale),
+            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.238*buttonScale),
+            /* X, Y */ float(tmx+0.051*buttonScale), float(tmy-0.306*buttonScale),
+            /* X, Y */ float(tmx-0.051*buttonScale), float(tmy-0.306*buttonScale),
          };
    
          for (int i = 0; i < 27; i++) {
@@ -263,18 +271,40 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
          bulbButtonColorBuffer[i*3+2]  = colrs[i*3+2];
       }
 
+      Matrix Ortho;
+      Matrix ModelView;
+
+      float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
+      MatrixLoadIdentity( &Ortho );
+      MatrixLoadIdentity( &ModelView );
+      MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
+      MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
+      if (w2h <= 1.0f) {
+         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
+      } else {
+         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
+      }
+      //MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
+      MatrixMultiply( &bulbButtonMVP, &ModelView, &Ortho );
+
+      //bulbButtonPrevState.ao = ao;
+      bulbButtonPrevState.dx = gx;
+      bulbButtonPrevState.dy = gy;
+      bulbButtonPrevState.sx = scale;
+      bulbButtonPrevState.sy = scale;
+      bulbButtonPrevState.w2h = w2h;
       prevNumBulbs = numBulbs;
       prevAngOffset = angularOffset;
       prevBulbButtonW2H = w2h;
       prevArn = arn;
-      prevBulbButtonScale = scale;
+      prevBulbButtonScale = buttonScale;
    } 
    // Recalculate vertex geometry without expensive vertex/array reallocation
    else if (
          prevBulbButtonW2H != w2h ||
          prevArn != arn ||
          prevAngOffset != angularOffset ||
-         prevBulbButtonScale != scale
+         prevBulbButtonScale != buttonScale
          ) {
       // Set Number of edges on circles
       char circleSegments = 60;
@@ -283,7 +313,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
       // Setup Transformations
       if (w2h <= 1.0)
       {
-         scale = w2h*scale;
+         buttonScale = w2h*buttonScale;
       }
 
       float tmx, tmy, ang;
@@ -320,59 +350,59 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
             /* X */ bulbButtonVertexBuffer[j*vertsPerBulb*2+i*6+0] = (float(tmx+0.0));
             /* Y */ bulbButtonVertexBuffer[j*vertsPerBulb*2+i*6+1] = (float(tmy+0.0));
 
-            /* X */ bulbButtonVertexBuffer[j*vertsPerBulb*2+i*6+2] = (float(tmx+0.4*cos(degToRad(i*degSegment))*scale));
-            /* Y */ bulbButtonVertexBuffer[j*vertsPerBulb*2+i*6+3] = (float(tmy+0.4*sin(degToRad(i*degSegment))*scale));
+            /* X */ bulbButtonVertexBuffer[j*vertsPerBulb*2+i*6+2] = (float(tmx+0.4*cos(degToRad(i*degSegment))*buttonScale));
+            /* Y */ bulbButtonVertexBuffer[j*vertsPerBulb*2+i*6+3] = (float(tmy+0.4*sin(degToRad(i*degSegment))*buttonScale));
 
-            /* X */ bulbButtonVertexBuffer[j*vertsPerBulb*2+i*6+4] = (float(tmx+0.4*cos(degToRad((i+1)*degSegment))*scale));
-            /* Y */ bulbButtonVertexBuffer[j*vertsPerBulb*2+i*6+5] = (float(tmy+0.4*sin(degToRad((i+1)*degSegment))*scale));
+            /* X */ bulbButtonVertexBuffer[j*vertsPerBulb*2+i*6+4] = (float(tmx+0.4*cos(degToRad((i+1)*degSegment))*buttonScale));
+            /* Y */ bulbButtonVertexBuffer[j*vertsPerBulb*2+i*6+5] = (float(tmy+0.4*sin(degToRad((i+1)*degSegment))*buttonScale));
          }
 
          // Define Vertices for Bulb Icon
 //#        pragma omp parallel for
          for (int i = 0; i < circleSegments+1; i++){
-            /* X */ bulbButtonVertexBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+0] = (float(tmx+0.0*scale));
-            /* Y */ bulbButtonVertexBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+1] = (float(tmy+0.1*scale));
+            /* X */ bulbButtonVertexBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+0] = (float(tmx+0.0*buttonScale));
+            /* Y */ bulbButtonVertexBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+1] = (float(tmy+0.1*buttonScale));
 
-            /* X */ bulbButtonVertexBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+2] = (float(tmx+0.2*cos(degToRad(i*degSegment))*scale));
-            /* Y */ bulbButtonVertexBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+3] = (float(tmy+(0.1+0.2*sin(degToRad(i*degSegment)))*scale));
+            /* X */ bulbButtonVertexBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+2] = (float(tmx+0.2*cos(degToRad(i*degSegment))*buttonScale));
+            /* Y */ bulbButtonVertexBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+3] = (float(tmy+(0.1+0.2*sin(degToRad(i*degSegment)))*buttonScale));
 
-            /* X */ bulbButtonVertexBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+4] = (float(tmx+0.2*cos(degToRad((i+1)*degSegment))*scale));
-            /* Y */ bulbButtonVertexBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+5] = (float(tmy+(0.1+0.2*sin(degToRad((i+1)*degSegment)))*scale));
+            /* X */ bulbButtonVertexBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+4] = (float(tmx+0.2*cos(degToRad((i+1)*degSegment))*buttonScale));
+            /* Y */ bulbButtonVertexBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+5] = (float(tmy+(0.1+0.2*sin(degToRad((i+1)*degSegment)))*buttonScale));
          }
 
          // Define Verts for bulb screw base
          GLfloat tmp[54] = {
-            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.085*scale),
-            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.085*scale),
-            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.119*scale),
-            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.085*scale),
-            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.119*scale),
-            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.119*scale),
+            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.085*buttonScale),
+            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.085*buttonScale),
+            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.119*buttonScale),
+            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.085*buttonScale),
+            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.119*buttonScale),
+            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.119*buttonScale),
    
-            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.119*scale),
-            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.119*scale),
-            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.153*scale),
+            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.119*buttonScale),
+            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.119*buttonScale),
+            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.153*buttonScale),
    
-            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.136*scale),
-            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.170*scale),
-            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.204*scale),
-            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.136*scale),
-            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.170*scale),
-            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.204*scale),
+            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.136*buttonScale),
+            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.170*buttonScale),
+            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.204*buttonScale),
+            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.136*buttonScale),
+            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.170*buttonScale),
+            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.204*buttonScale),
    
-            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.187*scale),
-            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.221*scale),
-            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.255*scale),
-            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.187*scale),
-            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.221*scale),
-            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.255*scale),
+            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.187*buttonScale),
+            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.221*buttonScale),
+            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.255*buttonScale),
+            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.187*buttonScale),
+            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.221*buttonScale),
+            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.255*buttonScale),
    
-            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.238*scale),
-            /* X, Y */ float(tmx-0.085*scale), float(tmy-0.272*scale),
-            /* X, Y */ float(tmx-0.051*scale), float(tmy-0.306*scale),
-            /* X, Y */ float(tmx+0.085*scale), float(tmy-0.238*scale),
-            /* X, Y */ float(tmx+0.051*scale), float(tmy-0.306*scale),
-            /* X, Y */ float(tmx-0.051*scale), float(tmy-0.306*scale),
+            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.238*buttonScale),
+            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.272*buttonScale),
+            /* X, Y */ float(tmx-0.051*buttonScale), float(tmy-0.306*buttonScale),
+            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.238*buttonScale),
+            /* X, Y */ float(tmx+0.051*buttonScale), float(tmy-0.306*buttonScale),
+            /* X, Y */ float(tmx-0.051*buttonScale), float(tmy-0.306*buttonScale),
          };
    
 //#        pragma omp parallel for
@@ -382,10 +412,32 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
          }
       }
 
+      Matrix Ortho;
+      Matrix ModelView;
+
+      float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
+      MatrixLoadIdentity( &Ortho );
+      MatrixLoadIdentity( &ModelView );
+      MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
+      MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
+      if (w2h <= 1.0f) {
+         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
+      } else {
+         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
+      }
+      //MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
+      MatrixMultiply( &bulbButtonMVP, &ModelView, &Ortho );
+
+      //bulbButtonPrevState.ao = ao;
+      bulbButtonPrevState.dx = gx;
+      bulbButtonPrevState.dy = gy;
+      bulbButtonPrevState.sx = scale;
+      bulbButtonPrevState.sy = scale;
+      bulbButtonPrevState.w2h = w2h;
       prevAngOffset = angularOffset;
       prevBulbButtonW2H = w2h;
       prevArn = arn;
-      prevBulbButtonScale = scale;
+      prevBulbButtonScale = buttonScale;
    }
    // Vertices / Geometry already calculated
    // Check if colors need to be updated
@@ -451,10 +503,54 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
    // Cleanup
    delete [] bulbColors;
    
+   /*
    // Copy Vertex / Color Array Bufferes to GPU, draw
    glColorPointer(3, GL_FLOAT, 0, bulbButtonColorBuffer);
    glVertexPointer(2, GL_FLOAT, 0, bulbButtonVertexBuffer);
    glDrawElements( GL_TRIANGLES, bulbButtonsVerts, GL_UNSIGNED_SHORT, bulbButtonIndices);
+   */
+
+   // Update Transfomation Matrix if any change in parameters
+   if (  //bulbButtonPrevState.ao != ao     ||
+         bulbButtonPrevState.dx != gx     ||
+         bulbButtonPrevState.dy != gy     ||
+         bulbButtonPrevState.sx != scale  ||
+         bulbButtonPrevState.sy != scale  ||
+         bulbButtonPrevState.w2h != w2h   ){
+      
+      Matrix Ortho;
+      Matrix ModelView;
+
+      float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
+      MatrixLoadIdentity( &Ortho );
+      MatrixLoadIdentity( &ModelView );
+      MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
+      MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
+      if (w2h <= 1.0f) {
+         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
+      } else {
+         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
+      }
+      //MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
+      MatrixMultiply( &bulbButtonMVP, &ModelView, &Ortho );
+
+      //bulbButtonPrevState.ao = ao;
+      bulbButtonPrevState.dx = gx;
+      bulbButtonPrevState.dy = gy;
+      bulbButtonPrevState.sx = scale;
+      bulbButtonPrevState.sy = scale;
+      bulbButtonPrevState.w2h = w2h;
+   }
+
+   //GLint mvpLoc;
+   //mvpLoc = glGetUniformLocation( 3, "MVP" );
+   //glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &bulbButtonMVP.mat[0][0] );
+   glUniformMatrix4fv( 0, 1, GL_FALSE, &bulbButtonMVP.mat[0][0] );
+   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, bulbButtonVertexBuffer);
+   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, bulbButtonColorBuffer);
+   //glEnableVertexAttribArray(0);
+   //glEnableVertexAttribArray(1);
+   glDrawArrays(GL_TRIANGLES, 0, bulbButtonsVerts);
 
    return py_list;
 }
