@@ -204,7 +204,7 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
 
       // Update Hand Colors
       if (detailColor[i] != clockColorBuffer[i + circleSegments*3]) {
-         for (int k = circleSegments*3; k < clockVerts; k++) {
+         for (unsigned int k = circleSegments*3; k < clockVerts; k++) {
             clockColorBuffer[i + k*3] = detailColor[i];
          }
       }
