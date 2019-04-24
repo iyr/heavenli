@@ -45,8 +45,9 @@ def init():
     initShaders()
     print("Done!")
 
-    statMac['minute'] = datetime.datetime.now().minute
-    statMac['hour'] = datetime.datetime.now().hour
+    statMac['second'] = datetime.datetime.now().second
+    statMac['minute'] = datetime.datetime.now().minute + statMac['second']/60
+    statMac['hour'] = datetime.datetime.now().hour + statMac['minute']/60
     if (statMac['hour'] > 11):
         statMac['hour'] -= 12
     print(statMac['hour'])
@@ -75,8 +76,9 @@ def framerate():
         print("%.0f frames in %3.1f seconds = %6.3f FPS" % (statMac['frames'],seconds,statMac['fps']))
         statMac['t0'] = t
         statMac['frames'] = 0
-        statMac['minute'] = datetime.datetime.now().minute
-        statMac['hour'] = datetime.datetime.now().hour
+        statMac['second'] = datetime.datetime.now().second
+        statMac['minute'] = datetime.datetime.now().minute + statMac['second']/60
+        statMac['hour'] = datetime.datetime.now().hour + statMac['minute']/60
         if (statMac['hour'] > 11):
             statMac['hour'] -= 12
     if statMac['frameLimit'] and (statMac['fps'] > 60):
