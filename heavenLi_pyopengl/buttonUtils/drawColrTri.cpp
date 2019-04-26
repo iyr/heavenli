@@ -232,8 +232,8 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
 
    // Determine distance of selection ring from 
    // current location (prevTri) to target location (ring)
-   float tmr, saturation, value, ringX = 0.0f, ringY = 0.0f;
-   float deltaX, deltaY;
+   GLfloat tmr, saturation, value, ringX = 0.0f, ringY = 0.0f;
+   GLfloat deltaX, deltaY;
    tmr = 0.05f;
    for (int i = 0; i < numLevels; i++) {        // Columns
       for (int j = 0; j < numLevels-i; j++) {   // Rows
@@ -331,9 +331,9 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       }
 
       // Actual meat of drawing saturation/value triangle
-      int index = 0;
-      float tmx, tmy, tmr, saturation, value, ringX=0.0f, ringY=0.0f;
-      float colors[3] = {0.0, 0.0, 0.0};
+      GLint index = 0;
+      GLfloat tmx, tmy, tmr, saturation, value, ringX=0.0f, ringY=0.0f;
+      GLfloat colors[3] = {0.0, 0.0, 0.0};
 
       // Bogus comparison to get rid of compiler warnings (-_-)
       if (ringX != ringX)
@@ -398,7 +398,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    // Update colors if current Hue has changed
    if ( (prevTriHue != currentTriHue)        &&
         (prevColrTriNumLevels == numLevels)  ){
-      float saturation, value;
+      GLfloat saturation, value;
       GLfloat colors[3] = {0.0, 0.0, 0.0};
       int colrIndex = 0;
       for (int i = 0; i < prevColrTriNumLevels; i++) {        /* Columns */
@@ -408,8 +408,19 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
             value = 1.0f - float(j) / float(prevColrTriNumLevels - 1);
             saturation  =  float(i) / float(prevColrTriNumLevels - 1 - j);
 
-            // Convert HSV to RGB
-            hsv2rgb(currentTriHue, saturation, value, colors);
+	    //if (i == 0 && j == prevColrTriNumLevels-1) {
+               //value = 0.0f;
+	       //saturation = 0.0f;
+	    //}
+
+            // Resolve issues that occur when saturation or value are less than zero or NULL
+            if (saturation != saturation || saturation <= 0.0 )
+               saturation = 0.000001f;
+            if (value != value || value <= 0.0 )
+               value = 0.000001f;
+
+            // Convert HSV to RGB 
+	    hsv2rgb(currentTriHue, saturation, value, colors);
 
             colrIndex = updateEllipseColor(
                   circleSegments, 
