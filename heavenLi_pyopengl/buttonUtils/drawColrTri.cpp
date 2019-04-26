@@ -399,7 +399,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    if ( (prevTriHue != currentTriHue)        &&
         (prevColrTriNumLevels == numLevels)  ){
       float saturation, value;
-      float colors[3] = {0.0, 0.0, 0.0};
+      GLfloat colors[3] = {0.0, 0.0, 0.0};
       int colrIndex = 0;
       for (int i = 0; i < prevColrTriNumLevels; i++) {        /* Columns */
          for (int j = 0; j < prevColrTriNumLevels-i; j++) {   /* Rows */
