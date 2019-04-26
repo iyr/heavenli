@@ -50,8 +50,6 @@ def init():
     statMac['hour'] = datetime.datetime.now().hour + statMac['minute']/60
     if (statMac['hour'] > 11):
         statMac['hour'] -= 12
-    print(statMac['hour'])
-    print(statMac['minute'])
 
     statMac['wx'] = glutGet(GLUT_WINDOW_WIDTH)
     statMac['wy'] = glutGet(GLUT_WINDOW_HEIGHT)
