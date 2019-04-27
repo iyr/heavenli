@@ -12,7 +12,7 @@
 
 using namespace std;
 
-GLfloat  *colrTriVertexBuffer = NULL;  // Stores (X, Y) (float) for each vertex
+GLfloat  *colrTriCoordBuffer  = NULL;  // Stores (X, Y) (float) for each vertex
 GLfloat  *colrTriColorBuffer  = NULL;  // Stores (R, G, B) (float) for each vertex
 GLushort *colrTriIndices      = NULL;  // Stores index corresponding to each vertex, could be more space efficient, but meh
 GLuint   colrTriVerts;                 // Total number of vertices
@@ -28,8 +28,10 @@ GLfloat  prevTriSat;                   // Used for animating selection ring
 GLfloat  prevTriVal;                   // Used for animating selection ring
 GLfloat  prevTriSatSel        = 0.0;   // Used to resolve edge-case bug for animating selection ring
 GLfloat  prevTriValSel        = 0.0;   // Used to resolve edge-case bug for animating selection ring
-Matrix   colrTriMVP;
-Params   colrTriPrevState;
+Matrix   colrTriMVP;                   // Transformation matrix passed to shader
+Params   colrTriPrevState;             // Stores transformations to avoid redundant recalculation
+GLuint   colrTriVBO;                   // Vertex Buffer Object ID
+GLboolean   firstRun       = GL_TRUE;  // Determines if could is running for the first time (for VBO initialization)
 
 PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    PyObject *py_list;
@@ -74,7 +76,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
 
    // (Re)Allocate and Define Geometry/Color buffers
    if (  prevColrTriNumLevels != numLevels   ||
-         colrTriVertexBuffer  == NULL        ||
+         colrTriCoordBuffer   == NULL        ||
          colrTriColorBuffer   == NULL        ||
          colrTriIndices       == NULL        ){
 
@@ -155,11 +157,11 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       colrTriVerts = verts.size()/2;
 
       // (Re)Allocate buffer for vertex data
-      if (colrTriVertexBuffer == NULL) {
-         colrTriVertexBuffer = new GLfloat[colrTriVerts*2];
+      if (colrTriCoordBuffer == NULL) {
+         colrTriCoordBuffer = new GLfloat[colrTriVerts*2];
       } else {
-         delete [] colrTriVertexBuffer;
-         colrTriVertexBuffer = new GLfloat[colrTriVerts*2];
+         delete [] colrTriCoordBuffer;
+         colrTriCoordBuffer = new GLfloat[colrTriVerts*2];
       }
 
       // (Re)Allocate buffer for color data
@@ -180,8 +182,8 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
 
       // Pack Vertices and Colors into global array buffers
       for (unsigned int i = 0; i < colrTriVerts; i++) {
-         colrTriVertexBuffer[i*2]   = verts[i*2];
-         colrTriVertexBuffer[i*2+1] = verts[i*2+1];
+         colrTriCoordBuffer[i*2+0]  = verts[i*2];
+         colrTriCoordBuffer[i*2+1]  = verts[i*2+1];
          colrTriIndices[i]          = i;
          colrTriColorBuffer[i*3+0]  = colrs[i*3+0];
          colrTriColorBuffer[i*3+1]  = colrs[i*3+1];
@@ -219,7 +221,140 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       prevTriSatSel = currentTriSat;
       prevTriValSel = currentTriVal;
       prevColrTriNumLevels = numLevels;
-      //printf("Done!\n");
+
+      // Create buffer if one does not exist, otherwise, delete and make a new one
+      if (firstRun == GL_TRUE) {
+         firstRun = GL_FALSE;
+         glGenBuffers(1, &colrTriVBO);
+      } else {
+         glDeleteBuffers(1, &colrTriVBO);
+         glGenBuffers(1, &colrTriVBO);
+      }
+
+      // Set active VBO
+      glBindBuffer(GL_ARRAY_BUFFER, colrTriVBO);
+
+      // Allocate space to hold all vertex coordinate and color data
+      glBufferData(GL_ARRAY_BUFFER, 5*sizeof(GLfloat)*colrTriVerts, NULL, GL_STATIC_DRAW);
+
+      // Convenience variables
+      GLuint64 offset = 0;
+      GLuint vertAttribCoord = glGetAttribLocation(3, "vertCoord");
+      GLuint vertAttribColor = glGetAttribLocation(3, "vertColor");
+
+      // Load Vertex coordinate data into VBO
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*colrTriVerts, colrTriCoordBuffer);
+      // Define how the Vertex coordinate data is layed out in the buffer
+      glVertexAttribPointer(vertAttribCoord, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLuint64*)offset);
+      // Enable the vertex attribute
+      glEnableVertexAttribArray(vertAttribCoord);
+
+      // Update offset to begin storing data in latter part of the buffer
+      offset += 2*sizeof(GLfloat)*colrTriVerts;
+
+      // Load Vertex coordinate data into VBO
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*colrTriVerts, colrTriColorBuffer);
+      // Define how the Vertex color data is layed out in the buffer
+      glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLuint64*)offset);
+      // Enable the vertex attribute
+      glEnableVertexAttribArray(vertAttribColor);
+   }
+
+   // Animate granularity changes
+   // Update position of hue/sat dot triangle
+   GLfloat triX = float(-0.0383f*numLevels); 
+   GLfloat triY = float(+0.0616f*numLevels);
+   GLfloat deltaX, deltaY;
+   deltaX = triX - prevTriX;
+   deltaY = triY - prevTriY;
+
+   if (  abs(deltaX) > tDiff*0.01   ||
+         abs(deltaY) > tDiff*0.01   ){
+      if (deltaX < -0.0) {
+         prevTriX -= float(3.0*tDiff*abs(deltaX));
+      }
+      if (deltaX > -0.0) {
+         prevTriX += float(3.0*tDiff*abs(deltaX));
+      }
+      if (deltaY < -0.0) {
+         prevTriY -= float(3.0*tDiff*abs(deltaY));
+      }
+      if (deltaY > -0.0) {
+         prevTriY += float(3.0*tDiff*abs(deltaY));
+      }
+
+      // Actual meat of drawing saturation/value triangle
+      GLint index = 0;
+      GLfloat tmx, tmy, tmr, saturation, value, ringX=0.0f, ringY=0.0f;
+      GLfloat colors[3] = {0.0, 0.0, 0.0};
+
+      // Bogus comparison to get rid of compiler warnings (-_-)
+      if (ringX != ringX)
+         ringX = 0.0f;
+      if (ringY != ringY)
+         ringY = 0.0f;
+
+      tmr = 0.05f*prevTriDotScale;
+      for (int i = 0; i < numLevels; i++) {        /* Columns */
+         for (int j = 0; j < numLevels-i; j++) {   /* Rows */
+
+            // Calculate Discrete Saturation and Value
+            value = 1.0f - float(j) / float(numLevels - 1);
+            saturation  =  float(i) / float(numLevels - 1 - j);
+
+            // Resolve issues that occur when saturation or value are less than zero or NULL
+            if (saturation != saturation || saturation <= 0.0)
+               saturation = 0.000001f;
+            if (value != value || value <= 0.0)
+               value = 0.000001f;
+
+            // Convert HSV to RGB
+            hsv2rgb(currentTriHue, saturation, value, colors);
+
+            // Define relative positions of sat/val button dots
+            tmx = float(prevTriX + (i*0.13f));
+            tmy = float(prevTriY - (i*0.075f + j*0.145f));
+
+            // Draw dot
+            //drawEllipse(tmx, tmy, tmr, circleSegments, colors, verts, colrs);
+            index = updateEllipseGeometry(
+                  tmx, tmy, 
+                  tmr, 
+                  circleSegments, 
+                  index, 
+                  colrTriCoordBuffer);
+
+            // Determine which button dot represents the currently selected saturation and value
+            if (  abs(currentTriSat - saturation) <= 1.0f / float(numLevels) &&
+                  abs(currentTriVal - value     ) <= 1.0f / float(numLevels) ){
+               ringX = tmx;
+               ringY = tmy;
+            }
+         }
+      }
+
+      // Draw a circle around the button dot corresponding to the selected saturation/value
+      index = drawHalo(
+            prevRingX, prevRingY,
+            float(1.06*tmr), float(1.06*tmr),
+            0.03f,
+            circleSegments,
+            index,
+            ringColor,
+            colrTriCoordBuffer,
+            colrTriColorBuffer);
+
+      // Update Contents of VBO
+      // Set active VBO
+      glBindBuffer(GL_ARRAY_BUFFER, colrTriVBO);
+      // Convenience variables
+      GLuint64 offset = 0;
+      // Load Vertex coordinate data into VBO
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*colrTriVerts, colrTriCoordBuffer);
+
+   } else {
+      prevTriX = triX;
+      prevTriY = triY;
    }
 
    // Resolves edge case bug animating selection ring
@@ -233,7 +368,6 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    // Determine distance of selection ring from 
    // current location (prevTri) to target location (ring)
    GLfloat tmr, saturation, value, ringX = 0.0f, ringY = 0.0f;
-   GLfloat deltaX, deltaY;
    tmr = 0.05f;
    for (int i = 0; i < numLevels; i++) {        // Columns
       for (int j = 0; j < numLevels-i; j++) {   // Rows
@@ -294,11 +428,21 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
             circleSegments,
             3*numButtons*circleSegments,
             ringColor,
-            colrTriVertexBuffer,
+            colrTriCoordBuffer,
             colrTriColorBuffer);
+
+      // Update Contents of VBO
+      // Set active VBO
+      glBindBuffer(GL_ARRAY_BUFFER, colrTriVBO);
+      // Convenience variable
+      GLuint64 offset = 0;
+      // Load Vertex coordinate data into VBO
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*colrTriVerts, colrTriCoordBuffer);
+      offset += 2*sizeof(GLfloat)*colrTriVerts;
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*colrTriVerts, colrTriColorBuffer);
    }
 
-   // selection Ring in place, stop updating position
+   // Selection Ring in place, stop updating position
    if (  abs(deltaX) <= tDiff*0.01 &&
          abs(deltaY) <= tDiff*0.01 ){
       prevTriSat = currentTriSat;
@@ -308,110 +452,18 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    prevTriSatSel = currentTriSat;
    prevTriValSel = currentTriVal;
 
-   //  Animate granularity changes
-   // Update position of hue/sat dot triangle
-   float triX = float(-0.0383f*numLevels); 
-   float triY = float(+0.0616f*numLevels);
-   deltaX = triX - prevTriX;
-   deltaY = triY - prevTriY;
-
-   if (  abs(deltaX) > tDiff*0.01   ||
-         abs(deltaY) > tDiff*0.01   ){
-      if (deltaX < -0.0) {
-         prevTriX -= float(3.0*tDiff*abs(deltaX));
-      }
-      if (deltaX > -0.0) {
-         prevTriX += float(3.0*tDiff*abs(deltaX));
-      }
-      if (deltaY < -0.0) {
-         prevTriY -= float(3.0*tDiff*abs(deltaY));
-      }
-      if (deltaY > -0.0) {
-         prevTriY += float(3.0*tDiff*abs(deltaY));
-      }
-
-      // Actual meat of drawing saturation/value triangle
-      GLint index = 0;
-      GLfloat tmx, tmy, tmr, saturation, value, ringX=0.0f, ringY=0.0f;
-      GLfloat colors[3] = {0.0, 0.0, 0.0};
-
-      // Bogus comparison to get rid of compiler warnings (-_-)
-      if (ringX != ringX)
-         ringX = 0.0f;
-      if (ringY != ringY)
-         ringY = 0.0f;
-
-      tmr = 0.05f*prevTriDotScale;
-      for (int i = 0; i < numLevels; i++) {        /* Columns */
-         for (int j = 0; j < numLevels-i; j++) {   /* Rows */
-
-            // Calculate Discrete Saturation and Value
-            value = 1.0f - float(j) / float(numLevels - 1);
-            saturation  =  float(i) / float(numLevels - 1 - j);
-
-            // Resolve issues that occur when saturation or value are less than zero or NULL
-            if (saturation != saturation || saturation <= 0.0)
-               saturation = 0.000001f;
-            if (value != value || value <= 0.0)
-               value = 0.000001f;
-
-            // Convert HSV to RGB
-            hsv2rgb(currentTriHue, saturation, value, colors);
-
-            // Define relative positions of sat/val button dots
-            tmx = float(prevTriX + (i*0.13f));
-            tmy = float(prevTriY - (i*0.075f + j*0.145f));
-
-            // Draw dot
-            //drawEllipse(tmx, tmy, tmr, circleSegments, colors, verts, colrs);
-            index = updateEllipseGeometry(
-                  tmx, tmy, 
-                  tmr, 
-                  circleSegments, 
-                  index, 
-                  colrTriVertexBuffer);
-
-            // Determine which button dot represents the currently selected saturation and value
-            if (  abs(currentTriSat - saturation) <= 1.0f / float(numLevels) &&
-                  abs(currentTriVal - value     ) <= 1.0f / float(numLevels) ){
-               ringX = tmx;
-               ringY = tmy;
-            }
-         }
-      }
-
-      // Draw a circle around the button dot corresponding to the selected saturation/value
-      index = drawHalo(
-            prevRingX, prevRingY,
-            float(1.06*tmr), float(1.06*tmr),
-            0.03f,
-            circleSegments,
-            index,
-            ringColor,
-            colrTriVertexBuffer,
-            colrTriColorBuffer);
-   } else {
-      prevTriX = triX;
-      prevTriY = triY;
-   }
-
    // Update colors if current Hue has changed
    if ( (prevTriHue != currentTriHue)        &&
         (prevColrTriNumLevels == numLevels)  ){
       GLfloat saturation, value;
       GLfloat colors[3] = {0.0, 0.0, 0.0};
-      int colrIndex = 0;
-      for (int i = 0; i < prevColrTriNumLevels; i++) {        /* Columns */
-         for (int j = 0; j < prevColrTriNumLevels-i; j++) {   /* Rows */
+      GLint colrIndex = 0;
+      for (GLint i = 0; i < prevColrTriNumLevels; i++) {        /* Columns */
+         for (GLint j = 0; j < prevColrTriNumLevels-i; j++) {   /* Rows */
 
             // Calculate Discrete Saturation and Value
             value = 1.0f - float(j) / float(prevColrTriNumLevels - 1);
             saturation  =  float(i) / float(prevColrTriNumLevels - 1 - j);
-
-	    //if (i == 0 && j == prevColrTriNumLevels-1) {
-               //value = 0.0f;
-	       //saturation = 0.0f;
-	    //}
 
             // Resolve issues that occur when saturation or value are less than zero or NULL
             if (saturation != saturation || saturation <= 0.0 )
@@ -420,8 +472,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
                value = 0.000001f;
 
             // Convert HSV to RGB 
-	    hsv2rgb(currentTriHue, saturation, value, colors);
-
+	         hsv2rgb(currentTriHue, saturation, value, colors);
             colrIndex = updateEllipseColor(
                   circleSegments, 
                   colrIndex, 
@@ -430,16 +481,30 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
          }
       }
       prevTriHue = currentTriHue;
+
+      // Update Contents of VBO
+      // Set active VBO
+      glBindBuffer(GL_ARRAY_BUFFER, colrTriVBO);
+      // Convenience variable
+      GLuint64 offset = 2*sizeof(GLfloat)*colrTriVerts;
+      // Load Vertex coordinate data into VBO
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*colrTriVerts, colrTriColorBuffer);
    }
 
    // Check if selection Ring Color needs to be updated
    for (int i = 0; i < 3; i++) {
       if ( (colrTriColorBuffer[numButtons*circleSegments*9+i] != ringColor[i])   && 
-           (prevColrTriNumLevels == numLevels)                                   &&
-           (prevTriDotScale == 1.0)                                              ){
+           (prevColrTriNumLevels == numLevels)                                   ){
          for (unsigned int k = numButtons*circleSegments*3; k < colrTriVerts; k++) {
             colrTriColorBuffer[k*3+i] = ringColor[i];
          }
+         // Update Contents of VBO
+         // Set active VBO
+         glBindBuffer(GL_ARRAY_BUFFER, colrTriVBO);
+         // Convenience variable
+         GLuint64 offset = 2*sizeof(GLfloat)*colrTriVerts;
+         // Load Vertex coordinate data into VBO
+         glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*colrTriVerts, colrTriColorBuffer);
       }
    }
 
@@ -458,15 +523,6 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    if (w2h <= 1.0) {
          scale = scale*w2h;
    }
-
-   // Old, Fixed-function ES 1.1 code
-   /*
-   glScalef(scale, scale, 1);
-   glColorPointer(3, GL_FLOAT, 0, colrTriColorBuffer);
-   glVertexPointer(2, GL_FLOAT, 0, colrTriVertexBuffer);
-   glDrawElements( GL_TRIANGLES, colrTriVerts, GL_UNSIGNED_SHORT, colrTriIndices);
-   glPopMatrix();
-   */
 
    // Update Transfomation Matrix if any change in parameters
    if (  //colrTriPrevState.ao != ao     ||
@@ -498,16 +554,26 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       colrTriPrevState.sx = scale;
       colrTriPrevState.sy = scale;
       colrTriPrevState.w2h = w2h;
+
+      glBindBuffer(GL_ARRAY_BUFFER, colrTriVBO);
+      glBufferSubData(GL_ARRAY_BUFFER, 2*sizeof(GLfloat)*colrTriVerts, sizeof(GLfloat)*3*colrTriVerts, colrTriColorBuffer);
    }
 
-   //GLint mvpLoc;
-   //mvpLoc = glGetUniformLocation( 3, "MVP" );
-   //glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &colrTriMVP.mat[0][0] );
+   // Pass Transformation Matrix to shader
    glUniformMatrix4fv( 0, 1, GL_FALSE, &colrTriMVP.mat[0][0] );
-   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, colrTriVertexBuffer);
-   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, colrTriColorBuffer);
+
+   // Set active VBO
+   glBindBuffer(GL_ARRAY_BUFFER, colrTriVBO);
+
+   // Define how the Vertex coordinate data is layed out in the buffer
+   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
+   // Define how the Vertex color data is layed out in the buffer
+   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*colrTriVerts));
    //glEnableVertexAttribArray(0);
    //glEnableVertexAttribArray(1);
    glDrawArrays(GL_TRIANGLES, 0, colrTriVerts);
+
+   glBindBuffer(GL_ARRAY_BUFFER, 0);
+
    return py_list;
 }
