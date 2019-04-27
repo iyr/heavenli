@@ -36,7 +36,7 @@ GLboolean   colrTriFirstRun   = GL_TRUE;  // Determines if function is running f
 PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    PyObject *py_list;
    PyObject *py_tuple;
-   float w2h, scale, currentTriHue, currentTriSat, currentTriVal, tDiff, gx=0.0f, gy=0.0f;
+   float w2h, scale, currentTriHue, currentTriSat, currentTriVal, tDiff, gx=0.0f, gy=0.0f, ao=0.0f;
    float ringColor[3];
    char circleSegments = 24;
    long numLevels = 6;
@@ -204,10 +204,10 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       } else {
          MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
       }
-      //MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
+      MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
       MatrixMultiply( &colrTriMVP, &ModelView, &Ortho );
 
-      //colrTriPrevState.ao = ao;
+      colrTriPrevState.ao = ao;
       colrTriPrevState.dx = gx;
       colrTriPrevState.dy = gy;
       colrTriPrevState.sx = scale;
@@ -503,7 +503,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
          glBindBuffer(GL_ARRAY_BUFFER, colrTriVBO);
          // Convenience variable
          GLuint64 offset = 2*sizeof(GLfloat)*colrTriVerts;
-         // Load Vertex coordinate data into VBO
+         // Load Vertex Color data into VBO
          glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*colrTriVerts, colrTriColorBuffer);
       }
    }
@@ -525,7 +525,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    }
 
    // Update Transfomation Matrix if any change in parameters
-   if (  //colrTriPrevState.ao != ao     ||
+   if (  colrTriPrevState.ao != ao     ||
          colrTriPrevState.dx != gx     ||
          colrTriPrevState.dy != gy     ||
          colrTriPrevState.sx != scale  ||
@@ -545,10 +545,10 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       } else {
          MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
       }
-      //MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
+      MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
       MatrixMultiply( &colrTriMVP, &ModelView, &Ortho );
 
-      //colrTriPrevState.ao = ao;
+      colrTriPrevState.ao = ao;
       colrTriPrevState.dx = gx;
       colrTriPrevState.dy = gy;
       colrTriPrevState.sx = scale;
