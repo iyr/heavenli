@@ -12,26 +12,26 @@
 
 using namespace std;
 
-GLfloat  *colrTriCoordBuffer  = NULL;  // Stores (X, Y) (float) for each vertex
-GLfloat  *colrTriColorBuffer  = NULL;  // Stores (R, G, B) (float) for each vertex
-GLushort *colrTriIndices      = NULL;  // Stores index corresponding to each vertex, could be more space efficient, but meh
-GLuint   colrTriVerts;                 // Total number of vertices
-GLint    prevColrTriNumLevels;         // Used for updating Granularity changes
-GLfloat  *triButtonData       = NULL;  // Stores data (X, Y, sat, val) for each button dot
-GLfloat  prevTriX             = 0.0;   // Used for animating granularity changes
-GLfloat  prevTriY             = 0.0;   // Used for animating granularity changes
-GLfloat  prevTriDotScale      = 1.0;   // Used for animating granularity changes
-GLfloat  prevRingX            = 0.0;   // Used for animating selection ring
-GLfloat  prevRingY            = 0.0;   // Used for animating selection ring
-GLfloat  prevTriHue;                   // Used for animating selection ring
-GLfloat  prevTriSat;                   // Used for animating selection ring
-GLfloat  prevTriVal;                   // Used for animating selection ring
-GLfloat  prevTriSatSel        = 0.0;   // Used to resolve edge-case bug for animating selection ring
-GLfloat  prevTriValSel        = 0.0;   // Used to resolve edge-case bug for animating selection ring
-Matrix   colrTriMVP;                   // Transformation matrix passed to shader
-Params   colrTriPrevState;             // Stores transformations to avoid redundant recalculation
-GLuint   colrTriVBO;                   // Vertex Buffer Object ID
-GLboolean   firstRun       = GL_TRUE;  // Determines if could is running for the first time (for VBO initialization)
+GLfloat     *colrTriCoordBuffer  = NULL;  // Stores (X, Y) (float) for each vertex
+GLfloat     *colrTriColorBuffer  = NULL;  // Stores (R, G, B) (float) for each vertex
+GLushort    *colrTriIndices      = NULL;  // Stores index corresponding to each vertex
+GLuint      colrTriVerts;                 // Total number of vertices
+GLint       prevColrTriNumLevels;         // Used for updating Granularity changes
+GLfloat     *triButtonData       = NULL;  // Stores data (X, Y, sat, val) for each button dot
+GLfloat     prevTriX             = 0.0;   // Used for animating granularity changes
+GLfloat     prevTriY             = 0.0;   // Used for animating granularity changes
+GLfloat     prevTriDotScale      = 1.0;   // Used for animating granularity changes
+GLfloat     prevRingX            = 0.0;   // Used for animating selection ring
+GLfloat     prevRingY            = 0.0;   // Used for animating selection ring
+GLfloat     prevTriHue;                   // Used for animating selection ring
+GLfloat     prevTriSat;                   // Used for animating selection ring
+GLfloat     prevTriVal;                   // Used for animating selection ring
+GLfloat     prevTriSatSel        = 0.0;   // Used to resolve edge-case bug for animating selection ring
+GLfloat     prevTriValSel        = 0.0;   // Used to resolve edge-case bug for animating selection ring
+Matrix      colrTriMVP;                   // Transformation matrix passed to shader
+Params      colrTriPrevState;             // Stores transformations to avoid redundant recalculation
+GLuint      colrTriVBO;                   // Vertex Buffer Object ID
+GLboolean   colrTriFirstRun   = GL_TRUE;  // Determines if function is running for the first time (for VBO initialization)
 
 PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    PyObject *py_list;
@@ -223,8 +223,8 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       prevColrTriNumLevels = numLevels;
 
       // Create buffer if one does not exist, otherwise, delete and make a new one
-      if (firstRun == GL_TRUE) {
-         firstRun = GL_FALSE;
+      if (colrTriFirstRun == GL_TRUE) {
+         colrTriFirstRun = GL_FALSE;
          glGenBuffers(1, &colrTriVBO);
       } else {
          glDeleteBuffers(1, &colrTriVBO);
@@ -573,6 +573,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    //glEnableVertexAttribArray(1);
    glDrawArrays(GL_TRIANGLES, 0, colrTriVerts);
 
+   // Unbind Buffer Object
    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
    return py_list;
