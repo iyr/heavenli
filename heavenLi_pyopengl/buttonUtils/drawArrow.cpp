@@ -196,21 +196,6 @@ PyObject* drawArrow_drawButtons(PyObject* self, PyObject *args) {
       }
    }
 
-   // Old, Fixed-Function ES 1.1 code
-   /*
-   glPushMatrix();
-   glTranslatef(gx*w2h, gy, 0.0f);
-   if (w2h <= 1.0) {
-         scale = scale*w2h;
-   }
-   glScalef(scale, scale, 1);
-   glRotatef(ao, 0.0, 0.0, 1.0);
-   glColorPointer(3, GL_FLOAT, 0, arrowColorBuffer);
-   glVertexPointer(2, GL_FLOAT, 0, arrowCoordBuffer);
-   glDrawElements( GL_TRIANGLES, arrowVerts, GL_UNSIGNED_SHORT, arrowIndices);
-   glPopMatrix();
-   */
-
    // Update Transfomation Matrix if any chaoe in parameters
    if (  arrowPrevState.ao != ao     ||
          arrowPrevState.dx != gx     ||
