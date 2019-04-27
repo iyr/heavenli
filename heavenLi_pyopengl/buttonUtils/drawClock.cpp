@@ -162,7 +162,7 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
       prevClockHour     = hour;
       prevClockMinute   = minute;
 
-      // Create buffer if one does not exist, otherwise, delete and make a new one
+      // Create buffer object if one does not exist, otherwise, delete and make a new one
       if (clockFirstRun == GL_TRUE) {
          clockFirstRun = GL_FALSE;
          glGenBuffers(1, &clockVBO);
@@ -327,18 +327,6 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
 
    // Unbind Buffer Object
    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-   /*
-   //GLint mvpLoc;
-   //mvpLoc = glGetUniformLocation( 3, "MVP" );
-   //glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &clockMVP.mat[0][0] );
-   glUniformMatrix4fv( 0, 1, GL_FALSE, &clockMVP.mat[0][0] );
-   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, clockCoordBuffer);
-   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, clockColorBuffer);
-   //glEnableVertexAttribArray(0);
-   //glEnableVertexAttribArray(1);
-   glDrawArrays(GL_TRIANGLES, 0, clockVerts);
-   */
 
    Py_RETURN_NONE;
 }
