@@ -12,21 +12,23 @@
 
 using namespace std;
 
-GLfloat*    clockVertexBuffer = NULL;
-GLfloat*    clockColorBuffer  = NULL;
-GLushort*   clockIndices      = NULL;
-GLuint      clockVerts;
-GLuint      faceVerts;
-float       prevClockHour;
-float       prevClockMinute;
-Matrix      clockMVP;
-Params      clockPrevState;
+GLfloat     *clockCoordBuffer  = NULL; // Stores (X, Y) (float) for each vertex
+GLfloat     *clockColorBuffer  = NULL; // Stores (R, G, B) (float) for each vertex
+GLushort    *clockIndices      = NULL; // Stores index corresponding to each vertex
+GLuint      clockVerts;                // Total number of vertices
+GLuint      faceVerts;                 // Number of vertices of face (makes animating hands easier)
+GLfloat     prevClockHour;             // Used for animated hour hand
+GLfloat     prevClockMinute;           // Used for animated minute hand
+Matrix      clockMVP;                  // Transformation matrix passed to shader
+Params      clockPrevState;            // Stores transformations to avoid redundant recalculation
+GLuint      clockVBO;                  // Vertex Buffer Object ID
+GLboolean   clockFirstRun = GL_TRUE;   // Determines if function is running for the first time (for VBO initialization)
 
 PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
 {
    PyObject* faceColorPyTup;
    PyObject* detailColorPyTup;
-   GLfloat gx, gy, px, py, qx, qy, radius;
+   GLfloat gx, gy, px, py, qx, qy, radius, ao=0.0f;
    GLfloat scale, w2h, hour, minute;
    GLfloat detailColor[3];
    GLfloat faceColor[3];
@@ -53,7 +55,7 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
       detailColor[i] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, i)));
    }
    
-   if (  clockVertexBuffer == NULL  ||
+   if (  clockCoordBuffer  == NULL  ||
          clockColorBuffer  == NULL  ||
          clockIndices      == NULL  ){
 
@@ -102,11 +104,11 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
       clockVerts = verts.size()/2;
 
       // Pack Vertics and Colors into global array buffers
-      if (clockVertexBuffer == NULL) {
-         clockVertexBuffer = new GLfloat[clockVerts*2];
+      if (clockCoordBuffer == NULL) {
+         clockCoordBuffer = new GLfloat[clockVerts*2];
       } else {
-         delete [] clockVertexBuffer;
-         clockVertexBuffer = new GLfloat[clockVerts*2];
+         delete [] clockCoordBuffer;
+         clockCoordBuffer = new GLfloat[clockVerts*2];
       }
 
       if (clockColorBuffer == NULL) {
@@ -124,12 +126,12 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
       }
 
       for (unsigned int i = 0; i < clockVerts; i++) {
-         clockVertexBuffer[i*2]   = verts[i*2];
-         clockVertexBuffer[i*2+1] = verts[i*2+1];
-         clockIndices[i]          = i;
-         clockColorBuffer[i*3+0]  = colrs[i*3+0];
-         clockColorBuffer[i*3+1]  = colrs[i*3+1];
-         clockColorBuffer[i*3+2]  = colrs[i*3+2];
+         clockCoordBuffer[i*2]   = verts[i*2];
+         clockCoordBuffer[i*2+1] = verts[i*2+1];
+         clockIndices[i]         = i;
+         clockColorBuffer[i*3+0] = colrs[i*3+0];
+         clockColorBuffer[i*3+1] = colrs[i*3+1];
+         clockColorBuffer[i*3+2] = colrs[i*3+2];
       }
 
       // Calculate Initial Transformation Matrix
@@ -146,20 +148,59 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
       } else {
          MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
       }
-      //MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
+      MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
       MatrixMultiply( &clockMVP, &ModelView, &Ortho );
 
-      //clockPrevState.ao = ao;
+      clockPrevState.ao = ao;
       clockPrevState.dx = gx;
       clockPrevState.dy = gy;
       clockPrevState.sx = scale;
       clockPrevState.sy = scale;
       clockPrevState.w2h = w2h;
 
+      // Update State Machine variables
       prevClockHour     = hour;
       prevClockMinute   = minute;
+
+      // Create buffer if one does not exist, otherwise, delete and make a new one
+      if (clockFirstRun == GL_TRUE) {
+         clockFirstRun = GL_FALSE;
+         glGenBuffers(1, &clockVBO);
+      } else {
+         glDeleteBuffers(1, &clockVBO);
+         glGenBuffers(1, &clockVBO);
+      }
+
+      // Set active VBO
+      glBindBuffer(GL_ARRAY_BUFFER, clockVBO);
+
+      // Allocate space to hold all vertex coordinate and color data
+      glBufferData(GL_ARRAY_BUFFER, 5*sizeof(GLfloat)*clockVerts, NULL, GL_STATIC_DRAW);
+
+      // Convenience variables
+      GLuint64 offset = 0;
+      GLuint vertAttribCoord = glGetAttribLocation(3, "vertCoord");
+      GLuint vertAttribColor = glGetAttribLocation(3, "vertColor");
+
+      // Load Vertex coordinate data into VBO
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*clockVerts, clockCoordBuffer);
+      // Define how the Vertex coordinate data is layed out in the buffer
+      glVertexAttribPointer(vertAttribCoord, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLuint64*)offset);
+      // Enable the vertex attribute
+      glEnableVertexAttribArray(vertAttribCoord);
+
+      // Update offset to begin storing data in latter part of the buffer
+      offset += 2*sizeof(GLfloat)*clockVerts;
+
+      // Load Vertex coordinate data into VBO
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*clockVerts, clockColorBuffer);
+      // Define how the Vertex color data is layed out in the buffer
+      glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLuint64*)offset);
+      // Enable the vertex attribute
+      glEnableVertexAttribArray(vertAttribColor);
    } 
 
+   // Animate Clock Hands
    if (prevClockHour     != hour    ||
        prevClockMinute   != minute  ){
       px = 0.0;
@@ -175,7 +216,7 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
             radius, 
             faceVerts, 
             detailColor, 
-            clockVertexBuffer, 
+            clockCoordBuffer, 
             clockColorBuffer);
 
       qx = float(0.4*cos(degToRad(90-360*(minute/60.0))));
@@ -187,11 +228,19 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
             radius, 
             tmp, 
             detailColor, 
-            clockVertexBuffer, 
+            clockCoordBuffer, 
             clockColorBuffer);
 
       prevClockHour     = hour;
       prevClockMinute   = minute;
+
+      // Update Contents of VBO
+      // Set active VBO
+      glBindBuffer(GL_ARRAY_BUFFER, clockVBO);
+      // Convenience variables
+      GLuint64 offset = 0;
+      // Load Vertex coordinate data into VBO
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*clockVerts, clockCoordBuffer);
    }
 
    // Geometry up to date, check if colors need to be updated
@@ -201,6 +250,13 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
          for (int k = 0; k < circleSegments*3; k++) {
             clockColorBuffer[i + k*3] = faceColor[i];
          }
+         // Update Contents of VBO
+         // Set active VBO
+         glBindBuffer(GL_ARRAY_BUFFER, clockVBO);
+         // Convenience variable
+         GLuint64 offset = 2*sizeof(GLfloat)*clockVerts;
+         // Load Vertex Color data into VBO
+         glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*clockVerts, clockColorBuffer);
       }
 
       // Update Hand Colors
@@ -208,24 +264,18 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
          for (unsigned int k = circleSegments*3; k < clockVerts; k++) {
             clockColorBuffer[i + k*3] = detailColor[i];
          }
+         // Update Contents of VBO
+         // Set active VBO
+         glBindBuffer(GL_ARRAY_BUFFER, clockVBO);
+         // Convenience variable
+         GLuint64 offset = 2*sizeof(GLfloat)*clockVerts;
+         // Load Vertex Color data into VBO
+         glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*clockVerts, clockColorBuffer);
       }
    }
    
-   // Old, Fixed-Function ES 1.1 code
-   /*
-   glPushMatrix();
-   if (w2h <= 1.0) {
-         scale = scale*w2h;
-   }
-   glScalef(scale, scale, 1);
-   glColorPointer(3, GL_FLOAT, 0, clockColorBuffer);
-   glVertexPointer(2, GL_FLOAT, 0, clockVertexBuffer);
-   glDrawElements( GL_TRIANGLES, clockVerts, GL_UNSIGNED_SHORT, clockIndices);
-   glPopMatrix();
-   */
-
    // Update Transfomation Matrix if any change in parameters
-   if (  //clockPrevState.ao != ao     ||
+   if (  clockPrevState.ao != ao     ||
          clockPrevState.dx != gx     ||
          clockPrevState.dy != gy     ||
          clockPrevState.sx != scale  ||
@@ -245,26 +295,50 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
       } else {
          MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
       }
-      //MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
+      MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
       MatrixMultiply( &clockMVP, &ModelView, &Ortho );
 
-      //clockPrevState.ao = ao;
+      clockPrevState.ao = ao;
       clockPrevState.dx = gx;
       clockPrevState.dy = gy;
       clockPrevState.sx = scale;
       clockPrevState.sy = scale;
       clockPrevState.w2h = w2h;
+
+      // Set active VBO
+      glBindBuffer(GL_ARRAY_BUFFER, clockVBO);
+      // Define how the Vertex color data is layed out in the buffer
+      glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*clockVerts));
    }
 
+   // Pass Transformation Matrix to shader
+   glUniformMatrix4fv( 0, 1, GL_FALSE, &clockMVP.mat[0][0] );
+
+   // Set active VBO
+   glBindBuffer(GL_ARRAY_BUFFER, clockVBO);
+
+   // Define how the Vertex coordinate data is layed out in the buffer
+   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
+   // Define how the Vertex color data is layed out in the buffer
+   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*clockVerts));
+   //glEnableVertexAttribArray(0);
+   //glEnableVertexAttribArray(1);
+   glDrawArrays(GL_TRIANGLES, 0, clockVerts);
+
+   // Unbind Buffer Object
+   glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+   /*
    //GLint mvpLoc;
    //mvpLoc = glGetUniformLocation( 3, "MVP" );
    //glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &clockMVP.mat[0][0] );
    glUniformMatrix4fv( 0, 1, GL_FALSE, &clockMVP.mat[0][0] );
-   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, clockVertexBuffer);
+   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, clockCoordBuffer);
    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, clockColorBuffer);
    //glEnableVertexAttribArray(0);
    //glEnableVertexAttribArray(1);
    glDrawArrays(GL_TRIANGLES, 0, clockVerts);
+   */
 
    Py_RETURN_NONE;
 }
