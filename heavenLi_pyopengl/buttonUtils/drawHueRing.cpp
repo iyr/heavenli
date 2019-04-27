@@ -190,7 +190,7 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
       prevHueRingNumHues = numHues;
       prevHueRingAng = float(prevHueRingAni*360.0 + 90.0);
 
-      // Create buffer if one does not exist, otherwise, delete and make a new one
+      // Create buffer object if one does not exist, otherwise, delete and make a new one
       if (hueRingFirstRun == GL_TRUE) {
          hueRingFirstRun = GL_FALSE;
          glGenBuffers(1, &hueRingVBO);

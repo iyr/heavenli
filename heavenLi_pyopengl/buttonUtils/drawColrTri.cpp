@@ -222,7 +222,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       prevTriValSel = currentTriVal;
       prevColrTriNumLevels = numLevels;
 
-      // Create buffer if one does not exist, otherwise, delete and make a new one
+      // Create buffer object if one does not exist, otherwise, delete and make a new one
       if (colrTriFirstRun == GL_TRUE) {
          colrTriFirstRun = GL_FALSE;
          glGenBuffers(1, &colrTriVBO);
