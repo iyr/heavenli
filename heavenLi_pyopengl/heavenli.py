@@ -109,8 +109,6 @@ def drawHome():
             0.0, 0.0,
             statMac['hour'],
             statMac['minute'],
-            #12*(statMac['someVar']/100),
-            #60*(1.0-(statMac['someVar']/100)), 
             1.0, statMac['w2h'], 
             statMac['faceColor'],
             statMac['detailColor'])
