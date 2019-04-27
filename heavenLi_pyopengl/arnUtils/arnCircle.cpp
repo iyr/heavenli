@@ -13,26 +13,28 @@
 
 using namespace std;
 
-GLfloat  *homeCircleVertexBuffer       = NULL;
-GLfloat  *homeCircleColorBuffer        = NULL;
-GLushort *homeCircleIndices            = NULL;
-GLuint   homeCircleVerts;
-GLuint   homeCircleBuffer;
-GLuint   homeCircleIBO;
-GLint    prevHomeCircleNumBulbs;
-GLint    attribVertexPosition;
-GLint    attribVertexColor;
-Matrix   homeCircleMVP;
-Params   homeCirclePrevState;
+GLfloat     *homeCircleCoordBuffer  = NULL; // Stores (X, Y) (float) for each vertex
+GLfloat     *homeCircleColorBuffer  = NULL; // Stores (R, G, B) (float) for each vertex
+GLushort    *homeCircleIndices      = NULL; // Stores index corresponding to each vertex
+GLuint      homeCircleVerts;
+GLuint      homeCircleBuffer;
+GLuint      homeCircleIBO;
+GLint       prevHomeCircleNumBulbs;
+GLint       attribVertexPosition;
+GLint       attribVertexColor;
+Matrix      homeCircleMVP;                  // Transformation matrix passed to shader
+Params      homeCirclePrevState;            // Stores transformations to avoid redundant recalculation
+GLuint      homeCircleVBO;                  // Vertex Buffer Object ID
+GLboolean   homeCircleFirstRun = GL_TRUE;   // Determines if function is running for the first time (for VBO initialization)
 
 PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    PyObject* py_list;
    PyObject* py_tuple;
    PyObject* py_float;
-   float *bulbColors;
-   float gx, gy, wx, wy, ao, w2h; 
-   float R, G, B;
-   int numBulbs;
+   GLfloat *bulbColors;
+   GLfloat gx, gy, wx, wy, ao, w2h; 
+   GLfloat R, G, B;
+   GLint numBulbs;
 
    if (!PyArg_ParseTuple(args,
             "fffflffO",
@@ -61,7 +63,8 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
       }
    }
 
-   if (homeCircleVertexBuffer == NULL  ||
+   // Allocate and Define Geometry/Color buffers
+   if (homeCircleCoordBuffer  == NULL  ||
        homeCircleColorBuffer  == NULL  ||
        homeCircleIndices      == NULL  ){
 
@@ -69,7 +72,6 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
 
-      //char degSegment = 360 / circleSegments;
       char degSegment = 360 / circleSegments;
       float angOffset = float(360.0 / float(numBulbs));
       float tma;
@@ -100,11 +102,11 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
       homeCircleVerts = verts.size()/2;
       printf("homeCircle vertexBuffer length: %.i, Number of vertices: %.i, tris: %.i\n", homeCircleVerts*2, homeCircleVerts, homeCircleVerts/3);
 
-      if (homeCircleVertexBuffer == NULL) {
-         homeCircleVertexBuffer = new GLfloat[homeCircleVerts*2];
+      if (homeCircleCoordBuffer == NULL) {
+         homeCircleCoordBuffer = new GLfloat[homeCircleVerts*2];
       } else {
-         delete [] homeCircleVertexBuffer;
-         homeCircleVertexBuffer = new GLfloat[homeCircleVerts*2];
+         delete [] homeCircleCoordBuffer;
+         homeCircleCoordBuffer = new GLfloat[homeCircleVerts*2];
       }
 
       if (homeCircleColorBuffer == NULL) {
@@ -121,10 +123,9 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
          homeCircleIndices = new GLushort[homeCircleVerts];
       }
 
-//#     pragma omp parallel for
       for (unsigned int i = 0; i < homeCircleVerts; i++) {
-         homeCircleVertexBuffer[i*2+0] = verts[i*2+0];
-         homeCircleVertexBuffer[i*2+1] = verts[i*2+1];
+         homeCircleCoordBuffer[i*2+0] = verts[i*2+0];
+         homeCircleCoordBuffer[i*2+1] = verts[i*2+1];
          homeCircleColorBuffer[i*3+0]  = colrs[i*3+0];
          homeCircleColorBuffer[i*3+1]  = colrs[i*3+1];
          homeCircleColorBuffer[i*3+2]  = colrs[i*3+2];
@@ -145,6 +146,43 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
 
       prevHomeCircleNumBulbs = numBulbs;
       homeCirclePrevState.ao = ao;
+
+      // Create buffer object if one does not exist, otherwise, delete and make a new one
+      if (homeCircleFirstRun == GL_TRUE) {
+         homeCircleFirstRun = GL_FALSE;
+         glGenBuffers(1, &homeCircleVBO);
+      } else {
+         glDeleteBuffers(1, &homeCircleVBO);
+         glGenBuffers(1, &homeCircleVBO);
+      }
+
+      // Set active VBO
+      glBindBuffer(GL_ARRAY_BUFFER, homeCircleVBO);
+
+      // Allocate space to hold all vertex coordinate and color data
+      glBufferData(GL_ARRAY_BUFFER, 5*sizeof(GLfloat)*homeCircleVerts, NULL, GL_STATIC_DRAW);
+
+      // Convenience variables
+      GLuint64 offset = 0;
+      GLuint vertAttribCoord = glGetAttribLocation(3, "vertCoord");
+      GLuint vertAttribColor = glGetAttribLocation(3, "vertColor");
+
+      // Load Vertex coordinate data into VBO
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*homeCircleVerts, homeCircleCoordBuffer);
+      // Define how the Vertex coordinate data is layed out in the buffer
+      glVertexAttribPointer(vertAttribCoord, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLuint64*)offset);
+      // Enable the vertex attribute
+      glEnableVertexAttribArray(vertAttribCoord);
+
+      // Update offset to begin storing data in latter part of the buffer
+      offset += 2*sizeof(GLfloat)*homeCircleVerts;
+
+      // Load Vertex coordinate data into VBO
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*homeCircleVerts, homeCircleColorBuffer);
+      // Define how the Vertex color data is layed out in the buffer
+      glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLuint64*)offset);
+      // Enable the vertex attribute
+      glEnableVertexAttribArray(vertAttribColor);
    } 
    // Geometry already calculated, update colors
    /*
@@ -159,12 +197,18 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
       for (int j = 0; j < numBulbs; j++) {
          if (float(bulbColors[ i + j*3 ]) != homeCircleColorBuffer[ i + j*(60/numBulbs)*9 ] ||
                prevHomeCircleNumBulbs != numBulbs) {
-//#           pragma omp parallel for
             for (int k = 0; k < (60/numBulbs)*3; k++) {
                if (float(bulbColors[ i + j*3 ]) != homeCircleColorBuffer[ i + k*3 + j*(60/numBulbs)*9 ]) {
                   homeCircleColorBuffer[ j*(60/numBulbs)*9 + k*3 + i ] = float(bulbColors[i+j*3]);
                }
             }
+            // Update Contents of VBO
+            // Set active VBO
+            glBindBuffer(GL_ARRAY_BUFFER, homeCircleVBO);
+            // Convenience variable
+            GLuint64 offset = 2*sizeof(GLfloat)*homeCircleVerts;
+            // Load Vertex Color data into VBO
+            glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*homeCircleVerts, homeCircleColorBuffer);
          }
       }
    }
@@ -172,17 +216,6 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    prevHomeCircleNumBulbs = numBulbs;
    delete [] bulbColors;
 
-   // Old, Fixed Function ES 1.1 code
-   /*
-   glPushMatrix();
-   glScalef(sqrt(w2h)*hypot(wx, wy), sqrt(wy/wx)*hypot(wx, wy), 1.0);
-   glRotatef(ao, 0, 0, 1);
-   glColorPointer(3, GL_FLOAT, 0, homeCircleColorBuffer);
-   glVertexPointer(2, GL_FLOAT, 0, homeCircleVertexBuffer);
-   glDrawElements( GL_TRIANGLES, homeCircleVerts, GL_UNSIGNED_SHORT, homeCircleIndices);
-   glPopMatrix();
-   */
-   
    // Update Transfomation Matrix if any change in parameters
    if (  homeCirclePrevState.ao != ao  ||
          homeCirclePrevState.ao != homeCirclePrevState.ao   ) {
@@ -198,16 +231,22 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
       homeCirclePrevState.ao = ao;
    }
 
-   //GLint mvpLoc;
-   //mvpLoc = glGetUniformLocation( 3, "MVP" );
-   //printf("mvpLoc: %i\n", mvpLoc);
-   //glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &homeCircleMVP.mat[0][0] );
+   // Pass Transformation Matrix to shader
    glUniformMatrix4fv( 0, 1, GL_FALSE, &homeCircleMVP.mat[0][0] );
-   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, homeCircleVertexBuffer);
-   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, homeCircleColorBuffer);
+
+   // Set active VBO
+   glBindBuffer(GL_ARRAY_BUFFER, homeCircleVBO);
+
+   // Define how the Vertex coordinate data is layed out in the buffer
+   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
+   // Define how the Vertex color data is layed out in the buffer
+   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*homeCircleVerts));
    //glEnableVertexAttribArray(0);
    //glEnableVertexAttribArray(1);
    glDrawArrays(GL_TRIANGLES, 0, homeCircleVerts);
+
+   // Unbind Buffer Object
+   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
    Py_RETURN_NONE;
 }
@@ -220,27 +259,29 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
  * <= 3: color representation + outline + bulb markers + bulb marker halos
  * <= 4: color representation + outline + bulb markers + bulb marker halos + grand halo
  */
-GLfloat  *iconCircleVertexBuffer = NULL;
-GLfloat  *iconCircleColorBuffer  = NULL;
-GLushort *iconCircleIndices      = NULL;
-GLfloat  *iconCircleBulbVertices = NULL;
-GLuint   iconCircleVerts;
-int      prevIconCircleNumBulbs;
-int      prevIconCircleFeatures;
+GLfloat     *iconCircleCoordBuffer  = NULL; // Stores (X, Y) (float) for each vertex
+GLfloat     *iconCircleColorBuffer  = NULL; // Stores (R, G, B) (float) for each vertex
+GLushort    *iconCircleIndices      = NULL; // Stores index corresponding to each vertex
+GLfloat     *iconCircleBulbVertices = NULL;
+GLuint      iconCircleVerts;
+int         prevIconCircleNumBulbs;
+int         prevIconCircleFeatures;
 extern float offScreen;
-Matrix   iconCircleMVP;
-Params   iconCirclePrevState;
+Matrix      iconCircleMVP;                  // Transformation matrix passed to shader
+Params      iconCirclePrevState;            // Stores transformations to avoid redundant recalculation
+GLuint      iconCircleVBO;                  // Vertex Buffer Object ID
+GLboolean   iconCircleFirstRun = GL_TRUE;   // Determines if function is running for the first time (for VBO initialization)
 
 PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
    PyObject*   detailColorPyTup;
    PyObject*   py_list;
    PyObject*   py_tuple;
    PyObject*   py_float;
-   float*      bulbColors;
-   float       detailColor[3];
-   float       gx, gy, scale, ao, w2h;
+   GLfloat*    bulbColors;
+   GLfloat     detailColor[3];
+   GLfloat     gx, gy, scale, ao, w2h;
    long        numBulbs, features;
-   int         vertIndex = 0;
+   GLint       vertIndex = 0;
    if (!PyArg_ParseTuple(args,
             "ffflOlffO",
             &gx, &gy,
@@ -260,7 +301,6 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
 
    // Parse array of tuples containing RGB Colors of bulbs
    bulbColors = new float[numBulbs*3];
-//#  pragma omp parallel for
    for (int i = 0; i < numBulbs; i++) {
       py_tuple = PyList_GetItem(py_list, i);
 
@@ -275,10 +315,10 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
    detailColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 1)));
    detailColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2)));
 
-   if (iconCircleVertexBuffer == NULL     ||
-       iconCircleColorBuffer  == NULL     ||
-       iconCircleIndices      == NULL     ||
-       iconCircleBulbVertices == NULL     ){
+   if (iconCircleCoordBuffer  == NULL  ||
+       iconCircleColorBuffer  == NULL  ||
+       iconCircleIndices      == NULL  ||
+       iconCircleBulbVertices == NULL  ){
 
       printf("Generating geometry for iconCircle\n");
       vector<GLfloat> markerVerts;
@@ -296,7 +336,6 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
 
       // Draw Only the color wheel if 'features' <= 0
       delta = degSegment;
-//#     pragma omp parallel for
       for (int j = 0; j < numBulbs; j++) {
          R = bulbColors[j*3+0];
          G = bulbColors[j*3+1];
@@ -343,7 +382,6 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       int iUlim = circleSegments/3;
       int tmo = 180/numBulbs;
       degSegment = 360/iUlim;
-//#     pragma omp parallel for
       for (int j = 0; j < 6; j++) {
          if ( (j < numBulbs) && (features >= 2) ) {
             tmx = float(cos(degToRad(-90 - j*(angOffset) + tmo))*1.05);
@@ -357,7 +395,6 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
 
       // Draw Halos for bulb Markers
       // Draw Color Wheel + Outline + Bulb Markers + Bulb Halos if 'features' == 3
-//#     pragma omp parallel for
       for (int j = 0; j < 6; j++) {
          if (j < numBulbs && features >= 3) {
             tmx = float(cos(degToRad(-90 - j*(angOffset) + tmo))*1.05);
@@ -404,11 +441,11 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       }
 
       // Safely (Re)allocate memory for icon Vertex Buffer
-      if (iconCircleVertexBuffer == NULL) {
-         iconCircleVertexBuffer = new GLfloat[iconCircleVerts*2];
+      if (iconCircleCoordBuffer == NULL) {
+         iconCircleCoordBuffer = new GLfloat[iconCircleVerts*2];
       } else {
-         delete [] iconCircleVertexBuffer;
-         iconCircleVertexBuffer = new GLfloat[iconCircleVerts*2];
+         delete [] iconCircleCoordBuffer;
+         iconCircleCoordBuffer = new GLfloat[iconCircleVerts*2];
       }
 
       // Safely (Re)allocate memory for icon Color Buffer
@@ -427,16 +464,14 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
          iconCircleIndices = new GLushort[iconCircleVerts];
       }
 
-//#     pragma omp parallel for
       for (unsigned int i = 0; i < markerVerts.size()/2; i++) {
          iconCircleBulbVertices[i*2+0] = markerVerts[i*2+0];
          iconCircleBulbVertices[i*2+1] = markerVerts[i*2+1];
       }
 
-//#     pragma omp parallel for
       for (unsigned int i = 0; i < iconCircleVerts; i++) {
-         iconCircleVertexBuffer[i*2+0] = verts[i*2+0];
-         iconCircleVertexBuffer[i*2+1] = verts[i*2+1];
+         iconCircleCoordBuffer[i*2+0] = verts[i*2+0];
+         iconCircleCoordBuffer[i*2+1] = verts[i*2+1];
          iconCircleColorBuffer[i*3+0]  = colrs[i*3+0];
          iconCircleColorBuffer[i*3+1]  = colrs[i*3+1];
          iconCircleColorBuffer[i*3+2]  = colrs[i*3+2];
@@ -466,8 +501,46 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       iconCirclePrevState.sy = scale;
       iconCirclePrevState.w2h = w2h;
 
+      // Update State machine variables
       prevIconCircleNumBulbs = numBulbs;
       prevIconCircleFeatures = features;
+
+      // Create buffer object if one does not exist, otherwise, delete and make a new one
+      if (iconCircleFirstRun == GL_TRUE) {
+         iconCircleFirstRun = GL_FALSE;
+         glGenBuffers(1, &iconCircleVBO);
+      } else {
+         glDeleteBuffers(1, &iconCircleVBO);
+         glGenBuffers(1, &iconCircleVBO);
+      }
+
+      // Set active VBO
+      glBindBuffer(GL_ARRAY_BUFFER, iconCircleVBO);
+
+      // Allocate space to hold all vertex coordinate and color data
+      glBufferData(GL_ARRAY_BUFFER, 5*sizeof(GLfloat)*iconCircleVerts, NULL, GL_STATIC_DRAW);
+
+      // Convenience variables
+      GLuint64 offset = 0;
+      GLuint vertAttribCoord = glGetAttribLocation(3, "vertCoord");
+      GLuint vertAttribColor = glGetAttribLocation(3, "vertColor");
+
+      // Load Vertex coordinate data into VBO
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*iconCircleVerts, iconCircleCoordBuffer);
+      // Define how the Vertex coordinate data is layed out in the buffer
+      glVertexAttribPointer(vertAttribCoord, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLuint64*)offset);
+      // Enable the vertex attribute
+      glEnableVertexAttribArray(vertAttribCoord);
+
+      // Update offset to begin storing data in latter part of the buffer
+      offset += 2*sizeof(GLfloat)*iconCircleVerts;
+
+      // Load Vertex coordinate data into VBO
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*iconCircleVerts, iconCircleColorBuffer);
+      // Define how the Vertex color data is layed out in the buffer
+      glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLuint64*)offset);
+      // Enable the vertex attribute
+      glEnableVertexAttribArray(vertAttribColor);
    } 
    // Update Geometry, if alreay allocated
    if (prevIconCircleFeatures != features ||
@@ -497,7 +570,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       // Update Outline
       if (features >= 1) {
          // Move Outline on-screen if off-screen
-         if (iconCircleVertexBuffer[vertIndex] > offScreen/2) {
+         if (iconCircleCoordBuffer[vertIndex] > offScreen/2) {
             tmx = -offScreen;
             tmy = -offScreen;
          } else {
@@ -506,7 +579,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
          }
       } else {
          // Move Outline of screen if on screen
-         if (iconCircleVertexBuffer[vertIndex] > offScreen/2) {
+         if (iconCircleCoordBuffer[vertIndex] > offScreen/2) {
             tmx = 0.0;
             tmy = 0.0;
          } else {
@@ -514,29 +587,27 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
             tmy = offScreen;
          }
       }
-      //float delta = float(degSegment);
-//#     pragma omp parallel for
-      for (int i = 0; i < circleSegments; i++) {
-         /* X */ iconCircleVertexBuffer[vertIndex +  0] = iconCircleVertexBuffer[vertIndex +  0] + tmx;
-         /* Y */ iconCircleVertexBuffer[vertIndex +  1] = iconCircleVertexBuffer[vertIndex +  1] + tmy;
-         /* X */ iconCircleVertexBuffer[vertIndex +  2] = iconCircleVertexBuffer[vertIndex +  2] + tmx;
-         /* Y */ iconCircleVertexBuffer[vertIndex +  3] = iconCircleVertexBuffer[vertIndex +  3] + tmy;
-         /* X */ iconCircleVertexBuffer[vertIndex +  4] = iconCircleVertexBuffer[vertIndex +  4] + tmx;
-         /* Y */ iconCircleVertexBuffer[vertIndex +  5] = iconCircleVertexBuffer[vertIndex +  5] + tmy;
 
-         /* X */ iconCircleVertexBuffer[vertIndex +  6] = iconCircleVertexBuffer[vertIndex +  6] + tmx;
-         /* Y */ iconCircleVertexBuffer[vertIndex +  7] = iconCircleVertexBuffer[vertIndex +  7] + tmy;
-         /* X */ iconCircleVertexBuffer[vertIndex +  8] = iconCircleVertexBuffer[vertIndex +  8] + tmx;
-         /* Y */ iconCircleVertexBuffer[vertIndex +  9] = iconCircleVertexBuffer[vertIndex +  9] + tmy;
-         /* X */ iconCircleVertexBuffer[vertIndex + 10] = iconCircleVertexBuffer[vertIndex + 10] + tmx;
-         /* Y */ iconCircleVertexBuffer[vertIndex + 11] = iconCircleVertexBuffer[vertIndex + 11] + tmy;
+      for (int i = 0; i < circleSegments; i++) {
+         /* X */ iconCircleCoordBuffer[vertIndex +  0] = iconCircleCoordBuffer[vertIndex +  0] + tmx;
+         /* Y */ iconCircleCoordBuffer[vertIndex +  1] = iconCircleCoordBuffer[vertIndex +  1] + tmy;
+         /* X */ iconCircleCoordBuffer[vertIndex +  2] = iconCircleCoordBuffer[vertIndex +  2] + tmx;
+         /* Y */ iconCircleCoordBuffer[vertIndex +  3] = iconCircleCoordBuffer[vertIndex +  3] + tmy;
+         /* X */ iconCircleCoordBuffer[vertIndex +  4] = iconCircleCoordBuffer[vertIndex +  4] + tmx;
+         /* Y */ iconCircleCoordBuffer[vertIndex +  5] = iconCircleCoordBuffer[vertIndex +  5] + tmy;
+
+         /* X */ iconCircleCoordBuffer[vertIndex +  6] = iconCircleCoordBuffer[vertIndex +  6] + tmx;
+         /* Y */ iconCircleCoordBuffer[vertIndex +  7] = iconCircleCoordBuffer[vertIndex +  7] + tmy;
+         /* X */ iconCircleCoordBuffer[vertIndex +  8] = iconCircleCoordBuffer[vertIndex +  8] + tmx;
+         /* Y */ iconCircleCoordBuffer[vertIndex +  9] = iconCircleCoordBuffer[vertIndex +  9] + tmy;
+         /* X */ iconCircleCoordBuffer[vertIndex + 10] = iconCircleCoordBuffer[vertIndex + 10] + tmx;
+         /* Y */ iconCircleCoordBuffer[vertIndex + 11] = iconCircleCoordBuffer[vertIndex + 11] + tmy;
          vertIndex += 12;
       }
 
       // Update Bulb Markers
       // Draw Color Wheel + Outline + BulbMarkers if 'features' >= 2
       int iUlim = circleSegments/3;
-      //int degSegment = 360/iUlim;
       for (int j = 0; j < 6; j++) {
          if (j < numBulbs && features >= 2) {
             tmx = float(cos(degToRad(-90 - j*(angOffset) + 180/numBulbs))*1.05);
@@ -545,16 +616,15 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
             tmx = offScreen;
             tmy = offScreen;
          }
-//#        pragma omp parallel for
          for (int i = 0; i < iUlim; i++) {
-            /* X */ iconCircleVertexBuffer[vertIndex++] = tmx + iconCircleBulbVertices[i*6+0];
-            /* Y */ iconCircleVertexBuffer[vertIndex++] = tmy + iconCircleBulbVertices[i*6+1];
+            /* X */ iconCircleCoordBuffer[vertIndex++] = tmx + iconCircleBulbVertices[i*6+0];
+            /* Y */ iconCircleCoordBuffer[vertIndex++] = tmy + iconCircleBulbVertices[i*6+1];
 
-            /* X */ iconCircleVertexBuffer[vertIndex++] = tmx + iconCircleBulbVertices[i*6+2];
-            /* Y */ iconCircleVertexBuffer[vertIndex++] = tmy + iconCircleBulbVertices[i*6+3];
+            /* X */ iconCircleCoordBuffer[vertIndex++] = tmx + iconCircleBulbVertices[i*6+2];
+            /* Y */ iconCircleCoordBuffer[vertIndex++] = tmy + iconCircleBulbVertices[i*6+3];
 
-            /* X */ iconCircleVertexBuffer[vertIndex++] = tmx + iconCircleBulbVertices[i*6+4];
-            /* Y */ iconCircleVertexBuffer[vertIndex++] = tmy + iconCircleBulbVertices[i*6+5];
+            /* X */ iconCircleCoordBuffer[vertIndex++] = tmx + iconCircleBulbVertices[i*6+4];
+            /* Y */ iconCircleCoordBuffer[vertIndex++] = tmy + iconCircleBulbVertices[i*6+5];
          }
       }
 
@@ -568,20 +638,20 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
             tmx = offScreen;
             tmy = offScreen;
          }
-//#        pragma omp parallel for
+
          for (int i = 0; i < iUlim; i++) {
-            /* X */ iconCircleVertexBuffer[vertIndex++] = tmx + iconCircleBulbVertices[iUlim*6 + i*12 +  0];
-            /* Y */ iconCircleVertexBuffer[vertIndex++] = tmy + iconCircleBulbVertices[iUlim*6 + i*12 +  1];
-            /* X */ iconCircleVertexBuffer[vertIndex++] = tmx + iconCircleBulbVertices[iUlim*6 + i*12 +  2];
-            /* Y */ iconCircleVertexBuffer[vertIndex++] = tmy + iconCircleBulbVertices[iUlim*6 + i*12 +  3];
-            /* X */ iconCircleVertexBuffer[vertIndex++] = tmx + iconCircleBulbVertices[iUlim*6 + i*12 +  4];
-            /* Y */ iconCircleVertexBuffer[vertIndex++] = tmy + iconCircleBulbVertices[iUlim*6 + i*12 +  5];
-            /* X */ iconCircleVertexBuffer[vertIndex++] = tmx + iconCircleBulbVertices[iUlim*6 + i*12 +  6];
-            /* Y */ iconCircleVertexBuffer[vertIndex++] = tmy + iconCircleBulbVertices[iUlim*6 + i*12 +  7];
-            /* X */ iconCircleVertexBuffer[vertIndex++] = tmx + iconCircleBulbVertices[iUlim*6 + i*12 +  8];
-            /* Y */ iconCircleVertexBuffer[vertIndex++] = tmy + iconCircleBulbVertices[iUlim*6 + i*12 +  9];
-            /* X */ iconCircleVertexBuffer[vertIndex++] = tmx + iconCircleBulbVertices[iUlim*6 + i*12 + 10];
-            /* Y */ iconCircleVertexBuffer[vertIndex++] = tmy + iconCircleBulbVertices[iUlim*6 + i*12 + 11];
+            /* X */ iconCircleCoordBuffer[vertIndex++] = tmx + iconCircleBulbVertices[iUlim*6 + i*12 +  0];
+            /* Y */ iconCircleCoordBuffer[vertIndex++] = tmy + iconCircleBulbVertices[iUlim*6 + i*12 +  1];
+            /* X */ iconCircleCoordBuffer[vertIndex++] = tmx + iconCircleBulbVertices[iUlim*6 + i*12 +  2];
+            /* Y */ iconCircleCoordBuffer[vertIndex++] = tmy + iconCircleBulbVertices[iUlim*6 + i*12 +  3];
+            /* X */ iconCircleCoordBuffer[vertIndex++] = tmx + iconCircleBulbVertices[iUlim*6 + i*12 +  4];
+            /* Y */ iconCircleCoordBuffer[vertIndex++] = tmy + iconCircleBulbVertices[iUlim*6 + i*12 +  5];
+            /* X */ iconCircleCoordBuffer[vertIndex++] = tmx + iconCircleBulbVertices[iUlim*6 + i*12 +  6];
+            /* Y */ iconCircleCoordBuffer[vertIndex++] = tmy + iconCircleBulbVertices[iUlim*6 + i*12 +  7];
+            /* X */ iconCircleCoordBuffer[vertIndex++] = tmx + iconCircleBulbVertices[iUlim*6 + i*12 +  8];
+            /* Y */ iconCircleCoordBuffer[vertIndex++] = tmy + iconCircleBulbVertices[iUlim*6 + i*12 +  9];
+            /* X */ iconCircleCoordBuffer[vertIndex++] = tmx + iconCircleBulbVertices[iUlim*6 + i*12 + 10];
+            /* Y */ iconCircleCoordBuffer[vertIndex++] = tmy + iconCircleBulbVertices[iUlim*6 + i*12 + 11];
          }
       }
 
@@ -589,7 +659,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       // Draw Color Wheel + Outline + Bulb Markers + Bulb Halos + Grand Halo if 'features' == 4
       if (features >= 4) {
          // Move Outline on-screen if off-screen
-         if (iconCircleVertexBuffer[vertIndex] > offScreen/2) {
+         if (iconCircleCoordBuffer[vertIndex] > offScreen/2) {
             tmx = -offScreen;
             tmy = -offScreen;
          } else {
@@ -598,7 +668,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
          }
       } else {
          // Move Outline of screen if on screen
-         if (iconCircleVertexBuffer[vertIndex] > offScreen/2) {
+         if (iconCircleCoordBuffer[vertIndex] > offScreen/2) {
             tmx = 0.0;
             tmy = 0.0;
          } else {
@@ -606,26 +676,32 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
             tmy = offScreen;
          }
       }
-//#     pragma omp parallel for
-      for (int i = 0; i < circleSegments; i++) {
-         /* X */ iconCircleVertexBuffer[vertIndex +  0] = iconCircleVertexBuffer[vertIndex +  0]  + tmx;
-         /* Y */ iconCircleVertexBuffer[vertIndex +  1] = iconCircleVertexBuffer[vertIndex +  1]  + tmy;
-         /* X */ iconCircleVertexBuffer[vertIndex +  2] = iconCircleVertexBuffer[vertIndex +  2]  + tmx;
-         /* Y */ iconCircleVertexBuffer[vertIndex +  3] = iconCircleVertexBuffer[vertIndex +  3]  + tmy;
-         /* X */ iconCircleVertexBuffer[vertIndex +  4] = iconCircleVertexBuffer[vertIndex +  4]  + tmx;
-         /* Y */ iconCircleVertexBuffer[vertIndex +  5] = iconCircleVertexBuffer[vertIndex +  5]  + tmy;
 
-         /* X */ iconCircleVertexBuffer[vertIndex +  6] = iconCircleVertexBuffer[vertIndex +  6]  + tmx;
-         /* Y */ iconCircleVertexBuffer[vertIndex +  7] = iconCircleVertexBuffer[vertIndex +  7]  + tmy;
-         /* X */ iconCircleVertexBuffer[vertIndex +  8] = iconCircleVertexBuffer[vertIndex +  8]  + tmx;
-         /* Y */ iconCircleVertexBuffer[vertIndex +  9] = iconCircleVertexBuffer[vertIndex +  9]  + tmy;
-         /* X */ iconCircleVertexBuffer[vertIndex + 10] = iconCircleVertexBuffer[vertIndex + 10]  + tmx;
-         /* Y */ iconCircleVertexBuffer[vertIndex + 11] = iconCircleVertexBuffer[vertIndex + 11]  + tmy;
+      for (int i = 0; i < circleSegments; i++) {
+         /* X */ iconCircleCoordBuffer[vertIndex +  0] = iconCircleCoordBuffer[vertIndex +  0]  + tmx;
+         /* Y */ iconCircleCoordBuffer[vertIndex +  1] = iconCircleCoordBuffer[vertIndex +  1]  + tmy;
+         /* X */ iconCircleCoordBuffer[vertIndex +  2] = iconCircleCoordBuffer[vertIndex +  2]  + tmx;
+         /* Y */ iconCircleCoordBuffer[vertIndex +  3] = iconCircleCoordBuffer[vertIndex +  3]  + tmy;
+         /* X */ iconCircleCoordBuffer[vertIndex +  4] = iconCircleCoordBuffer[vertIndex +  4]  + tmx;
+         /* Y */ iconCircleCoordBuffer[vertIndex +  5] = iconCircleCoordBuffer[vertIndex +  5]  + tmy;
+
+         /* X */ iconCircleCoordBuffer[vertIndex +  6] = iconCircleCoordBuffer[vertIndex +  6]  + tmx;
+         /* Y */ iconCircleCoordBuffer[vertIndex +  7] = iconCircleCoordBuffer[vertIndex +  7]  + tmy;
+         /* X */ iconCircleCoordBuffer[vertIndex +  8] = iconCircleCoordBuffer[vertIndex +  8]  + tmx;
+         /* Y */ iconCircleCoordBuffer[vertIndex +  9] = iconCircleCoordBuffer[vertIndex +  9]  + tmy;
+         /* X */ iconCircleCoordBuffer[vertIndex + 10] = iconCircleCoordBuffer[vertIndex + 10]  + tmx;
+         /* Y */ iconCircleCoordBuffer[vertIndex + 11] = iconCircleCoordBuffer[vertIndex + 11]  + tmy;
          vertIndex += 12;
       }
 
       prevIconCircleFeatures = features;
-      //printf("iconCircle vertIndex after update: %.i, vertices updated: %.i, tris updated: %.i\n", vertIndex, vertIndex/2, vertIndex/6);
+      // Update Contents of VBO
+      // Set active VBO
+      glBindBuffer(GL_ARRAY_BUFFER, iconCircleVBO);
+      // Convenience variable
+      GLuint64 offset = 0;
+      // Load Vertex Color data into VBO
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*iconCircleVerts, iconCircleCoordBuffer);
    }
    // Geometry already calculated, update colors
    /*
@@ -641,12 +717,18 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
          int tmo = (60/numBulbs)*9;
          if (float(bulbColors[i+j*3]) != iconCircleColorBuffer[i + j*tmo]
                || prevIconCircleNumBulbs != numBulbs){
-//#           pragma omp parallel for
             for (int k = 0; k < tmo/3; k++) {
                if (float(bulbColors[i+j*3]) != iconCircleColorBuffer[i + k*3 + j*tmo]){
                   iconCircleColorBuffer[j*tmo + k*3 + i] = float(bulbColors[i+j*3]);
                }
             }
+            // Update Contents of VBO
+            // Set active VBO
+            glBindBuffer(GL_ARRAY_BUFFER, iconCircleVBO);
+            // Convenience variable
+            GLuint64 offset = 2*sizeof(GLfloat)*iconCircleVerts;
+            // Load Vertex Color data into VBO
+            glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*iconCircleVerts, iconCircleColorBuffer);
          }
       }
 
@@ -655,27 +737,18 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
          for (unsigned int k = circleSegments*3; k < iconCircleVerts; k++) {
             iconCircleColorBuffer[ k*3 + i ] = float(detailColor[i]);
          }
+         // Update Contents of VBO
+         // Set active VBO
+         glBindBuffer(GL_ARRAY_BUFFER, iconCircleVBO);
+         // Convenience variable
+         GLuint64 offset = 2*sizeof(GLfloat)*iconCircleVerts;
+         // Load Vertex Color data into VBO
+         glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*iconCircleVerts, iconCircleColorBuffer);
       }
    }
 
    prevIconCircleNumBulbs = numBulbs;
    delete [] bulbColors;
-
-   // Old, Fixed-Fuinction ES 1.1 code
-   /*
-   glPushMatrix();
-   glTranslatef(gx*w2h, gy, 0);
-   if (w2h >= 1) {
-      glScalef(scale, scale, 1);
-   } else {
-      glScalef(scale*w2h, scale*w2h, 1);
-   }
-   glRotatef(ao, 0, 0, 1);
-   glColorPointer(3, GL_FLOAT, 0, iconCircleColorBuffer);
-   glVertexPointer(2, GL_FLOAT, 0, iconCircleVertexBuffer);
-   glDrawElements( GL_TRIANGLES, iconCircleVerts, GL_UNSIGNED_SHORT, iconCircleIndices);
-   glPopMatrix();
-   */
 
    // Update Transfomation Matrix if any change in parameters
    if (  iconCirclePrevState.ao != ao     ||
@@ -709,15 +782,22 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       iconCirclePrevState.w2h = w2h;
    }
 
-   //GLint mvpLoc;
-   //mvpLoc = glGetUniformLocation( 3, "MVP" );
-   //glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &iconCircleMVP.mat[0][0] );
+   // Pass Transformation Matrix to shader
    glUniformMatrix4fv( 0, 1, GL_FALSE, &iconCircleMVP.mat[0][0] );
-   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, iconCircleVertexBuffer);
-   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, iconCircleColorBuffer);
+
+   // Set active VBO
+   glBindBuffer(GL_ARRAY_BUFFER, iconCircleVBO);
+
+   // Define how the Vertex coordinate data is layed out in the buffer
+   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
+   // Define how the Vertex color data is layed out in the buffer
+   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*iconCircleVerts));
    //glEnableVertexAttribArray(0);
    //glEnableVertexAttribArray(1);
    glDrawArrays(GL_TRIANGLES, 0, iconCircleVerts);
+
+   // Unbind Buffer Object
+   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
    Py_RETURN_NONE;
 }
