@@ -148,20 +148,21 @@ def drawHome():
             #0.05, 
             #statMac['w2h'], 
             #'AaBbCcDdEeFfGgHhIiJjKkLlMm',
-            #(1.0, 1.0, 1.0))
+            #( 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100)))
 
-    #printText(
-            #-0.9, -0.875,
-            #0.05, 
-            #statMac['w2h'], 
-            #'NnOoPpQqRrSsTtUuVvWwXxYyZz',
-            #(1.0, 1.0, 1.0))
+    printText(
+            -0.9, -0.875,
+            0.05, 
+            statMac['w2h'], 
+            'NnOoPpQqRrSsTtUuVvWwXxYyZz',
+            ( 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100)))
 
     if (statMac['lamps'][0].getArn() == 0):
         drawIconCircle(0.75, 0.75, 
                 iconSize*0.85, 
                 2,
-                ( 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100)),
+                (0.5, 0.5, 0.5),
+                #( 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100)),
                 statMac['lamps'][0].getNumBulbs(), 
                 statMac['lamps'][0].getAngle(), 
                 statMac['w2h'], 
@@ -171,7 +172,8 @@ def drawHome():
         drawIconLinear(0.75, 0.75, 
                 iconSize*0.85, 
                 2,
-                ( 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100)),
+                (0.5, 0.5, 0.5),
+                #( 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100)),
                 statMac['lamps'][0].getNumBulbs(), 
                 statMac['lamps'][0].getAngle(), 
                 statMac['w2h'], 
