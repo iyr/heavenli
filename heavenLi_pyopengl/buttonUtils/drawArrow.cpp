@@ -15,7 +15,7 @@ using namespace std;
 GLfloat     *arrowCoordBuffer  = NULL; // Stores (X, Y) (float) for each vertex
 GLfloat     *arrowColorBuffer  = NULL; // Stores (R, G, B) (float) for each vertex
 GLushort    *arrowIndices      = NULL; // Stores index corresponding to each vertex
-GLuint      arrowVerts;
+GLuint      arrowVerts;                // Total number of vertices
 GLuint      extraArrowVerts;
 Matrix      arrowMVP;                  // Transformation matrix passed to shader
 Params      arrowPrevState;            // Stores transformations to avoid redundant recalculation

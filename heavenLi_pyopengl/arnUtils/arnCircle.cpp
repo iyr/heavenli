@@ -12,6 +12,7 @@
 #include <math.h>
 
 using namespace std;
+extern float offScreen;
 
 GLfloat     *homeCircleCoordBuffer  = NULL; // Stores (X, Y) (float) for each vertex
 GLfloat     *homeCircleColorBuffer  = NULL; // Stores (R, G, B) (float) for each vertex
@@ -53,7 +54,6 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
 
    // Parse array of tuples containing RGB Colors of bulbs
    bulbColors = new float[numBulbs*3];
-//#  pragma omp parallel for
    for (int i = 0; i < numBulbs; i++) {
       py_tuple = PyList_GetItem(py_list, i);
 
@@ -217,8 +217,8 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
    delete [] bulbColors;
 
    // Update Transfomation Matrix if any change in parameters
-   if (  homeCirclePrevState.ao != ao  ||
-         homeCirclePrevState.ao != homeCirclePrevState.ao   ) {
+   if (  homeCirclePrevState.ao != ao                       ||
+         homeCirclePrevState.ao != homeCirclePrevState.ao   ){
       Matrix Ortho;
       Matrix ModelView;
       float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
@@ -266,7 +266,6 @@ GLfloat     *iconCircleBulbVertices = NULL;
 GLuint      iconCircleVerts;
 int         prevIconCircleNumBulbs;
 int         prevIconCircleFeatures;
-extern float offScreen;
 Matrix      iconCircleMVP;                  // Transformation matrix passed to shader
 Params      iconCirclePrevState;            // Stores transformations to avoid redundant recalculation
 GLuint      iconCircleVBO;                  // Vertex Buffer Object ID
@@ -315,6 +314,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
    detailColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 1)));
    detailColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2)));
 
+   // Allocate and Define Geometry/Color buffers
    if (iconCircleCoordBuffer  == NULL  ||
        iconCircleColorBuffer  == NULL  ||
        iconCircleIndices      == NULL  ||
