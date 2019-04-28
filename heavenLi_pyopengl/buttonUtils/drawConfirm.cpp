@@ -179,6 +179,7 @@ PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
       glEnableVertexAttribArray(vertAttribColor);
    }
 
+   // Geometry allocated, check if color needs to be updated
    for (int i = 0; i < 3; i++) {
       if ( confirmColorBuffer[extraConfirmVerts*3+i] != extraColor[i] ) {
          for (unsigned int k = extraConfirmVerts; k < confirmVerts; k++) {
