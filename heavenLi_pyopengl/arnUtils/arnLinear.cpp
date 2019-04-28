@@ -10,6 +10,7 @@
 #include <vector>
 #include <math.h>
 using namespace std;
+extern float offScreen;
 
 float constrain(float value, float min, float max) {
    if (value > max)
@@ -20,23 +21,24 @@ float constrain(float value, float min, float max) {
       return value;
 }
 
-GLfloat  *homeLinearVertexBuffer = NULL;
-GLfloat  *homeLinearColorBuffer  = NULL;
-GLushort *homeLinearIndices      = NULL;
-GLuint   homeLinearVerts;
-int      prevHomeLinearNumbulbs;
-extern float offScreen;
-Matrix   homeLinearMVP;
-Params   homeLinearPrevState;
+GLfloat     *homeLinearCoordBuffer  = NULL; // Stores (X, Y) (float) for each vertex
+GLfloat     *homeLinearColorBuffer  = NULL; // Stores (R, G, B) (float) for each vertex
+GLushort    *homeLinearIndices      = NULL; // Stores index corresponding to each vertex
+GLuint      homeLinearVerts;
+GLint       prevHomeLinearNumbulbs;
+Matrix      homeLinearMVP;                  // Transformation matrix passed to shader
+Params      homeLinearPrevState;            // Stores transformations to avoid redundant recalculation
+GLuint      homeLinearVBO;                  // Vertex Buffer Object ID
+GLboolean   homeLinearFirstRun = GL_TRUE;   // Determines if function is running for the first time (for VBO initialization)
 
 PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
    PyObject* py_list;
    PyObject* py_tuple;
    PyObject* py_float;
-   float *bulbColors;
-   float gx, gy, wx, wy, ao, w2h; 
-   float R, G, B;
-   int numBulbs;
+   GLfloat *bulbColors;
+   GLfloat gx, gy, wx, wy, ao, w2h; 
+   GLfloat R, G, B;
+   GLint numBulbs;
    if (!PyArg_ParseTuple(args,
             "fffflffO",
             &gx, &gy,
@@ -49,9 +51,9 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
    {
       Py_RETURN_NONE;
    }
+
    // Parse array of tuples containing RGB Colors of bulbs
    bulbColors = new float[numBulbs*3];
-//#  pragma omp parallel for
    for (int i = 0; i < numBulbs; i++) {
       py_tuple = PyList_GetItem(py_list, i);
 
@@ -61,7 +63,8 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
       }
    }
 
-   if (homeLinearVertexBuffer    == NULL ||
+   // Allocate and Define Geometry/Color buffers
+   if (homeLinearCoordBuffer    == NULL ||
        homeLinearColorBuffer     == NULL ||
        homeLinearIndices         == NULL ){
 
@@ -120,11 +123,11 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
       homeLinearVerts = verts.size()/2;
       printf("homeLinear vertexBuffer length: %.i, Number of vertices: %.i, tris: %.i\n", homeLinearVerts*2, homeLinearVerts, homeLinearVerts/3);
 
-      if (homeLinearVertexBuffer == NULL) {
-         homeLinearVertexBuffer = new GLfloat[homeLinearVerts*2];
+      if (homeLinearCoordBuffer == NULL) {
+         homeLinearCoordBuffer = new GLfloat[homeLinearVerts*2];
       } else {
-         delete [] homeLinearVertexBuffer;
-         homeLinearVertexBuffer = new GLfloat[homeLinearVerts*2];
+         delete [] homeLinearCoordBuffer;
+         homeLinearCoordBuffer = new GLfloat[homeLinearVerts*2];
       }
 
       if (homeLinearColorBuffer == NULL) {
@@ -141,10 +144,9 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
          homeLinearIndices = new GLushort[homeLinearVerts];
       }
 
-//#     pragma omp parallel for
       for (unsigned int i = 0; i < homeLinearVerts; i++) {
-         homeLinearVertexBuffer[i*2+0] = verts[i*2+0];
-         homeLinearVertexBuffer[i*2+1] = verts[i*2+1];
+         homeLinearCoordBuffer[i*2+0] = verts[i*2+0];
+         homeLinearCoordBuffer[i*2+1] = verts[i*2+1];
          homeLinearColorBuffer[i*3+0]  = colrs[i*3+0];
          homeLinearColorBuffer[i*3+1]  = colrs[i*3+1];
          homeLinearColorBuffer[i*3+2]  = colrs[i*3+2];
@@ -165,23 +167,65 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
 
       homeLinearPrevState.ao = ao;
       prevHomeLinearNumbulbs = numBulbs;
+
+      // Create buffer object if one does not exist, otherwise, delete and make a new one
+      if (homeLinearFirstRun == GL_TRUE) {
+         homeLinearFirstRun = GL_FALSE;
+         glGenBuffers(1, &homeLinearVBO);
+      } else {
+         glDeleteBuffers(1, &homeLinearVBO);
+         glGenBuffers(1, &homeLinearVBO);
+      }
+
+      // Set active VBO
+      glBindBuffer(GL_ARRAY_BUFFER, homeLinearVBO);
+
+      // Allocate space to hold all vertex coordinate and color data
+      glBufferData(GL_ARRAY_BUFFER, 5*sizeof(GLfloat)*homeLinearVerts, NULL, GL_STATIC_DRAW);
+
+      // Convenience variables
+      GLuint64 bytesOffset = 0;
+      GLuint vertAttribCoord = glGetAttribLocation(3, "vertCoord");
+      GLuint vertAttribColor = glGetAttribLocation(3, "vertColor");
+
+      // Load Vertex coordinate data into VBO
+      glBufferSubData(GL_ARRAY_BUFFER, bytesOffset, sizeof(GLfloat)*2*homeLinearVerts, homeLinearCoordBuffer);
+      // Define how the Vertex coordinate data is layed out in the buffer
+      glVertexAttribPointer(vertAttribCoord, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLuint64*)bytesOffset);
+      // Enable the vertex attribute
+      glEnableVertexAttribArray(vertAttribCoord);
+
+      // Update offset to begin storing data in latter part of the buffer
+      offset += 2*sizeof(GLfloat)*homeLinearVerts;
+
+      // Load Vertex coordinate data into VBO
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*homeLinearVerts, homeLinearColorBuffer);
+      // Define how the Vertex color data is layed out in the buffer
+      glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLuint64*)bytesOffset);
+      // Enable the vertex attribute
+      glEnableVertexAttribArray(vertAttribColor);
    } 
    // Geometry already calculated, check if any colors need to be updated.
-   else {
-      for (int i = 0; i < 3; i++) {
-         for (int j = 0; j < numBulbs; j++) {
-            // 3*2*3:
-            // 3 (R,G,B) color values per vertex
-            // 2 Triangles per Quad
-            // 3 Vertices per Triangle
-            if (bulbColors[i+j*3] != homeLinearColorBuffer[i + j*(60/numBulbs)*9*2 ] || prevHomeLinearNumbulbs != numBulbs) {
-//#              pragma omp parallel for
-               for (int k = 0; k < (60/numBulbs)*3*2; k++) {  
-                  if (bulbColors[i+j*3] != homeLinearColorBuffer[i + k*3 + j*(60/numBulbs)*9*2 ]) {
-                     homeLinearColorBuffer[ j*(60/numBulbs)*9*2 + k*3 + i ] = bulbColors[i+j*3];
-                  }
+   for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < numBulbs; j++) {
+         // 3*2*3:
+         // 3 (R,G,B) color values per vertex
+         // 2 Triangles per Quad
+         // 3 Vertices per Triangle
+         if (bulbColors[i+j*3] != homeLinearColorBuffer[i + j*(60/numBulbs)*9*2 ] || 
+               prevHomeLinearNumbulbs != numBulbs) {
+            for (int k = 0; k < (60/numBulbs)*3*2; k++) {  
+               if (bulbColors[i+j*3] != homeLinearColorBuffer[i + k*3 + j*(60/numBulbs)*9*2 ]) {
+                  homeLinearColorBuffer[ j*(60/numBulbs)*9*2 + k*3 + i ] = bulbColors[i+j*3];
                }
             }
+            // Update Contents of VBO
+            // Set active VBO
+            glBindBuffer(GL_ARRAY_BUFFER, homeLinearVBO);
+            // Convenience variable
+            GLuint64 offset = 2*sizeof(GLfloat)*homeLinearVerts;
+            // Load Vertex Color data into VBO
+            glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*homeLinearVerts, homeLinearColorBuffer);
          }
       }
    }
@@ -189,21 +233,9 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
    prevHomeLinearNumbulbs = numBulbs;
    delete [] bulbColors;
 
-   // Old, Fixed Function ES 1.1 code
-   /*
-   glPushMatrix();
-   glRotatef(90, 0, 0, 1);
-   glScalef(0.5, float(w2h/2.0), 1);
-   glRotatef(ao+90, 0, 0, 1);
-   glColorPointer(3, GL_FLOAT, 0, homeLinearColorBuffer);
-   glVertexPointer(2, GL_FLOAT, 0, homeLinearVertexBuffer);
-   glDrawElements( GL_TRIANGLES, homeLinearVerts, GL_UNSIGNED_SHORT, homeLinearIndices);
-   glPopMatrix();
-   */
-
    // Update Transfomation Matrix if any change in parameters
-   if (  homeLinearPrevState.ao != ao  ||
-         homeLinearPrevState.ao != homeLinearPrevState.ao   ) {
+   if (  homeLinearPrevState.ao != ao                       ||
+         homeLinearPrevState.ao != homeLinearPrevState.ao   ){
       Matrix Ortho;
       Matrix ModelView;
       float left = -w2h, right = w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
@@ -218,16 +250,22 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
       homeLinearPrevState.ao = ao;
    }
 
-   //GLint mvpLoc;
-   //mvpLoc = glGetUniformLocation( 3, "MVP" );
-   //printf("mvpLoc: %i\n", mvpLoc);
-   //glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &homeLinearMVP.mat[0][0] );
+   // Pass Transformation Matrix to shader
    glUniformMatrix4fv( 0, 1, GL_FALSE, &homeLinearMVP.mat[0][0] );
-   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, homeLinearVertexBuffer);
-   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, homeLinearColorBuffer);
+
+   // Set active VBO
+   glBindBuffer(GL_ARRAY_BUFFER, homeLinearVBO);
+
+   // Define how the Vertex coordinate data is layed out in the buffer
+   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
+   // Define how the Vertex color data is layed out in the buffer
+   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*homeLinearVerts));
    //glEnableVertexAttribArray(0);
    //glEnableVertexAttribArray(1);
    glDrawArrays(GL_TRIANGLES, 0, homeLinearVerts);
+
+   // Unbind Buffer Object
+   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
    Py_RETURN_NONE;
 }
@@ -241,27 +279,29 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
  * <= 4: color representation + outline + bulb markers + bulb marker halos + grand halo
  */
 
-GLfloat  *iconLinearVertexBuffer = NULL;
-GLfloat  *iconLinearColorBuffer  = NULL;
-GLushort *iconLinearIndices      = NULL;
-GLfloat  *iconLinearBulbVertices = NULL;
-GLuint   iconLinearVerts;
-int      prevIconLinearNumBulbs;
-int      prevIconLinearFeatures;
-Matrix   iconLinearMVP;
-Params   iconLinearPrevState;
+GLfloat     *iconLinearCoordBuffer  = NULL; // Stores (X, Y) (float) for each vertex
+GLfloat     *iconLinearColorBuffer  = NULL; // Stores (R, G, B) (float) for each vertex
+GLushort    *iconLinearIndices      = NULL; // Stores index corresponding to each vertex
+GLfloat     *iconLinearBulbVertices = NULL;
+GLuint      iconLinearVerts;
+GLint       prevIconLinearNumBulbs;
+GLint       prevIconLinearFeatures;
+Matrix      iconLinearMVP;                  // Transformation matrix passed to shader
+Params      iconLinearPrevState;            // Stores transformations to avoid redundant recalculation
+GLuint      iconLinearVBO;                  // Vertex Buffer Object ID
+GLboolean   iconLinearFirstRun = GL_TRUE;   // Determines if function is running for the first time (for VBO initialization)
 
 PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
    PyObject*   detailColorPyTup;
    PyObject*   py_list;
    PyObject*   py_tuple;
    PyObject*   py_float;
-   float*      bulbColors;
-   float       detailColor[3];
-   float       gx, gy, scale, ao, w2h; 
-   float       R, G, B;
+   GLfloat*    bulbColors;
+   GLfloat     detailColor[3];
+   GLfloat     gx, gy, scale, ao, w2h; 
+   GLfloat     R, G, B;
    long        numBulbs, features;
-   int         vertIndex = 0;
+   GLint       vertIndex = 0;
    if (!PyArg_ParseTuple(args,
             "ffflOlffO",
             &gx, &gy,
@@ -295,7 +335,8 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
    detailColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 1)));
    detailColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2)));
 
-   if (iconLinearVertexBuffer == NULL     ||
+   // Allocate and Define Geometry/Color buffers
+   if (iconLinearCoordBuffer  == NULL     ||
        iconLinearColorBuffer  == NULL     ||
        iconLinearIndices      == NULL     ){
 
@@ -746,11 +787,11 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       printf("iconLinear vertexBuffer length: %.i, Number of vertices: %.i, tris: %.i\n", iconLinearVerts*2, iconLinearVerts, iconLinearVerts/3);
 
       // Safely (Re)allocate memory for icon Vertex Buffer
-      if (iconLinearVertexBuffer == NULL) {
-         iconLinearVertexBuffer = new GLfloat[iconLinearVerts*2];
+      if (iconLinearCoordBuffer == NULL) {
+         iconLinearCoordBuffer = new GLfloat[iconLinearVerts*2];
       } else {
-         delete [] iconLinearVertexBuffer;
-         iconLinearVertexBuffer = new GLfloat[iconLinearVerts*2];
+         delete [] iconLinearCoordBuffer;
+         iconLinearCoordBuffer = new GLfloat[iconLinearVerts*2];
       }
 
       // Safely (Re)allocate memory for icon Color Buffer
@@ -770,8 +811,8 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       }
 
       for (unsigned int i = 0; i < iconLinearVerts; i++) {
-         iconLinearVertexBuffer[i*2+0] = verts[i*2+0];
-         iconLinearVertexBuffer[i*2+1] = verts[i*2+1];
+         iconLinearCoordBuffer[i*2+0] = verts[i*2+0];
+         iconLinearCoordBuffer[i*2+1] = verts[i*2+1];
          iconLinearColorBuffer[i*3+0]  = colrs[i*3+0];
          iconLinearColorBuffer[i*3+1]  = colrs[i*3+1];
          iconLinearColorBuffer[i*3+2]  = colrs[i*3+2];
@@ -801,8 +842,46 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       iconLinearPrevState.sy = scale;
       iconLinearPrevState.w2h = w2h;
 
+      // Update State machine variables
       prevIconLinearNumBulbs = numBulbs;
       prevIconLinearFeatures = features;
+
+      // Create buffer object if one does not exist, otherwise, delete and make a new one
+      if (iconLinearFirstRun == GL_TRUE) {
+         iconLinearFirstRun = GL_FALSE;
+         glGenBuffers(1, &iconLinearVBO);
+      } else {
+         glDeleteBuffers(1, &iconLinearVBO);
+         glGenBuffers(1, &iconLinearVBO);
+      }
+
+      // Set active VBO
+      glBindBuffer(GL_ARRAY_BUFFER, iconLinearVBO);
+
+      // Allocate space to hold all vertex coordinate and color data
+      glBufferData(GL_ARRAY_BUFFER, 5*sizeof(GLfloat)*iconLinearVerts, NULL, GL_STATIC_DRAW);
+
+      // Convenience variables
+      GLuint64 bytesOffset = 0;
+      GLuint vertAttribCoord = glGetAttribLocation(3, "vertCoord");
+      GLuint vertAttribColor = glGetAttribLocation(3, "vertColor");
+
+      // Load Vertex coordinate data into VBO
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*iconLinearVerts, iconLinearCoordBuffer);
+      // Define how the Vertex coordinate data is layed out in the buffer
+      glVertexAttribPointer(vertAttribCoord, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLuint64*)bytesOffset);
+      // Enable the vertex attribute
+      glEnableVertexAttribArray(vertAttribCoord);
+
+      // Update offset to begin storing data in latter part of the buffer
+      offset += 2*sizeof(GLfloat)*iconLinearVerts;
+
+      // Load Vertex coordinate data into VBO
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*iconLinearVerts, iconLinearColorBuffer);
+      // Define how the Vertex color data is layed out in the buffer
+      glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLuint64*)bytesOffset);
+      // Enable the vertex attribute
+      glEnableVertexAttribArray(vertAttribColor);
    } 
 
    // Update features
@@ -834,7 +913,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       // Define OutLine
       // Move outline on-screen if off-screen
       if (features >= 1) {
-         if (iconLinearVertexBuffer[vertIndex+1] > offScreen/2) {
+         if (iconLinearCoordBuffer[vertIndex+1] > offScreen/2) {
             tmx = -offScreen;
             tmy = -offScreen;
          } else {
@@ -844,7 +923,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       } 
       // Move outline off-screen if on-screen
       else {
-         if (iconLinearVertexBuffer[vertIndex+1] > offScreen/2) {
+         if (iconLinearCoordBuffer[vertIndex+1] > offScreen/2) {
             tmx = 0.0;
             tmy = 0.0;
          } else {
@@ -857,19 +936,19 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
        * Draw Outer Straights
        */
       for (int i = 0; i < 4; i++ ) {
-         /* X */ iconLinearVertexBuffer[vertIndex +  0] = iconLinearVertexBuffer[vertIndex +  0] + tmx;
-         /* Y */ iconLinearVertexBuffer[vertIndex +  1] = iconLinearVertexBuffer[vertIndex +  1] + tmy;
-         /* X */ iconLinearVertexBuffer[vertIndex +  2] = iconLinearVertexBuffer[vertIndex +  2] + tmx;
-         /* Y */ iconLinearVertexBuffer[vertIndex +  3] = iconLinearVertexBuffer[vertIndex +  3] + tmy;
-         /* X */ iconLinearVertexBuffer[vertIndex +  4] = iconLinearVertexBuffer[vertIndex +  4] + tmx;
-         /* Y */ iconLinearVertexBuffer[vertIndex +  5] = iconLinearVertexBuffer[vertIndex +  5] + tmy;
+         /* X */ iconLinearCoordBuffer[vertIndex +  0] = iconLinearCoordBuffer[vertIndex +  0] + tmx;
+         /* Y */ iconLinearCoordBuffer[vertIndex +  1] = iconLinearCoordBuffer[vertIndex +  1] + tmy;
+         /* X */ iconLinearCoordBuffer[vertIndex +  2] = iconLinearCoordBuffer[vertIndex +  2] + tmx;
+         /* Y */ iconLinearCoordBuffer[vertIndex +  3] = iconLinearCoordBuffer[vertIndex +  3] + tmy;
+         /* X */ iconLinearCoordBuffer[vertIndex +  4] = iconLinearCoordBuffer[vertIndex +  4] + tmx;
+         /* Y */ iconLinearCoordBuffer[vertIndex +  5] = iconLinearCoordBuffer[vertIndex +  5] + tmy;
 
-         /* X */ iconLinearVertexBuffer[vertIndex +  6] = iconLinearVertexBuffer[vertIndex +  6] + tmx;
-         /* Y */ iconLinearVertexBuffer[vertIndex +  7] = iconLinearVertexBuffer[vertIndex +  7] + tmy;
-         /* X */ iconLinearVertexBuffer[vertIndex +  8] = iconLinearVertexBuffer[vertIndex +  8] + tmx;
-         /* Y */ iconLinearVertexBuffer[vertIndex +  9] = iconLinearVertexBuffer[vertIndex +  9] + tmy;
-         /* X */ iconLinearVertexBuffer[vertIndex + 10] = iconLinearVertexBuffer[vertIndex + 10] + tmx;
-         /* Y */ iconLinearVertexBuffer[vertIndex + 11] = iconLinearVertexBuffer[vertIndex + 11] + tmy;
+         /* X */ iconLinearCoordBuffer[vertIndex +  6] = iconLinearCoordBuffer[vertIndex +  6] + tmx;
+         /* Y */ iconLinearCoordBuffer[vertIndex +  7] = iconLinearCoordBuffer[vertIndex +  7] + tmy;
+         /* X */ iconLinearCoordBuffer[vertIndex +  8] = iconLinearCoordBuffer[vertIndex +  8] + tmx;
+         /* Y */ iconLinearCoordBuffer[vertIndex +  9] = iconLinearCoordBuffer[vertIndex +  9] + tmy;
+         /* X */ iconLinearCoordBuffer[vertIndex + 10] = iconLinearCoordBuffer[vertIndex + 10] + tmx;
+         /* Y */ iconLinearCoordBuffer[vertIndex + 11] = iconLinearCoordBuffer[vertIndex + 11] + tmy;
          vertIndex += 12;
       }
 
@@ -878,19 +957,19 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
        */
       for (int i = 0; i < 4; i++) {
          for (int j = 0; j < circleSegments; j++) {
-            /* X */ iconLinearVertexBuffer[vertIndex +  0] = iconLinearVertexBuffer[vertIndex +  0] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex +  1] = iconLinearVertexBuffer[vertIndex +  1] + tmy;
-            /* X */ iconLinearVertexBuffer[vertIndex +  2] = iconLinearVertexBuffer[vertIndex +  2] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex +  3] = iconLinearVertexBuffer[vertIndex +  3] + tmy;
-            /* X */ iconLinearVertexBuffer[vertIndex +  4] = iconLinearVertexBuffer[vertIndex +  4] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex +  5] = iconLinearVertexBuffer[vertIndex +  5] + tmy;
+            /* X */ iconLinearCoordBuffer[vertIndex +  0] = iconLinearCoordBuffer[vertIndex +  0] + tmx;
+            /* Y */ iconLinearCoordBuffer[vertIndex +  1] = iconLinearCoordBuffer[vertIndex +  1] + tmy;
+            /* X */ iconLinearCoordBuffer[vertIndex +  2] = iconLinearCoordBuffer[vertIndex +  2] + tmx;
+            /* Y */ iconLinearCoordBuffer[vertIndex +  3] = iconLinearCoordBuffer[vertIndex +  3] + tmy;
+            /* X */ iconLinearCoordBuffer[vertIndex +  4] = iconLinearCoordBuffer[vertIndex +  4] + tmx;
+            /* Y */ iconLinearCoordBuffer[vertIndex +  5] = iconLinearCoordBuffer[vertIndex +  5] + tmy;
 
-            /* X */ iconLinearVertexBuffer[vertIndex +  6] = iconLinearVertexBuffer[vertIndex +  6] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex +  7] = iconLinearVertexBuffer[vertIndex +  7] + tmy;
-            /* X */ iconLinearVertexBuffer[vertIndex +  8] = iconLinearVertexBuffer[vertIndex +  8] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex +  9] = iconLinearVertexBuffer[vertIndex +  9] + tmy;
-            /* X */ iconLinearVertexBuffer[vertIndex + 10] = iconLinearVertexBuffer[vertIndex + 10] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex + 11] = iconLinearVertexBuffer[vertIndex + 11] + tmy;
+            /* X */ iconLinearCoordBuffer[vertIndex +  6] = iconLinearCoordBuffer[vertIndex +  6] + tmx;
+            /* Y */ iconLinearCoordBuffer[vertIndex +  7] = iconLinearCoordBuffer[vertIndex +  7] + tmy;
+            /* X */ iconLinearCoordBuffer[vertIndex +  8] = iconLinearCoordBuffer[vertIndex +  8] + tmx;
+            /* Y */ iconLinearCoordBuffer[vertIndex +  9] = iconLinearCoordBuffer[vertIndex +  9] + tmy;
+            /* X */ iconLinearCoordBuffer[vertIndex + 10] = iconLinearCoordBuffer[vertIndex + 10] + tmx;
+            /* Y */ iconLinearCoordBuffer[vertIndex + 11] = iconLinearCoordBuffer[vertIndex + 11] + tmy;
             vertIndex += 12;
          }
       }
@@ -911,12 +990,12 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
          }
 //#        pragma omp parallel for
          for (int j = 0; j < circleSegments; j++) {
-            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearBulbVertices[j*6 + 0] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearBulbVertices[j*6 + 1] + tmy;
-            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearBulbVertices[j*6 + 2] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearBulbVertices[j*6 + 3] + tmy;
-            /* X */ iconLinearVertexBuffer[vertIndex++] = iconLinearBulbVertices[j*6 + 4] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex++] = iconLinearBulbVertices[j*6 + 5] + tmy;
+            /* X */ iconLinearCoordBuffer[vertIndex++] = iconLinearBulbVertices[j*6 + 0] + tmx;
+            /* Y */ iconLinearCoordBuffer[vertIndex++] = iconLinearBulbVertices[j*6 + 1] + tmy;
+            /* X */ iconLinearCoordBuffer[vertIndex++] = iconLinearBulbVertices[j*6 + 2] + tmx;
+            /* Y */ iconLinearCoordBuffer[vertIndex++] = iconLinearBulbVertices[j*6 + 3] + tmy;
+            /* X */ iconLinearCoordBuffer[vertIndex++] = iconLinearBulbVertices[j*6 + 4] + tmx;
+            /* Y */ iconLinearCoordBuffer[vertIndex++] = iconLinearBulbVertices[j*6 + 5] + tmy;
          }
       }
 
@@ -940,49 +1019,49 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
          for (int j = 0; j < circleSegments; j++) {
             tmj = 6*circleSegments + j*12;
             if (i == 0) {
-               /* X */ iconLinearVertexBuffer[vertIndex +  0] = constrain( tmx + iconLinearBulbVertices[  0 + tmj], -2.0, tmx+limit);
-               /* Y */ iconLinearVertexBuffer[vertIndex +  1] =            tmy + iconLinearBulbVertices[  1 + tmj];
-               /* X */ iconLinearVertexBuffer[vertIndex +  2] = constrain( tmx + iconLinearBulbVertices[  2 + tmj], -2.0, tmx+limit);
-               /* Y */ iconLinearVertexBuffer[vertIndex +  3] =            tmy + iconLinearBulbVertices[  3 + tmj];
-               /* X */ iconLinearVertexBuffer[vertIndex +  4] = constrain( tmx + iconLinearBulbVertices[  4 + tmj], -2.0, tmx+limit);
-               /* Y */ iconLinearVertexBuffer[vertIndex +  5] =            tmy + iconLinearBulbVertices[  5 + tmj];
+               /* X */ iconLinearCoordBuffer[vertIndex +  0] = constrain( tmx + iconLinearBulbVertices[  0 + tmj], -2.0, tmx+limit);
+               /* Y */ iconLinearCoordBuffer[vertIndex +  1] =            tmy + iconLinearBulbVertices[  1 + tmj];
+               /* X */ iconLinearCoordBuffer[vertIndex +  2] = constrain( tmx + iconLinearBulbVertices[  2 + tmj], -2.0, tmx+limit);
+               /* Y */ iconLinearCoordBuffer[vertIndex +  3] =            tmy + iconLinearBulbVertices[  3 + tmj];
+               /* X */ iconLinearCoordBuffer[vertIndex +  4] = constrain( tmx + iconLinearBulbVertices[  4 + tmj], -2.0, tmx+limit);
+               /* Y */ iconLinearCoordBuffer[vertIndex +  5] =            tmy + iconLinearBulbVertices[  5 + tmj];
 
-               /* X */ iconLinearVertexBuffer[vertIndex +  6] = constrain( tmx + iconLinearBulbVertices[  6 + tmj], -2.0, tmx+limit);
-               /* Y */ iconLinearVertexBuffer[vertIndex +  7] =            tmy + iconLinearBulbVertices[  7 + tmj];
-               /* X */ iconLinearVertexBuffer[vertIndex +  8] = constrain( tmx + iconLinearBulbVertices[  8 + tmj], -2.0, tmx+limit);
-               /* Y */ iconLinearVertexBuffer[vertIndex +  9] =            tmy + iconLinearBulbVertices[  9 + tmj];
-               /* X */ iconLinearVertexBuffer[vertIndex + 10] = constrain( tmx + iconLinearBulbVertices[ 10 + tmj], -2.0, tmx+limit);
-               /* Y */ iconLinearVertexBuffer[vertIndex + 11] =            tmy + iconLinearBulbVertices[ 11 + tmj];
+               /* X */ iconLinearCoordBuffer[vertIndex +  6] = constrain( tmx + iconLinearBulbVertices[  6 + tmj], -2.0, tmx+limit);
+               /* Y */ iconLinearCoordBuffer[vertIndex +  7] =            tmy + iconLinearBulbVertices[  7 + tmj];
+               /* X */ iconLinearCoordBuffer[vertIndex +  8] = constrain( tmx + iconLinearBulbVertices[  8 + tmj], -2.0, tmx+limit);
+               /* Y */ iconLinearCoordBuffer[vertIndex +  9] =            tmy + iconLinearBulbVertices[  9 + tmj];
+               /* X */ iconLinearCoordBuffer[vertIndex + 10] = constrain( tmx + iconLinearBulbVertices[ 10 + tmj], -2.0, tmx+limit);
+               /* Y */ iconLinearCoordBuffer[vertIndex + 11] =            tmy + iconLinearBulbVertices[ 11 + tmj];
                vertIndex += 12;
             } else if (i == numBulbs-1) {
-               /* X */ iconLinearVertexBuffer[vertIndex +  0] = constrain( tmx + iconLinearBulbVertices[  0 + tmj], tmx-limit,  2.0);
-               /* Y */ iconLinearVertexBuffer[vertIndex +  1] =            tmy + iconLinearBulbVertices[  1 + tmj];
-               /* X */ iconLinearVertexBuffer[vertIndex +  2] = constrain( tmx + iconLinearBulbVertices[  2 + tmj], tmx-limit,  2.0);
-               /* Y */ iconLinearVertexBuffer[vertIndex +  3] =            tmy + iconLinearBulbVertices[  3 + tmj];
-               /* X */ iconLinearVertexBuffer[vertIndex +  4] = constrain( tmx + iconLinearBulbVertices[  4 + tmj], tmx-limit,  2.0);
-               /* Y */ iconLinearVertexBuffer[vertIndex +  5] =            tmy + iconLinearBulbVertices[  5 + tmj];
+               /* X */ iconLinearCoordBuffer[vertIndex +  0] = constrain( tmx + iconLinearBulbVertices[  0 + tmj], tmx-limit,  2.0);
+               /* Y */ iconLinearCoordBuffer[vertIndex +  1] =            tmy + iconLinearBulbVertices[  1 + tmj];
+               /* X */ iconLinearCoordBuffer[vertIndex +  2] = constrain( tmx + iconLinearBulbVertices[  2 + tmj], tmx-limit,  2.0);
+               /* Y */ iconLinearCoordBuffer[vertIndex +  3] =            tmy + iconLinearBulbVertices[  3 + tmj];
+               /* X */ iconLinearCoordBuffer[vertIndex +  4] = constrain( tmx + iconLinearBulbVertices[  4 + tmj], tmx-limit,  2.0);
+               /* Y */ iconLinearCoordBuffer[vertIndex +  5] =            tmy + iconLinearBulbVertices[  5 + tmj];
 
-               /* X */ iconLinearVertexBuffer[vertIndex +  6] = constrain( tmx + iconLinearBulbVertices[  6 + tmj], tmx-limit,  2.0);
-               /* Y */ iconLinearVertexBuffer[vertIndex +  7] =            tmy + iconLinearBulbVertices[  7 + tmj];
-               /* X */ iconLinearVertexBuffer[vertIndex +  8] = constrain( tmx + iconLinearBulbVertices[  8 + tmj], tmx-limit,  2.0);
-               /* Y */ iconLinearVertexBuffer[vertIndex +  9] =            tmy + iconLinearBulbVertices[  9 + tmj];
-               /* X */ iconLinearVertexBuffer[vertIndex + 10] = constrain( tmx + iconLinearBulbVertices[ 10 + tmj], tmx-limit,  2.0);
-               /* Y */ iconLinearVertexBuffer[vertIndex + 11] =            tmy + iconLinearBulbVertices[ 11 + tmj];
+               /* X */ iconLinearCoordBuffer[vertIndex +  6] = constrain( tmx + iconLinearBulbVertices[  6 + tmj], tmx-limit,  2.0);
+               /* Y */ iconLinearCoordBuffer[vertIndex +  7] =            tmy + iconLinearBulbVertices[  7 + tmj];
+               /* X */ iconLinearCoordBuffer[vertIndex +  8] = constrain( tmx + iconLinearBulbVertices[  8 + tmj], tmx-limit,  2.0);
+               /* Y */ iconLinearCoordBuffer[vertIndex +  9] =            tmy + iconLinearBulbVertices[  9 + tmj];
+               /* X */ iconLinearCoordBuffer[vertIndex + 10] = constrain( tmx + iconLinearBulbVertices[ 10 + tmj], tmx-limit,  2.0);
+               /* Y */ iconLinearCoordBuffer[vertIndex + 11] =            tmy + iconLinearBulbVertices[ 11 + tmj];
                vertIndex += 12;
             } else {
-               /* X */ iconLinearVertexBuffer[vertIndex +  0] = constrain( tmx + iconLinearBulbVertices[  0 + tmj], tmx-limit, tmx+limit);
-               /* Y */ iconLinearVertexBuffer[vertIndex +  1] =            tmy + iconLinearBulbVertices[  1 + tmj];
-               /* X */ iconLinearVertexBuffer[vertIndex +  2] = constrain( tmx + iconLinearBulbVertices[  2 + tmj], tmx-limit, tmx+limit);
-               /* Y */ iconLinearVertexBuffer[vertIndex +  3] =            tmy + iconLinearBulbVertices[  3 + tmj];
-               /* X */ iconLinearVertexBuffer[vertIndex +  4] = constrain( tmx + iconLinearBulbVertices[  4 + tmj], tmx-limit, tmx+limit);
-               /* Y */ iconLinearVertexBuffer[vertIndex +  5] =            tmy + iconLinearBulbVertices[  5 + tmj];
+               /* X */ iconLinearCoordBuffer[vertIndex +  0] = constrain( tmx + iconLinearBulbVertices[  0 + tmj], tmx-limit, tmx+limit);
+               /* Y */ iconLinearCoordBuffer[vertIndex +  1] =            tmy + iconLinearBulbVertices[  1 + tmj];
+               /* X */ iconLinearCoordBuffer[vertIndex +  2] = constrain( tmx + iconLinearBulbVertices[  2 + tmj], tmx-limit, tmx+limit);
+               /* Y */ iconLinearCoordBuffer[vertIndex +  3] =            tmy + iconLinearBulbVertices[  3 + tmj];
+               /* X */ iconLinearCoordBuffer[vertIndex +  4] = constrain( tmx + iconLinearBulbVertices[  4 + tmj], tmx-limit, tmx+limit);
+               /* Y */ iconLinearCoordBuffer[vertIndex +  5] =            tmy + iconLinearBulbVertices[  5 + tmj];
 
-               /* X */ iconLinearVertexBuffer[vertIndex +  6] = constrain( tmx + iconLinearBulbVertices[  6 + tmj], tmx-limit, tmx+limit);
-               /* Y */ iconLinearVertexBuffer[vertIndex +  7] =            tmy + iconLinearBulbVertices[  7 + tmj];
-               /* X */ iconLinearVertexBuffer[vertIndex +  8] = constrain( tmx + iconLinearBulbVertices[  8 + tmj], tmx-limit, tmx+limit);
-               /* Y */ iconLinearVertexBuffer[vertIndex +  9] =            tmy + iconLinearBulbVertices[  9 + tmj];
-               /* X */ iconLinearVertexBuffer[vertIndex + 10] = constrain( tmx + iconLinearBulbVertices[ 10 + tmj], tmx-limit, tmx+limit);
-               /* Y */ iconLinearVertexBuffer[vertIndex + 11] =            tmy + iconLinearBulbVertices[ 11 + tmj];
+               /* X */ iconLinearCoordBuffer[vertIndex +  6] = constrain( tmx + iconLinearBulbVertices[  6 + tmj], tmx-limit, tmx+limit);
+               /* Y */ iconLinearCoordBuffer[vertIndex +  7] =            tmy + iconLinearBulbVertices[  7 + tmj];
+               /* X */ iconLinearCoordBuffer[vertIndex +  8] = constrain( tmx + iconLinearBulbVertices[  8 + tmj], tmx-limit, tmx+limit);
+               /* Y */ iconLinearCoordBuffer[vertIndex +  9] =            tmy + iconLinearBulbVertices[  9 + tmj];
+               /* X */ iconLinearCoordBuffer[vertIndex + 10] = constrain( tmx + iconLinearBulbVertices[ 10 + tmj], tmx-limit, tmx+limit);
+               /* Y */ iconLinearCoordBuffer[vertIndex + 11] =            tmy + iconLinearBulbVertices[ 11 + tmj];
                vertIndex += 12;
             }
          }
@@ -990,7 +1069,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
 
       // Define Grand Outline
       if (features >= 4) {
-         if (iconLinearVertexBuffer[vertIndex] > offScreen/2) {
+         if (iconLinearCoordBuffer[vertIndex] > offScreen/2) {
             tmx = -offScreen;
             tmy = -offScreen;
          } else {
@@ -998,7 +1077,7 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
             tmy = 0.0;
          }
       } else {
-         if (iconLinearVertexBuffer[vertIndex] > offScreen/2) {
+         if (iconLinearCoordBuffer[vertIndex] > offScreen/2) {
             tmx = 0.0;
             tmy = 0.0;
          } else {
@@ -1012,19 +1091,19 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
        */
 
       for (int i = 0; i < 4; i++ ) {
-         /* X */ iconLinearVertexBuffer[vertIndex +  0] = iconLinearVertexBuffer[vertIndex +  0] + tmx;
-         /* Y */ iconLinearVertexBuffer[vertIndex +  1] = iconLinearVertexBuffer[vertIndex +  1] + tmy;
-         /* X */ iconLinearVertexBuffer[vertIndex +  2] = iconLinearVertexBuffer[vertIndex +  2] + tmx;
-         /* Y */ iconLinearVertexBuffer[vertIndex +  3] = iconLinearVertexBuffer[vertIndex +  3] + tmy;
-         /* X */ iconLinearVertexBuffer[vertIndex +  4] = iconLinearVertexBuffer[vertIndex +  4] + tmx;
-         /* Y */ iconLinearVertexBuffer[vertIndex +  5] = iconLinearVertexBuffer[vertIndex +  5] + tmy;
+         /* X */ iconLinearCoordBuffer[vertIndex +  0] = iconLinearCoordBuffer[vertIndex +  0] + tmx;
+         /* Y */ iconLinearCoordBuffer[vertIndex +  1] = iconLinearCoordBuffer[vertIndex +  1] + tmy;
+         /* X */ iconLinearCoordBuffer[vertIndex +  2] = iconLinearCoordBuffer[vertIndex +  2] + tmx;
+         /* Y */ iconLinearCoordBuffer[vertIndex +  3] = iconLinearCoordBuffer[vertIndex +  3] + tmy;
+         /* X */ iconLinearCoordBuffer[vertIndex +  4] = iconLinearCoordBuffer[vertIndex +  4] + tmx;
+         /* Y */ iconLinearCoordBuffer[vertIndex +  5] = iconLinearCoordBuffer[vertIndex +  5] + tmy;
 
-         /* X */ iconLinearVertexBuffer[vertIndex +  6] = iconLinearVertexBuffer[vertIndex +  6] + tmx;
-         /* Y */ iconLinearVertexBuffer[vertIndex +  7] = iconLinearVertexBuffer[vertIndex +  7] + tmy;
-         /* X */ iconLinearVertexBuffer[vertIndex +  8] = iconLinearVertexBuffer[vertIndex +  8] + tmx;
-         /* Y */ iconLinearVertexBuffer[vertIndex +  9] = iconLinearVertexBuffer[vertIndex +  9] + tmy;
-         /* X */ iconLinearVertexBuffer[vertIndex + 10] = iconLinearVertexBuffer[vertIndex + 10] + tmx;
-         /* Y */ iconLinearVertexBuffer[vertIndex + 11] = iconLinearVertexBuffer[vertIndex + 11] + tmy;
+         /* X */ iconLinearCoordBuffer[vertIndex +  6] = iconLinearCoordBuffer[vertIndex +  6] + tmx;
+         /* Y */ iconLinearCoordBuffer[vertIndex +  7] = iconLinearCoordBuffer[vertIndex +  7] + tmy;
+         /* X */ iconLinearCoordBuffer[vertIndex +  8] = iconLinearCoordBuffer[vertIndex +  8] + tmx;
+         /* Y */ iconLinearCoordBuffer[vertIndex +  9] = iconLinearCoordBuffer[vertIndex +  9] + tmy;
+         /* X */ iconLinearCoordBuffer[vertIndex + 10] = iconLinearCoordBuffer[vertIndex + 10] + tmx;
+         /* Y */ iconLinearCoordBuffer[vertIndex + 11] = iconLinearCoordBuffer[vertIndex + 11] + tmy;
          vertIndex += 12;
       }
 
@@ -1033,24 +1112,31 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
        */
       for (int i = 0; i < 4; i++) {
          for (int j = 0; j < circleSegments; j++) {
-            /* X */ iconLinearVertexBuffer[vertIndex +  0] = iconLinearVertexBuffer[vertIndex +  0] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex +  1] = iconLinearVertexBuffer[vertIndex +  1] + tmy;
-            /* X */ iconLinearVertexBuffer[vertIndex +  2] = iconLinearVertexBuffer[vertIndex +  2] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex +  3] = iconLinearVertexBuffer[vertIndex +  3] + tmy;
-            /* X */ iconLinearVertexBuffer[vertIndex +  4] = iconLinearVertexBuffer[vertIndex +  4] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex +  5] = iconLinearVertexBuffer[vertIndex +  5] + tmy;
+            /* X */ iconLinearCoordBuffer[vertIndex +  0] = iconLinearCoordBuffer[vertIndex +  0] + tmx;
+            /* Y */ iconLinearCoordBuffer[vertIndex +  1] = iconLinearCoordBuffer[vertIndex +  1] + tmy;
+            /* X */ iconLinearCoordBuffer[vertIndex +  2] = iconLinearCoordBuffer[vertIndex +  2] + tmx;
+            /* Y */ iconLinearCoordBuffer[vertIndex +  3] = iconLinearCoordBuffer[vertIndex +  3] + tmy;
+            /* X */ iconLinearCoordBuffer[vertIndex +  4] = iconLinearCoordBuffer[vertIndex +  4] + tmx;
+            /* Y */ iconLinearCoordBuffer[vertIndex +  5] = iconLinearCoordBuffer[vertIndex +  5] + tmy;
 
-            /* X */ iconLinearVertexBuffer[vertIndex +  6] = iconLinearVertexBuffer[vertIndex +  6] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex +  7] = iconLinearVertexBuffer[vertIndex +  7] + tmy;
-            /* X */ iconLinearVertexBuffer[vertIndex +  8] = iconLinearVertexBuffer[vertIndex +  8] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex +  9] = iconLinearVertexBuffer[vertIndex +  9] + tmy;
-            /* X */ iconLinearVertexBuffer[vertIndex + 10] = iconLinearVertexBuffer[vertIndex + 10] + tmx;
-            /* Y */ iconLinearVertexBuffer[vertIndex + 11] = iconLinearVertexBuffer[vertIndex + 11] + tmy;
+            /* X */ iconLinearCoordBuffer[vertIndex +  6] = iconLinearCoordBuffer[vertIndex +  6] + tmx;
+            /* Y */ iconLinearCoordBuffer[vertIndex +  7] = iconLinearCoordBuffer[vertIndex +  7] + tmy;
+            /* X */ iconLinearCoordBuffer[vertIndex +  8] = iconLinearCoordBuffer[vertIndex +  8] + tmx;
+            /* Y */ iconLinearCoordBuffer[vertIndex +  9] = iconLinearCoordBuffer[vertIndex +  9] + tmy;
+            /* X */ iconLinearCoordBuffer[vertIndex + 10] = iconLinearCoordBuffer[vertIndex + 10] + tmx;
+            /* Y */ iconLinearCoordBuffer[vertIndex + 11] = iconLinearCoordBuffer[vertIndex + 11] + tmy;
             vertIndex += 12;
          }
       }
 
       prevIconLinearFeatures = features;
+      // Update Contents of VBO
+      // Set active VBO
+      glBindBuffer(GL_ARRAY_BUFFER, iconLinearVBO);
+      // Convenience variable
+      GLuint64 offset = 0;
+      // Load Vertex Color data into VBO
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*iconLinearVerts, iconLinearCoordBuffer);
    }
 
    // Geometry allocated/calculated, check if colors need to be updated
@@ -1067,6 +1153,13 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
                      iconLinearColorBuffer[i + k*3] = tmc;
                   }
                }
+               // Update Contents of VBO
+               // Set active VBO
+               glBindBuffer(GL_ARRAY_BUFFER, iconLinearVBO);
+               // Convenience variable
+               GLuint64 offset = 2*sizeof(GLfloat)*iconLinearVerts;
+               // Load Vertex Color data into VBO
+               glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*iconLinearVerts, iconLinearColorBuffer);
             }
          } 
    
@@ -1084,6 +1177,13 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
                      iconLinearColorBuffer[i + k*3 + tmp*3] = tmc;
                   }
                }
+               // Update Contents of VBO
+               // Set active VBO
+               glBindBuffer(GL_ARRAY_BUFFER, iconLinearVBO);
+               // Convenience variable
+               GLuint64 offset = 2*sizeof(GLfloat)*iconLinearVerts;
+               // Load Vertex Color data into VBO
+               glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*iconLinearVerts, iconLinearColorBuffer);
             }
          } 
          else
@@ -1096,6 +1196,13 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
                      iconLinearColorBuffer[i + k*3 + (j*(60/numBulbs)*3*2 + circleSegments*3*2 + 6)*3] = tmc;
                   }
                }
+               // Update Contents of VBO
+               // Set active VBO
+               glBindBuffer(GL_ARRAY_BUFFER, iconLinearVBO);
+               // Convenience variable
+               GLuint64 offset = 2*sizeof(GLfloat)*iconLinearVerts;
+               // Load Vertex Color data into VBO
+               glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*iconLinearVerts, iconLinearColorBuffer);
             }
          }
       }
@@ -1105,28 +1212,18 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
          for (unsigned int k = (60*2*3 + 4*circleSegments*3 + 2*6); k < iconLinearVerts; k++) {
             iconLinearColorBuffer[k*3+i] = float(detailColor[i]);
          }
+         // Update Contents of VBO
+         // Set active VBO
+         glBindBuffer(GL_ARRAY_BUFFER, iconLinearVBO);
+         // Convenience variable
+         GLuint64 offset = 2*sizeof(GLfloat)*iconLinearVerts;
+         // Load Vertex Color data into VBO
+         glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*iconLinearVerts, iconLinearColorBuffer);
       }
    }
    prevIconLinearNumBulbs = numBulbs;
    
    delete [] bulbColors;
-
-   // Old, Fixed-Fuinction ES 1.1 code
-   /*
-   glPushMatrix();
-   glTranslatef(gx*w2h, gy, 0);
-   glRotatef(90, 0, 0, 1);
-   if (w2h >= 1.0) {
-      glScalef(scale, scale, 1);
-   } else {
-      glScalef(scale*w2h, scale*w2h, 1);
-   }
-   glRotatef(ao+90, 0, 0, 1);
-   glColorPointer(3, GL_FLOAT, 0, iconLinearColorBuffer);
-   glVertexPointer(2, GL_FLOAT, 0, iconLinearVertexBuffer);
-   glDrawElements( GL_TRIANGLES, iconLinearVerts, GL_UNSIGNED_SHORT, iconLinearIndices);
-   glPopMatrix();
-   */
 
    // Update Transfomation Matrix if any change in parameters
    if (  iconLinearPrevState.ao != ao     ||
@@ -1160,15 +1257,22 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       iconLinearPrevState.w2h = w2h;
    }
 
-   //GLint mvpLoc;
-   //mvpLoc = glGetUniformLocation( 3, "MVP" );
-   //glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &iconLinearMVP.mat[0][0] );
+   // Pass Transformation Matrix to shader
    glUniformMatrix4fv( 0, 1, GL_FALSE, &iconLinearMVP.mat[0][0] );
-   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, iconLinearVertexBuffer);
-   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, iconLinearColorBuffer);
+
+   // Set active VBO
+   glBindBuffer(GL_ARRAY_BUFFER, iconLinearVBO);
+
+   // Define how the Vertex coordinate data is layed out in the buffer
+   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
+   // Define how the Vertex color data is layed out in the buffer
+   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*iconLinearVerts));
    //glEnableVertexAttribArray(0);
    //glEnableVertexAttribArray(1);
    glDrawArrays(GL_TRIANGLES, 0, iconLinearVerts);
+
+   // Unbind Buffer Object
+   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
    Py_RETURN_NONE;
 }
