@@ -35,8 +35,27 @@ from rangeUtils import *
 from shaderUtils import *
 print("Done!")
 
+print("Loading Serial...")
+import serial
+print("Done!")
+
+def TXstring(message):
+    bytes = str.encode(message)
+    type(bytes)
+    statMac['CircuitPlayground'].write(bytes)
+
+def updateLEDS():
+    tmc = statMac['lamps'][0].getBulbtRGB(0)
+    tmr = int(tmc[0] * 255)
+    tmg = int(tmc[1] * 255)
+    tmb = int(tmc[2] * 255)
+    tmm = "r"+str(tmr)+"g"+str(tmg)+"b"+str(tmb)+"t"
+    #print(tmm)
+    TXstring(tmm)#+"t"+str(statMac['tDiff']))
+
 def init():
     global statMac
+    statMac['CircuitPlayground'] = serial.Serial('COM6', 38400)
 
     glEnableClientState(GL_VERTEX_ARRAY)
     glEnableClientState(GL_COLOR_ARRAY)
@@ -70,7 +89,13 @@ def framerate():
         statMac['fps'] = statMac['frames']/seconds
     except:
         print("Too Fast, Too Quick!!")
+
+    if t - statMac['t1'] >= 0.5:
+        #updateLEDS()
+        statMac['t1'] = t
+
     if t - statMac['t0'] >= 1.0:
+        #updateLEDS()
         print("%.0f frames in %3.1f seconds = %6.3f FPS" % (statMac['frames'],seconds,statMac['fps']))
         statMac['t0'] = t
         statMac['frames'] = 0
@@ -150,12 +175,12 @@ def drawHome():
             #'AaBbCcDdEeFfGgHhIiJjKkLlMm',
             #( 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100)))
 
-    printText(
-            -0.9, -0.875,
-            0.05, 
-            statMac['w2h'], 
-            'NnOoPpQqRrSsTtUuVvWwXxYyZz',
-            ( 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100)))
+    #printText(
+            #-0.9, -0.875,
+            #0.05, 
+            #statMac['w2h'], 
+            #'NnOoPpQqRrSsTtUuVvWwXxYyZz',
+            #( 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100), 0.9*(statMac['someVar']/100)))
 
     if (statMac['lamps'][0].getArn() == 0):
         drawIconCircle(0.75, 0.75, 
@@ -443,6 +468,7 @@ def display():
     global statMac
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
+    updateLEDS()
 
     drawBackground(0)
     #if (statMac['interactionCursor'] > 0.0):
@@ -594,6 +620,7 @@ if __name__ == '__main__':
     statMac['detailColor']      = (0.9, 0.9, 0.9)
     statMac['tStart']           = time.time()
     statMac['t0']               = time.time()
+    statMac['t1']               = time.time()
     statMac['frames']           = 0
     statMac['lamps']            = []
     statMac['screen']           = 0
