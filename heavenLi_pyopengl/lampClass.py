@@ -67,6 +67,14 @@ class Lamp:
                 self.bulbsCurrentHSV[n][2])
         return tmp
 
+    # Get list of targe RGB values for each bulb
+    def getBulbtRGB(self, n):
+        tmp = colorsys.hsv_to_rgb(
+                self.bulbsTargetHSV[n][0],
+                self.bulbsTargetHSV[n][1],
+                self.bulbsTargetHSV[n][2])
+        return tmp
+
     # Set target RGB values for 'bulb'
     def setBulbRGB(self, bulb, RGBcolor):
         self.bulbsTargetHSV[bulb] = colorsys.rgb_to_hsv(RGBcolor[0], RGBcolor[1], RGBcolor[2])
