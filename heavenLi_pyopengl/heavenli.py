@@ -36,26 +36,58 @@ from shaderUtils import *
 print("Done!")
 
 print("Loading Serial...")
-import serial
-print("Done!")
+try:
+    import serial
+    print("Done!")
+except:
+    print("Could not load serial library")
 
 def TXstring(message):
-    bytes = str.encode(message)
-    type(bytes)
-    statMac['CircuitPlayground'].write(bytes)
+    if (statMac['CircuitPlayground'].isOpen()):
+        try:
+            statMac['CircuitPlayground'].write(message)
+        except:
+            print("Error sending color")
 
 def updateLEDS():
-    tmc = statMac['lamps'][0].getBulbtRGB(0)
-    tmr = int(tmc[0] * 255)
-    tmg = int(tmc[1] * 255)
-    tmb = int(tmc[2] * 255)
-    tmm = "r"+str(tmr)+"g"+str(tmg)+"b"+str(tmb)+"t"
-    #print(tmm)
-    TXstring(tmm)#+"t"+str(statMac['tDiff']))
+    try:
+        tmc = statMac['lamps'][0].getBulbtRGB(statMac['curBulb'])
+    except:
+        tmc = (0.5, 0.5, 0.5)
+    tmr = int(tmc[0] * 127)
+    tmg = int(tmc[1] * 127)
+    tmb = int(tmc[2] * 127)
+    tmn = int(statMac['lamps'][0].getNumBulbs())
+    tmq = int(statMac['curBulb'])
+    statMac['curBulb'] += 1
+    if (statMac['curBulb'] >= tmn):
+        statMac['curBulb'] = 0
+
+    #print(tmq, tmr, tmg, tmb)
+    tmm = bytearray([
+        tmn, 
+        tmq, 
+        tmr, 
+        tmg, 
+        tmb])#, 
+        #ord('&')])
+    TXstring(tmm)
+
 
 def init():
     global statMac
-    statMac['CircuitPlayground'] = serial.Serial('COM6', 38400)
+    try:
+        print("Making Serial Object...")
+        statMac['CircuitPlayground'] = serial.Serial('COM8', 57600)
+        statMac['CircuitPlayground'].open()
+        #statMac['CircuitPlayground'].setDTR(True)
+        #sleep(1)
+        #statMac['CircuitPlayground'].flushInput()
+        #statMac['CircuitPlayground'].setDTR(False)
+        print("Done!")
+    except:
+        print("could not estalish serial uart connection :(")
+    statMac['curBulb'] = 0
 
     glEnableClientState(GL_VERTEX_ARRAY)
     glEnableClientState(GL_COLOR_ARRAY)
@@ -75,6 +107,7 @@ def init():
     statMac['w2h'] = statMac['wx']/statMac['wy']
     demo = Lamp()
     statMac['lamps'].append(demo)
+    print("Initialization Finished")
 
 def framerate():
     global statMac
@@ -522,9 +555,17 @@ def special(k, x, y):
     elif k == GLUT_KEY_RIGHT:
         statMac['lamps'][0].setAngle(statMac['lamps'][0].getAngle() - 5)
     elif k == GLUT_KEY_UP:
+        #statMac['CircuitPlayground'].close()
+        #time.sleep(1)
         statMac['lamps'][0].setNumBulbs(statMac['lamps'][0].getNumBulbs()+1)
+        #statMac['CircuitPlayground'] = serial.Serial('COM8', 38400)
+        #statMac['CircuitPlayground'].open()
     elif k == GLUT_KEY_DOWN:
+        #statMac['CircuitPlayground'].close()
+        #time.sleep(1)
         statMac['lamps'][0].setNumBulbs(statMac['lamps'][0].getNumBulbs()-1)
+        #statMac['CircuitPlayground'] = serial.Serial('COM8', 38400)
+        #statMac['CircuitPlayground'].open()
     elif k == GLUT_KEY_F11:
         if statMac['isFullScreen'] == False:
             statMac['windowPosX'] = glutGet(GLUT_WINDOW_X)
@@ -616,6 +657,7 @@ if __name__ == '__main__':
     global statMac
     statMac = {}
     print("Initializing...")
+    statMac['curBulb']          = 0;
     statMac['faceColor']        = (0.3, 0.3, 0.3)
     statMac['detailColor']      = (0.9, 0.9, 0.9)
     statMac['tStart']           = time.time()

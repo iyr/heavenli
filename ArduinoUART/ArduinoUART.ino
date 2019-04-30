@@ -1,24 +1,41 @@
 #include "FastLED.h"
 
-#define NUM_LEDS 10
-#define DATA_PIN 17
+#define NUM_LEDS 60
+#define DATA_PIN 10
 
 CRGB strip[NUM_LEDS];
+
+float bulbsCurRGB[6][3];
+float bulbsTarRGB[6][3];
 
 //char inPacket[64];
 
 char inByte;
-float r = 0.0;
-float g = 0.0;
-float b = 0.0;
-float rT = 0.5;
-float gT = 1.0;
-float bT = 0.0;
+//float r = 0.0;
+//float g = 0.0;
+//float b = 0.0;
+//float rT = 0.5;
+//float gT = 1.0;
+//float bT = 0.0;
 float tDiff = 0.005;
+int numBulbs = 1;
+int curBulb = 0;
 
 void setup() {
-   Serial.begin(38400);
+   Serial.begin(115200);
    FastLED.addLeds<NEOPIXEL, DATA_PIN>(strip, NUM_LEDS);
+   FastLED.setBrightness(128);
+
+   for (int i = 0; i < 6; i++) {
+      bulbsCurRGB[i][0] = 0.0;
+      bulbsCurRGB[i][1] = 0.0;
+      bulbsCurRGB[i][2] = 0.0;
+      
+      bulbsTarRGB[i][0] = 0.5;
+      bulbsTarRGB[i][1] = 0.0;
+      bulbsTarRGB[i][2] = 1.0;
+   }
+   //FastLED.setBrightness(255);
 
    //while (!Serial) {
      // ;
@@ -33,22 +50,29 @@ void loop() {
       //Serial.readBytesUntil('t', inPacket, 64);
       switch(Serial.read())
       {
+         case 'n':
+            int tmn = constrain(Serial.parseInt(), 1, 6);
+            numBulbs = tmn;
+
+         case 'i':
+            int tmc = constrain(Serial.parseInt(), 0, numBulbs-1);
+            curBulb = tmc;
+            break;
+
          case 'r':    
             int tmr = Serial.parseInt();
-            rT = pow(float(tmr)/255.0, 2.0);
-            //rT = Serial.parseFloat();
-            //Serial.println();
-         //break;
+            bulbsTarRGB[curBulb][0] = pow(float(tmr)/255.0, 2.0);
+            //rT = pow(float(tmr)/255.0, 2.0);
 
          case 'g':
             int tmg = Serial.parseInt();
-            gT = pow(float(tmg)/255.0, 2.0);
-         //break;
+            bulbsTarRGB[curBulb][1] = pow(float(tmg)/255.0, 2.0);
+            //gT = pow(float(tmg)/255.0, 2.0);
 
          case 'b':
             int tmb = Serial.parseInt();
-            bT = pow(float(tmb)/255.0, 2.0);
-            //bT = Serial.parseFloat();
+            bulbsTarRGB[curBulb][2] = pow(float(tmb)/255.0, 2.0);
+            //bT = pow(float(tmb)/255.0, 2.0);
          break;
 
          //case 't':
@@ -58,25 +82,27 @@ void loop() {
   }
 
   updateLEDs(tDiff/2.0);
-  for (int i = 0; i < NUM_LEDS; i++){
-     int tmr = int(r*255.0);
-     int tmg = int(g*255.0);
-     int tmb = int(b*255.0);
-     strip[i] = CRGB(tmr, tmg, tmb);
-     //strip[i] = CRGB(128, 128, 128);
-     //strip[i] = CRGB(int(r*255.0), int(g*255.0), int(b*255.0));
+  int LEDsPerBulb = NUM_LEDS/numBulbs;
+  for (int i = 0; i < LEDsPerBulb; i++){
+     int tmr = int(bulbsCurRGB[curBulb][0]*255.0);
+     int tmg = int(bulbsCurRGB[curBulb][1]*255.0);
+     int tmb = int(bulbsCurRGB[curBulb][2]*255.0);
+     strip[i+curBulb*LEDsPerBulb] = CRGB(tmr, tmg, tmb);
   }
-
+  
   FastLED.show();
 }
 
 void updateLEDs(float frameTime) {
-   int numBulbs = 1;
    for (int i = 0; i < numBulbs; i++) {
-      //Serial.print("g: ");
-      //Serial.println(g);
-      //Serial.print("gT: ");
-      //Serial.println(gT);
+     float r = bulbsCurRGB[i][0];
+     float g = bulbsCurRGB[i][1];
+     float b = bulbsCurRGB[i][2];
+  
+     float rT = bulbsTarRGB[i][0];
+     float gT = bulbsTarRGB[i][1];
+     float bT = bulbsTarRGB[i][2];
+
       if (  r != rT  ||
             g != gT  ||
             b != bT  ){
@@ -124,14 +150,6 @@ void updateLEDs(float frameTime) {
             difB = b + bd;
          else
             difB = bT;
-
-         //difR = constrain(difR, 0.0, 1.0);
-         //difG = constrain(difG, 0.0, 1.0);
-         //difB = constrain(difB, 0.0, 1.0);
-
-         //difR *= difR;
-         //difG *= difG;
-         //difB *= difB;
          
          if (difR >= 1.0)
             difR = 1.0;
@@ -148,9 +166,12 @@ void updateLEDs(float frameTime) {
          else if (difG <= 0.0)
             difG = 0.0;
 
-         r = difR;
-         g = difG;
-         b = difB;
+//         r = difR;
+//         g = difG;
+//         b = difB;
+         bulbsCurRGB[i][0] = difR;
+         bulbsCurRGB[i][1] = difG;
+         bulbsCurRGB[i][2] = difB;
       }
    }
 }
