@@ -64,14 +64,12 @@ def updateLEDS():
     if (stateMach['curBulb'] >= tmn):
         stateMach['curBulb'] = 0
 
-    #print(tmq, tmr, tmg, tmb)
     tmm = bytearray([
         tmn, 
         tmq, 
         tmr, 
         tmg, 
-        tmb])#, 
-        #ord('&')])
+        tmb])
     TXstring(tmm)
 
 
@@ -81,13 +79,9 @@ def init():
         print("Making Serial Object...")
         stateMach['CircuitPlayground'] = serial.Serial('COM8', 57600)
         stateMach['CircuitPlayground'].open()
-        #stateMach['CircuitPlayground'].setDTR(True)
-        #sleep(1)
-        #stateMach['CircuitPlayground'].flushInput()
-        #stateMach['CircuitPlayground'].setDTR(False)
         print("Done!")
     except:
-        print("could not estalish serial uart connection :(")
+        print("could not establish serial uart connection :(")
     stateMach['curBulb'] = 0
 
     glEnableClientState(GL_VERTEX_ARRAY)
@@ -607,7 +601,6 @@ def display():
     updateLEDS()
 
 def idleWindowOpen():
-    #lamps[0].updateBulbs(constrain(60.0/fps, 1, 2.4))
     glutPostRedisplay()
 
 def idleWindowMinimized():
@@ -623,17 +616,9 @@ def special(k, x, y):
     elif k == GLUT_KEY_RIGHT:
         stateMach['lamps'][0].setAngle(stateMach['lamps'][0].getAngle() - 5)
     elif k == GLUT_KEY_UP:
-        #stateMach['CircuitPlayground'].close()
-        #time.sleep(1)
         stateMach['lamps'][0].setNumBulbs(stateMach['lamps'][0].getNumBulbs()+1)
-        #stateMach['CircuitPlayground'] = serial.Serial('COM8', 38400)
-        #stateMach['CircuitPlayground'].open()
     elif k == GLUT_KEY_DOWN:
-        #stateMach['CircuitPlayground'].close()
-        #time.sleep(1)
         stateMach['lamps'][0].setNumBulbs(stateMach['lamps'][0].getNumBulbs()-1)
-        #stateMach['CircuitPlayground'] = serial.Serial('COM8', 38400)
-        #stateMach['CircuitPlayground'].open()
     elif k == GLUT_KEY_F11:
         if stateMach['isFullScreen'] == False:
             stateMach['windowPosX'] = glutGet(GLUT_WINDOW_X)
@@ -707,11 +692,6 @@ def reshape(width, height):
     stateMach['windowPosX'] = glutGet(GLUT_WINDOW_X)
     stateMach['windowPosY'] = glutGet(GLUT_WINDOW_Y)
     glViewport(0, 0, width, height)
-    #glMatrixMode(GL_PROJECTION)
-    #glLoadIdentity()
-    #glOrtho(-1.0*stateMach['w2h'], 1.0*stateMach['w2h'], -1.0, 1.0, -1.0, 1.0) 
-    #glMatrixMode(GL_MODELVIEW)
-    #glLoadIdentity()
 
 # Only Render if the window (any pixel of it at all) is visible
 def visible(vis):
