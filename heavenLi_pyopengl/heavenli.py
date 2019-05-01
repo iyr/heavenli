@@ -241,9 +241,13 @@ def drawHome():
         min(stateMach['wx'], stateMach['wy'])*0.2)):
             stateMach['targetScreen'] = 1
             stateMach['targetBulb'] = stateMach["lamps"][0].getNumBulbs()
-            stateMach['prevHue'] = stateMach['lamps'][0].getBulbHSV(i)[0]
-            stateMach['prevSat'] = stateMach['lamps'][0].getBulbHSV(i)[1]
-            stateMach['prevVal'] = stateMach['lamps'][0].getBulbHSV(i)[2]
+            stateMach['prevHue'] = stateMach['lamps'][0].getBulbHSV(0)[0]
+            stateMach['prevSat'] = stateMach['lamps'][0].getBulbHSV(0)[1]
+            stateMach['prevVal'] = stateMach['lamps'][0].getBulbHSV(0)[2]
+            for i in range(stateMach['targetBulb']):
+                stateMach['prevHues'][i] = stateMach['lamps'][0].getBulbHSV(i)[0]
+                stateMach['prevSats'][i] = stateMach['lamps'][0].getBulbHSV(i)[1]
+                stateMach['prevVals'][i] = stateMach['lamps'][0].getBulbHSV(i)[2]
 
 def drawSettingColor(cursor, targetLamp, targetBulb):
     global stateMach
@@ -483,10 +487,16 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
         stateMach['targetScreen'] = 0
 
     if ( stateMach['wereColorsTouched'] ):
-        extraColor = colorsys.hsv_to_rgb(
-                stateMach['prevHue'], 
-                stateMach['prevSat'], 
-                stateMach['prevVal'])
+        if (stateMach['targetBulb'] == targetLamp.getNumBulbs()):
+            extraColor = colorsys.hsv_to_rgb(
+                    stateMach['prevHues'][0], 
+                    stateMach['prevSats'][0], 
+                    stateMach['prevVals'][0])
+        else:
+            extraColor = colorsys.hsv_to_rgb(
+                    stateMach['prevHue'], 
+                    stateMach['prevSat'], 
+                    stateMach['prevVal'])
     else:
         extraColor = stateMach['detailColor']
 
@@ -505,10 +515,11 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
         min(stateMach['wx'], stateMach['wy'])*0.2)):
         stateMach['wereColorsTouched'] = False
         if (stateMach['targetBulb'] == targetLamp.getNumBulbs()):
-            targetLamp.setBulbstHSV( (
-                stateMach['prevHue'], 
-                stateMach['prevSat'], 
-                stateMach['prevVal'] ) )
+            for i in range(targetLamp.getNumBulbs()):
+                targetLamp.setBulbtHSV(i, (
+                    stateMach['prevHues'][i], 
+                    stateMach['prevSats'][i], 
+                    stateMach['prevVals'][i] ) )
         else:
             targetLamp.setBulbtHSV(stateMach['targetBulb'], (
                 stateMach['prevHue'], 
@@ -713,46 +724,49 @@ if __name__ == '__main__':
     global stateMach
     stateMach = {}
     print("Initializing...")
-    stateMach['curBulb']          = 0;
-    stateMach['faceColor']        = (0.3, 0.3, 0.3)
-    stateMach['detailColor']      = (0.9, 0.9, 0.9)
-    stateMach['tStart']           = time.time()
-    stateMach['t0']               = time.time()
-    stateMach['t1']               = time.time()
-    stateMach['frames']           = 0
-    stateMach['lamps']            = []
-    stateMach['screen']           = 0
-    stateMach['lightOn']          = False
-    stateMach['fps']              = 60
-    stateMach['windowPosX']       = 0
-    stateMach['windowPosY']       = 0
-    stateMach['windowDimW']       = 800
-    stateMach['windowDimH']       = 480
-    stateMach['cursorX']          = 0
-    stateMach['cursorY']          = 0
-    stateMach['isFullScreen']     = False
-    stateMach['isAnimating']      = False
-    stateMach['wx']               = 0
-    stateMach['wy']               = 0
-    stateMach['targetScreen']     = 0
-    stateMach['touchState']       = 1
-    stateMach['currentState']     = 1
-    stateMach['prvState']         = stateMach['touchState']
-    stateMach['targetBulb']       = 0
-    stateMach['frameLimit']       = True
-    stateMach['someVar']          = 0
-    stateMach['someInc']          = 0.1
-    stateMach['features']         = 4
-    stateMach['numHues']          = 12
-    stateMach['currentHue']       = None
-    stateMach['currentSat']       = None
-    stateMach['currentVal']       = None
-    stateMach['prevHue']          = None
-    stateMach['prevVal']          = None
-    stateMach['prevSat']          = None
-    stateMach['wereColorsTouched']    = False
-    stateMach['colrSettingCursor']    = 0.0
-    stateMach['interactionCursor']    = 0.0
+    stateMach['prevHues']           = [None for i in range(6)]
+    stateMach['prevSats']           = [None for i in range(6)]
+    stateMach['prevVals']           = [None for i in range(6)]
+    stateMach['curBulb']            = 0
+    stateMach['faceColor']          = (0.3, 0.3, 0.3)
+    stateMach['detailColor']        = (0.9, 0.9, 0.9)
+    stateMach['tStart']             = time.time()
+    stateMach['t0']                 = time.time()
+    stateMach['t1']                 = time.time()
+    stateMach['frames']             = 0
+    stateMach['lamps']              = []
+    stateMach['screen']             = 0
+    stateMach['lightOn']            = False
+    stateMach['fps']                = 60
+    stateMach['windowPosX']         = 0
+    stateMach['windowPosY']         = 0
+    stateMach['windowDimW']         = 800
+    stateMach['windowDimH']         = 480
+    stateMach['cursorX']            = 0
+    stateMach['cursorY']            = 0
+    stateMach['isFullScreen']       = False
+    stateMach['isAnimating']        = False
+    stateMach['wx']                 = 0
+    stateMach['wy']                 = 0
+    stateMach['targetScreen']       = 0
+    stateMach['touchState']         = 1
+    stateMach['currentState']       = 1
+    stateMach['prvState']           = stateMach['touchState']
+    stateMach['targetBulb']         = 0
+    stateMach['frameLimit']         = True
+    stateMach['someVar']            = 0
+    stateMach['someInc']            = 0.1
+    stateMach['features']           = 4
+    stateMach['numHues']            = 12
+    stateMach['currentHue']         = None
+    stateMach['currentSat']         = None
+    stateMach['currentVal']         = None
+    stateMach['prevHue']            = None
+    stateMach['prevVal']            = None
+    stateMach['prevSat']            = None
+    stateMach['wereColorsTouched']  = False
+    stateMach['colrSettingCursor']  = 0.0
+    stateMach['interactionCursor']  = 0.0
     glutInit(sys.argv)
 
     # Disable anti-aliasing if running on a Raspberry Pi Zero
