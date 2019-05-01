@@ -184,24 +184,24 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
       glBufferData(GL_ARRAY_BUFFER, 5*sizeof(GLfloat)*homeLinearVerts, NULL, GL_STATIC_DRAW);
 
       // Convenience variables
-      GLuint64 bytesOffset = 0;
+      GLintptr bytesOffset = 0;
       GLuint vertAttribCoord = glGetAttribLocation(3, "vertCoord");
       GLuint vertAttribColor = glGetAttribLocation(3, "vertColor");
 
       // Load Vertex coordinate data into VBO
       glBufferSubData(GL_ARRAY_BUFFER, bytesOffset, sizeof(GLfloat)*2*homeLinearVerts, homeLinearCoordBuffer);
       // Define how the Vertex coordinate data is layed out in the buffer
-      glVertexAttribPointer(vertAttribCoord, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLuint64*)bytesOffset);
+      glVertexAttribPointer(vertAttribCoord, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLintptr*)bytesOffset);
       // Enable the vertex attribute
       glEnableVertexAttribArray(vertAttribCoord);
 
       // Update offset to begin storing data in latter part of the buffer
-      offset += 2*sizeof(GLfloat)*homeLinearVerts;
+      bytesOffset += 2*sizeof(GLfloat)*homeLinearVerts;
 
       // Load Vertex coordinate data into VBO
-      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*homeLinearVerts, homeLinearColorBuffer);
+      glBufferSubData(GL_ARRAY_BUFFER, bytesOffset, sizeof(GLfloat)*3*homeLinearVerts, homeLinearColorBuffer);
       // Define how the Vertex color data is layed out in the buffer
-      glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLuint64*)bytesOffset);
+      glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLintptr*)bytesOffset);
       // Enable the vertex attribute
       glEnableVertexAttribArray(vertAttribColor);
    } 
@@ -223,9 +223,9 @@ PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
             // Set active VBO
             glBindBuffer(GL_ARRAY_BUFFER, homeLinearVBO);
             // Convenience variable
-            GLuint64 offset = 2*sizeof(GLfloat)*homeLinearVerts;
+            GLintptr bytesOffset = 2*sizeof(GLfloat)*homeLinearVerts;
             // Load Vertex Color data into VBO
-            glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*homeLinearVerts, homeLinearColorBuffer);
+            glBufferSubData(GL_ARRAY_BUFFER, bytesOffset, sizeof(GLfloat)*3*homeLinearVerts, homeLinearColorBuffer);
          }
       }
    }
@@ -862,24 +862,24 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       glBufferData(GL_ARRAY_BUFFER, 5*sizeof(GLfloat)*iconLinearVerts, NULL, GL_STATIC_DRAW);
 
       // Convenience variables
-      GLuint64 bytesOffset = 0;
+      GLintptr bytesOffset = 0;
       GLuint vertAttribCoord = glGetAttribLocation(3, "vertCoord");
       GLuint vertAttribColor = glGetAttribLocation(3, "vertColor");
 
       // Load Vertex coordinate data into VBO
-      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*iconLinearVerts, iconLinearCoordBuffer);
+      glBufferSubData(GL_ARRAY_BUFFER, bytesOffset, sizeof(GLfloat)*2*iconLinearVerts, iconLinearCoordBuffer);
       // Define how the Vertex coordinate data is layed out in the buffer
-      glVertexAttribPointer(vertAttribCoord, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLuint64*)bytesOffset);
+      glVertexAttribPointer(vertAttribCoord, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLintptr*)bytesOffset);
       // Enable the vertex attribute
       glEnableVertexAttribArray(vertAttribCoord);
 
       // Update offset to begin storing data in latter part of the buffer
-      offset += 2*sizeof(GLfloat)*iconLinearVerts;
+      bytesOffset += 2*sizeof(GLfloat)*iconLinearVerts;
 
       // Load Vertex coordinate data into VBO
-      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*iconLinearVerts, iconLinearColorBuffer);
+      glBufferSubData(GL_ARRAY_BUFFER, bytesOffset, sizeof(GLfloat)*3*iconLinearVerts, iconLinearColorBuffer);
       // Define how the Vertex color data is layed out in the buffer
-      glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLuint64*)bytesOffset);
+      glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLintptr*)bytesOffset);
       // Enable the vertex attribute
       glEnableVertexAttribArray(vertAttribColor);
    } 
@@ -1134,9 +1134,9 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
       // Set active VBO
       glBindBuffer(GL_ARRAY_BUFFER, iconLinearVBO);
       // Convenience variable
-      GLuint64 offset = 0;
+      GLintptr bytesOffset = 0;
       // Load Vertex Color data into VBO
-      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*iconLinearVerts, iconLinearCoordBuffer);
+      glBufferSubData(GL_ARRAY_BUFFER, bytesOffset, sizeof(GLfloat)*2*iconLinearVerts, iconLinearCoordBuffer);
    }
 
    // Geometry allocated/calculated, check if colors need to be updated
@@ -1157,9 +1157,9 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
                // Set active VBO
                glBindBuffer(GL_ARRAY_BUFFER, iconLinearVBO);
                // Convenience variable
-               GLuint64 offset = 2*sizeof(GLfloat)*iconLinearVerts;
+               GLintptr bytesOffset = 2*sizeof(GLfloat)*iconLinearVerts;
                // Load Vertex Color data into VBO
-               glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*iconLinearVerts, iconLinearColorBuffer);
+               glBufferSubData(GL_ARRAY_BUFFER, bytesOffset, sizeof(GLfloat)*3*iconLinearVerts, iconLinearColorBuffer);
             }
          } 
    
@@ -1181,9 +1181,9 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
                // Set active VBO
                glBindBuffer(GL_ARRAY_BUFFER, iconLinearVBO);
                // Convenience variable
-               GLuint64 offset = 2*sizeof(GLfloat)*iconLinearVerts;
+               GLintptr bytesOffset = 2*sizeof(GLfloat)*iconLinearVerts;
                // Load Vertex Color data into VBO
-               glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*iconLinearVerts, iconLinearColorBuffer);
+               glBufferSubData(GL_ARRAY_BUFFER, bytesOffset, sizeof(GLfloat)*3*iconLinearVerts, iconLinearColorBuffer);
             }
          } 
          else
@@ -1200,9 +1200,9 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
                // Set active VBO
                glBindBuffer(GL_ARRAY_BUFFER, iconLinearVBO);
                // Convenience variable
-               GLuint64 offset = 2*sizeof(GLfloat)*iconLinearVerts;
+               GLintptr bytesOffset = 2*sizeof(GLfloat)*iconLinearVerts;
                // Load Vertex Color data into VBO
-               glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*iconLinearVerts, iconLinearColorBuffer);
+               glBufferSubData(GL_ARRAY_BUFFER, bytesOffset, sizeof(GLfloat)*3*iconLinearVerts, iconLinearColorBuffer);
             }
          }
       }
@@ -1216,9 +1216,9 @@ PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
          // Set active VBO
          glBindBuffer(GL_ARRAY_BUFFER, iconLinearVBO);
          // Convenience variable
-         GLuint64 offset = 2*sizeof(GLfloat)*iconLinearVerts;
+         GLintptr bytesOffset = 2*sizeof(GLfloat)*iconLinearVerts;
          // Load Vertex Color data into VBO
-         glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*iconLinearVerts, iconLinearColorBuffer);
+         glBufferSubData(GL_ARRAY_BUFFER, bytesOffset, sizeof(GLfloat)*3*iconLinearVerts, iconLinearColorBuffer);
       }
    }
    prevIconLinearNumBulbs = numBulbs;

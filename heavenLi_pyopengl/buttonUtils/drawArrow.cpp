@@ -158,14 +158,14 @@ PyObject* drawArrow_drawButtons(PyObject* self, PyObject *args) {
       glBufferData(GL_ARRAY_BUFFER, 5*sizeof(GLfloat)*arrowVerts, NULL, GL_STATIC_DRAW);
 
       // Convenience variables
-      GLuint64 offset = 0;
+      GLintptr offset = 0;
       GLuint vertAttribCoord = glGetAttribLocation(3, "vertCoord");
       GLuint vertAttribColor = glGetAttribLocation(3, "vertColor");
 
       // Load Vertex coordinate data into VBO
       glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*arrowVerts, arrowCoordBuffer);
       // Define how the Vertex coordinate data is layed out in the buffer
-      glVertexAttribPointer(vertAttribCoord, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLuint64*)offset);
+      glVertexAttribPointer(vertAttribCoord, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLintptr*)offset);
       // Enable the vertex attribute
       glEnableVertexAttribArray(vertAttribCoord);
 
@@ -175,7 +175,7 @@ PyObject* drawArrow_drawButtons(PyObject* self, PyObject *args) {
       // Load Vertex coordinate data into VBO
       glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*arrowVerts, arrowColorBuffer);
       // Define how the Vertex color data is layed out in the buffer
-      glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLuint64*)offset);
+      glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLintptr*)offset);
       // Enable the vertex attribute
       glEnableVertexAttribArray(vertAttribColor);
    }
@@ -190,7 +190,7 @@ PyObject* drawArrow_drawButtons(PyObject* self, PyObject *args) {
          // Set active VBO
          glBindBuffer(GL_ARRAY_BUFFER, arrowVBO);
          // Convenience variable
-         GLuint64 offset = 2*sizeof(GLfloat)*arrowVerts;
+         GLintptr offset = 2*sizeof(GLfloat)*arrowVerts;
          // Load Vertex Color data into VBO
          glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*arrowVerts, arrowColorBuffer);
       }

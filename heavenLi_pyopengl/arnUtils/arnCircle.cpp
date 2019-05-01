@@ -163,14 +163,14 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
       glBufferData(GL_ARRAY_BUFFER, 5*sizeof(GLfloat)*homeCircleVerts, NULL, GL_STATIC_DRAW);
 
       // Convenience variables
-      GLuint64 offset = 0;
+      GLintptr offset = 0;
       GLuint vertAttribCoord = glGetAttribLocation(3, "vertCoord");
       GLuint vertAttribColor = glGetAttribLocation(3, "vertColor");
 
       // Load Vertex coordinate data into VBO
       glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*homeCircleVerts, homeCircleCoordBuffer);
       // Define how the Vertex coordinate data is layed out in the buffer
-      glVertexAttribPointer(vertAttribCoord, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLuint64*)offset);
+      glVertexAttribPointer(vertAttribCoord, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLintptr*)offset);
       // Enable the vertex attribute
       glEnableVertexAttribArray(vertAttribCoord);
 
@@ -180,7 +180,7 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
       // Load Vertex coordinate data into VBO
       glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*homeCircleVerts, homeCircleColorBuffer);
       // Define how the Vertex color data is layed out in the buffer
-      glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLuint64*)offset);
+      glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLintptr*)offset);
       // Enable the vertex attribute
       glEnableVertexAttribArray(vertAttribColor);
    } 
@@ -206,7 +206,7 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
             // Set active VBO
             glBindBuffer(GL_ARRAY_BUFFER, homeCircleVBO);
             // Convenience variable
-            GLuint64 offset = 2*sizeof(GLfloat)*homeCircleVerts;
+            GLintptr offset = 2*sizeof(GLfloat)*homeCircleVerts;
             // Load Vertex Color data into VBO
             glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*homeCircleVerts, homeCircleColorBuffer);
          }
@@ -521,14 +521,14 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       glBufferData(GL_ARRAY_BUFFER, 5*sizeof(GLfloat)*iconCircleVerts, NULL, GL_STATIC_DRAW);
 
       // Convenience variables
-      GLuint64 offset = 0;
+      GLintptr offset = 0;
       GLuint vertAttribCoord = glGetAttribLocation(3, "vertCoord");
       GLuint vertAttribColor = glGetAttribLocation(3, "vertColor");
 
       // Load Vertex coordinate data into VBO
       glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*iconCircleVerts, iconCircleCoordBuffer);
       // Define how the Vertex coordinate data is layed out in the buffer
-      glVertexAttribPointer(vertAttribCoord, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLuint64*)offset);
+      glVertexAttribPointer(vertAttribCoord, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLintptr*)offset);
       // Enable the vertex attribute
       glEnableVertexAttribArray(vertAttribCoord);
 
@@ -538,7 +538,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       // Load Vertex coordinate data into VBO
       glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*iconCircleVerts, iconCircleColorBuffer);
       // Define how the Vertex color data is layed out in the buffer
-      glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLuint64*)offset);
+      glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLintptr*)offset);
       // Enable the vertex attribute
       glEnableVertexAttribArray(vertAttribColor);
    } 
@@ -699,7 +699,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
       // Set active VBO
       glBindBuffer(GL_ARRAY_BUFFER, iconCircleVBO);
       // Convenience variable
-      GLuint64 offset = 0;
+      GLintptr offset = 0;
       // Load Vertex Color data into VBO
       glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*iconCircleVerts, iconCircleCoordBuffer);
    }
@@ -726,7 +726,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
             // Set active VBO
             glBindBuffer(GL_ARRAY_BUFFER, iconCircleVBO);
             // Convenience variable
-            GLuint64 offset = 2*sizeof(GLfloat)*iconCircleVerts;
+            GLintptr offset = 2*sizeof(GLfloat)*iconCircleVerts;
             // Load Vertex Color data into VBO
             glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*iconCircleVerts, iconCircleColorBuffer);
          }
@@ -741,7 +741,7 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
          // Set active VBO
          glBindBuffer(GL_ARRAY_BUFFER, iconCircleVBO);
          // Convenience variable
-         GLuint64 offset = 2*sizeof(GLfloat)*iconCircleVerts;
+         GLintptr offset = 2*sizeof(GLfloat)*iconCircleVerts;
          // Load Vertex Color data into VBO
          glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*iconCircleVerts, iconCircleColorBuffer);
       }
