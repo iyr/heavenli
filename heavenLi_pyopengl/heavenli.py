@@ -77,7 +77,8 @@ def init():
     global stateMach
     try:
         print("Making Serial Object...")
-        stateMach['CircuitPlayground'] = serial.Serial('COM8', 57600)
+        #stateMach['CircuitPlayground'] = serial.Serial('COM8', 57600)
+        stateMach['CircuitPlayground'] = serial.Serial('/dev/serial/by-id/usb-Adafruit_Feather_32u4-if00', 57600)
         stateMach['CircuitPlayground'].open()
         print("Done!")
     except:
