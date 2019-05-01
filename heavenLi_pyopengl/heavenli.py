@@ -527,7 +527,6 @@ def watchPoint(px, py, pr):
     if (1.0 >= pow((stateMach['cursorX']-px/2), 2) / pow(pr/2, 2) + pow((stateMach['cursorY']-py/2), 2) / pow(pr/2, 2)):
         if stateMach['prvState'] == 0:
             stateMach['prvState'] = stateMach['touchState']
-            print(px, py, pr)
             return True
         else:
             stateMach['prvState'] = stateMach['touchState']
@@ -751,7 +750,7 @@ if __name__ == '__main__':
     glutInit(sys.argv)
 
     # Disable anti-aliasing if running on a Raspberry Pi Zero
-    if (machine() == "armv6l"):
+    if (machine() == "armv6l" or machine() == "armv7l"):
         print("Disabling Antialiasing")
         glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE)
     else:
