@@ -86,6 +86,9 @@ class Lamp:
     def setBulbtHSV(self, bulb, HSVcolor):
         self.bulbsTargetHSV[bulb] = HSVcolor
 
+    def setBulbstHSV(self, HSVcolor):
+        for i in range(self.numBulbs):
+            self.bulbsTargetHSV[i] = HSVcolor
 
     # Get current Hue/Sat/Vale for 'bulb'
     def getBulbHSV(self, bulb):
@@ -104,7 +107,6 @@ class Lamp:
     def setBulbsRGB(self, RGBs):
         for i in range(self.numBulbs):
             self.bulbsTargetHSV[i] = colorsys.rgb_to_hsv(RGBs[i])
-        return tmp
 
 
     # If current colors =/= target colors, animate smooth color transition
