@@ -43,11 +43,12 @@ except:
     print("Could not load serial library")
 
 def TXstring(message):
-    if (stateMach['CircuitPlayground'].isOpen()):
-        try:
+    try:
+        if (stateMach['CircuitPlayground'].isOpen()):
             stateMach['CircuitPlayground'].write(message)
-        except:
-            print("Error sending color")
+    except:
+        pass
+        #print("Error sending color")
 
 def updateLEDS():
     try:
