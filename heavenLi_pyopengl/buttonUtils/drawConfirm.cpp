@@ -125,6 +125,7 @@ PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
       MatrixLoadIdentity( &Ortho );
       MatrixLoadIdentity( &ModelView );
       MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
+
       MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
       if (w2h <= 1.0f) {
          MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
@@ -132,8 +133,11 @@ PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
          MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
       }
       MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
+
+      // Cache Matrix to global memory
       MatrixMultiply( &confirmMVP, &ModelView, &Ortho );
 
+      // Cache transformations to avoid recalculation
       confirmPrevState.ao = ao;
       confirmPrevState.dx = gx;
       confirmPrevState.dy = gy;
@@ -163,8 +167,10 @@ PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
 
       // Load Vertex coordinate data into VBO
       glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*confirmVerts, confirmCoordBuffer);
+
       // Define how the Vertex coordinate data is layed out in the buffer
       glVertexAttribPointer(vertAttribCoord, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLintptr*)offset);
+
       // Enable the vertex attribute
       glEnableVertexAttribArray(vertAttribCoord);
 
@@ -173,8 +179,10 @@ PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
 
       // Load Vertex coordinate data into VBO
       glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*confirmVerts, confirmColorBuffer);
+
       // Define how the Vertex color data is layed out in the buffer
       glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLintptr*)offset);
+
       // Enable the vertex attribute
       glEnableVertexAttribArray(vertAttribColor);
    }
@@ -242,6 +250,8 @@ PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
    // Define how the Vertex color data is layed out in the buffer
    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*confirmVerts));
+
+   // Not sure if I actually need these
    //glEnableVertexAttribArray(0);
    //glEnableVertexAttribArray(1);
    glDrawArrays(GL_TRIANGLES, 0, confirmVerts);
