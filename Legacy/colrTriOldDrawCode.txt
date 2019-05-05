@@ -1,0 +1,74 @@
+   All of the drawcode in this file worked but removed for one reason or another,
+   held onto for reference
+
+   // Old, Fixed-function ES 1.1 code
+   /*
+   glScalef(scale, scale, 1);
+   glColorPointer(3, GL_FLOAT, 0, colrTriColorBuffer);
+   glVertexPointer(2, GL_FLOAT, 0, colrTriCoordBuffer);
+   glDrawElements( GL_TRIANGLES, colrTriVerts, GL_UNSIGNED_SHORT, colrTriIndices);
+   glPopMatrix();
+   */
+
+   // ES 2.0 compliant draw code (does not use VBOs)
+   /*
+   //GLint mvpLoc;
+   //mvpLoc = glGetUniformLocation( 3, "MVP" );
+   //glUniformMatrix4fv( mvpLoc, 1, GL_FALSE, &colrTriMVP.mat[0][0] );
+   glUniformMatrix4fv( 0, 1, GL_FALSE, &colrTriMVP.mat[0][0] );
+   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, colrTriCoordBuffer);
+   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, colrTriColorBuffer);
+   //glEnableVertexAttribArray(0);
+   //glEnableVertexAttribArray(1);
+   glDrawArrays(GL_TRIANGLES, 0, colrTriVerts);
+   */
+
+   // This code creates a single buffer object and puts all of the attribute data into it
+   /*
+   GLuint colrTriVBO;
+   GLuint offset = 0;
+   glGenBuffers(1, &colrTriVBO);
+   GLuint vertAttribCoord = glGetAttribLocation(3, "vertCoord");
+   GLuint vertAttribColor = glGetAttribLocation(3, "vertColor");
+
+   glBindBuffer(GL_ARRAY_BUFFER, colrTriVBO);
+   glBufferData(GL_ARRAY_BUFFER, 5*sizeof(GLfloat)*colrTriVerts, NULL, GL_STATIC_DRAW);
+
+   glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*colrTriVerts, colrTriCoordBuffer);
+   glVertexAttribPointer(vertAttribCoord, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLuint*)offset);
+   glEnableVertexAttribArray(vertAttribCoord);
+
+   offset += 2*sizeof(GLfloat)*colrTriVerts;
+
+   glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*colrTriVerts, colrTriColorBuffer);
+   glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLuint*)offset);
+   glEnableVertexAttribArray(vertAttribColor);
+
+   glDrawArrays(GL_TRIANGLES, 0, colrTriVerts);
+
+   glBindBuffer(GL_ARRAY_BUFFER, 0);
+   */
+
+   /*
+   // This color creates two unique buffer objects, one for vertex coordinates and the other for colors
+   GLuint vboIds[2];
+   glGenBuffers(2, vboIds);
+
+   GLuint vertAttribCoord = glGetAttribLocation(3, "vertCoord");
+   GLuint vertAttribColor = glGetAttribLocation(3, "vertColor");
+
+   glBindBuffer(GL_ARRAY_BUFFER, vboIds[0]);
+   glBufferData(GL_ARRAY_BUFFER, 2*sizeof(GLfloat)*colrTriVerts, colrTriCoordBuffer, GL_STATIC_DRAW);
+   glVertexAttribPointer(vertAttribCoord, 2, GL_FLOAT, GL_FALSE, 0, 0);
+   glEnableVertexAttribArray(vertAttribCoord);
+
+   glBindBuffer(GL_ARRAY_BUFFER, vboIds[1]);
+   glBufferData(GL_ARRAY_BUFFER, 3*sizeof(GLfloat)*colrTriVerts, colrTriColorBuffer, GL_STATIC_DRAW);
+   glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 0, 0);
+   glEnableVertexAttribArray(vertAttribColor);
+
+   glDrawArrays(GL_TRIANGLES, 0, colrTriVerts);
+
+   glBindBuffer(GL_ARRAY_BUFFER, 0);
+   */
+
