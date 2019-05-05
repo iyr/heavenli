@@ -59,7 +59,6 @@ int defineArch(
    return verts.size()/2;
 }
 
-
 // Update vertices to allocated arrays
 int updateArchGeometry(
       float bx,                  /* X-Coordinate */
@@ -100,4 +99,32 @@ int updateArchGeometry(
    /* Y */ verts[vertIndex++] = (float(by+sin(tma)*(bsy+rs)));
 
    return vertIndex/2;
+}
+
+// Update vertices to allocated arrays
+int updateArchColor(
+      float start,               /* Where, in degrees on the unit circle, the arch begins */
+      float end,                 /* Where, in degrees on the unit circle, the arch endgs */
+      float rs,                  /* Halo thickness */
+      char  circleSegments,      /* Number of sides */
+      float *color,              /* Polygon Color */
+      int   index,               /* Index of where to start writing to input arrays */
+      std::vector<float> &colrs  /* Input Vector of r,g,b values */
+      ){
+   int colrIndex = index*3;
+   float R, G, B;
+   R = color[0];
+   G = color[1];
+   B = color[2];
+
+   // Prepend Degenerate Vertex
+   /* R */ colrs[colrIndex++] = R;   /* G */ colrs[colrIndex++] = G;   /* B */ colrs[colrIndex++] = B;
+
+   for (int i = 0; i < circleSegments+1; i ++ ) {
+      /* R */ colrs[colrIndex++] = R;   /* G */ colrs[colrIndex++] = G;   /* B */ colrs[colrIndex++] = B;
+      /* R */ colrs[colrIndex++] = R;   /* G */ colrs[colrIndex++] = G;   /* B */ colrs[colrIndex++] = B;
+   }
+   /* R */ colrs[colrIndex++] = R;   /* G */ colrs[colrIndex++] = G;   /* B */ colrs[colrIndex++] = B;
+
+   return colrIndex/3;
 }
