@@ -32,6 +32,7 @@ Matrix      colrTriMVP;                   // Transformation matrix passed to sha
 Params      colrTriPrevState;             // Stores transformations to avoid redundant recalculation
 GLuint      colrTriVBO;                   // Vertex Buffer Object ID
 GLboolean   colrTriFirstRun   = GL_TRUE;  // Determines if function is running for the first time (for VBO initialization)
+GLuint      colrTriDotsVerts;
 
 PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    PyObject *py_list;
@@ -125,7 +126,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
             tmy = float(prevTriY - (i*0.075f + j*0.145f));
 
             // Draw dot
-            drawEllipse(tmx, tmy, tmr, circleSegments, colors, verts, colrs);
+            defineEllipse(tmx, tmy, tmr, tmr, circleSegments, colors, verts, colrs);
 
             // Store position and related data of button dot
             triButtonData[index*4 + 0] = float(-0.0383*numLevels + (i*0.13f));
@@ -143,10 +144,15 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
          }
       }
 
+      colrTriDotsVerts = verts.size()/2;
+
       // Draw a circle around the button dot corresponding to the selected saturation/value
-      drawHalo(
+      defineArch(
             ringX, ringY,
-            float(1.06*tmr), float(1.06*tmr),
+            float(1.06*tmr), 
+            float(1.06*tmr),
+            0.0f,
+            360.0f,
             0.03f,
             circleSegments,
             ringColor,
@@ -316,10 +322,9 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
             tmy = float(prevTriY - (i*0.075f + j*0.145f));
 
             // Draw dot
-            //drawEllipse(tmx, tmy, tmr, circleSegments, colors, verts, colrs);
-            index = updateEllipseGeometry(
+            index = updatePrimEllipseGeometry(
                   tmx, tmy, 
-                  tmr, 
+                  tmr, tmr,
                   circleSegments, 
                   index, 
                   colrTriCoordBuffer);
@@ -334,15 +339,16 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       }
 
       // Draw a circle around the button dot corresponding to the selected saturation/value
-      index = drawHalo(
-            prevRingX, prevRingY,
-            float(1.06*tmr), float(1.06*tmr),
+      index = updateArchGeometry(
+            ringX, ringY,
+            float(1.06*tmr), 
+            float(1.06*tmr),
+            0.0f,
+            360.0f,
             0.03f,
             circleSegments,
             index,
-            ringColor,
-            colrTriCoordBuffer,
-            colrTriColorBuffer);
+            colrTriCoordBuffer);
 
       // Update Contents of VBO
       // Set active VBO
@@ -421,15 +427,17 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    // Update position of the selection ring if needed
    if ( (prevTriSat  != currentTriSat  ||
          prevTriVal  != currentTriVal) ){
-      drawHalo(
+
+      updateArchGeometry(
             prevRingX, prevRingY,
-            float(1.06*tmr), float(1.06*tmr),
+            float(1.06*tmr), 
+            float(1.06*tmr),
+            0.0f,
+            360.0f,
             0.03f,
             circleSegments,
-            3*numButtons*circleSegments,
-            ringColor,
-            colrTriCoordBuffer,
-            colrTriColorBuffer);
+            colrTriDotsVerts,
+            colrTriCoordBuffer);
 
       // Update Contents of VBO
       // Set active VBO
@@ -473,7 +481,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
 
             // Convert HSV to RGB 
 	         hsv2rgb(currentTriHue, saturation, value, colors);
-            colrIndex = updateEllipseColor(
+            colrIndex = updatePrimEllipseColor(
                   circleSegments, 
                   colrIndex, 
                   colors,
@@ -493,9 +501,9 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
 
    // Check if selection Ring Color needs to be updated
    for (int i = 0; i < 3; i++) {
-      if ( (colrTriColorBuffer[numButtons*circleSegments*9+i] != ringColor[i])   && 
+      if ( (colrTriColorBuffer[colrTriDotsVerts*3+i] != ringColor[i])   && 
            (prevColrTriNumLevels == numLevels)                                   ){
-         for (unsigned int k = numButtons*circleSegments*3; k < colrTriVerts; k++) {
+         for (unsigned int k = colrTriDotsVerts; k < colrTriVerts; k++) {
             colrTriColorBuffer[k*3+i] = ringColor[i];
          }
          // Update Contents of VBO
@@ -571,7 +579,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*colrTriVerts));
    //glEnableVertexAttribArray(0);
    //glEnableVertexAttribArray(1);
-   glDrawArrays(GL_TRIANGLES, 0, colrTriVerts);
+   glDrawArrays(GL_TRIANGLE_STRIP, 0, colrTriVerts);
 
    // Unbind Buffer Object
    glBindBuffer(GL_ARRAY_BUFFER, 0);
