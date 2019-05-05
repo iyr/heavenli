@@ -27,6 +27,7 @@ Matrix      hueRingMVP;                   // Transformation matrix passed to sha
 Params      hueRingPrevState;             // Stores transformations to avoid redundant recalculation
 GLuint      hueRingVBO;                   // Vertex Buffer Object ID
 GLboolean   hueRingFirstRun = GL_TRUE;    // Determines if function is running for the first time (for VBO initialization)
+GLuint      hueDotsVerts;
 
 PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
    PyObject *py_list;
@@ -104,7 +105,8 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
          hueButtonData[i*2+1] = tmy;
          
          // Draw dot
-         drawEllipse(tmx, tmy, prevHueDotScale, circleSegments, colors, verts, colrs);
+         //drawEllipse(tmx, tmy, prevHueDotScale, circleSegments, colors, verts, colrs);
+         defineEllipse(tmx, tmy, prevHueDotScale, prevHueDotScale, circleSegments, colors, verts, colrs);
 
          // Determine which button dot represents the currently selected hue
          if (abs(currentHue - float(azi*i)) <= 1.0f / float(numHues*2)) {
@@ -113,10 +115,25 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
          }
       }
 
+      hueDotsVerts = verts.size()/2;
+
       // Draw a circle around the button dot corresponding to the currently selected hue
+      /*
       drawHalo(
             ringX, ringY,
             float(1.06*tmr*(12.0/numHues)), float(1.06*tmr*(12.0/numHues)),
+            0.03f,
+            circleSegments,
+            ringColor,
+            verts,
+            colrs);
+            */
+      defineArch(
+            ringX, ringY,
+            float(1.06*tmr*(12.0/numHues)), 
+            float(1.06*tmr*(12.0/numHues)),
+            0.0f,
+            360.0f,
             0.03f,
             circleSegments,
             ringColor,
@@ -265,15 +282,16 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
    if (prevHueRingAni != currentHue){
       ringX = float(cos(degToRad(prevHueRingAng))*0.67*pow(numHues/12.0f, 1.0f/4.0f));
       ringY = float(sin(degToRad(prevHueRingAng))*0.67*pow(numHues/12.0f, 1.0f/4.0f));
-      drawHalo(
+      updateArchGeometry(
             ringX, ringY,
-            float(1.06*tmr*(12.0/numHues)), float(1.06*tmr*(12.0/numHues)),
+            float(1.06*tmr*(12.0/numHues)), 
+            float(1.06*tmr*(12.0/numHues)),
+            0.0f,
+            360.0f,
             0.03f,
             circleSegments,
-            3*numHues*circleSegments,
-            ringColor,
-            hueRingCoordBuffer,
-            hueRingColorBuffer);
+            hueDotsVerts,
+            hueRingCoordBuffer);
 
       // Update Contents of VBO
       // Set active VBO
@@ -328,8 +346,9 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
          tmy = float(sin(degToRad(ang))*prevHueDotDist);
 
          // Draw dot
-         index = updateEllipseGeometry(
+         index = updatePrimEllipseGeometry(
                tmx, tmy, 
+               prevHueDotScale, 
                prevHueDotScale, 
                circleSegments, 
                index, 
@@ -343,15 +362,16 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
       }
 
       // Draw a circle around the button dot corresponding to the currently selected hue
-      index = drawHalo(
+      index = updateArchGeometry(
             ringX, ringY,
-            float(1.06*tmr*(12.0/numHues)), float(1.06*tmr*(12.0/numHues)),
+            float(1.06*tmr*(12.0/numHues)), 
+            float(1.06*tmr*(12.0/numHues)),
+            0.0f,
+            360.0f,
             0.03f,
             circleSegments,
-            index,
-            ringColor,
-            hueRingCoordBuffer,
-            hueRingColorBuffer);
+            hueDotsVerts,
+            hueRingCoordBuffer);
 
       // Update Contents of VBO
       // Set active VBO
@@ -368,8 +388,9 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
 
    // Check if selection Ring Color needs to be updated
    for (int i = 0; i < 3; i++) {
-      if (hueRingColorBuffer[numHues*circleSegments*9+i] != ringColor[i]) {
-         for (unsigned int k = numHues*circleSegments*3; k < hueRingVerts; k++) {
+      //if (hueRingColorBuffer[numHues*circleSegments*9+i] != ringColor[i]) {
+      if (hueRingColorBuffer[hueDotsVerts*3+i] != ringColor[i]) {
+         for (unsigned int k = hueDotsVerts; k < hueRingVerts; k++) {
             hueRingColorBuffer[k*3+i] = ringColor[i];
          }
 
@@ -443,7 +464,7 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*hueRingVerts));
    //glEnableVertexAttribArray(0);
    //glEnableVertexAttribArray(1);
-   glDrawArrays(GL_TRIANGLES, 0, hueRingVerts);
+   glDrawArrays(GL_TRIANGLE_STRIP, 0, hueRingVerts);
 
    // Unbind Buffer Object
    glBindBuffer(GL_ARRAY_BUFFER, 0);
