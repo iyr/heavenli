@@ -118,16 +118,6 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
       hueDotsVerts = verts.size()/2;
 
       // Draw a circle around the button dot corresponding to the currently selected hue
-      /*
-      drawHalo(
-            ringX, ringY,
-            float(1.06*tmr*(12.0/numHues)), float(1.06*tmr*(12.0/numHues)),
-            0.03f,
-            circleSegments,
-            ringColor,
-            verts,
-            colrs);
-            */
       defineArch(
             ringX, ringY,
             float(1.06*tmr*(12.0/numHues)), 
