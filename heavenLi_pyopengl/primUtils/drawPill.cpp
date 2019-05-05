@@ -26,8 +26,8 @@ unsigned int drawPill(
    }
    float ang = float(degToRad(90)+atan(slope));
 
-   rx = radius*cos(ang);
-   ry = radius*sin(ang);
+   rx = float(radius*cos(ang));
+   ry = float(radius*sin(ang));
 
    pR = float(pColor[0]);
    pG = float(pColor[1]);
@@ -65,8 +65,8 @@ unsigned int drawPill(
          tma = ang + float(degToRad(+i*12.0));
       else
          tma = ang + float(degToRad(-i*12.0));
-      rx = radius*cos(tma);
-      ry = radius*sin(tma);
+      rx = float(radius*cos(tma));
+      ry = float(radius*sin(tma));
          
       /* pX */ verts[vertIndex++] = float(px);
       /* pY */ verts[vertIndex++] = float(py);
@@ -78,8 +78,8 @@ unsigned int drawPill(
          tma = ang + float(degToRad(+(i+1)*12.0));
       else 
          tma = ang + float(degToRad(-(i+1)*12.0));
-      rx = radius*cos(tma);
-      ry = radius*sin(tma);
+      rx = float(radius*cos(tma));
+      ry = float(radius*sin(tma));
          
       /* pX */ verts[vertIndex++] = float(px+rx);
       /* pY */ verts[vertIndex++] = float(py+ry);
@@ -94,8 +94,8 @@ unsigned int drawPill(
          tma = ang + float(degToRad(+i*12.0));
       else
          tma = ang + float(degToRad(-i*12.0));
-      rx = radius*cos(tma);
-      ry = radius*sin(tma);
+      rx = float(radius*cos(tma));
+      ry = float(radius*sin(tma));
          
       /* qX */ verts[vertIndex++] = float(qx);
       /* qY */ verts[vertIndex++] = float(qy);
@@ -107,8 +107,8 @@ unsigned int drawPill(
          tma = ang + float(degToRad(+(i+1)*12.0));
       else
          tma = ang + float(degToRad(-(i+1)*12.0));
-      rx = radius*cos(tma);
-      ry = radius*sin(tma);
+      rx = float(radius*cos(tma));
+      ry = float(radius*sin(tma));
          
       /* qX */ verts[vertIndex++] = float(qx-rx);
       /* qY */ verts[vertIndex++] = float(qy-ry);
@@ -148,8 +148,8 @@ unsigned int drawPill(
    qG = float(qColor[1]);
    qB = float(qColor[2]);
 
-   rx = radius*cos(ang);
-   ry = radius*sin(ang);
+   rx = float(radius*cos(ang));
+   ry = float(radius*sin(ang));
 
    // Draw Pill Body, (Rectangle)
    /* pX */ verts.push_back(float(px+rx));
@@ -182,8 +182,8 @@ unsigned int drawPill(
          tma = ang + float(degToRad(+i*12.0));
       else
          tma = ang + float(degToRad(-i*12.0));
-      rx = radius*cos(tma);
-      ry = radius*sin(tma);
+      rx = float(radius*cos(tma));
+      ry = float(radius*sin(tma));
          
       /* pX */ verts.push_back(float(px));
       /* pY */ verts.push_back(float(py));
@@ -195,8 +195,8 @@ unsigned int drawPill(
          tma = ang + float(degToRad(+(i+1)*12.0));
       else 
          tma = ang + float(degToRad(-(i+1)*12.0));
-      rx = radius*cos(tma);
-      ry = radius*sin(tma);
+      rx = float(radius*cos(tma));
+      ry = float(radius*sin(tma));
          
       /* pX */ verts.push_back(float(px+rx));
       /* pY */ verts.push_back(float(py+ry));
@@ -211,8 +211,8 @@ unsigned int drawPill(
          tma = ang + float(degToRad(+i*12.0));
       else
          tma = ang + float(degToRad(-i*12.0));
-      rx = radius*cos(tma);
-      ry = radius*sin(tma);
+      rx = float(radius*cos(tma));
+      ry = float(radius*sin(tma));
          
       /* qX */ verts.push_back(float(qx));
       /* qY */ verts.push_back(float(qy));
@@ -224,8 +224,8 @@ unsigned int drawPill(
          tma = ang + float(degToRad(+(i+1)*12.0));
       else
          tma = ang + float(degToRad(-(i+1)*12.0));
-      rx = radius*cos(tma);
-      ry = radius*sin(tma);
+      rx = float(radius*cos(tma));
+      ry = float(radius*sin(tma));
          
       /* qX */ verts.push_back(float(qx-rx));
       /* qY */ verts.push_back(float(qy-ry));
