@@ -11,6 +11,7 @@
 #include "buttonUtils/drawColrTri.cpp"
 #include "buttonUtils/drawConfirm.cpp"
 #include "infoUtils/printText.cpp"
+#include "infoUtils/primDrawTest.cpp"
 
 PyObject* drawClock_drawButtons     (PyObject *self, PyObject *args);
 PyObject* drawArrow_drawButtons     (PyObject *self, PyObject *args);
@@ -20,6 +21,7 @@ PyObject* drawHueRing_drawButtons   (PyObject *self, PyObject *args);
 PyObject* drawColrTri_drawButtons   (PyObject *self, PyObject *args);
 PyObject* drawConfirm_drawButtons   (PyObject *self, PyObject *args);
 PyObject* printText_drawButtons     (PyObject *self, PyObject *args);
+PyObject* primTest_drawButtons      (PyObject *self, PyObject *args);
 
 static PyMethodDef drawButtons_methods[] = {
    { "drawClock",       (PyCFunction)drawClock_drawButtons,       METH_VARARGS },
@@ -30,6 +32,7 @@ static PyMethodDef drawButtons_methods[] = {
    { "drawColrTri",     (PyCFunction)drawColrTri_drawButtons,     METH_VARARGS },
    { "drawConfirm",     (PyCFunction)drawConfirm_drawButtons,     METH_VARARGS },
    { "printText",       (PyCFunction)printText_drawButtons,       METH_VARARGS },
+   { "primTest",        (PyCFunction)primTest_drawButtons,        METH_VARARGS },
    { NULL, NULL, 0, NULL}
 };
 
