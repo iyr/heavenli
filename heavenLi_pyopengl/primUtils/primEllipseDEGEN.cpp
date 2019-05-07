@@ -19,6 +19,7 @@ int defineEllipse(
       ){
    float R, G, B;
    char degSegment = 360 / circleSegments;
+   degSegment /= 2.0f;
    R = color[0];
    G = color[1];
    B = color[2];
@@ -37,7 +38,7 @@ int defineEllipse(
       /* R */ colrs.push_back(R);  /* G */ colrs.push_back(G);  /* B */ colrs.push_back(B);
    }
 
-   for (char i = 1; i < circleSegments; i++ ) {
+   for (char i = 0; i < circleSegments; i++ ) {
       /* X */ verts.push_back(float(bx + bsx*cos(degToRad(i*degSegment))));
       /* Y */ verts.push_back(float(by + bsy*sin(degToRad(i*degSegment))));
       /* R */ colrs.push_back(R);  /* G */ colrs.push_back(G);  /* B */ colrs.push_back(B);
@@ -67,6 +68,7 @@ int updatePrimEllipseGeometry(
       ){
    int vertIndex = index*2;   /* index (x, y) */
    char degSegment = 360 / circleSegments;
+   degSegment /= 2.0f;
 
    if (vertIndex == 0) {
       /* X */ verts[vertIndex++] = (float(bx + bsx*1.0f));
@@ -78,7 +80,7 @@ int updatePrimEllipseGeometry(
       /* Y */ verts[vertIndex++] = (float(by + bsy*0.0f));
    }
 
-   for (char i = 1; i < circleSegments; i++ ) {
+   for (char i = 0; i < circleSegments; i++ ) {
       /* X */ verts[vertIndex++] = (float(bx + bsx*cos(degToRad(i*degSegment))));
       /* Y */ verts[vertIndex++] = (float(by + bsy*sin(degToRad(i*degSegment))));
       /* X */ verts[vertIndex++] = (float(bx + bsx*cos(degToRad(i*degSegment))));
@@ -112,7 +114,7 @@ int updatePrimEllipseColor(
       /* R */ colrs[colrIndex++] = R;  /* G */ colrs[colrIndex++] = G;  /* B */ colrs[colrIndex++] = B;
    }
 
-   for (char i = 1; i < circleSegments; i++ ) {
+   for (char i = 0; i < circleSegments; i++ ) {
       /* R */ colrs[colrIndex++] = R;  /* G */ colrs[colrIndex++] = G;  /* B */ colrs[colrIndex++] = B;
       /* R */ colrs[colrIndex++] = R;  /* G */ colrs[colrIndex++] = G;  /* B */ colrs[colrIndex++] = B;
    }
