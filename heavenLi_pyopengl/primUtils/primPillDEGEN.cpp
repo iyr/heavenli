@@ -37,7 +37,7 @@ int definePill(
    qB = float(qColor[2]);
 
    char degSegment = 360 / circleSegments;
-   degSegment /= 4.0f;
+   degSegment /= 2.0f;
 
    // Prepend degenerate vertex iff not the first primitive in the vector
    if (verts.size() == 0) {
@@ -53,7 +53,7 @@ int definePill(
       /* pR */ colrs.push_back(pR);  /* G */ colrs.push_back(pG);  /* B */ colrs.push_back(pB);
    }
 
-   for (char i = 1; i < circleSegments; i++ ) {
+   for (char i = 1; i < circleSegments/2; i++ ) {
       /* pX */ verts.push_back(float(px + radius*cos(ang+degToRad(i*degSegment))));
       /* pY */ verts.push_back(float(py + radius*sin(ang+degToRad(i*degSegment))));
       /* pX */ verts.push_back(float(px + radius*cos(ang+degToRad(-i*degSegment))));
@@ -69,17 +69,17 @@ int definePill(
       slope = (py-qy)/(px-qx);
       ang = float(degToRad(180)+atan(slope));
    }
-   for (char i = 1; i < circleSegments; i++ ) {
-      /* qX */ verts.push_back(float(qx + radius*cos(ang+degToRad(-(circleSegments-i)*degSegment))));
-      /* qY */ verts.push_back(float(qy + radius*sin(ang+degToRad(-(circleSegments-i)*degSegment))));
-      /* qX */ verts.push_back(float(qx + radius*cos(ang+degToRad((circleSegments-i)*degSegment))));
-      /* qY */ verts.push_back(float(qy + radius*sin(ang+degToRad((circleSegments-i)*degSegment))));
+   for (char i = 1; i < circleSegments/2; i++ ) {
+      /* qX */ verts.push_back(float(qx + radius*cos(ang+degToRad(-(circleSegments/2-i)*degSegment))));
+      /* qY */ verts.push_back(float(qy + radius*sin(ang+degToRad(-(circleSegments/2-i)*degSegment))));
+      /* qX */ verts.push_back(float(qx + radius*cos(ang+degToRad((circleSegments/2-i)*degSegment))));
+      /* qY */ verts.push_back(float(qy + radius*sin(ang+degToRad((circleSegments/2-i)*degSegment))));
       /* qR */ colrs.push_back(qR);  /* G */ colrs.push_back(qG);  /* B */ colrs.push_back(qB);
       /* qR */ colrs.push_back(qR);  /* G */ colrs.push_back(qG);  /* B */ colrs.push_back(qB);
    }
 
-   /* qX */ verts.push_back(float(qx + radius*cos(ang+degToRad(-0.0f))));
-   /* qY */ verts.push_back(float(qy + radius*sin(ang+degToRad(-0.0f))));
+   /* qX */ verts.push_back(float(qx + radius*cos(ang+degToRad(0.0f))));
+   /* qY */ verts.push_back(float(qy + radius*sin(ang+degToRad(0.0f))));
    /* qX */ verts.push_back(float(qx + radius*cos(ang+degToRad(0.0f))));
    /* qY */ verts.push_back(float(qy + radius*sin(ang+degToRad(0.0f))));
    /* qR */ colrs.push_back(qR);  /* G */ colrs.push_back(qG);  /* B */ colrs.push_back(qB);
@@ -126,7 +126,7 @@ int updatePillGeometry(
    }
 
    char degSegment = 360 / circleSegments;
-   degSegment /= 4.0f;
+   degSegment /= 2.0f;
 
    // Prepend degenerate vertex iff not the first primitive in the vector
    if (vertIndex == 0) {
@@ -139,7 +139,7 @@ int updatePillGeometry(
       /* pY */ verts[vertIndex++] = (float(py + radius*sin(ang)));
    }
 
-   for (char i = 1; i < circleSegments; i++ ) {
+   for (char i = 1; i < circleSegments/2; i++ ) {
       /* pX */ verts[vertIndex++] = (float(px + radius*cos(ang+degToRad(i*degSegment))));
       /* pY */ verts[vertIndex++] = (float(py + radius*sin(ang+degToRad(i*degSegment))));
       /* pX */ verts[vertIndex++] = (float(px + radius*cos(ang+degToRad(-i*degSegment))));
@@ -153,11 +153,11 @@ int updatePillGeometry(
       slope = (py-qy)/(px-qx);
       ang = float(degToRad(180)+atan(slope));
    }
-   for (char i = 1; i < circleSegments; i++ ) {
-      /* qX */ verts[vertIndex++] = (float(qx + radius*cos(ang+degToRad(-(circleSegments-i)*degSegment))));
-      /* qY */ verts[vertIndex++] = (float(qy + radius*sin(ang+degToRad(-(circleSegments-i)*degSegment))));
-      /* qX */ verts[vertIndex++] = (float(qx + radius*cos(ang+degToRad((circleSegments-i)*degSegment))));
-      /* qY */ verts[vertIndex++] = (float(qy + radius*sin(ang+degToRad((circleSegments-i)*degSegment))));
+   for (char i = 1; i < circleSegments/2; i++ ) {
+      /* qX */ verts[vertIndex++] = (float(qx + radius*cos(ang+degToRad(-(circleSegments/2-i)*degSegment))));
+      /* qY */ verts[vertIndex++] = (float(qy + radius*sin(ang+degToRad(-(circleSegments/2-i)*degSegment))));
+      /* qX */ verts[vertIndex++] = (float(qx + radius*cos(ang+degToRad((circleSegments/2-i)*degSegment))));
+      /* qY */ verts[vertIndex++] = (float(qy + radius*sin(ang+degToRad((circleSegments/2-i)*degSegment))));
    }
 
    /* qX */ verts[vertIndex++] = (float(qx + radius*cos(ang+degToRad(0.0f))));
@@ -193,12 +193,12 @@ int updatePillColor(
       /* pR */ colrs[colrIndex++] = (pR);  /* G */ colrs[colrIndex++] = (pG);  /* B */ colrs[colrIndex++] = (pB);
    }
 
-   for (char i = 1; i < circleSegments; i++ ) {
+   for (char i = 1; i < circleSegments/2; i++ ) {
       /* pR */ colrs[colrIndex++] = (pR);  /* G */ colrs[colrIndex++] = (pG);  /* B */ colrs[colrIndex++] = (pB);
       /* pR */ colrs[colrIndex++] = (pR);  /* G */ colrs[colrIndex++] = (pG);  /* B */ colrs[colrIndex++] = (pB);
    }
 
-   for (char i = 1; i < circleSegments; i++ ) {
+   for (char i = 1; i < circleSegments/2; i++ ) {
       /* qR */ colrs[colrIndex++] = (qR);  /* G */ colrs[colrIndex++] = (qG);  /* B */ colrs[colrIndex++] = (qB);
       /* qR */ colrs[colrIndex++] = (qR);  /* G */ colrs[colrIndex++] = (qG);  /* B */ colrs[colrIndex++] = (qB);
    }
