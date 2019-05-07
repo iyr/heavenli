@@ -3,6 +3,7 @@
 #include "primUtils/drawEllipse.cpp"
 #include "primUtils/primEllipseDEGEN.cpp"
 #include "primUtils/primArchDEGEN.cpp"
+#include "primUtils/primPillDEGEN.cpp"
 #include "primUtils/drawHalo.cpp"
 #include "primUtils/drawArch.cpp"
 #include "primUtils/hsv2rgb.cpp"
