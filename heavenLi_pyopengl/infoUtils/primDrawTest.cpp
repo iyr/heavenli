@@ -69,7 +69,7 @@ PyObject* primTest_drawButtons(PyObject* self, PyObject *args) {
             -0.5, -0.5, 
             0.5, 0.5, 
             0.25, 
-            9, 
+            60, 
             faceColor,
             detailColor,
             verts,
@@ -79,7 +79,7 @@ PyObject* primTest_drawButtons(PyObject* self, PyObject *args) {
             0.5, -0.5, 
             -0.5, 0.5, 
             0.25, 
-            9, 
+            60, 
             detailColor,
             extraColor,
             verts,
@@ -187,6 +187,21 @@ PyObject* primTest_drawButtons(PyObject* self, PyObject *args) {
       // Enable the vertex attribute
       glEnableVertexAttribArray(vertAttribColor);
    }
+
+   updatePillGeometry(
+            -0.5, -0.5, 
+            0.5, 0.5, 
+            0.25, 
+            1, 
+            0,
+            primTestCoordBuffer);
+
+      // Set active VBO
+      glBindBuffer(GL_ARRAY_BUFFER, primTestVBO);
+      // Convenience variables
+      GLintptr offset = 0;
+      // Load Vertex coordinate data into VBO
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*primTestVerts, primTestCoordBuffer);
 
    /*
    // Geometry allocated, check if color needs to be updated

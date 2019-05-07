@@ -211,11 +211,11 @@ def drawHome():
             #'NnOoPpQqRrSsTtUuVvWwXxYyZz',
             #( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100)))
 
-    primTest(0.0, 0.0, 
-            1.0, stateMach['w2h'],
-            (0.5, 0.0, 1.0),
-            (1.0, 0.5, 0.0),
-            (0.0, 1.0, 0.5))
+    #primTest(0.0, 0.0, 
+            #1.0, stateMach['w2h'],
+            #(0.5, 0.0, 1.0),
+            #(1.0, 0.5, 0.0),
+            #(0.0, 1.0, 0.5))
 
     if (stateMach['lamps'][0].getArn() == 0):
         drawIconCircle(0.75, 0.75, 
