@@ -61,31 +61,14 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
 
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
-      float R, G, B;
-      R = float(faceColor[0]);
-      G = float(faceColor[1]);
-      B = float(faceColor[2]);
 
-      char degSegment = 360 / circleSegments;
-
-      for (int i = 0; i < circleSegments; i++) {
-         /* X */ verts.push_back(float(0.0));
-         /* Y */ verts.push_back(float(0.0));
-         /* X */ verts.push_back(float(0.5*cos(degToRad(i*degSegment))));
-         /* Y */ verts.push_back(float(0.5*sin(degToRad(i*degSegment))));
-         /* X */ verts.push_back(float(0.5*cos(degToRad((i+1)*degSegment))));
-         /* Y */ verts.push_back(float(0.5*sin(degToRad((i+1)*degSegment))));
-
-         /* R */ colrs.push_back(R);
-         /* G */ colrs.push_back(G);
-         /* B */ colrs.push_back(B);
-         /* R */ colrs.push_back(R);
-         /* G */ colrs.push_back(G);
-         /* B */ colrs.push_back(B);
-         /* R */ colrs.push_back(R);
-         /* G */ colrs.push_back(G);
-         /* B */ colrs.push_back(B);
-      }
+      defineEllipse(
+            0.0f, 0.0f, 
+            0.5f, 0.5f,
+            circleSegments,
+            faceColor,
+            verts,
+            colrs);
 
       faceVerts = verts.size()/2;
 
@@ -94,12 +77,12 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
       qx = float(0.2*cos(degToRad(90-360*(hour/12.0))));
       qy = float(0.2*sin(degToRad(90-360*(hour/12.0))));
       radius = float(0.02);
-      drawPill(px, py, qx, qy, radius, detailColor, verts, colrs);
+      definePill(px, py, qx, qy, radius, circleSegments/4, detailColor, verts, colrs);
 
       qx = float(0.4*cos(degToRad(90-360*(minute/60.0))));
       qy = float(0.4*sin(degToRad(90-360*(minute/60.0))));
       radius = float(0.01);
-      drawPill(px, py, qx, qy, radius, detailColor, verts, colrs);
+      definePill(px, py, qx, qy, radius, circleSegments/4, detailColor, verts, colrs);
 
       clockVerts = verts.size()/2;
 
@@ -210,26 +193,24 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
       radius = float(0.02);
 
       int tmp;
-      tmp = drawPill(
-            px, py, 
-            qx, qy, 
-            radius, 
-            faceVerts, 
-            detailColor, 
-            clockCoordBuffer, 
-            clockColorBuffer);
+      tmp = updatePillGeometry(
+            px, py,
+            qx, qy,
+            radius,
+            circleSegments/4,
+            faceVerts,
+            clockCoordBuffer);
 
       qx = float(0.4*cos(degToRad(90-360*(minute/60.0))));
       qy = float(0.4*sin(degToRad(90-360*(minute/60.0))));
       radius = float(0.01);
-      tmp = drawPill(
-            px, py, 
-            qx, qy, 
-            radius, 
-            tmp, 
-            detailColor, 
-            clockCoordBuffer, 
-            clockColorBuffer);
+      tmp = updatePillGeometry(
+            px, py,
+            qx, qy,
+            radius,
+            circleSegments/4,
+            tmp,
+            clockCoordBuffer);
 
       prevClockHour     = hour;
       prevClockMinute   = minute;
@@ -247,7 +228,7 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
    for (int i = 0; i < 3; i++) {
       // Update Clock Face Color
       if (faceColor[i] != clockColorBuffer[i]) {
-         for (int k = 0; k < circleSegments*3; k++) {
+         for (unsigned int k = 0; k < faceVerts; k++) {
             clockColorBuffer[i + k*3] = faceColor[i];
          }
          // Update Contents of VBO
@@ -260,8 +241,8 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
       }
 
       // Update Hand Colors
-      if (detailColor[i] != clockColorBuffer[i + circleSegments*3]) {
-         for (unsigned int k = circleSegments*3; k < clockVerts; k++) {
+      if (detailColor[i] != clockColorBuffer[i + faceVerts]) {
+         for (unsigned int k = faceVerts; k < clockVerts; k++) {
             clockColorBuffer[i + k*3] = detailColor[i];
          }
          // Update Contents of VBO
@@ -323,7 +304,8 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*clockVerts));
    //glEnableVertexAttribArray(0);
    //glEnableVertexAttribArray(1);
-   glDrawArrays(GL_TRIANGLES, 0, clockVerts);
+   //glDrawArrays(GL_TRIANGLES, 0, clockVerts);
+   glDrawArrays(GL_TRIANGLE_STRIP, 0, clockVerts);
 
    // Unbind Buffer Object
    glBindBuffer(GL_ARRAY_BUFFER, 0);
