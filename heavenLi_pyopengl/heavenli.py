@@ -211,11 +211,11 @@ def drawHome():
             #'NnOoPpQqRrSsTtUuVvWwXxYyZz',
             #( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100)))
 
-    #primTest(0.0, 0.0, 
-            #1.0, stateMach['w2h'],
-            #(0.5, 0.0, 1.0),
-            #(1.0, 0.5, 0.0),
-            #(0.0, 1.0, 0.5))
+    primTest(0.0, 0.0, 
+            1.0, stateMach['w2h'],
+            (0.5, 0.0, 1.0),
+            (1.0, 0.5, 0.0),
+            (0.0, 1.0, 0.5))
 
     if (stateMach['lamps'][0].getArn() == 0):
         drawIconCircle(0.75, 0.75, 
@@ -317,17 +317,17 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
                 stateMach['w2h'], 
                 stateMach['lamps'][0].getBulbsRGB())
 
-    limit = 0.85
-    if (cursor < limit):
-        drawGranRocker(
-                0.0, -0.91*acbic,
-                faceColor,
-                detailColor,
-                stateMach['numHues'],
-                0.0,
-                stateMach['w2h'],
-                0.30*acic,
-                stateMach['tDiff'])
+    #limit = 0.85
+    #if (cursor < limit):
+        #drawGranRocker(
+                #0.0, -0.91*acbic,
+                #faceColor,
+                #detailColor,
+                #stateMach['numHues'],
+                #0.0,
+                #stateMach['w2h'],
+                #0.30*acic,
+                #stateMach['tDiff'])
     
     drawClock(
             0.0, 0.0,
@@ -339,33 +339,33 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
             #detailColor)
             tuple([acc*x for x in detailColor]))
 
-    if (cursor >= limit):
-        drawGranRocker(
-                0.0, -0.91*acbic,
-                faceColor,
-                detailColor,
-                stateMach['numHues'],
-                0.0,
-                stateMach['w2h'],
-                0.30*acic,
-                stateMach['tDiff'])
+    #if (cursor >= limit):
+        #drawGranRocker(
+                #0.0, -0.91*acbic,
+                #faceColor,
+                #detailColor,
+                #stateMach['numHues'],
+                #0.0,
+                #stateMach['w2h'],
+                #0.30*acic,
+                #stateMach['tDiff'])
 
     # Watch Granularity Rocker for Input
-    if (watchPoint(
-        mapRanges(0.3*24.0/36.0, -1.0*stateMach['w2h'], 1.0*stateMach['w2h'],   0, stateMach['wx']*2),
-        mapRanges(0.0-0.91,  1.0               ,-1.0               ,   0, stateMach['wy']*2),
-        min(stateMach['wx'],stateMach['wy']*(12.0/36.0)*0.3) )):
-            stateMach['numHues'] += 2
-            if stateMach['numHues'] > 14:
-                stateMach['numHues'] = 14
+    #if (watchPoint(
+        #mapRanges(0.3*24.0/36.0, -1.0*stateMach['w2h'], 1.0*stateMach['w2h'],   0, stateMach['wx']*2),
+        #mapRanges(0.0-0.91,  1.0               ,-1.0               ,   0, stateMach['wy']*2),
+        #min(stateMach['wx'],stateMach['wy']*(12.0/36.0)*0.3) )):
+            #stateMach['numHues'] += 2
+            #if stateMach['numHues'] > 14:
+                #stateMach['numHues'] = 14
     # Watch Granularity Rocker for Input
-    if (watchPoint(
-        mapRanges(-0.3*24.0/36.0, -1.0*stateMach['w2h'], 1.0*stateMach['w2h'], 0, stateMach['wx']*2),
-        mapRanges(-0.91, 1.0, -1.0, 0, stateMach['wy']*2),
-        min(stateMach['wx'],stateMach['wy']*(12.0/36.0)*0.3) )):
-            stateMach['numHues'] -= 2
-            if stateMach['numHues'] < 10:
-                stateMach['numHues'] = 10
+    #if (watchPoint(
+        #mapRanges(-0.3*24.0/36.0, -1.0*stateMach['w2h'], 1.0*stateMach['w2h'], 0, stateMach['wx']*2),
+        #mapRanges(-0.91, 1.0, -1.0, 0, stateMach['wy']*2),
+        #min(stateMach['wx'],stateMach['wy']*(12.0/36.0)*0.3) )):
+            #stateMach['numHues'] -= 2
+            #if stateMach['numHues'] < 10:
+                #stateMach['numHues'] = 10
 
     # Draw Ring of Dots with different hues
     hueButtons = drawHueRing(

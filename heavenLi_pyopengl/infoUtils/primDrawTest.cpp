@@ -65,14 +65,25 @@ PyObject* primTest_drawButtons(PyObject* self, PyObject *args) {
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
 
-      defineArch( 0.0f,+0.5f, 0.3f, 0.3f, 9.0f, 260.0f, 0.1f, 15, detailColor, verts, colrs);
-      defineEllipse(-1.0f,-1.0f, 0.4f, 0.4f, 32, faceColor, verts, colrs);
-      defineArch( 0.0f,-0.4f, 0.3f, 0.3f, 0.0f, 180.0f, 0.1f, 15, detailColor, verts, colrs);
-      defineEllipse(-1.0f, 1.0f, 0.4f, 0.4f, 32, faceColor, verts, colrs);
-      defineArch(+0.5f, 0.0f, 0.3f, 0.3f, 0.0f, 360.0f, 0.1f, 12, faceColor, verts, colrs);
-      defineEllipse( 1.0f,-1.0f, 0.4f, 0.4f, 32, faceColor, verts, colrs);
-      defineEllipse( 0.6f, 0.6f, 0.4f, 0.4f, 32, faceColor, verts, colrs);
-      defineArch(-0.5f, 0.0f, 0.3f, 0.3f, 0.0f, 160.0f, 0.1f, 24, extraColor, verts, colrs);
+      definePill(
+            -0.5, -0.5, 
+            0.5, 0.5, 
+            0.25, 
+            9, 
+            faceColor,
+            detailColor,
+            verts,
+            colrs);
+
+      definePill(
+            0.5, -0.5, 
+            -0.5, 0.5, 
+            0.25, 
+            9, 
+            detailColor,
+            extraColor,
+            verts,
+            colrs);
 
       primTestVerts = verts.size()/2;
 
