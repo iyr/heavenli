@@ -67,22 +67,52 @@ PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
 
       float px, py, qx, qy, radius;
       int circleSegments = 60;
-      drawEllipse(0.0f, 0.0f, 1.0f, circleSegments, faceColor, verts, colrs);
+      defineEllipse(
+            0.0f, 0.0f,
+            1.0f, 1.0f,
+            circleSegments,
+            faceColor,
+            verts, colrs);
 
       px = -0.75f, py =  0.0f;
       qx = -0.25f, qy = -0.5f;
       radius = float(sqrt(2.0)*0.125f);
-      drawPill(px, py, qx, qy, radius, detailColor, verts, colrs);
+      definePill(
+            px, py,
+            qx, qy,
+            radius,
+            circleSegments/2,
+            detailColor,
+            verts, colrs);
+
 
       px = 0.625f, py = 0.375f;
-      extraConfirmVerts = drawPill(px, py, qx, qy, radius, detailColor, verts, colrs);
+      extraConfirmVerts = definePill(
+            px, py, 
+            qx, qy, 
+            radius, 
+            circleSegments/2,
+            detailColor, 
+            verts, colrs);
 
       px = -0.75f, py =  0.0f;
       radius = 0.125f;
-      drawPill(px, py, qx, qy, radius, extraColor, verts, colrs);
+      definePill(
+            px, py,
+            qx, qy,
+            radius,
+            circleSegments/2,
+            extraColor,
+            verts, colrs);
 
       px = 0.625f, py = 0.375f;
-      drawPill(px, py, qx, qy, radius, extraColor, verts, colrs);
+      definePill(
+            px, py,
+            qx, qy,
+            radius,
+            circleSegments/2,
+            extraColor,
+            verts, colrs);
 
       confirmVerts = verts.size()/2;
 
@@ -254,7 +284,7 @@ PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
    // Not sure if I actually need these
    //glEnableVertexAttribArray(0);
    //glEnableVertexAttribArray(1);
-   glDrawArrays(GL_TRIANGLES, 0, confirmVerts);
+   glDrawArrays(GL_TRIANGLE_STRIP, 0, confirmVerts);
 
    // Unbind Buffer Object
    glBindBuffer(GL_ARRAY_BUFFER, 0);
