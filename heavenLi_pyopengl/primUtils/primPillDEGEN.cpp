@@ -37,7 +37,7 @@ int definePill(
    qB = float(qColor[2]);
 
    char degSegment = 360 / circleSegments;
-   degSegment /= 2.0f;
+   degSegment /= 2;
 
    // Prepend degenerate vertex iff not the first primitive in the vector
    if (verts.size() == 0) {
@@ -126,7 +126,7 @@ int updatePillGeometry(
    }
 
    char degSegment = 360 / circleSegments;
-   degSegment /= 2.0f;
+   degSegment /= 2;
 
    // Prepend degenerate vertex iff not the first primitive in the vector
    if (vertIndex == 0) {

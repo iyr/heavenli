@@ -19,7 +19,7 @@ int defineEllipse(
       ){
    float R, G, B;
    char degSegment = 360 / circleSegments;
-   degSegment /= 2.0f;
+   degSegment /= 2;
    R = color[0];
    G = color[1];
    B = color[2];
@@ -68,7 +68,7 @@ int updatePrimEllipseGeometry(
       ){
    int vertIndex = index*2;   /* index (x, y) */
    char degSegment = 360 / circleSegments;
-   degSegment /= 2.0f;
+   degSegment /= 2;
 
    if (vertIndex == 0) {
       /* X */ verts[vertIndex++] = (float(bx + bsx*1.0f));
