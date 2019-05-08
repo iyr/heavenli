@@ -68,22 +68,52 @@ PyObject* drawArrow_drawButtons(PyObject* self, PyObject *args) {
 
       float px, py, qx, qy, radius;
       int circleSegments = 60;
-      drawEllipse(0.0f, 0.0f, 1.0f, circleSegments, faceColor, verts, colrs);
+      defineEllipse(
+            0.0f, 0.0f,
+            1.0f, 1.0f,
+            circleSegments,
+            faceColor,
+            verts, colrs);
 
       px = -0.125f, py = 0.625f;
       qx =  0.500f, qy =  0.00f;
       radius = float(sqrt(2.0)*0.125f);
-      drawPill(px, py, qx, qy, radius, detailColor, verts, colrs);
+      definePill(
+            px, py,
+            qx, qy,
+            radius,
+            circleSegments/2,
+            detailColor,
+            verts, colrs);
+
 
       px = -0.125f, py = -0.625f;
-      extraArrowVerts = drawPill(px, py, qx, qy, radius, detailColor, verts, colrs);
+      extraArrowVerts = definePill(
+            px, py, 
+            qx, qy, 
+            radius, 
+            circleSegments/2,
+            detailColor, 
+            verts, colrs);
 
       px = -0.125f, py =  0.625f;
       radius = 0.125f;
-      drawPill(px, py, qx, qy, radius, extraColor, verts, colrs);
+      definePill(
+            px, py, 
+            qx, qy, 
+            radius, 
+            circleSegments/2,
+            extraColor,
+            verts, colrs);
 
       px = -0.125f, py = -0.625f;
-      drawPill(px, py, qx, qy, radius, extraColor, verts, colrs);
+      definePill(
+            px, py, 
+            qx, qy, 
+            radius, 
+            circleSegments/2,
+            extraColor,
+            verts, colrs);
 
       arrowVerts = verts.size()/2;
 
@@ -245,7 +275,7 @@ PyObject* drawArrow_drawButtons(PyObject* self, PyObject *args) {
    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*arrowVerts));
    //glEnableVertexAttribArray(0);
    //glEnableVertexAttribArray(1);
-   glDrawArrays(GL_TRIANGLES, 0, arrowVerts);
+   glDrawArrays(GL_TRIANGLE_STRIP, 0, arrowVerts);
 
    // Unbind Buffer Object
    glBindBuffer(GL_ARRAY_BUFFER, 0);
