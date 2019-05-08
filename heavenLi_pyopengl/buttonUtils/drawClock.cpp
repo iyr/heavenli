@@ -304,7 +304,6 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*clockVerts));
    //glEnableVertexAttribArray(0);
    //glEnableVertexAttribArray(1);
-   //glDrawArrays(GL_TRIANGLES, 0, clockVerts);
    glDrawArrays(GL_TRIANGLE_STRIP, 0, clockVerts);
 
    // Unbind Buffer Object
