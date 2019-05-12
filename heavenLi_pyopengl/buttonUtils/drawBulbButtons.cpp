@@ -282,11 +282,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
       MatrixLoadIdentity( &ModelView );
       MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
       MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
-      if (w2h <= 1.0f) {
-         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
-      } else {
-         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
-      }
+      MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
       MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
       MatrixMultiply( &bulbButtonMVP, &ModelView, &Ortho );
 
@@ -341,6 +337,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
       // Enable the vertex attribute
       glEnableVertexAttribArray(vertAttribColor);
    } 
+
    // Recalculate vertex geometry without expensive vertex/array reallocation
    else if( prevBulbButtonW2H    != w2h            ||
             prevArn              != arn            ||
@@ -452,35 +449,6 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
          }
       }
 
-      Matrix Ortho;
-      Matrix ModelView;
-
-      float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
-      MatrixLoadIdentity( &Ortho );
-      MatrixLoadIdentity( &ModelView );
-      MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
-      MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
-      if (w2h <= 1.0f) {
-         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
-      } else {
-         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
-      }
-      MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
-      MatrixMultiply( &bulbButtonMVP, &ModelView, &Ortho );
-
-      bulbButtonPrevState.ao = ao;
-      bulbButtonPrevState.dx = gx;
-      bulbButtonPrevState.dy = gy;
-      bulbButtonPrevState.sx = scale;
-      bulbButtonPrevState.sy = scale;
-      bulbButtonPrevState.w2h = w2h;
-
-      // Update State machine
-      prevAngOffset        = angularOffset;
-      prevBulbButtonW2H    = w2h;
-      prevArn              = arn;
-      prevBulbButtonScale  = buttonScale;
-
       // Set active VBO
       glBindBuffer(GL_ARRAY_BUFFER, bulbButtonVBO);
       // Convenience variable
@@ -590,11 +558,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
       MatrixLoadIdentity( &ModelView );
       MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
       MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
-      if (w2h <= 1.0f) {
-         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
-      } else {
-         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
-      }
+      MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
       MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
       MatrixMultiply( &bulbButtonMVP, &ModelView, &Ortho );
 
