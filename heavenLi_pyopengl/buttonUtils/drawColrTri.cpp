@@ -205,11 +205,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       MatrixLoadIdentity( &ModelView );
       MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
       MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
-      if (w2h <= 1.0f) {
-         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
-      } else {
-         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
-      }
+      MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
       MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
       MatrixMultiply( &colrTriMVP, &ModelView, &Ortho );
 
@@ -548,11 +544,7 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
       MatrixLoadIdentity( &ModelView );
       MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
       MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
-      if (w2h <= 1.0f) {
-         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
-      } else {
-         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
-      }
+      MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
       MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
       MatrixMultiply( &colrTriMVP, &ModelView, &Ortho );
 
