@@ -133,6 +133,10 @@ def framerate():
         stateMach['hour'] = datetime.datetime.now().hour + stateMach['minute']/60
         if (stateMach['hour'] > 11):
             stateMach['hour'] -= 12
+
+        if (machine() == "armv6l" or machine() == "armv7l"):
+            glutSetCursor(GLUT_CURSOR_NONE)
+
     if stateMach['frameLimit'] and (stateMach['fps'] > 60):
         time.sleep(2*float(stateMach['fps'])/10000.0)
 
@@ -566,8 +570,9 @@ def mouseInteraction(button, state, mouseX, mouseY):
 # Passed to glutDisplayFunc()
 def display():
     global stateMach
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    glLoadIdentity()
+    #glLoadIdentity()
     updateLEDS()
 
     drawBackground(0)
@@ -760,7 +765,6 @@ if __name__ == '__main__':
     if (machine() == "armv6l" or machine() == "armv7l"):
         print("Disabling Antialiasing")
         glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE)
-        glutSetCursor(GLUT_CURSOR_NONE)
     else:
         glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE)
 
