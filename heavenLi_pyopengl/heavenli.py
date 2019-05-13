@@ -317,17 +317,17 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
                 stateMach['w2h'], 
                 stateMach['lamps'][0].getBulbsRGB())
 
-    #limit = 0.85
-    #if (cursor < limit):
-        #drawGranRocker(
-                #0.0, -0.91*acbic,
-                #faceColor,
-                #detailColor,
-                #stateMach['numHues'],
-                #0.0,
-                #stateMach['w2h'],
-                #0.30*acic,
-                #stateMach['tDiff'])
+    limit = 0.85
+    if (cursor < limit):
+        drawGranRocker(
+                0.0, -0.91*acbic,
+                faceColor,
+                detailColor,
+                stateMach['numHues'],
+                0.0,
+                stateMach['w2h'],
+                0.30*acic,
+                stateMach['tDiff'])
     
     drawClock(
             0.0, 0.0,
@@ -339,33 +339,33 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
             #detailColor)
             tuple([acc*x for x in detailColor]))
 
-    #if (cursor >= limit):
-        #drawGranRocker(
-                #0.0, -0.91*acbic,
-                #faceColor,
-                #detailColor,
-                #stateMach['numHues'],
-                #0.0,
-                #stateMach['w2h'],
-                #0.30*acic,
-                #stateMach['tDiff'])
+    if (cursor >= limit):
+        drawGranRocker(
+                0.0, -0.91*acbic,
+                faceColor,
+                detailColor,
+                stateMach['numHues'],
+                0.0,
+                stateMach['w2h'],
+                0.30*acic,
+                stateMach['tDiff'])
 
     # Watch Granularity Rocker for Input
-    #if (watchPoint(
-        #mapRanges(0.3*24.0/36.0, -1.0*stateMach['w2h'], 1.0*stateMach['w2h'],   0, stateMach['wx']*2),
-        #mapRanges(0.0-0.91,  1.0               ,-1.0               ,   0, stateMach['wy']*2),
-        #min(stateMach['wx'],stateMach['wy']*(12.0/36.0)*0.3) )):
-            #stateMach['numHues'] += 2
-            #if stateMach['numHues'] > 14:
-                #stateMach['numHues'] = 14
+    if (watchPoint(
+        mapRanges(0.3*24.0/36.0, -1.0*stateMach['w2h'], 1.0*stateMach['w2h'],   0, stateMach['wx']*2),
+        mapRanges(0.0-0.91,  1.0               ,-1.0               ,   0, stateMach['wy']*2),
+        min(stateMach['wx'],stateMach['wy']*(12.0/36.0)*0.3) )):
+            stateMach['numHues'] += 2
+            if stateMach['numHues'] > 14:
+                stateMach['numHues'] = 14
     # Watch Granularity Rocker for Input
-    #if (watchPoint(
-        #mapRanges(-0.3*24.0/36.0, -1.0*stateMach['w2h'], 1.0*stateMach['w2h'], 0, stateMach['wx']*2),
-        #mapRanges(-0.91, 1.0, -1.0, 0, stateMach['wy']*2),
-        #min(stateMach['wx'],stateMach['wy']*(12.0/36.0)*0.3) )):
-            #stateMach['numHues'] -= 2
-            #if stateMach['numHues'] < 10:
-                #stateMach['numHues'] = 10
+    if (watchPoint(
+        mapRanges(-0.3*24.0/36.0, -1.0*stateMach['w2h'], 1.0*stateMach['w2h'], 0, stateMach['wx']*2),
+        mapRanges(-0.91, 1.0, -1.0, 0, stateMach['wy']*2),
+        min(stateMach['wx'],stateMach['wy']*(12.0/36.0)*0.3) )):
+            stateMach['numHues'] -= 2
+            if stateMach['numHues'] < 10:
+                stateMach['numHues'] = 10
 
     # Draw Ring of Dots with different hues
     hueButtons = drawHueRing(
@@ -760,6 +760,7 @@ if __name__ == '__main__':
     if (machine() == "armv6l" or machine() == "armv7l"):
         print("Disabling Antialiasing")
         glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE)
+        glutSetCursor(GLUT_CURSOR_NONE)
     else:
         glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE)
 
