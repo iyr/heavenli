@@ -43,7 +43,7 @@ static PyModuleDef animUtils_module = {
 	animUtils_methods
 };
 
-PyMODINIT_FUNC PyInit_animUtils() {
+PyMODINIT_FUNC PyInit_animUtils(void) {
    PyObject* m = PyModule_Create(&animUtils_module);
    if (m == NULL) {
       return NULL;
