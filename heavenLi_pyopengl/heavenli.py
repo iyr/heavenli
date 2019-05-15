@@ -19,7 +19,7 @@ print("Done!")
 
 print("Loading System Utilities...")
 import sys, time
-from math import sin,cos,sqrt,pi,radians
+from math import sin,cos,sqrt,pi,radians,hypot
 import datetime
 import os
 from platform import machine
@@ -171,14 +171,6 @@ def drawHome():
             stateMach['faceColor'],
             stateMach['detailColor'])
 
-    # We are at the home screen
-    if (stateMach['screen'] == 0) and (stateMach['touchState'] != stateMach['prvState']):
-        dBias = min(stateMach['wx'], stateMach['wy'])/2
-        if watchPoint(stateMach['wx'], stateMach['wy'], dBias):
-            stateMach['lightOn'] = not stateMach['lightOn']
-            for i in range(len(stateMach['lamps'])):
-                stateMach['lamps'][i].setMainLight(stateMach['lightOn'])
-
     buttons = drawBulbButton(
             stateMach['lamps'][0].getArn(),
             stateMach['lamps'][0].getNumBulbs(),
@@ -188,18 +180,6 @@ def drawHome():
             stateMach['detailColor'],
             stateMach['lamps'][0].getBulbsRGB(),
             stateMach['w2h'])
-
-    for i in range(len(buttons)):
-        if (stateMach['screen'] == 0) and (stateMach['touchState'] != stateMach['prvState']):
-            if (watchPoint(
-                mapRanges(buttons[i][0], -1.0*stateMach['w2h'], 1.0*stateMach['w2h'], 0, stateMach['wx']*2), 
-                mapRanges(buttons[i][1],      1.0,    -1.0, 0, stateMach['wy']*2),
-                min(stateMach['wx'], stateMach['wy'])*0.5*0.3)):
-                stateMach['targetScreen'] = 1
-                stateMach['targetBulb'] = i
-                stateMach['prevHue'] = stateMach['lamps'][0].getBulbHSV(i)[0]
-                stateMach['prevSat'] = stateMach['lamps'][0].getBulbHSV(i)[1]
-                stateMach['prevVal'] = stateMach['lamps'][0].getBulbHSV(i)[2]
 
     #printText(
             #-0.9, -0.6,
@@ -241,10 +221,35 @@ def drawHome():
                 stateMach['w2h'], 
                 stateMach['lamps'][0].getBulbsRGB())
 
-    if (watchPoint(
-        mapRanges(0.75, -1.0,  1.0, 0, stateMach['wx']*2),
-        mapRanges(0.75,  1.0, -1.0, 0, stateMach['wy']*2),
-        min(stateMach['wx'], stateMach['wy'])*0.2)):
+    # Watch Home Screen for input
+    if (watchScreen()):
+
+        # Watch Clock for input
+        if (watchDot(
+            min(stateMach['wx'], stateMach['wy'])/2,
+            stateMach['wx'],
+            stateMach['wy'])):
+            stateMach['lightOn'] = not stateMach['lightOn']
+            for i in range(len(stateMach['lamps'])):
+                stateMach['lamps'][i].setMainLight(stateMach['lightOn'])
+
+        # Watch bulb buttons for input
+        for i in range(len(buttons)):
+            if (watchDot(
+                mapRanges(buttons[i][0], -1.0*stateMach['w2h'], 1.0*stateMach['w2h'], 0, stateMach['wx']*2),
+                mapRanges(buttons[i][1],      1.0,    -1.0, 0, stateMach['wy']*2),
+                min(stateMach['wx'], stateMach['wy'])*0.5*0.3)):
+                stateMach['targetScreen'] = 1
+                stateMach['targetBulb'] = i
+                stateMach['prevHue'] = stateMach['lamps'][0].getBulbHSV(i)[0]
+                stateMach['prevSat'] = stateMach['lamps'][0].getBulbHSV(i)[1]
+                stateMach['prevVal'] = stateMach['lamps'][0].getBulbHSV(i)[2]
+
+        # Watch all-set for input
+        if (watchDot(
+            mapRanges(0.75, -1.0,  1.0, 0, stateMach['wx']*2),
+            mapRanges(0.75,  1.0, -1.0, 0, stateMach['wy']*2),
+            min(stateMach['wx'], stateMach['wy'])*0.2)):
             stateMach['targetScreen'] = 1
             stateMach['targetBulb'] = stateMach["lamps"][0].getNumBulbs()
             stateMach['prevHue'] = stateMach['lamps'][0].getBulbHSV(0)[0]
@@ -354,23 +359,6 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
                 0.30*acic,
                 stateMach['tDiff'])
 
-    # Watch Granularity Rocker for Input
-    if (watchPoint(
-        mapRanges(0.3*24.0/36.0, -1.0*stateMach['w2h'], 1.0*stateMach['w2h'],   0, stateMach['wx']*2),
-        mapRanges(0.0-0.91,  1.0               ,-1.0               ,   0, stateMach['wy']*2),
-        min(stateMach['wx'],stateMach['wy']*(12.0/36.0)*0.3) )):
-            stateMach['numHues'] += 2
-            if stateMach['numHues'] > 14:
-                stateMach['numHues'] = 14
-    # Watch Granularity Rocker for Input
-    if (watchPoint(
-        mapRanges(-0.3*24.0/36.0, -1.0*stateMach['w2h'], 1.0*stateMach['w2h'], 0, stateMach['wx']*2),
-        mapRanges(-0.91, 1.0, -1.0, 0, stateMach['wy']*2),
-        min(stateMach['wx'],stateMach['wy']*(12.0/36.0)*0.3) )):
-            stateMach['numHues'] -= 2
-            if stateMach['numHues'] < 10:
-                stateMach['numHues'] = 10
-
     # Draw Ring of Dots with different hues
     hueButtons = drawHueRing(
             stateMach['currentHue'], 
@@ -380,32 +368,6 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
             acbic, 
             stateMach['tDiff'],
             stateMach['interactionCursor'])
-
-    for i in range(len(hueButtons)):
-        tmr = 1.0
-        if (stateMach['w2h'] <= 1.0):
-            hueButtons[i] = (
-                    hueButtons[i][0]*stateMach['w2h'], 
-                    hueButtons[i][1]*stateMach['w2h'], 
-                    hueButtons[i][2])
-            tmr = stateMach['w2h']
-
-        xLim = mapRanges(hueButtons[i][0], -1.0*stateMach['w2h'], 1.0*stateMach['w2h'],    0, stateMach['wx']*2)
-        yLim = mapRanges(hueButtons[i][1],  1.0,               -1.0,                   0, stateMach['wy']*2)
-        if (watchPoint(
-            xLim, yLim,
-            min(stateMach['wx'], stateMach['wy'])*0.15*(12.0/float(stateMach['numHues'])) )):
-            stateMach['wereColorsTouched'] = True
-            stateMach['currentHue'] = hueButtons[i][2]
-            tmcHSV = (
-                    stateMach['currentHue'], 
-                    stateMach['currentSat'], 
-                    stateMach['currentVal'])
-
-            if (stateMach['targetBulb'] == targetLamp.getNumBulbs()):
-                targetLamp.setBulbstHSV(tmcHSV)
-            else:
-                targetLamp.setBulbtHSV(stateMach['targetBulb'], tmcHSV)
 
     # Draw Triangle of Dots with different brightness/saturation
     satValButtons = drawColrTri(
@@ -417,47 +379,6 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
             stateMach['w2h'], acbic, 
             stateMach['tDiff'])
 
-    for i in range(len(satValButtons)):
-        tmr = 1.0
-        if (stateMach['w2h'] <= 1.0):
-            satValButtons[i] = (
-                    satValButtons[i][0]*stateMach['w2h'],     # X-Coord of Button
-                    satValButtons[i][1]*stateMach['w2h'],     # Y-Coord of Button
-                    satValButtons[i][2],                    # Saturation of Button
-                    satValButtons[i][3])                    # Value of Button
-            tmr = stateMach['w2h']
-
-        # Map relative x-Coord to screen x-Coord
-        xLim = mapRanges(
-                satValButtons[i][0], 
-                -1.0*stateMach['w2h'], 
-                1.0*stateMach['w2h'], 
-                0, 
-                stateMach['wx']*2)
-
-        # Map relative y-Coord to screen y-Coord
-        yLim = mapRanges(
-                satValButtons[i][1],      
-                1.0,    
-                -1.0, 
-                0, 
-                stateMach['wy']*2)
-
-        if (watchPoint(
-            xLim, yLim,
-            min(stateMach['wx'], stateMach['wy'])*0.073)):
-            stateMach['wereColorsTouched'] = True
-            stateMach['currentSat'] = satValButtons[i][2]
-            stateMach['currentVal'] = satValButtons[i][3]
-            tmcHSV = (
-                    stateMach['currentHue'], 
-                    stateMach['currentSat'], 
-                    stateMach['currentVal'])
-            if (stateMach['targetBulb'] == targetLamp.getNumBulbs()):
-                targetLamp.setBulbstHSV(tmcHSV)
-            else:
-                targetLamp.setBulbtHSV(stateMach['targetBulb'], tmcHSV)
-
     if ( stateMach['wereColorsTouched'] ):
         extraColor = colorsys.hsv_to_rgb(
                 stateMach['currentHue'], 
@@ -466,6 +387,7 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
     else:
         extraColor = stateMach['detailColor']
 
+    # Draw Confirm Button
     drawConfirm(
             0.75-0.4*(1.0-acbic), 
             -0.75-0.5*acbc, 
@@ -473,38 +395,6 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
             stateMach['faceColor'], 
             extraColor, 
             stateMach['detailColor']);
-
-    # Watch Confirm Button for input
-    if (watchPoint(
-        mapRanges( 0.75, -1.0,  1.0, 0, stateMach['wx']*2),
-        mapRanges(-0.75,  1.0, -1.0, 0, stateMach['wy']*2),
-        min(stateMach['wx'], stateMach['wy'])*0.2)):
-        stateMach['wereColorsTouched'] = False
-        if (stateMach['targetBulb'] == targetLamp.getNumBulbs()):
-            targetLamp.setBulbstHSV( (
-                stateMach['currentHue'], 
-                stateMach['currentSat'], 
-                stateMach['currentVal'] ) )
-        else:
-            targetLamp.setBulbtHSV(stateMach['targetBulb'], (
-                stateMach['currentHue'], 
-                stateMach['currentSat'], 
-                stateMach['currentVal'] ) )
-        stateMach['targetScreen'] = 0
-
-    if ( stateMach['wereColorsTouched'] ):
-        if (stateMach['targetBulb'] == targetLamp.getNumBulbs()):
-            extraColor = colorsys.hsv_to_rgb(
-                    stateMach['prevHues'][0], 
-                    stateMach['prevSats'][0], 
-                    stateMach['prevVals'][0])
-        else:
-            extraColor = colorsys.hsv_to_rgb(
-                    stateMach['prevHue'], 
-                    stateMach['prevSat'], 
-                    stateMach['prevVal'])
-    else:
-        extraColor = stateMach['detailColor']
 
     # Draw Back Button
     drawArrow(
@@ -515,33 +405,155 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
             stateMach['faceColor'], 
             extraColor, 
             stateMach['detailColor']);
-    if (watchPoint(
+
+    # Watch Color Picker Screen for input
+    if (watchScreen()):
+
+        # Watch Granularity Rocker for Input
+        if (watchDot(
+            mapRanges(0.3*24.0/36.0, -1.0*stateMach['w2h'], 1.0*stateMach['w2h'], 0, stateMach['wx']*2),
+            mapRanges(0.0-0.91, 1.0, -1.0, 0, stateMach['wy']*2),
+            min(stateMach['wx'],stateMach['wy']*(12.0/36.0)*0.3))):
+
+                stateMach['numHues'] += 2
+                if stateMach['numHues'] > 14:
+                    stateMach['numHues'] = 14
+
+        # Watch Granularity Rocker for Input
+        if (watchDot(
+            mapRanges(-0.3*24.0/36.0, -1.0*stateMach['w2h'], 1.0*stateMach['w2h'], 0, stateMach['wx']*2),
+            mapRanges(-0.91, 1.0, -1.0, 0, stateMach['wy']*2),
+            min(stateMach['wx'],stateMach['wy']*(12.0/36.0)*0.3))):
+                stateMach['numHues'] -= 2
+                if stateMach['numHues'] < 10:
+                    stateMach['numHues'] = 10
+
+        # Watch Hue Ring for Input
+        for i in range(len(hueButtons)):
+            tmr = 1.0
+            if (stateMach['w2h'] <= 1.0):
+                hueButtons[i] = (
+                        hueButtons[i][0]*stateMach['w2h'], 
+                        hueButtons[i][1]*stateMach['w2h'], 
+                        hueButtons[i][2])
+                tmr = stateMach['w2h']
+
+            if (watchDot(
+                mapRanges(hueButtons[i][0], -1.0*stateMach['w2h'], 1.0*stateMach['w2h'], 0, stateMach['wx']*2),
+                mapRanges(hueButtons[i][1], 1.0, -1.0, 0, stateMach['wy']*2),
+                min(stateMach['wx'], stateMach['wy'])*0.15*(12.0/float(stateMach['numHues'])))):
+
+                stateMach['wereColorsTouched'] = True
+                stateMach['currentHue'] = hueButtons[i][2]
+                tmcHSV = (
+                        stateMach['currentHue'], 
+                        stateMach['currentSat'], 
+                        stateMach['currentVal'])
+
+                if (stateMach['targetBulb'] == targetLamp.getNumBulbs()):
+                    targetLamp.setBulbstHSV(tmcHSV)
+                else:
+                    targetLamp.setBulbtHSV(stateMach['targetBulb'], tmcHSV)
+
+
+        # Watch Sat / Val Triangle for input
+        for i in range(len(satValButtons)):
+            tmr = 1.0
+            if (stateMach['w2h'] <= 1.0):
+                satValButtons[i] = (
+                        satValButtons[i][0]*stateMach['w2h'],     # X-Coord of Button
+                        satValButtons[i][1]*stateMach['w2h'],     # Y-Coord of Button
+                        satValButtons[i][2],                    # Saturation of Button
+                        satValButtons[i][3])                    # Value of Button
+                tmr = stateMach['w2h']
+
+            # Map relative x-Coord to screen x-Coord
+            if (watchDot(
+                mapRanges(satValButtons[i][0], -1.0*stateMach['w2h'], 1.0*stateMach['w2h'], 0, stateMach['wx']*2),
+                mapRanges(satValButtons[i][1], 1.0, -1.0, 0, stateMach['wy']*2),
+                min(stateMach['wx'], stateMach['wy'])*0.073)):
+
+                stateMach['wereColorsTouched'] = True
+                stateMach['currentSat'] = satValButtons[i][2]
+                stateMach['currentVal'] = satValButtons[i][3]
+                tmcHSV = (
+                        stateMach['currentHue'], 
+                        stateMach['currentSat'], 
+                        stateMach['currentVal'])
+                if (stateMach['targetBulb'] == targetLamp.getNumBulbs()):
+                    targetLamp.setBulbstHSV(tmcHSV)
+                else:
+                    targetLamp.setBulbtHSV(stateMach['targetBulb'], tmcHSV)
+
+        # Watch Confirm Button for input
+        if (watchDot(
+        mapRanges( 0.75, -1.0,  1.0, 0, stateMach['wx']*2),
+        mapRanges(-0.75,  1.0, -1.0, 0, stateMach['wy']*2),
+        min(stateMach['wx'], stateMach['wy'])*0.2)):
+            stateMach['wereColorsTouched'] = False
+            if (stateMach['targetBulb'] == targetLamp.getNumBulbs()):
+                targetLamp.setBulbstHSV( (
+                    stateMach['currentHue'], 
+                    stateMach['currentSat'], 
+                    stateMach['currentVal'] ) )
+            else:
+                targetLamp.setBulbtHSV(stateMach['targetBulb'], (
+                    stateMach['currentHue'], 
+                    stateMach['currentSat'], 
+                    stateMach['currentVal'] ) )
+            stateMach['targetScreen'] = 0
+
+        if ( stateMach['wereColorsTouched'] ):
+            if (stateMach['targetBulb'] == targetLamp.getNumBulbs()):
+                extraColor = colorsys.hsv_to_rgb(
+                        stateMach['prevHues'][0], 
+                        stateMach['prevSats'][0], 
+                        stateMach['prevVals'][0])
+            else:
+                extraColor = colorsys.hsv_to_rgb(
+                        stateMach['prevHue'], 
+                        stateMach['prevSat'], 
+                        stateMach['prevVal'])
+        else:
+            extraColor = stateMach['detailColor']
+
+
+        # Watch Back Button for input
+        if (watchDot(
         mapRanges(-0.75, -1.0,  1.0, 0, stateMach['wx']*2),
         mapRanges(-0.75,  1.0, -1.0, 0, stateMach['wy']*2),
         min(stateMach['wx'], stateMach['wy'])*0.2)):
-        stateMach['wereColorsTouched'] = False
-        if (stateMach['targetBulb'] == targetLamp.getNumBulbs()):
-            for i in range(targetLamp.getNumBulbs()):
-                targetLamp.setBulbtHSV(i, (
-                    stateMach['prevHues'][i], 
-                    stateMach['prevSats'][i], 
-                    stateMach['prevVals'][i] ) )
-        else:
-            targetLamp.setBulbtHSV(stateMach['targetBulb'], (
-                stateMach['prevHue'], 
-                stateMach['prevSat'], 
-                stateMach['prevVal'] ) )
-        stateMach['targetScreen'] = 0
+            stateMach['wereColorsTouched'] = False
+            if (stateMach['targetBulb'] == targetLamp.getNumBulbs()):
+                for i in range(targetLamp.getNumBulbs()):
+                    targetLamp.setBulbtHSV(i, (
+                        stateMach['prevHues'][i], 
+                        stateMach['prevSats'][i], 
+                        stateMach['prevVals'][i] ) )
+            else:
+                targetLamp.setBulbtHSV(stateMach['targetBulb'], (
+                    stateMach['prevHue'], 
+                    stateMach['prevSat'], 
+                    stateMach['prevVal'] ) )
+            stateMach['targetScreen'] = 0
 
-def watchPoint(px, py, pr):
+# Check if user is clicking in circle
+def watchDot(px, py, pr):
     global stateMach
     if (1.0 >= pow((stateMach['cursorX']-px/2), 2) / pow(pr/2, 2) + pow((stateMach['cursorY']-py/2), 2) / pow(pr/2, 2)):
-        if stateMach['prvState'] == 0:
-            stateMach['prvState'] = stateMach['touchState']
-            return True
-        else:
-            stateMach['prvState'] = stateMach['touchState']
-            return False
+        return True
+    else:
+        return False
+
+# Used to process user input
+def watchScreen():
+    global stateMach
+    if stateMach['prvState'] == 0:
+        stateMach['prvState'] = stateMach['touchState']
+        return True
+    else:
+        stateMach['prvState'] = stateMach['touchState']
+        return False
 
 def mousePassive(mouseX, mouseY):
     global stateMach
