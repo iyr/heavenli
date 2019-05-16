@@ -421,21 +421,35 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
     # Watch Color Picker Screen for input
     if (watchScreen()):
 
+        if (stateMach['w2h'] <= 1.0):
+            tmx = (0.3*24.0/36.0)*stateMach['w2h']
+            tmy = -0.91*acbic*stateMach['w2h']
+            tmux = 1.0*stateMach['w2h']
+            tmuy = 1.0
+            tmr = min(stateMach['wx'],stateMach['wy']*(12.0/36.0)*0.3)*stateMach['w2h']
+        else:
+            tmx = (0.3*24.0/36.0)
+            tmy = -0.91*acbic
+            tmux = stateMach['w2h']
+            tmuy = 1.0
+            tmr = min(stateMach['wx'],stateMach['wy']*(12.0/36.0)*0.3)
+
         # Watch Granularity Rocker for Input
         if (watchDot(
-            mapRanges(0.3*24.0/36.0, -1.0*stateMach['w2h'], 1.0*stateMach['w2h'], 0, stateMach['wx']*2),
-            mapRanges(0.0-0.91, 1.0, -1.0, 0, stateMach['wy']*2),
-            min(stateMach['wx'],stateMach['wy']*(12.0/36.0)*0.3))):
-
+            mapRanges(tmx, -tmux, tmux, 0, stateMach['wx']*2),
+            mapRanges(tmy, tmuy, -tmuy, 0, stateMach['wy']*2),
+            tmr)):
+            #stateMach['wy']*(12.0/36.0)*0.3)):
                 stateMach['numHues'] += 2
                 if stateMach['numHues'] > 14:
                     stateMach['numHues'] = 14
 
         # Watch Granularity Rocker for Input
         if (watchDot(
-            mapRanges(-0.3*24.0/36.0, -1.0*stateMach['w2h'], 1.0*stateMach['w2h'], 0, stateMach['wx']*2),
-            mapRanges(-0.91, 1.0, -1.0, 0, stateMach['wy']*2),
-            min(stateMach['wx'],stateMach['wy']*(12.0/36.0)*0.3))):
+            mapRanges(-tmx, -tmux, tmux, 0, stateMach['wx']*2),
+            mapRanges(tmy, tmuy, -tmuy, 0, stateMach['wy']*2),
+            tmr)):
+            #stateMach['wy']*(12.0/36.0)*0.3)):
                 stateMach['numHues'] -= 2
                 if stateMach['numHues'] < 10:
                     stateMach['numHues'] = 10
