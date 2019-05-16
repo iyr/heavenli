@@ -352,7 +352,6 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
             1.0+acic*0.75, 
             stateMach['w2h'], 
             faceColor,
-            #detailColor)
             tuple([acc*x for x in detailColor]))
 
     # Draw Granularity Rocker on top of Clock
@@ -407,6 +406,14 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
             stateMach['faceColor'], 
             extraColor, 
             stateMach['detailColor']);
+
+    if ( stateMach['wereColorsTouched'] ):
+        extraColor = colorsys.hsv_to_rgb(
+                stateMach['prevHue'], 
+                stateMach['prevSat'], 
+                stateMach['prevVal'])
+    else:
+        extraColor = stateMach['detailColor']
 
     # Draw Back Button
     drawArrow(
