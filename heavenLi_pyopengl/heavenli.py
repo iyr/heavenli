@@ -326,10 +326,16 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
                 stateMach['w2h'], 
                 stateMach['lamps'][0].getBulbsRGB())
 
+    # Draw Granularity Rocker Underneath Clock
     limit = 0.85
     if (cursor < limit):
+        if (stateMach['w2h'] <= 1.0):
+            tmy = -0.91*acbic*stateMach['w2h']
+        else:
+            tmy = -0.91*acbic
+
         drawGranRocker(
-                0.0, -0.91*acbic,
+                0.0, tmy,
                 faceColor,
                 detailColor,
                 stateMach['numHues'],
@@ -338,6 +344,7 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
                 0.30*acic,
                 stateMach['tDiff'])
     
+    # Draw Clock
     drawClock(
             0.0, 0.0,
             stateMach['hour'],
@@ -348,9 +355,14 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
             #detailColor)
             tuple([acc*x for x in detailColor]))
 
+    # Draw Granularity Rocker on top of Clock
     if (cursor >= limit):
+        if (stateMach['w2h'] <= 1.0):
+            tmy = -0.91*acbic*stateMach['w2h']
+        else:
+            tmy = -0.91*acbic
         drawGranRocker(
-                0.0, -0.91*acbic,
+                0.0, tmy,
                 faceColor,
                 detailColor,
                 stateMach['numHues'],
