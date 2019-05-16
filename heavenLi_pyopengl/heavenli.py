@@ -134,8 +134,8 @@ def framerate():
         if (stateMach['hour'] > 11):
             stateMach['hour'] -= 12
 
-        if (machine() == "armv6l" or machine() == "armv7l"):
-            glutSetCursor(GLUT_CURSOR_NONE)
+        #if (machine() == "armv6l" or machine() == "armv7l"):
+            #glutSetCursor(GLUT_CURSOR_NONE)
 
     if stateMach['frameLimit'] and (stateMach['fps'] > 60):
         time.sleep(2*float(stateMach['fps'])/10000.0)
@@ -226,9 +226,9 @@ def drawHome():
 
         # Watch Clock for input
         if (watchDot(
-            min(stateMach['wx'], stateMach['wy'])/2,
             stateMach['wx'],
-            stateMach['wy'])):
+            stateMach['wy'],
+            min(stateMach['wx'], stateMach['wy'])/2)):
             stateMach['lightOn'] = not stateMach['lightOn']
             for i in range(len(stateMach['lamps'])):
                 stateMach['lamps'][i].setMainLight(stateMach['lightOn'])
