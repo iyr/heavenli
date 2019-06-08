@@ -77,8 +77,8 @@ def init():
     global stateMach
     try:
         print("Making Serial Object...")
-        #stateMach['CircuitPlayground'] = serial.Serial('COM8', 57600)
-        stateMach['CircuitPlayground'] = serial.Serial('/dev/serial/by-id/usb-Adafruit_Feather_32u4-if00', 57600)
+        stateMach['CircuitPlayground'] = serial.Serial('COM3', 57600)
+        #stateMach['CircuitPlayground'] = serial.Serial('/dev/serial/by-id/usb-Adafruit_Feather_32u4-if00', 57600)
         stateMach['CircuitPlayground'].open()
         print("Done!")
     except:
@@ -226,9 +226,9 @@ def drawHome():
 
         # Watch Clock for input
         if (watchDot(
-            min(stateMach['wx'], stateMach['wy'])/2,
             stateMach['wx'],
-            stateMach['wy'])):
+            stateMach['wy'],
+            min(stateMach['wx'], stateMach['wy'])/2)):
             stateMach['lightOn'] = not stateMach['lightOn']
             for i in range(len(stateMach['lamps'])):
                 stateMach['lamps'][i].setMainLight(stateMach['lightOn'])
