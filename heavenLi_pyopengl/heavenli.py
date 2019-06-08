@@ -326,10 +326,16 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
                 stateMach['w2h'], 
                 stateMach['lamps'][0].getBulbsRGB())
 
+    # Draw Granularity Rocker Underneath Clock
     limit = 0.85
     if (cursor < limit):
+        if (stateMach['w2h'] <= 1.0):
+            tmy = -0.91*acbic*stateMach['w2h']
+        else:
+            tmy = -0.91*acbic
+
         drawGranRocker(
-                0.0, -0.91*acbic,
+                0.0, tmy,
                 faceColor,
                 detailColor,
                 stateMach['numHues'],
@@ -338,6 +344,7 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
                 0.30*acic,
                 stateMach['tDiff'])
     
+    # Draw Clock
     drawClock(
             0.0, 0.0,
             stateMach['hour'],
@@ -345,12 +352,16 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
             1.0+acic*0.75, 
             stateMach['w2h'], 
             faceColor,
-            #detailColor)
             tuple([acc*x for x in detailColor]))
 
+    # Draw Granularity Rocker on top of Clock
     if (cursor >= limit):
+        if (stateMach['w2h'] <= 1.0):
+            tmy = -0.91*acbic*stateMach['w2h']
+        else:
+            tmy = -0.91*acbic
         drawGranRocker(
-                0.0, -0.91*acbic,
+                0.0, tmy,
                 faceColor,
                 detailColor,
                 stateMach['numHues'],
@@ -396,6 +407,14 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
             extraColor, 
             stateMach['detailColor']);
 
+    if ( stateMach['wereColorsTouched'] ):
+        extraColor = colorsys.hsv_to_rgb(
+                stateMach['prevHue'], 
+                stateMach['prevSat'], 
+                stateMach['prevVal'])
+    else:
+        extraColor = stateMach['detailColor']
+
     # Draw Back Button
     drawArrow(
             -0.75+0.4*(1.0-acbic), 
@@ -409,21 +428,35 @@ def drawSettingColor(cursor, targetLamp, targetBulb):
     # Watch Color Picker Screen for input
     if (watchScreen()):
 
+        if (stateMach['w2h'] <= 1.0):
+            tmx = (0.3*24.0/36.0)*stateMach['w2h']
+            tmy = -0.91*acbic*stateMach['w2h']
+            tmux = 1.0*stateMach['w2h']
+            tmuy = 1.0
+            tmr = min(stateMach['wx'],stateMach['wy']*(12.0/36.0)*0.3)*stateMach['w2h']
+        else:
+            tmx = (0.3*24.0/36.0)
+            tmy = -0.91*acbic
+            tmux = stateMach['w2h']
+            tmuy = 1.0
+            tmr = min(stateMach['wx'],stateMach['wy']*(12.0/36.0)*0.3)
+
         # Watch Granularity Rocker for Input
         if (watchDot(
-            mapRanges(0.3*24.0/36.0, -1.0*stateMach['w2h'], 1.0*stateMach['w2h'], 0, stateMach['wx']*2),
-            mapRanges(0.0-0.91, 1.0, -1.0, 0, stateMach['wy']*2),
-            min(stateMach['wx'],stateMach['wy']*(12.0/36.0)*0.3))):
-
+            mapRanges(tmx, -tmux, tmux, 0, stateMach['wx']*2),
+            mapRanges(tmy, tmuy, -tmuy, 0, stateMach['wy']*2),
+            tmr)):
+            #stateMach['wy']*(12.0/36.0)*0.3)):
                 stateMach['numHues'] += 2
                 if stateMach['numHues'] > 14:
                     stateMach['numHues'] = 14
 
         # Watch Granularity Rocker for Input
         if (watchDot(
-            mapRanges(-0.3*24.0/36.0, -1.0*stateMach['w2h'], 1.0*stateMach['w2h'], 0, stateMach['wx']*2),
-            mapRanges(-0.91, 1.0, -1.0, 0, stateMach['wy']*2),
-            min(stateMach['wx'],stateMach['wy']*(12.0/36.0)*0.3))):
+            mapRanges(-tmx, -tmux, tmux, 0, stateMach['wx']*2),
+            mapRanges(tmy, tmuy, -tmuy, 0, stateMach['wy']*2),
+            tmr)):
+            #stateMach['wy']*(12.0/36.0)*0.3)):
                 stateMach['numHues'] -= 2
                 if stateMach['numHues'] < 10:
                     stateMach['numHues'] = 10
