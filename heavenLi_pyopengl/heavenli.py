@@ -684,14 +684,20 @@ def idleWindowMinimized():
 def special(k, x, y):
     global stateMach
 
+    Light = 0
+
     if k == GLUT_KEY_LEFT:
-        stateMach['lamps'][0].setAngle(stateMach['lamps'][0].getAngle() + 5)
+        if (len(stateMach['lamps']) > 0):
+            stateMach['lamps'][Light].setAngle(stateMach['lamps'][Light].getAngle() + 5)
     elif k == GLUT_KEY_RIGHT:
-        stateMach['lamps'][0].setAngle(stateMach['lamps'][0].getAngle() - 5)
+        if (len(stateMach['lamps']) > 0):
+            stateMach['lamps'][Light].setAngle(stateMach['lamps'][Light].getAngle() - 5)
     elif k == GLUT_KEY_UP:
-        stateMach['lamps'][0].setNumBulbs(stateMach['lamps'][0].getNumBulbs()+1)
+        if (len(stateMach['lamps']) > 0):
+            stateMach['lamps'][Light].setNumBulbs(stateMach['lamps'][Light].getNumBulbs()+1)
     elif k == GLUT_KEY_DOWN:
-        stateMach['lamps'][0].setNumBulbs(stateMach['lamps'][0].getNumBulbs()-1)
+        if (len(stateMach['lamps']) > 0):
+            stateMach['lamps'][Light].setNumBulbs(stateMach['lamps'][Light].getNumBulbs()-1)
     elif k == GLUT_KEY_F11:
         if stateMach['isFullScreen'] == False:
             stateMach['windowPosX'] = glutGet(GLUT_WINDOW_X)
@@ -727,10 +733,11 @@ def key(ch, x, y):
         sys.exit(0)
 
     if ch == as_8_bit('a'):
-        if stateMach['lamps'][0].getArn() == 0:
-            stateMach['lamps'][0].setArn(1)
-        elif stateMach['lamps'][0].getArn() == 1:
-            stateMach['lamps'][0].setArn(0)
+        if (len(stateMach['lamps']) > 0):
+            if stateMach['lamps'][Light].getArn() == 0:
+                stateMach['lamps'][Light].setArn(1)
+            elif stateMach['lamps'][Light].getArn() == 1:
+                stateMach['lamps'][Light].setArn(0)
 
     if ch == as_8_bit('h'):
         stateMach['wereColorsTouched'] = False
