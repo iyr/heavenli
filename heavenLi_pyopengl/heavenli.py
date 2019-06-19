@@ -31,50 +31,15 @@ import colorsys
 from animUtils import *
 from drawArn import *
 from drawButtons import *
-from lampClass import *
+#from lampClass import *
 from rangeUtils import *
 from shaderUtils import *
+#from plugins.pluginLoader import *
+import plugins.pluginLoader
 print("Done!")
-
-#def TXstring(message):
-    #try:
-        #if (stateMach['CircuitPlayground'].isOpen()):
-            #stateMach['CircuitPlayground'].write(message)
-    #except:
-        #pass
-
-#def updateLEDS():
-    #try:
-        #tmc = stateMach['lamps'][0].getBulbtRGB(stateMach['curBulb'])
-    #except:
-        #tmc = (0.5, 0.5, 0.5)
-    #tmr = int(tmc[0] * 127)
-    #tmg = int(tmc[1] * 127)
-    #tmb = int(tmc[2] * 127)
-    #tmn = int(stateMach['lamps'][0].getNumBulbs())
-    #tmq = int(stateMach['curBulb'])
-    #stateMach['curBulb'] += 1
-    #if (stateMach['curBulb'] >= tmn):
-        #stateMach['curBulb'] = 0
-
-    #tmm = bytearray([
-        #tmn, 
-        #tmq, 
-        #tmr, 
-        #tmg, 
-        #tmb])
-    #TXstring(tmm)
 
 def init():
     global stateMach
-    #try:
-        #print("Making Serial Object...")
-        #stateMach['CircuitPlayground'] = serial.Serial('COM3', 57600)
-        #stateMach['CircuitPlayground'] = serial.Serial('/dev/serial/by-id/usb-Adafruit_Feather_32u4-if00', 57600)
-        #stateMach['CircuitPlayground'].open()
-        #print("Done!")
-    #except:
-        #print("could not establish serial uart connection :(")
     stateMach['curBulb'] = 0
 
     glEnableClientState(GL_VERTEX_ARRAY)
@@ -94,10 +59,6 @@ def init():
     stateMach['wy'] = glutGet(GLUT_WINDOW_HEIGHT)
     stateMach['w2h'] = stateMach['wx']/stateMach['wy']
 
-    #demo = Lamp()
-    #stateMach['lamps'].append(demo)
-    #stateMach['lamps'].append(Lamp())
-
     print("Initialization Finished")
 
 def framerate():
@@ -115,11 +76,9 @@ def framerate():
         print("Too Fast, Too Quick!!")
 
     if t - stateMach['t1'] >= 0.5:
-        #updateLEDS()
         stateMach['t1'] = t
 
     if t - stateMach['t0'] >= 1.0:
-        #updateLEDS()
         print("%.0f frames in %3.1f seconds = %6.3f FPS" % (stateMach['frames'],seconds,stateMach['fps']))
         stateMach['t0'] = t
         stateMach['frames'] = 0
@@ -244,7 +203,7 @@ def drawHome():
                     mapRanges(buttons[i][1],      1.0,    -1.0, 0, stateMach['wy']*2),
                     min(stateMach['wx'], stateMach['wy'])*0.5*0.3)
                     and
-                    len(stateMach['lamps'] > 0)):
+                    len(stateMach['lamps']) > 0):
                     stateMach['targetScreen'] = 1
                     stateMach['targetBulb'] = i
                     stateMach['prevHue'] = stateMach['lamps'][Light].getBulbHSV(i)[0]
@@ -258,7 +217,7 @@ def drawHome():
                 mapRanges(0.75,  1.0, -1.0, 0, stateMach['wy']*2),
                 min(stateMach['wx'], stateMach['wy'])*0.2)
                 and
-                len(stateMach['lamps'] > 0)):
+                len(stateMach['lamps']) > 0):
                 stateMach['targetScreen'] = 1
                 stateMach['targetBulb'] = stateMach["lamps"][Light].getNumBulbs()
                 stateMach['prevHue'] = stateMach['lamps'][Light].getBulbHSV(0)[0]
@@ -654,7 +613,6 @@ def display():
     if (stateMach['targetScreen'] == 0):
         if (stateMach['colrSettingCursor'] > 0):
             stateMach['colrSettingCursor'] = constrain(stateMach['colrSettingCursor']-stateMach['tDiff'], 0, 1)
-            #drawSettingColor(stateMach['colrSettingCursor'], stateMach['lamps'][0], stateMach['targetBulb'])
             drawSettingColor()
         if (stateMach['targetScreen'] == 0) and (stateMach['colrSettingCursor'] == 0):
             drawHome()
@@ -662,7 +620,6 @@ def display():
     elif (stateMach['targetScreen'] == 1):
         if (stateMach['colrSettingCursor'] < 1):
             stateMach['colrSettingCursor'] = constrain(stateMach['colrSettingCursor']+stateMach['tDiff'], 0, 1)
-        #drawSettingColor(stateMach['colrSettingCursor'], stateMach['lamps'][0], stateMach['targetBulb'])
         drawSettingColor()
 
     stateMach['tDiff'] = 3.14159/stateMach['fps']
@@ -727,6 +684,7 @@ def special(k, x, y):
 
 def key(ch, x, y):
     global stateMach
+    Light = 0
     if ch == as_8_bit('q'):
         sys.exit(0)
     if ord(ch) == 27: # ESC
@@ -828,6 +786,12 @@ if __name__ == '__main__':
     stateMach['wereColorsTouched']  = False
     stateMach['colrSettingCursor']  = 0.0
     stateMach['interactionCursor']  = 0.0
+
+    #stateMach['lamps'].append(getAllLamps()[0])
+
+    plugins.pluginLoader.initPlugins()
+    stateMach['lamps'] = plugins.pluginLoader.getAllLamps()
+
     glutInit(sys.argv)
 
     # Disable anti-aliasing if running on a Raspberry Pi Zero
