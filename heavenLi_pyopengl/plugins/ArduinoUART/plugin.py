@@ -37,10 +37,14 @@ class Plugin():
                 try:
                     print("[HOST] Incoming Bytes: " + str(int(bytesToRead)))
                     zeroByte = b'\x00'
-                    mess = self.serialDevice.read_until( zeroByte )[0:-1]
+                    mess = self.serialDevice.read_until( zeroByte )
+                    print("Data BEFORE COBS decoding: ", mess)
+                    mess = mess[0:-1]
                     mess = str(cobs.decode( mess ))[2:-1]
                     if (mess == 'This is a syn packet.QQQQQQQQQQQ'):
                         print("Syn packet received. Packet: ", mess)
+                    else:
+                        print("Data received. Packet: ", mess)
                 except:
                     print("Error Decoding Packet")
 
