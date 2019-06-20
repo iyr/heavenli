@@ -3,10 +3,14 @@ from lampClass import *
 class Plugin:
 
     def __init__(self):
-        print("Hello from demo class")
+        pass
+
+    def update(self):
+        pass
 
     def getLamps(self):
-        quack = Lamp()
+        quack = []
+        quack.append(Lamp())
         return quack
 
 #if __name__ == '__main__':

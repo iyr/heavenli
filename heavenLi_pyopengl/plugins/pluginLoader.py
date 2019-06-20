@@ -32,6 +32,18 @@ def initPlugins():
             print("Error loading", dirs[i])
             print("Error: ", OOF)
 
+def updatePlugins():
+    global plugins
+
+    for i in range(len(plugins)):
+        try:
+            plugins[i].update()
+        except Exception as OOF:
+            print("Error updating", plugins[i])
+            print("Error: ", OOF)
+
+
+# Returns of a list of all lamps provided by plugins
 def getAllLamps():
     global plugins
     tml = []
@@ -39,11 +51,13 @@ def getAllLamps():
     for i in range(len(plugins)):
         try: 
             tmp = plugins[i].getLamps()
-            if tmp is not None:
-                tml.append(tmp)
+            if len(tmp) > 0 and tmp is not None:
+                for i in range(len(tmp)):
+                    tml.append(tmp[i])
         except Exception as OOF:
             print("Error getting lamps from ", str(plugins[i]))
             print("Error: ", OOF)
 
     print("Number of lamps: ", len(tml))
+    print(tml)
     return tml

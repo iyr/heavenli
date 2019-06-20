@@ -627,7 +627,7 @@ def display():
         stateMach['lamps'][i].updateBulbs(stateMach['tDiff']/2)
 
     glutSwapBuffers()
-
+    plugins.pluginLoader.updatePlugins()
     framerate()
 
 def idleWindowOpen():
