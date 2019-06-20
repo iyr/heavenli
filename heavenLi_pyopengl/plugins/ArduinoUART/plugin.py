@@ -16,6 +16,8 @@ class Plugin():
         self.devices = []
         self.clients = []
         self.getDevices()
+        self.curTime = time.time()
+        self.t0 = 0
         pass
 
     # All Clients are devices, but not all devices are clients
@@ -35,9 +37,10 @@ class Plugin():
                 try:
                     print("[HOST] Incoming Bytes: " + str(int(bytesToRead)))
                     zeroByte = b'\x00'
-                    mess = serialDevice.read_until( zeroByte )[0:-1]
+                    mess = self.serialDevice.read_until( zeroByte )[0:-1]
                     mess = str(cobs.decode( mess ))[2:-1]
-                    print(mess)
+                    if (mess == 'This is a syn packet.QQQQQQQQQQQ'):
+                        print("Syn packet received. Packet: ", mess)
                 except:
                     print("Error Decoding Packet")
 
@@ -52,8 +55,9 @@ class Plugin():
 
     # Necessary for Heavenli integration
     def update(self):
-        for i in range(len(self.devices)):
-            self.devices[i].listen()
+        if (time.time() - self.curTime > 1.0):
+            for i in range(len(self.devices)):
+                self.devices[i].listen()
         pass
 
     # Scans Serial ports for potential Heavenli clients
