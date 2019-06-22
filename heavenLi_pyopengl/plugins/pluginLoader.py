@@ -8,6 +8,7 @@ sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_SUB)))
 
 plugins = []
 
+# Searches the folder "plugins" for compatible plugins and loads them
 def initPlugins():
     global plugins
     print("Initializing plugins...")

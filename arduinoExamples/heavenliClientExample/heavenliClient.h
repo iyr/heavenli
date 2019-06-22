@@ -12,10 +12,11 @@ class heavenliClient
       void init();
       void processPacket(const uint8_t* buffer, size_t size);
       void update();
-      void outPacket(uint8_t*& buffer, size_t size);
+      size_t outPacket(uint8_t*& buffer);
 
    private:
       int numLamps;
+      bool ackReceived;
 };
 
 void packetReceived();

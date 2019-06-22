@@ -39,14 +39,20 @@ class Plugin():
                     zeroByte = b'\x00'
                     mess = self.serialDevice.read_until( zeroByte )
                     print("Data BEFORE COBS decoding: ", mess)
-                    mess = mess[0:-1]
-                    mess = str(cobs.decode( mess ))[2:-1]
-                    if (mess == 'This is a syn packet.QQQQQQQQQQQ'):
-                        print("Syn packet received. Packet: ", mess)
+                    mess = str(cobs.decode( mess[0:-1] )[:-1])[2:-1]
+                    if (mess == "This is a syn packet."):
+                        print("Syn packet received. Packet:", mess)
+                        print("Sending ack packet")
+                        enmass = cobs.encode(b'This is an ack packet')+b'\x00'
+                        self.serialDevice.write(enmass)
                     else:
-                        print("Data received. Packet: ", mess)
-                except:
+                        print("Data received. Packet:", mess)
+                except Exception as OOF:
                     print("Error Decoding Packet")
+                    print("Error: ", OOF)
+
+        def __del__(self):
+            print("Removing device on port:", self.port)
 
     # 
     class Client():
@@ -60,15 +66,21 @@ class Plugin():
     # Necessary for Heavenli integration
     def update(self):
         if (time.time() - self.curTime > 1.0):
+            self.getDevices()
             for i in range(len(self.devices)):
-                self.devices[i].listen()
+                try:
+                    self.devices[i].listen()
+                except Exception as OOF:
+                    print("Error:", OOF)
+                    del self.devices[i]
         pass
 
     # Scans Serial ports for potential Heavenli clients
     def getDevices(self):
         ports = self.getSerialPorts()
         if (len(ports) <= 0):
-            print("No Serial devices available :(")
+            pass
+            #print("No Serial devices available :(")
         else:
             if (len(self.clients) <= 0):
                 print("Found Serial devices on ports: " + str(ports))
@@ -82,7 +94,6 @@ class Plugin():
     # Largely based on solution by Thomas on stackoverflow
     # https://stackoverflow.com/questions/12090503/listing-available-com-ports-with-python
     def getSerialPorts(self):
-        print("Getting Ports...")
         if sys.platform.startswith('win'):
             ports = ['COM%s' % (i+1) for i in range(256)]
         elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'):

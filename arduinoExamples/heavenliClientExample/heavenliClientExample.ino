@@ -29,14 +29,12 @@ void setup() {
 }
 
 void loop() {
-   size_t size = 32;
-   //size = size_t(32);
-   //uint8_t buffer[32];
+   size_t size;
    uint8_t* buffer;
    digitalWrite(LED_BUILTIN, HIGH);
    delay(20);
 
-   client.outPacket(buffer, size);
+   size = client.outPacket(buffer);
    commPort.send(buffer, size);
    client.update();
    commPort.update();
