@@ -2,13 +2,15 @@
 #include <PacketSerial.h>
 
 heavenliClient client;
-PacketSerial commPort;
+hliLamp        quack;
+PacketSerial   commPort;
 
 void setup() {
    pinMode(LED_BUILTIN, OUTPUT);
    client.init();
    commPort.setPacketHandler(&packetReceived);
    commPort.begin(115200);
+   quack.init();
    digitalWrite(LED_BUILTIN, LOW);
    delay(1000);
    digitalWrite(LED_BUILTIN, HIGH);
@@ -36,7 +38,7 @@ void loop() {
 
    size = client.outPacket(buffer);
    commPort.send(buffer, size);
-   client.update();
+   client.update(quack);
    commPort.update();
    digitalWrite(LED_BUILTIN, LOW);
    delay(1000);

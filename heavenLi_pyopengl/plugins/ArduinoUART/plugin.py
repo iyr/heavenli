@@ -45,6 +45,8 @@ class Plugin():
                         print("Sending ack packet")
                         enmass = cobs.encode(b'This is an ack packet')+b'\x00'
                         self.serialDevice.write(enmass)
+                    elif (mess == "This is a synack packet"):
+                        print("CONNECTION ESTABLISHED :D")
                     else:
                         print("Data received. Packet:", mess)
                 except Exception as OOF:
