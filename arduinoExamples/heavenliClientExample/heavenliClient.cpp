@@ -1,14 +1,12 @@
 #include "Arduino.h"
 #include "heavenliClient.h"
 
-heavenliClient::heavenliClient()
-{
+heavenliClient::heavenliClient() {
    connectionEstablished = false; 
-   ackReceived = false;
+   this->synackReceived = false;
 }
 
-void heavenliClient::init()
-{
+void heavenliClient::init() {
    numLamps = 0;
    return;
 }
@@ -18,8 +16,8 @@ void heavenliClient::init()
    //return;
 //}
 
-void heavenliClient::update(hliLamp lamp)
-{
+void heavenliClient::update(hliLamp lamp) {
+   lamp.update(2.72);
    return;
 }
 
@@ -28,28 +26,25 @@ void heavenliClient::update(hliLamp lamp)
    //return;
 //}
 
-void heavenliClient::processPacket(const uint8_t* buffer, size_t size)
-{
+void heavenliClient::processPacket(const uint8_t* buffer, size_t size) {
    char tmp[size];
    memcpy(tmp, buffer, size);
    String tms = String(tmp);
-   if (tms == "This is an ack packet.") {
-      ackReceived = true;
+   if (tms == "This is a synack packet.") {
+      this->synackReceived = true;
    }
 
    return;
 }
 
-bool heavenliClient::establishConnection()
-{
+bool heavenliClient::establishConnection() {
    return false;
 }
 
-size_t heavenliClient::outPacket(uint8_t*& buffer)
-{
+size_t heavenliClient::outPacket(uint8_t*& buffer) {
    size_t n = 0;
-   if (ackReceived) {
-      String message = "This is a synack packet.";
+   if (this->synackReceived) {
+      String message = "This is an ack packet.";
       n = message.length()+1;
       buffer = new uint8_t[n];
       message.toCharArray(buffer, n);
@@ -65,8 +60,7 @@ size_t heavenliClient::outPacket(uint8_t*& buffer)
 /*
  * Implements a heavenli lamp
  */
-hliLamp::hliLamp()
-{
+hliLamp::hliLamp() {
    numBulbs = 1;
    isMetaLamp = 0;
    bulbsTargetRGB[10][3];
@@ -81,13 +75,11 @@ hliLamp::hliLamp()
    setBulbsCurrentRGB(RGB);
 }
 
-void hliLamp::init()
-{
+void hliLamp::init() {
    return;
 }
 
-void hliLamp::setBulbsTargetRGB(float* TargetRGB)
-{
+void hliLamp::setBulbsTargetRGB(float* TargetRGB) {
    float RGB[3] = {0.0, 0.0, 0.0};
    if (sizeof(RGB)/sizeof(*RGB) != sizeof(TargetRGB)/sizeof(*TargetRGB))
       return;
@@ -200,8 +192,7 @@ void hliLamp::update(float frameTime) {
    return;
 }
 
-void hliLamp::setBulbsCurrentRGB(float* CurrentRGB)
-{
+void hliLamp::setBulbsCurrentRGB(float* CurrentRGB) {
    float RGB[3] = {0.0, 0.0, 0.0};
    if (sizeof(RGB)/sizeof(*RGB) != sizeof(CurrentRGB)/sizeof(*CurrentRGB))
       return;
@@ -217,8 +208,14 @@ void hliLamp::setBulbsCurrentRGB(float* CurrentRGB)
    }
 }
 
-void hliLamp::setNumBulbs(unsigned int newNumBulbs)
-{
+void hliLamp::getBulbCurrentRGB(unsigned int bulb, float* RGB) {
+   RGB[0] = bulbsCurrentRGB[bulb][0];
+   RGB[1] = bulbsCurrentRGB[bulb][1];
+   RGB[2] = bulbsCurrentRGB[bulb][2];
+   return;
+}
+
+void hliLamp::setNumBulbs(unsigned int newNumBulbs) {
    numBulbs = newNumBulbs;
    return;
 }

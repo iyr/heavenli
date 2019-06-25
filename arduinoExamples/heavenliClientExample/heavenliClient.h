@@ -12,6 +12,7 @@ class hliLamp
       hliLamp();
       void           setBulbsTargetRGB(float* bulbsTargetRGB);
       void           setBulbsCurrentRGB(float* CurrentRGB);
+      void           getBulbCurrentRGB(unsigned int bulb, float* RGB);
       void           setNumBulbs(unsigned int newNumBulbs);
       void           init();
       void           update(float frameTime);
@@ -45,7 +46,7 @@ class heavenliClient
 
    private:
       int            numLamps;
-      bool           ackReceived;
+      bool           synackReceived;
 
 };
 

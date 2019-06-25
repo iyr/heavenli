@@ -42,10 +42,10 @@ class Plugin():
                     mess = str(cobs.decode( mess[0:-1] )[:-1])[2:-1]
                     if (mess == "This is a syn packet."):
                         print("Syn packet received. Packet:", mess)
-                        print("Sending ack packet")
-                        enmass = cobs.encode(b'This is an ack packet')+b'\x00'
+                        print("Sending synack packet")
+                        enmass = cobs.encode(b'This is a synack packet.')+b'\x00'
                         self.serialDevice.write(enmass)
-                    elif (mess == "This is a synack packet"):
+                    elif (mess == "This is an ack packet."):
                         print("CONNECTION ESTABLISHED :D")
                     else:
                         print("Data received. Packet:", mess)
