@@ -190,9 +190,9 @@ def drawHome():
                 stateMach['wx'],                            # Middle of Screen
                 stateMach['wy'],                            # Middle of Screen
                 min(stateMach['wx'], stateMach['wy'])/2)):  # Clock Radius
-                stateMach['lightOn'] = not stateMach['lightOn']
+                stateMach['masterSwitch'] = not stateMach['masterSwitch']
                 for i in range(len(stateMach['lamps'])):
-                    stateMach['lamps'][i].setMainLight(stateMach['lightOn'])
+                    stateMach['lamps'][i].setMainLight(stateMach['masterSwitch'])
 
             # Watch bulb buttons for input
             if (len(stateMach['lamps']) > 0):
@@ -766,7 +766,7 @@ if __name__ == '__main__':
     stateMach['frames']             = 0
     stateMach['lamps']              = []
     stateMach['screen']             = 0
-    stateMach['lightOn']            = False
+    stateMach['masterSwitch']       = False
     stateMach['fps']                = 60
     stateMach['windowPosX']         = 0
     stateMach['windowPosY']         = 0
