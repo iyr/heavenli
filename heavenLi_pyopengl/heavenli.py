@@ -133,15 +133,18 @@ def drawHome():
             stateMach['detailColor'])
 
     if (len(stateMach['lamps']) > 0):
-        buttons = drawBulbButton(
-                stateMach['lamps'][Light].getArn(),
-                stateMach['lamps'][Light].getNumBulbs(),
-                stateMach['lamps'][Light].getAngle(),
-                iconSize*2.66,
-                stateMach['faceColor'],
-                stateMach['detailColor'],
-                stateMach['lamps'][Light].getBulbsRGB(),
-                stateMach['w2h'])
+        try:
+            buttons = drawBulbButton(
+                    stateMach['lamps'][Light].getArn(),
+                    stateMach['lamps'][Light].getNumBulbs(),
+                    stateMach['lamps'][Light].getAngle(),
+                    iconSize*2.66,
+                    stateMach['faceColor'],
+                    stateMach['detailColor'],
+                    stateMach['lamps'][Light].getBulbsRGB(),
+                    stateMach['w2h'])
+        except Exception as OOF:
+            print("Error:", OOF)
 
         if (stateMach['lamps'][Light].getArn() == 0):
             drawIconCircle(0.75, 0.75, 
@@ -459,9 +462,9 @@ def drawSettingColor():
 
                 if (len(stateMach['lamps']) > 0):
                     if (stateMach['targetBulb'] == stateMach['lamps'][Light].getNumBulbs()):
-                        stateMach['lamps'][Light].setBulbstHSV(tmcHSV)
+                        stateMach['lamps'][Light].setBulbsTargetHSV(tmcHSV)
                     else:
-                        stateMach['lamps'][Light].setBulbtHSV(stateMach['targetBulb'], tmcHSV)
+                        stateMach['lamps'][Light].setBulbTargetHSV(stateMach['targetBulb'], tmcHSV)
 
 
         # Watch Sat / Val Triangle for input
@@ -490,9 +493,9 @@ def drawSettingColor():
                         stateMach['currentVal'])
                 if (len(stateMach['lamps']) > 0):
                     if (stateMach['targetBulb'] == stateMach['lamps'][Light].getNumBulbs()):
-                        stateMach['lamps'][Light].setBulbstHSV(tmcHSV)
+                        stateMach['lamps'][Light].setBulbsTargetHSV(tmcHSV)
                     else:
-                        stateMach['lamps'][Light].setBulbtHSV(stateMach['targetBulb'], tmcHSV)
+                        stateMach['lamps'][Light].setBulbTargetHSV(stateMach['targetBulb'], tmcHSV)
 
         # Watch Confirm Button for input
         if (watchDot(
@@ -502,12 +505,12 @@ def drawSettingColor():
             stateMach['wereColorsTouched'] = False
             if (len(stateMach['lamps']) > 0):
                 if (stateMach['targetBulb'] == stateMach['lamps'][Light].getNumBulbs()):
-                    stateMach['lamps'][Light].setBulbstHSV( (
+                    stateMach['lamps'][Light].setBulbsTargetHSV( (
                         stateMach['currentHue'], 
                         stateMach['currentSat'], 
                         stateMach['currentVal'] ) )
                 else:
-                    stateMach['lamps'][Light].setBulbtHSV(stateMach['targetBulb'], (
+                    stateMach['lamps'][Light].setBulbTargetHSV(stateMach['targetBulb'], (
                         stateMach['currentHue'], 
                         stateMach['currentSat'], 
                         stateMach['currentVal'] ) )
@@ -537,12 +540,12 @@ def drawSettingColor():
             if (len(stateMach['lamps']) > 0):
                 if (stateMach['targetBulb'] == stateMach['lamps'][Light].getNumBulbs()):
                     for i in range(stateMach['lamps'][Light].getNumBulbs()):
-                        stateMach['lamps'][Light].setBulbtHSV(i, (
+                        stateMach['lamps'][Light].setBulbTargetHSV(i, (
                             stateMach['prevHues'][i], 
                             stateMach['prevSats'][i], 
                             stateMach['prevVals'][i] ) )
                 else:
-                    stateMach['lamps'][Light].setBulbtHSV(stateMach['targetBulb'], (
+                    stateMach['lamps'][Light].setBulbTargetHSV(stateMach['targetBulb'], (
                         stateMach['prevHue'], 
                         stateMach['prevSat'], 
                         stateMach['prevVal'] ) )
