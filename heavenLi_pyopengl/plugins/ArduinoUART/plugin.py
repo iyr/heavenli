@@ -27,6 +27,7 @@ class Plugin():
 
             self.port = port
             self.isClient = False
+            self.synReceived = False
             self.serialDevice = serial.Serial(port, 115200)
             self.serialDevice.close()
             self.serialDevice.open()
@@ -40,14 +41,17 @@ class Plugin():
                     mess = self.serialDevice.read_until( zeroByte )
                     print("Data BEFORE COBS decoding: ", mess)
                     mess = str(cobs.decode( mess[0:-1] )[:-1])[2:-1]
-                    if (mess == "This is a syn packet."):
+                    if (mess == "SYN"):
                         print("Syn packet received. Packet:", mess)
                         print("Sending synack packet")
-                        enmass = cobs.encode(b'This is a synack packet.')+b'\x00'
+                        self.synReceived = True
+                        enmass = cobs.encode(b'SYNACK')+b'\x01'+b'\x00'
                         self.serialDevice.write(enmass)
-                    elif (mess == "This is an ack packet."):
+                    elif (mess == "ACK" and self.synReceived == True):
+                        self.isClient = True
                         print("CONNECTION ESTABLISHED :D")
                     else:
+                        pass
                         print("Data received. Packet:", mess)
                 except Exception as OOF:
                     print("Error Decoding Packet")
@@ -55,6 +59,8 @@ class Plugin():
 
         def __del__(self):
             print("Removing device on port:", self.port)
+            self.serialDevice.close()
+            return
 
     # 
     class Client():
@@ -64,6 +70,18 @@ class Plugin():
             self.alias = alias
             self.clientID = clientID
             self.connected = False
+            self.device = None
+            self.numLamps = 0
+
+        def setDevice(self, device):
+            self.device = device
+            return
+
+        def requestLamps(self):
+            pass
+            return
+
+    # *** END OF CLIENT CLASS ***
 
     # Necessary for Heavenli integration
     def update(self):
@@ -71,11 +89,17 @@ class Plugin():
             self.getDevices()
             for i in range(len(self.devices)):
                 try:
-                    self.devices[i].listen()
+                    if (not self.devices[i].isClient):
+                        self.clients
+                        #self.devices[i].establishConnection()
+                    else:
+                        self.devices[i].listen()
+
                 except Exception as OOF:
                     print("Error:", OOF)
                     del self.devices[i]
         pass
+        return
 
     # Scans Serial ports for potential Heavenli clients
     def getDevices(self):
@@ -88,6 +112,7 @@ class Plugin():
                 print("Found Serial devices on ports: " + str(ports))
                 for i in range(len(ports)):
                     self.devices.append(self.Device(ports[i]))
+        return
                     
 
     def getLamps(self):

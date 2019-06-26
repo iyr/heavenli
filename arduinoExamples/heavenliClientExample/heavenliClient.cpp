@@ -2,12 +2,12 @@
 #include "heavenliClient.h"
 
 heavenliClient::heavenliClient() {
-   connectionEstablished = false; 
+   this->connectionEstablished = false; 
    this->synackReceived = false;
 }
 
 void heavenliClient::init() {
-   numLamps = 0;
+   this->numLamps = 0;
    return;
 }
 
@@ -27,11 +27,13 @@ void heavenliClient::update(hliLamp lamp) {
 //}
 
 void heavenliClient::processPacket(const uint8_t* buffer, size_t size) {
-   char tmp[size];
-   memcpy(tmp, buffer, size);
-   String tms = String(tmp);
-   if (tms == "This is a synack packet.") {
+   //char tmp[size];
+   //memcpy(tmp, buffer, size);
+   //if (tms == "This is a synack packet.") {
+   char tmp[] = "SYNACK";
+   if (strcmp(tmp, buffer) == 0) {
       this->synackReceived = true;
+      this->connectionEstablished = true;
    }
 
    return;
@@ -44,12 +46,12 @@ bool heavenliClient::establishConnection() {
 size_t heavenliClient::outPacket(uint8_t*& buffer) {
    size_t n = 0;
    if (this->synackReceived) {
-      String message = "This is an ack packet.";
+      String message = "ACK";
       n = message.length()+1;
       buffer = new uint8_t[n];
       message.toCharArray(buffer, n);
    } else {
-      String message = "This is a syn packet.";
+      String message = "SYN";
       n = message.length()+1;
       buffer = new uint8_t[n];
       message.toCharArray(buffer, n);
@@ -61,18 +63,18 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
  * Implements a heavenli lamp
  */
 hliLamp::hliLamp() {
-   numBulbs = 1;
-   isMetaLamp = 0;
-   bulbsTargetRGB[10][3];
-   bulbsCurrentRGB[10][3];
-   alias[4] = 'demo';
-   id[2] = 'FF';
+   this->numBulbs = 1;
+   this->isMetaLamp = false;
+   this->bulbsTargetRGB[10][3];
+   this->bulbsCurrentRGB[10][3];
+   this->alias[4] = 'demo';
+   this->id[2] = 'FF';
 
 
    float RGB[3] = {0.5, 0.0, 0.3};
-   setBulbsTargetRGB(RGB);
+   this->setBulbsTargetRGB(RGB);
    RGB[0]=0.0; RGB[1]=0.0; RGB[2]=0.0;
-   setBulbsCurrentRGB(RGB);
+   this->setBulbsCurrentRGB(RGB);
 }
 
 void hliLamp::init() {
@@ -87,52 +89,51 @@ void hliLamp::setBulbsTargetRGB(float* TargetRGB) {
    {
       for (int i = 0; i < 10; i++)
       {
-         bulbsTargetRGB[i][0] = TargetRGB[0];
-         bulbsTargetRGB[i][1] = TargetRGB[1];
-         bulbsTargetRGB[i][2] = TargetRGB[2];
+         this->bulbsTargetRGB[i][0] = TargetRGB[0];
+         this->bulbsTargetRGB[i][1] = TargetRGB[1];
+         this->bulbsTargetRGB[i][2] = TargetRGB[2];
       }
       return;
    }
 }
 
 void hliLamp::update(float frameTime) {
-   float 
-      r, 
-      g, 
-      b, 
-      rT, 
-      gT, 
-      bT, 
-      difR,
-      difG,
-      difB,
-      rd = 0.0,
-      gd = 0.0,
-      bd = 0.0,
-      delta = frameTime,
-      threshold = 0.05,
-      tmf;
-   for (int i = 0; i < numBulbs; i++) {
-     float r = bulbsCurrentRGB[i][0];
-     float g = bulbsCurrentRGB[i][1];
-     float b = bulbsCurrentRGB[i][2];
+   int r;
+   int g;
+   int b;
+   int rT;
+   int gT;
+   int bT;
+   int difR;
+   int difG;
+   int difB;
+   int rd = 0;
+   int gd = 0;
+   int bd = 0;
+   int delta = frameTime;
+   int threshold = 13;
+   int tmf;
+   for (int i = 0; i < this.numBulbs; i++) {
+     r = this->bulbsCurrentRGB[i][0];
+     g = this->bulbsCurrentRGB[i][1];
+     b = this->bulbsCurrentRGB[i][2];
   
-     float rT = bulbsTargetRGB[i][0];
-     float gT = bulbsTargetRGB[i][1];
-     float bT = bulbsTargetRGB[i][2];
+     rT = this->bulbsTargetRGB[i][0];
+     gT = this->bulbsTargetRGB[i][1];
+     bT = this->bulbsTargetRGB[i][2];
 
       if (  r != rT  ||
             g != gT  ||
             b != bT  ){
-         float difR = abs(r - rT);
-         float difG = abs(g - gT);
-         float difB = abs(b - bT);
-         float rd = 0.0;
-         float gd = 0.0;
-         float bd = 0.0;
-         float delta = frameTime;
-         float threshold = 0.05;
-         float tmf = float((i+2)*2)/float(numBulbs*3);
+         difR = abs(r - rT);
+         difG = abs(g - gT);
+         difB = abs(b - bT);
+         rd = 0;
+         gd = 0;
+         bd = 0;
+         delta = frameTime;
+         threshold = 12
+         tmf = float((i+2)*2)/float(this->numBulbs*3);
          delta *= tmf;
 
          if (difR > threshold)
@@ -168,24 +169,24 @@ void hliLamp::update(float frameTime) {
          else
             difB = bT;
          
-         if (difR >= 1.0)
-            difR = 1.0;
-         else if (difR <= 0.0)
-            difR = 0.0;
+         if (difR >= 255)
+            difR = 255;
+         else if (difR <= 0)
+            difR = 0;
 
-         if (difB >= 1.0)
-            difB = 1.0;
-         else if (difB <= 0.0)
-            difB = 0.0;
+         if (difB >= 255)
+            difB = 255;
+         else if (difB <= 0)
+            difB = 0;
 
-         if (difG >= 1.0)
-            difG = 1.0;
-         else if (difG <= 0.0)
-            difG = 0.0;
+         if (difG >= 255)
+            difG = 255;
+         else if (difG <= 0)
+            difG = 0;
 
-         bulbsCurrentRGB[i][0] = difR;
-         bulbsCurrentRGB[i][1] = difG;
-         bulbsCurrentRGB[i][2] = difB;
+         this->bulbsCurrentRGB[i][0] = difR;
+         this->bulbsCurrentRGB[i][1] = difG;
+         this->bulbsCurrentRGB[i][2] = difB;
       }
    }
 
@@ -200,22 +201,27 @@ void hliLamp::setBulbsCurrentRGB(float* CurrentRGB) {
    {
       for (int i = 0; i < 10; i++)
       {
-         bulbsCurrentRGB[i][0] = CurrentRGB[0];
-         bulbsCurrentRGB[i][1] = CurrentRGB[1];
-         bulbsCurrentRGB[i][2] = CurrentRGB[2];
+         this->bulbsCurrentRGB[i][0] = CurrentRGB[0];
+         this->bulbsCurrentRGB[i][1] = CurrentRGB[1];
+         this->bulbsCurrentRGB[i][2] = CurrentRGB[2];
       }
       return;
    }
 }
 
 void hliLamp::getBulbCurrentRGB(unsigned int bulb, float* RGB) {
-   RGB[0] = bulbsCurrentRGB[bulb][0];
-   RGB[1] = bulbsCurrentRGB[bulb][1];
-   RGB[2] = bulbsCurrentRGB[bulb][2];
+   RGB[0] = this->bulbsCurrentRGB[bulb][0];
+   RGB[1] = this->bulbsCurrentRGB[bulb][1];
+   RGB[2] = this->bulbsCurrentRGB[bulb][2];
    return;
 }
 
 void hliLamp::setNumBulbs(unsigned int newNumBulbs) {
-   numBulbs = newNumBulbs;
+   if (newNumBulbs > 6)
+      this->numBulbs = 6;
+   else if (newNumBulbs < 1)
+      this->numBulbs = 1;
+   else
+      this->numBulbs = newNumBulbs;
    return;
 }

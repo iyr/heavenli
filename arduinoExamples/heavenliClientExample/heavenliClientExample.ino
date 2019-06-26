@@ -46,5 +46,17 @@ void loop() {
 
 void packetReceived(const uint8_t* buffer, size_t size) {
    client.processPacket(buffer, size);
+   //commPort.send(buffer, size);
+   /*
+   char tmp[] = "SYNACK";
+   if (strcmp(tmp, buffer) == 0) {
+      char tmm[] = "synack received";
+      commPort.send(tmm, 16);
+   } else {
+      char tmm[] = "synack, waiting";
+      commPort.send(tmm, 16);
+      commPort.send(buffer, size);
+   }
+   */
    return;
 }

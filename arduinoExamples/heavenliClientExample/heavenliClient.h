@@ -10,21 +10,22 @@ class hliLamp
 {
    public:
       hliLamp();
-      void           setBulbsTargetRGB(float* bulbsTargetRGB);
-      void           setBulbsCurrentRGB(float* CurrentRGB);
-      void           getBulbCurrentRGB(unsigned int bulb, float* RGB);
-      void           setNumBulbs(unsigned int newNumBulbs);
+      void           setBulbsTargetRGB(byte* bulbsTargetRGB);
+      void           setBulbsCurrentRGB(byte* CurrentRGB);
+      void           getBulbCurrentRGB(byte bulb, byte* RGB);
+      void           setNumBulbs(byte newNumBulbs);
       void           init();
       void           update(float frameTime);
 
    private:
-      float**        bulbsTargetRGB;
-      float**        bulbsCurrentRGB;
-      unsigned int   numBulbs;
-      unsigned int   angularOffset;
-      unsigned int   arrangement;
+      float          angularOffset;
+      
+      uint8_t**      bulbsTargetRGB;
+      uint8_t**      bulbsCurrentRGB;
+      uint8_t        numBulbs;
+      uint8_t        arrangement;
 
-      int            masterSwitchBehavior = -1;
+      char           masterSwitchBehavior = -1;
 
       char*          alias;
       char*          id;
