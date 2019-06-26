@@ -19,10 +19,8 @@ import numpy as np
 print("Done!")
 
 print("Loading System Utilities...")
-import sys, time
+import sys, time, traceback, datetime, os
 from math import sin,cos,sqrt,pi,radians,hypot
-import datetime
-import os
 from platform import machine
 print("Done!")
 
@@ -124,16 +122,16 @@ def drawHome():
     Light = 0
 
     iconSize = 0.15
-    drawClock(
-            0.0, 0.0,
-            stateMach['hour'],
-            stateMach['minute'],
-            1.0, stateMach['w2h'], 
-            stateMach['faceColor'],
-            stateMach['detailColor'])
+    try:
+        drawClock(
+                0.0, 0.0,
+                stateMach['hour'],
+                stateMach['minute'],
+                1.0, stateMach['w2h'], 
+                stateMach['faceColor'],
+                stateMach['detailColor'])
 
-    if (len(stateMach['lamps']) > 0):
-        try:
+        if (len(stateMach['lamps']) > 0):
             buttons = drawBulbButton(
                     stateMach['lamps'][Light].getArn(),
                     stateMach['lamps'][Light].getNumBulbs(),
@@ -143,93 +141,103 @@ def drawHome():
                     stateMach['detailColor'],
                     stateMach['lamps'][Light].getBulbsRGB(),
                     stateMach['w2h'])
-        except Exception as OOF:
-            print("Error:", OOF)
 
-        if (stateMach['lamps'][Light].getArn() == 0):
-            drawIconCircle(0.75, 0.75, 
-                    iconSize*0.85, 
-                    2,
-                    ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100)),
-                    stateMach['lamps'][Light].getNumBulbs(), 
-                    stateMach['lamps'][Light].getAngle(), 
-                    stateMach['w2h'], 
-                    stateMach['lamps'][Light].getBulbsRGB())
+            if (stateMach['lamps'][Light].getArn() == 0):
+                drawIconCircle(0.75, 0.75, 
+                        iconSize*0.85, 
+                        2,
+                        ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100)),
+                        stateMach['lamps'][Light].getNumBulbs(), 
+                        stateMach['lamps'][Light].getAngle(), 
+                        stateMach['w2h'], 
+                        stateMach['lamps'][Light].getBulbsRGB())
 
-        if (stateMach['lamps'][Light].getArn() == 1):
-            drawIconLinear(0.75, 0.75, 
-                    iconSize*0.85, 
-                    2,
-                    ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100)),
-                    stateMach['lamps'][Light].getNumBulbs(), 
-                    stateMach['lamps'][Light].getAngle(), 
-                    stateMach['w2h'], 
-                    stateMach['lamps'][Light].getBulbsRGB())
+            if (stateMach['lamps'][Light].getArn() == 1):
+                drawIconLinear(0.75, 0.75, 
+                        iconSize*0.85, 
+                        2,
+                        ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100)),
+                        stateMach['lamps'][Light].getNumBulbs(), 
+                        stateMach['lamps'][Light].getAngle(), 
+                        stateMach['w2h'], 
+                        stateMach['lamps'][Light].getBulbsRGB())
 
-    #printText(
-            #-0.9, -0.6,
-            #0.05, 
-            #stateMach['w2h'], 
-            #'AaBbCcDdEeFfGgHhIiJjKkLlMm',
-            #( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100)))
+        #printText(
+                #-0.9, -0.6,
+                #0.05, 
+                #stateMach['w2h'], 
+                #'AaBbCcDdEeFfGgHhIiJjKkLlMm',
+                #( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100)))
 
-    #printText(
-            #-0.9, -0.875,
-            #0.05, 
-            #stateMach['w2h'], 
-            #'NnOoPpQqRrSsTtUuVvWwXxYyZz',
-            #( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100)))
+        #printText(
+                #-0.9, -0.875,
+                #0.05, 
+                #stateMach['w2h'], 
+                #'NnOoPpQqRrSsTtUuVvWwXxYyZz',
+                #( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100)))
 
-    #primTest(0.0, 0.0, 
-            #1.0, stateMach['w2h'],
-            #(0.5, 0.0, 1.0),
-            #(1.0, 0.5, 0.0),
-            #(0.0, 1.0, 0.5))
+        #primTest(0.0, 0.0, 
+                #1.0, stateMach['w2h'],
+                #(0.5, 0.0, 1.0),
+                #(1.0, 0.5, 0.0),
+                #(0.0, 1.0, 0.5))
 
-    # Watch Home Screen for input
-    if (watchScreen()):
+        # Watch Home Screen for input
+        if (watchScreen()):
+    
+            # Watch Clock for input
+            if (watchDot(
+                stateMach['wx'],                            # Middle of Screen
+                stateMach['wy'],                            # Middle of Screen
+                min(stateMach['wx'], stateMach['wy'])/2)):  # Clock Radius
+                stateMach['lightOn'] = not stateMach['lightOn']
+                for i in range(len(stateMach['lamps'])):
+                    stateMach['lamps'][i].setMainLight(stateMach['lightOn'])
 
-        # Watch Clock for input
-        if (watchDot(
-            stateMach['wx'],
-            stateMach['wy'],
-            min(stateMach['wx'], stateMach['wy'])/2)):
-            stateMach['lightOn'] = not stateMach['lightOn']
-            for i in range(len(stateMach['lamps'])):
-                stateMach['lamps'][i].setMainLight(stateMach['lightOn'])
+            # Watch bulb buttons for input
+            if (len(stateMach['lamps']) > 0):
+                for i in range(len(buttons)):
+                    if (watchDot(
+                        mapRanges(buttons[i][0], -stateMach['w2h'], stateMach['w2h'], 0, stateMach['wx']*2),# X coord of button
+                        mapRanges(buttons[i][1],      1.0,    -1.0, 0, stateMach['wy']*2),                  # Y coord of button
+                        min(stateMach['wx'], stateMach['wy'])*0.5*0.3)                                      # Button Radius
+                        and
+                        len(stateMach['lamps']) > 0):
 
-        # Watch bulb buttons for input
-        if (len(stateMach['lamps']) > 0):
-            for i in range(len(buttons)):
+                        # Set Color Picker as target Screen selecting bulb i
+                        stateMach['targetScreen'] = 1
+                        stateMach['targetBulb'] = i
+
+                        # Record previous color(s)
+                        stateMach['prevHue'] = stateMach['lamps'][Light].getBulbHSV(i)[0]
+                        stateMach['prevSat'] = stateMach['lamps'][Light].getBulbHSV(i)[1]
+                        stateMach['prevVal'] = stateMach['lamps'][Light].getBulbHSV(i)[2]
+
+            # Watch all-set for input
+            if (len(stateMach['lamps']) > 0):
                 if (watchDot(
-                    mapRanges(buttons[i][0], -1.0*stateMach['w2h'], 1.0*stateMach['w2h'], 0, stateMach['wx']*2),
-                    mapRanges(buttons[i][1],      1.0,    -1.0, 0, stateMach['wy']*2),
-                    min(stateMach['wx'], stateMach['wy'])*0.5*0.3)
+                    mapRanges(0.75, -1.0,  1.0, 0, stateMach['wx']*2),  # X coord of button
+                    mapRanges(0.75,  1.0, -1.0, 0, stateMach['wy']*2),  # Y coord of button
+                    min(stateMach['wx'], stateMach['wy'])*0.2)          # Button Radius
                     and
                     len(stateMach['lamps']) > 0):
-                    stateMach['targetScreen'] = 1
-                    stateMach['targetBulb'] = i
-                    stateMach['prevHue'] = stateMach['lamps'][Light].getBulbHSV(i)[0]
-                    stateMach['prevSat'] = stateMach['lamps'][Light].getBulbHSV(i)[1]
-                    stateMach['prevVal'] = stateMach['lamps'][Light].getBulbHSV(i)[2]
 
-        # Watch all-set for input
-        if (len(stateMach['lamps']) > 0):
-            if (watchDot(
-                mapRanges(0.75, -1.0,  1.0, 0, stateMach['wx']*2),
-                mapRanges(0.75,  1.0, -1.0, 0, stateMach['wy']*2),
-                min(stateMach['wx'], stateMach['wy'])*0.2)
-                and
-                len(stateMach['lamps']) > 0):
-                stateMach['targetScreen'] = 1
-                stateMach['targetBulb'] = stateMach["lamps"][Light].getNumBulbs()
-                stateMach['prevHue'] = stateMach['lamps'][Light].getBulbHSV(0)[0]
-                stateMach['prevSat'] = stateMach['lamps'][Light].getBulbHSV(0)[1]
-                stateMach['prevVal'] = stateMach['lamps'][Light].getBulbHSV(0)[2]
-                for i in range(stateMach['targetBulb']):
-                    stateMach['prevHues'][i] = stateMach['lamps'][Light].getBulbHSV(i)[0]
-                    stateMach['prevSats'][i] = stateMach['lamps'][Light].getBulbHSV(i)[1]
-                    stateMach['prevVals'][i] = stateMach['lamps'][Light].getBulbHSV(i)[2]
+                    # Set Color Picker as target Screen selecting bulb all bulbs
+                    stateMach['targetScreen'] = 1
+                    stateMach['targetBulb'] = stateMach["lamps"][Light].getNumBulbs()
+
+                    # Record previous color(s)
+                    stateMach['prevHue'] = stateMach['lamps'][Light].getBulbHSV(0)[0]
+                    stateMach['prevSat'] = stateMach['lamps'][Light].getBulbHSV(0)[1]
+                    stateMach['prevVal'] = stateMach['lamps'][Light].getBulbHSV(0)[2]
+                    for i in range(stateMach['targetBulb']):
+                        stateMach['prevHues'][i] = stateMach['lamps'][Light].getBulbHSV(i)[0]
+                        stateMach['prevSats'][i] = stateMach['lamps'][Light].getBulbHSV(i)[1]
+                        stateMach['prevVals'][i] = stateMach['lamps'][Light].getBulbHSV(i)[2]
+    except Exception as OOF:
+        print(traceback.format_exc())
+        print("Error:", OOF)
+    return
 
 #def drawSettingColor(cursor, targetLamp, targetBulb):
 def drawSettingColor():
