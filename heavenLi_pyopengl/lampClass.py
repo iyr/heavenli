@@ -89,7 +89,7 @@ class Lamp:
     def setArn(self, n):
         if (n > 1):
             n = 1
-        else if (n < 0):
+        elif (n < 0):
             n = 0
         self.arrangement = n
         return

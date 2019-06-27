@@ -2,7 +2,7 @@
 # Necessary import for all plugins
 from lampClass import *
 
-import glob, serial, sys, time, traceback
+import glob, serial, sys, time, traceback, random
 from cobs import cobs
 
 class Plugin():
@@ -16,85 +16,164 @@ class Plugin():
         self.t0 = 0
         pass
 
-
-    #class Client():
-        #def __init__(self, 
-                #alias="quack",
-                #clientID=None):
-            #self.alias = alias
-            #self.clientID = clientID
-            #self.connected = False
-            #self.device = None
-            #self.numLamps = 0
-
-        #def setDevice(self, device):
-            #self.device = device
-            #return
-
-        #def requestLamps(self):
-            #pass
-            #return
-
-    # *** END OF CLIENT CLASS ***
-
-
+    # This class abstracts Serial Devices connected to the system
+    # Note: All HeavenLi Client Devices are Serial Devices, but not all Serial Devices are Clients
     class Device():
         def __init__(self, port = None):
             print("ARDUINO PLUGIN: creating device on port: ", port)
 
+            # Current Serial Port of the client device, may change based on system
             self.port = port
-            self.isClient = False
+
+            # Whether or not device is a heavenli client:
+            # 0:  Unknown, ambiguous, default
+            # 1:  Device is a heavenli client
+            # -1: Device is known NOT to be a heavenli client (mutable)
+            self.isClient = 0
+
+            # Whether or not a heavenli client device is trying to connect,
+            # Used to establish three-way handshake for tcp-style connection
             self.synReceived = False
+
+            # Whether or not the client device has established a connection
             self.connectionEstablished = False
+
+            # Serial Port of the device
             self.serialDevice = serial.Serial(port, 115200)
             self.serialDevice.close()
             self.serialDevice.open()
 
+            # List of all lamps handled by device
+            self.connectedLamps = []
+
+            # ID of the client device
+            self.clientID = None
+
+        # See if device has received any data
         def listen(self):
-            bytesToRead = self.serialDevice.inWaiting()
-            if (bytesToRead > 0):
-                try:
+            try:
+                bytesToRead = self.serialDevice.inWaiting()
+                if (bytesToRead > 0):
                     print("[HOST] Incoming Bytes: " + str(int(bytesToRead)))
                     zeroByte = b'\x00'
                     mess = self.serialDevice.read_until( zeroByte )
                     print("Data BEFORE COBS decoding: ", mess)
                     mess = str(cobs.decode( mess[0:-1] )[:-1])[2:-1]
+                    print("Data received. Packet:", mess)
+
+                    for i in range(len(mess)):
+                        # Packet contains pertinent client ID information
+                        if (    mess[i+1] == 'C' and 
+                                mess[i+1] == 'I' and 
+                                mess[i+2] == 'D' and
+                                mess[i+3] == ':' and
+                                mess[i+4] == 'U' ):
+                            print("Received client ID: ", mess[i+5])
+                            self.clientID = mess[i+5]
+                            i += 5
+
+            except Exception as OOF:
+                self.synReceived = False
+                self.connectionEstablished = False
+                self.serialDevice.close()
+                print(traceback.format_exc())
+                print("Error Decoding Packet: ", OOF)
+
+        # This function performs the TCP-like three-way handshake
+        # to connect to heavenli client devices
+        def establishConnection(self):
+            try:
+                bytesToRead = self.serialDevice.inWaiting()
+                if (bytesToRead > 0):
+                    # Listen for Synchronize Packet from client devices
+                    print("[HOST] Incoming Bytes: " + str(int(bytesToRead)))
+                    zeroByte = b'\x00'
+                    mess = self.serialDevice.read_until( zeroByte )
+                    print("Data BEFORE COBS decoding: ", mess)
+                    mess = str(cobs.decode( mess[0:-1] )[:-1])[2:-1]
+
+                    # If Synchronize Packet received, note it, then send a synack packet
                     if (mess == "SYN"):
                         print("Syn packet received. Packet:", mess)
                         print("Sending synack packet")
                         self.synReceived = True
                         enmass = cobs.encode(b'SYNACK')+b'\x01'+b'\x00'
                         self.serialDevice.write(enmass)
+
+                    # If Ack Packet received, we know this device is a client
                     elif (mess == "ACK" and self.synReceived == True):
-                        self.isClient = True
+                        self.isClient = 1
                         self.connectionEstablished = True
+                        self.requestClientID()
                         #print("CONNECTION ESTABLISHED :D")
                     else:
                         pass
                         print("Data received. Packet:", mess)
-                except Exception as OOF:
-                    print(traceback.format_exc())
-                    print("Error Decoding Packet: ", OOF)
+
+            except Exception as OOF:
+                self.synReceived = False
+                self.connectionEstablished = False
+                self.serialDevice.close()
+                print(traceback.format_exc())
+                print("Error Decoding Packet: ", OOF)
+
+        def requestNumBulbs(self, lamp):
+            enmass = cobs.encode(b'NB?R')+b'\x01'+b'\x00'
+            self.serialDevice.write(enmass)
+            pass
+            return
+
+        def setNumBulbs(self, lamp, newNumBulbs):
+            varInBytes = (newNumBulbs).to_bytes(1, byteorder='little')
+            enmass = cobs.encode(b'NB!W')+varInBytes+b'\x01'+b'\x00'
+            self.serialDevice.write(enmass)
+            pass
+            return
+
+        def requestClientID(self):
+            print("Requesting Client ID")
+            enmass = cobs.encode(b'ID?R')+b'\x01'+b'\x00'
+            self.serialDevice.write(enmass)
+            pass
+            return
+
+        def writeClientID(self):
+            enmass = cobs.encode(b'ID!W')+b'\x01'+b'\x00'
+            self.serialDevice.write(enmass)
+            pass
+            return
+            
+        def requestAllParamters(self, lamp):
+            pass
+            return
 
         def __del__(self):
             print("Removing device on port:", self.port)
             self.serialDevice.close()
             return
 
-
     # Necessary for Heavenli integration
     def update(self):
         if (time.time() - self.curTime > 1.0):
             pass
             self.getDevices()
-            for i in range(len(self.devices)):
-                try:
-                    self.devices[i].listen()
+            print("Number of Devices:", len(self.devices))
+            print(self.devices)
+            try:
+                for i in range(len(self.devices)):
+                    if (self.devices[i].isClient == 1):
+                        if (self.devices[i].clientID is None):
+                            pass
+                            self.devices[i].requestClientID()
+                        else:
+                            self.devices[i].listen()
+                    else:
+                        self.devices[i].establishConnection()
 
-                except Exception as OOF:
-                    print(traceback.format_exc())
-                    print("Error:", OOF)
-                    del self.devices[i]
+            except Exception as OOF:
+                print(traceback.format_exc())
+                print("Error:", OOF)
+                del self.devices[i]
         pass
         return
 

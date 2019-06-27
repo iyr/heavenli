@@ -105,7 +105,7 @@ def drawBackground():
                     stateMach['lamps'][Light].getNumBulbs(), 
                     stateMach['lamps'][Light].getAngle(), 
                     stateMach['w2h'],
-                    stateMach['lamps'][Light].getBulbsRGB());
+                    stateMach['lamps'][Light].getBulbsCurrentRGB());
 
         elif (stateMach['lamps'][Light].getArn() == 1):
             drawHomeLinear(0.0, 0.0, 
@@ -113,7 +113,7 @@ def drawBackground():
                     stateMach['lamps'][Light].getNumBulbs(), 
                     stateMach['lamps'][Light].getAngle(), 
                     stateMach['w2h'],
-                    stateMach['lamps'][Light].getBulbsRGB());
+                    stateMach['lamps'][Light].getBulbsCurrentRGB());
 
 def drawHome():
     global stateMach
@@ -139,7 +139,7 @@ def drawHome():
                     iconSize*2.66,
                     stateMach['faceColor'],
                     stateMach['detailColor'],
-                    stateMach['lamps'][Light].getBulbsRGB(),
+                    stateMach['lamps'][Light].getBulbsCurrentRGB(),
                     stateMach['w2h'])
 
             if (stateMach['lamps'][Light].getArn() == 0):
@@ -150,7 +150,7 @@ def drawHome():
                         stateMach['lamps'][Light].getNumBulbs(), 
                         stateMach['lamps'][Light].getAngle(), 
                         stateMach['w2h'], 
-                        stateMach['lamps'][Light].getBulbsRGB())
+                        stateMach['lamps'][Light].getBulbsCurrentRGB())
 
             if (stateMach['lamps'][Light].getArn() == 1):
                 drawIconLinear(0.75, 0.75, 
@@ -160,7 +160,7 @@ def drawHome():
                         stateMach['lamps'][Light].getNumBulbs(), 
                         stateMach['lamps'][Light].getAngle(), 
                         stateMach['w2h'], 
-                        stateMach['lamps'][Light].getBulbsRGB())
+                        stateMach['lamps'][Light].getBulbsCurrentRGB())
 
         #printText(
                 #-0.9, -0.6,
@@ -290,7 +290,7 @@ def drawSettingColor():
                 iconSize*2.66*pow(acc, 4),
                 faceColor,
                 detailColor,
-                stateMach['lamps'][Light].getBulbsRGB(),
+                stateMach['lamps'][Light].getBulbsCurrentRGB(),
                 stateMach['w2h'])
 
         if (stateMach['lamps'][Light].getArn() == 0):
@@ -301,7 +301,7 @@ def drawSettingColor():
                     stateMach['lamps'][Light].getNumBulbs(), 
                     stateMach['lamps'][Light].getAngle(), 
                     stateMach['w2h'], 
-                    stateMach['lamps'][Light].getBulbsRGB())
+                    stateMach['lamps'][Light].getBulbsCurrentRGB())
 
         if (stateMach['lamps'][Light].getArn() == 1):
             drawIconLinear(0.75, 0.75, 
@@ -311,7 +311,7 @@ def drawSettingColor():
                     stateMach['lamps'][Light].getNumBulbs(), 
                     stateMach['lamps'][Light].getAngle(), 
                     stateMach['w2h'], 
-                    stateMach['lamps'][Light].getBulbsRGB())
+                    stateMach['lamps'][Light].getBulbsCurrentRGB())
 
     # Draw Granularity Rocker Underneath Clock
     limit = 0.85
