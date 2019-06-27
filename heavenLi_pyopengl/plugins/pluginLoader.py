@@ -1,5 +1,4 @@
-import sys
-import os
+import sys, os, traceback
 
 # Setup subdirectories to be loaded
 PACKAGE_SUB = '.'
@@ -31,6 +30,7 @@ def initPlugins():
             plugins.append(modules[i].plugin.Plugin())
         except Exception as OOF:
             print("Error loading", dirs[i])
+            print(traceback.format_exc())
             print("Error: ", OOF)
 
 def updatePlugins():
@@ -41,6 +41,7 @@ def updatePlugins():
             plugins[i].update()
         except Exception as OOF:
             print("Error updating", plugins[i])
+            print(traceback.format_exc())
             print("Error: ", OOF)
 
 
@@ -56,7 +57,7 @@ def getAllLamps():
                 for i in range(len(tmp)):
                     tml.append(tmp[i])
         except Exception as OOF:
-            print("Error getting lamps from ", str(plugins[i]))
+            print(traceback.format_exc())
             print("Error: ", OOF)
 
     print("Number of lamps: ", len(tml))

@@ -2,25 +2,42 @@
 # Necessary import for all plugins
 from lampClass import *
 
-import glob
-import serial
-import sys
-#from time import *
-import time
+import glob, serial, sys, time, traceback
 from cobs import cobs
 
 class Plugin():
 
     def __init__(self):
         self.lamps = []
-        self.devices = []
         self.clients = []
+        self.devices = []
         self.getDevices()
         self.curTime = time.time()
         self.t0 = 0
         pass
 
-    # All Clients are devices, but not all devices are clients
+
+    #class Client():
+        #def __init__(self, 
+                #alias="quack",
+                #clientID=None):
+            #self.alias = alias
+            #self.clientID = clientID
+            #self.connected = False
+            #self.device = None
+            #self.numLamps = 0
+
+        #def setDevice(self, device):
+            #self.device = device
+            #return
+
+        #def requestLamps(self):
+            #pass
+            #return
+
+    # *** END OF CLIENT CLASS ***
+
+
     class Device():
         def __init__(self, port = None):
             print("ARDUINO PLUGIN: creating device on port: ", port)
@@ -28,6 +45,7 @@ class Plugin():
             self.port = port
             self.isClient = False
             self.synReceived = False
+            self.connectionEstablished = False
             self.serialDevice = serial.Serial(port, 115200)
             self.serialDevice.close()
             self.serialDevice.open()
@@ -49,53 +67,32 @@ class Plugin():
                         self.serialDevice.write(enmass)
                     elif (mess == "ACK" and self.synReceived == True):
                         self.isClient = True
-                        print("CONNECTION ESTABLISHED :D")
+                        self.connectionEstablished = True
+                        #print("CONNECTION ESTABLISHED :D")
                     else:
                         pass
                         print("Data received. Packet:", mess)
                 except Exception as OOF:
-                    print("Error Decoding Packet")
-                    print("Error: ", OOF)
+                    print(traceback.format_exc())
+                    print("Error Decoding Packet: ", OOF)
 
         def __del__(self):
             print("Removing device on port:", self.port)
             self.serialDevice.close()
             return
 
-    # 
-    class Client():
-        def __init__(self, 
-                alias="quack",
-                clientID=None):
-            self.alias = alias
-            self.clientID = clientID
-            self.connected = False
-            self.device = None
-            self.numLamps = 0
-
-        def setDevice(self, device):
-            self.device = device
-            return
-
-        def requestLamps(self):
-            pass
-            return
-
-    # *** END OF CLIENT CLASS ***
 
     # Necessary for Heavenli integration
     def update(self):
         if (time.time() - self.curTime > 1.0):
+            pass
             self.getDevices()
             for i in range(len(self.devices)):
                 try:
-                    if (not self.devices[i].isClient):
-                        self.clients
-                        #self.devices[i].establishConnection()
-                    else:
-                        self.devices[i].listen()
+                    self.devices[i].listen()
 
                 except Exception as OOF:
+                    print(traceback.format_exc())
                     print("Error:", OOF)
                     del self.devices[i]
         pass
