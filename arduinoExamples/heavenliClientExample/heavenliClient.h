@@ -10,10 +10,39 @@ class hliLamp
 {
    public:
       hliLamp();
-      void           setBulbsTargetRGB(byte* bulbsTargetRGB);
-      void           setBulbsCurrentRGB(byte* CurrentRGB);
-      void           getBulbCurrentRGB(byte bulb, byte* RGB);
-      void           setNumBulbs(byte newNumBulbs);
+      void           getAlias(char*& knickname);
+      void           setAlias(char* newKnickname);
+
+      float          getAngularOffset();
+      void           setAngularOffset(float newAO);
+      void           setAngularOffset(int8_t newAO);
+
+      uint8_t        getArrangement();
+      void           setArrangement(uint8_t newArn);
+
+      void           getBulbCurrentRGB(uint8_t bulb, uint8_t* RGB);
+      void           setBulbCurrentRGB(uint8_t bulb, uint8_t* newRGB);
+      void           getBulbsCurrentRGB(uint8_t** RGB);
+      void           setBulbsCurrentRGB(uint8_t* newRGB);
+
+      void           getBulbTargetRGB(uint8_t bulb, uint8_t* RGB);
+      void           setBulbTargetRGB(uint8_t bulb, uint8_t* newRGB);
+      void           getBulbsTargetRGB(uint8_t** RGB);
+      void           setBulbsTargetRGB(uint8_t* newRGB);
+
+      int            getID();
+      void           setID(int newID);
+      
+      char           getMasterSwitchBehavior();
+      void           setMasterSwitchBehavior(char newBehavior);
+
+      void           setNumBulbs(uint8_t newNumBulbs);
+      uint8_t        getNumBulbs();
+
+      bool           getBulbCountMutability();
+      uint8_t        getMetaLampLevel();
+      void           getValidBulbQuantities(uint8_t*& quantities);
+
       void           init();
       void           update(float frameTime);
 
@@ -22,14 +51,17 @@ class hliLamp
       
       uint8_t**      bulbsTargetRGB;
       uint8_t**      bulbsCurrentRGB;
+      uint8_t*       validBulbCounts;
       uint8_t        numBulbs;
       uint8_t        arrangement;
+      uint8_t        metaLampLevel;
 
-      char           masterSwitchBehavior = -1;
 
       char*          alias;
       char*          id;
-      bool           isMetaLamp;
+      char           masterSwitchBehavior;
+
+      bool           mutableBulbCount;
 };
 
 class heavenliClient 
@@ -46,8 +78,12 @@ class heavenliClient
       size_t         outPacket(uint8_t*& buffer);
 
    private:
+      int            getID();
+      void           setID(int id);
+
       int            numLamps;
       bool           synackReceived;
+      char*          id;
 
 };
 
