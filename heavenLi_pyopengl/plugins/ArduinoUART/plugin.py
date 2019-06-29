@@ -5,6 +5,31 @@ from lampClass import *
 import glob, serial, sys, time, traceback, random
 from cobs import cobs
 
+# Largely based on solution by Thomas on stackoverflow
+# https://stackoverflow.com/questions/12090503/listing-available-com-ports-with-python
+def getSerialPorts():
+    if sys.platform.startswith('win'):
+        ports = ['COM%s' % (i+1) for i in range(256)]
+    elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'):
+        # excludes current terminal "/dev/tty"
+        ports = glob.glob('/dev/tty[A-Za-z]*')
+    elif sys.platform.startswith('darwin'):
+        ports = glob.glob('dev/tty.*')
+    else:
+        raise EnvironmetError('Unupported platform, darn shame')
+
+    result = []
+    for port in ports:
+        try:
+            s = serial.Serial(port)
+            s.close()
+            result.append(port)
+        except (OSError, serial.SerialException):
+            #print("Port: " + str(port) + " not available")
+            pass
+
+    return result
+
 class Plugin():
 
     def __init__(self):
@@ -49,6 +74,11 @@ class Plugin():
             # ID of the client device
             self.clientID = None
 
+        def __del__(self):
+            self.serialDevice.close()
+            del self.serialDevice
+            pass
+
         # See if device has received any data
         def listen(self):
             try:
@@ -61,21 +91,17 @@ class Plugin():
                     mess = str(cobs.decode( mess[0:-1] )[:-1])[2:-1]
                     print("Data received. Packet:", mess)
 
-                    for i in range(len(mess)):
-                        # Packet contains pertinent client ID information
-                        if (    mess[i+1] == 'C' and 
-                                mess[i+1] == 'I' and 
-                                mess[i+2] == 'D' and
-                                mess[i+3] == ':' and
-                                mess[i+4] == 'U' ):
-                            print("Received client ID: ", mess[i+5])
-                            self.clientID = mess[i+5]
-                            i += 5
+                    if ('CID:' in str(mess)):
+                        pos = str(mess).index('CID:')+4
+                        print("Received client ID:", mess[pos:pos+8])
+                        self.clientID = mess[pos:pos+8]
+                        self.serialDevice.flushInput()
 
             except Exception as OOF:
                 self.synReceived = False
                 self.connectionEstablished = False
                 self.serialDevice.close()
+                del self.serialDevice
                 print(traceback.format_exc())
                 print("Error Decoding Packet: ", OOF)
 
@@ -104,6 +130,7 @@ class Plugin():
                     elif (mess == "ACK" and self.synReceived == True):
                         self.isClient = 1
                         self.connectionEstablished = True
+                        print("Requesting Client ID on port:", self.port)
                         self.requestClientID()
                         #print("CONNECTION ESTABLISHED :D")
                     else:
@@ -114,6 +141,7 @@ class Plugin():
                 self.synReceived = False
                 self.connectionEstablished = False
                 self.serialDevice.close()
+                del self.serialDevice
                 print(traceback.format_exc())
                 print("Error Decoding Packet: ", OOF)
 
@@ -131,8 +159,7 @@ class Plugin():
             return
 
         def requestClientID(self):
-            print("Requesting Client ID")
-            enmass = cobs.encode(b'ID?R')+b'\x01'+b'\x00'
+            enmass = cobs.encode(b'CID?R')+b'\x01'+b'\x00'
             self.serialDevice.write(enmass)
             pass
             return
@@ -150,6 +177,7 @@ class Plugin():
         def __del__(self):
             print("Removing device on port:", self.port)
             self.serialDevice.close()
+            del self.serialDevice
             return
 
     # Necessary for Heavenli integration
@@ -157,29 +185,30 @@ class Plugin():
         if (time.time() - self.curTime > 1.0):
             pass
             self.getDevices()
-            print("Number of Devices:", len(self.devices))
-            print(self.devices)
+            #print("Number of Devices:", len(self.devices))
+            #print(self.devices)
             try:
                 for i in range(len(self.devices)):
                     if (self.devices[i].isClient == 1):
-                        if (self.devices[i].clientID is None):
-                            pass
-                            self.devices[i].requestClientID()
-                        else:
-                            self.devices[i].listen()
+                        self.devices[i].listen()
+                        self.devices[i].requestClientID()
                     else:
+                        pass
+                        #print("Listening for SYN packets on: ", self.devices[i].port)
                         self.devices[i].establishConnection()
 
             except Exception as OOF:
                 print(traceback.format_exc())
                 print("Error:", OOF)
                 del self.devices[i]
+
+            self.curTime = time.time()
         pass
         return
 
     # Scans Serial ports for potential Heavenli clients
     def getDevices(self):
-        ports = self.getSerialPorts()
+        ports = getSerialPorts()
         if (len(ports) <= 0):
             pass
             #print("No Serial devices available :(")
@@ -194,27 +223,3 @@ class Plugin():
     def getLamps(self):
         return self.lamps
 
-    # Largely based on solution by Thomas on stackoverflow
-    # https://stackoverflow.com/questions/12090503/listing-available-com-ports-with-python
-    def getSerialPorts(self):
-        if sys.platform.startswith('win'):
-            ports = ['COM%s' % (i+1) for i in range(256)]
-        elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'):
-            # excludes current terminal "/dev/tty"
-            ports = glob.glob('/dev/tty[A-Za-z]*')
-        elif sys.platform.startswith('darwin'):
-            ports = glob.glob('dev/tty.*')
-        else:
-            raise EnvironmetError('Unupported platform, darn shame')
-
-        result = []
-        for port in ports:
-            try:
-                s = serial.Serial(port)
-                s.close()
-                result.append(port)
-            except (OSError, serial.SerialException):
-                #print("Port: " + str(port) + " not available")
-                pass
-
-        return result

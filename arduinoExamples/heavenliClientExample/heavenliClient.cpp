@@ -4,18 +4,24 @@
 #include <EEPROM.h>
 
 heavenliClient::heavenliClient() {
-   //this->IDaddress      = 'h';
-   this->isConnected    = false; 
-   this->synackReceived = false;
-   this->outBufferFull  = false;
+   //this->IDaddress       = 'h';
+   this->isConnected       = false; 
+   this->synackReceived    = false;
+   this->outBufferFull     = false;
+   this->__CID_sent        = false;
+   this->runtimeCounter1   = millis();
+   this->timeoutCounter    = millis();
 
    // Determine if device has an ID set (cannot be 0, 255, or FF)
-   this->id = EEPROM.read(this->IDaddress);
+   this->id[0] = EEPROM.read(this->IDaddress);
+   this->id[1] = EEPROM.read(this->IDaddress+1);
+   char tmp[] = "ll";
    if (  this->id == 255   ||
-         this->id == 0     ){
-      this->__ID_requested = true;
+         this->id == 0     ||
+         strcmp(this->id, tmp) == 0){
+      this->__CID_requested = true;
    } else {
-      this->__ID_requested = false;
+      this->__CID_requested = false;
    }
 }
 
@@ -26,16 +32,31 @@ void heavenliClient::init() {
 
 void heavenliClient::update()
 {
+   if ((millis() - this->timeoutCounter) > 1500) {
+      this->isConnected = false;
+      this->synackReceived = false;
+      this->timeoutCounter = millis();
+   }
    return;
 }
 
 void heavenliClient::update(hliLamp lamp) {
    lamp.update(2.72);
+   if ((millis() - this->timeoutCounter) > 1500) {
+      this->isConnected = false;
+      this->synackReceived = false;
+      this->timeoutCounter = millis();
+   }
    return;
 }
 
 void heavenliClient::update(hliLamp* lamps)
 {
+   if ((millis() - this->timeoutCounter) > 1500) {
+      this->isConnected = false;
+      this->synackReceived = false;
+      this->timeoutCounter = millis();
+   }
    return;
 }
 
@@ -62,10 +83,19 @@ void heavenliClient::processPacket(const uint8_t* buffer, size_t size) {
                   buffer[i+4] == 'R'   ){
                this->__CID_requested = true;
             }
-
+            if (  buffer[i+0] == 'C'   && 
+                  buffer[i+1] == 'I'   &&
+                  buffer[i+2] == 'D'   &&
+                  buffer[i+3] == ':'   &&
+                  buffer[i+4] == this->id[0] &&
+                  buffer[i+5] == this->id[1] ){
+               this->__CID_requested = false;
+            }
          }
       }
    }
+
+   this->timeoutCounter = millis();
    return;
 }
 
@@ -78,14 +108,15 @@ int heavenliClient::getID() {
    return this->id;
 }
 
-void heavenliClient::setID(int newID) {
+void heavenliClient::setID(char* newID) {
 
    // Ensure ID is not 0, 255, or FF
-   if (  newID == 255   ||
-         newID == 0     ){
+   if (  (newID[0] == 0 && newID[1] == 0)    ||
+         (newID[0] == 255 && newID[1] == 255)){
       return;
    } else {
-      this->id = newID;
+      this->id[0] = newID[0];
+      this->id[1] = newID[1];
       EEPROM.update(this->IDaddress, this->id);
       return;
    }
@@ -94,53 +125,67 @@ void heavenliClient::setID(int newID) {
 size_t heavenliClient::outPacket(uint8_t*& buffer) {
    size_t   numBytes = 0;
    uint8_t  byteLimit = 56;
-   uint8_t  tmb[byteLimit];
+   uint8_t  message[byteLimit];
    
    // If not a real client, listen for syn packets
-   if (this->isConnected == false) {
-      if (this->synackReceived == true) {
-         String message = "ACK";
-         numBytes = message.length()+1;
-         buffer = new uint8_t[numBytes];
-         message.toCharArray(buffer, numBytes);
-         this->isConnected = true;
-      } else {
-         String message = "SYN";
-         numBytes = message.length()+1;
-         buffer = new uint8_t[numBytes];
-         message.toCharArray(buffer, numBytes);
-      }
-   } else {
-
-      // Plugin has requested the ID of the Client Device (HOST: getClientID)
-      if (  this->__CID_requested   == true  && 
-            this->outBufferFull     == false ){
-
-         // Number of bytes it will take to send parameter information
-         uint8_t paramBytes = 6;
-
-         // Check if we have enough space in out output buffer
-         if (paramBytes + numBytes >= byteLimit) {
-            this->outBufferFull = true;
+   if (millis() - this->runtimeCounter1 > 0) {
+      if (this->isConnected == false) {
+         if (this->synackReceived == true) {
+            String message = "ACK";
+            numBytes = message.length()+1;
+            buffer = new uint8_t[numBytes];
+            message.toCharArray(buffer, numBytes);
+            this->isConnected = true;
          } else {
-            // Get upper and lower bytes of ID;
-            uint8_t idul = this->id & 65280;
-            uint8_t idll = this->id & 255;
-            tmb[numBytes] = 'C'; numBytes++;
-            tmb[numBytes] = 'I'; numBytes++;
-            tmb[numBytes] = 'D'; numBytes++;
-            tmb[numBytes] = ':'; numBytes++;
-            tmb[numBytes] = 'U'; numBytes++;
-            tmb[numBytes] = 'idul'; numBytes++;
-            tmb[numBytes] = 'idll'; numBytes++;
-            this->__CID_requested = false;
+            String message = "SYN";
+            numBytes = message.length()+1;
+            buffer = new uint8_t[numBytes];
+            message.toCharArray(buffer, numBytes);
          }
+      } 
+      else // Respond to Data Requests
+      {
+
+         // Plugin has requested the ID of the Client Device (HOST: getClientID)
+         if (  this->__CID_requested   == true  && 
+               this->outBufferFull     == false &&
+               this->__CID_sent        == false ){
+
+            // Number of bytes it will take to send parameter information
+            uint8_t paramBytes = 0;
+            char tmb[10];
+
+            // Get upper and lower bytes of ID;
+            //char idu = ((this->id & 65280)>>8) - '0';
+            //char idl = (this->id & 255) - '0';
+            tmb[paramBytes] = 'C'; paramBytes++;
+            tmb[paramBytes] = 'I'; paramBytes++;
+            tmb[paramBytes] = 'D'; paramBytes++;
+            tmb[paramBytes] = ':'; paramBytes++;
+            tmb[paramBytes] = this->id[0]; paramBytes++;
+            tmb[paramBytes] = this->id[1]; paramBytes++;
+            tmb[paramBytes] = 't'; paramBytes++;
+
+            // Check if we have enough space in out output buffer
+            if (paramBytes + numBytes >= byteLimit) {
+               this->outBufferFull = true;
+            } else {
+               for (int i = 0; i < paramBytes; i++)
+                  message[numBytes+i] = tmb[i];
+               numBytes += paramBytes;
+               this->__CID_requested = false;
+               this->__CID_sent = true;
+            }
+
+         }
+
+         // Write contents to buffer
+         buffer = new uint8_t[numBytes];
+         for (int i = 0; i < numBytes; i++)
+            buffer[i] = message[i];
       }
 
-      // Write contents to buffer
-      buffer = new uint8_t[numBytes];
-      for (int i = 0; i < numBytes; i++)
-         buffer[i] = tmb[i];
+      this->runtimeCounter1 = millis();
    }
    return numBytes;
 }
