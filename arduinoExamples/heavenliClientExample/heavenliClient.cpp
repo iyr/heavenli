@@ -4,7 +4,6 @@
 #include <EEPROM.h>
 
 heavenliClient::heavenliClient() {
-   //this->IDaddress       = 'h';
    this->isConnected       = false; 
    this->synackReceived    = false;
    this->outBufferFull     = false;
@@ -15,14 +14,14 @@ heavenliClient::heavenliClient() {
    // Determine if device has an ID set (cannot be 0, 255, or FF)
    this->id[0] = EEPROM.read(this->IDaddress);
    this->id[1] = EEPROM.read(this->IDaddress+1);
-   char tmp[] = "ll";
+   /*
    if (  this->id == 255   ||
-         this->id == 0     ||
-         strcmp(this->id, tmp) == 0){
+         this->id == 0     ){
       this->__CID_requested = true;
    } else {
       this->__CID_requested = false;
    }
+   */
 }
 
 void heavenliClient::init() {
@@ -35,6 +34,7 @@ void heavenliClient::update()
    if ((millis() - this->timeoutCounter) > 1500) {
       this->isConnected = false;
       this->synackReceived = false;
+      this->__CID_sent = false;
       this->timeoutCounter = millis();
    }
    return;
@@ -45,6 +45,7 @@ void heavenliClient::update(hliLamp lamp) {
    if ((millis() - this->timeoutCounter) > 1500) {
       this->isConnected = false;
       this->synackReceived = false;
+      this->__CID_sent = false;
       this->timeoutCounter = millis();
    }
    return;
@@ -55,6 +56,7 @@ void heavenliClient::update(hliLamp* lamps)
    if ((millis() - this->timeoutCounter) > 1500) {
       this->isConnected = false;
       this->synackReceived = false;
+      this->__CID_sent = false;
       this->timeoutCounter = millis();
    }
    return;

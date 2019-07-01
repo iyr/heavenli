@@ -93,8 +93,11 @@ class Plugin():
 
                     if ('CID:' in str(mess)):
                         pos = str(mess).index('CID:')+4
-                        print("Received client ID:", mess[pos:pos+8])
-                        self.clientID = mess[pos:pos+8]
+                        #print("Received client ID:", int.from_bytes(b'mess[pos:pos+8]'))
+                        demess = int.from_bytes(mess[pos:pos+8].encode(), byteorder='big')
+                        print(mess[pos:pos+8].encode())
+                        print("Received client ID:", demess)
+                        self.clientID = demess
                         self.serialDevice.flushInput()
 
             except Exception as OOF:
@@ -130,7 +133,6 @@ class Plugin():
                     elif (mess == "ACK" and self.synReceived == True):
                         self.isClient = 1
                         self.connectionEstablished = True
-                        print("Requesting Client ID on port:", self.port)
                         self.requestClientID()
                         #print("CONNECTION ESTABLISHED :D")
                     else:
@@ -161,6 +163,7 @@ class Plugin():
         def requestClientID(self):
             enmass = cobs.encode(b'CID?R')+b'\x01'+b'\x00'
             self.serialDevice.write(enmass)
+            #print("Requesting Client ID on port:", self.port)
             pass
             return
 
