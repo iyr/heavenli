@@ -93,10 +93,11 @@ class Plugin():
 
                     if ('CID:' in str(mess)):
                         pos = str(mess).index('CID:')+4
-                        #print("Received client ID:", int.from_bytes(b'mess[pos:pos+8]'))
-                        demess = int.from_bytes(mess[pos:pos+8].encode(), byteorder='big')
-                        print(mess[pos:pos+8].encode())
-                        print("Received client ID:", demess)
+                        demess = mess[pos:pos+8].encode(encoding='utf-8')
+                        print("Received client ID:")
+                        print(demess[2:4], demess[6:8])
+                        print(int(demess[2:4], 16), int(demess[6:8], 16))
+                        print(chr(int(demess[2:4], 16)), chr(int(demess[6:8], 16)))
                         self.clientID = demess
                         self.serialDevice.flushInput()
 
