@@ -12,7 +12,7 @@ heavenliClient::heavenliClient() {
    this->timeoutCounter    = millis();
 
    // Determine if device has an ID set (cannot be 0, 255, or FF)
-   this->id[0] = EEPROM.read(this->IDaddress);
+   this->id[0] = EEPROM.read(this->IDaddress+0);
    this->id[1] = EEPROM.read(this->IDaddress+1);
    /*
    if (  this->id == 255   ||
@@ -62,68 +62,9 @@ void heavenliClient::update(hliLamp* lamps)
    return;
 }
 
-void heavenliClient::processPacket(const uint8_t* buffer, size_t size) {
-   //char tmp[size];
-   //memcpy(tmp, buffer, size);
-   //if (tms == "This is a synack packet.") {
-
-   char tmp[] = "SYNACK";
-   if (strcmp(tmp, buffer) == 0) {
-      this->synackReceived = true;
-      this->connectionEstablished = true;
-   } else {
-
-      // Read buffer for paramters
-      for (int i = 0; i < size; i++) {
-
-         if (i+4 <= size) {
-
-            if (  buffer[i+0] == 'C'   && 
-                  buffer[i+1] == 'I'   &&
-                  buffer[i+2] == 'D'   &&
-                  buffer[i+3] == '?'   &&
-                  buffer[i+4] == 'R'   ){
-               this->__CID_requested = true;
-            }
-            if (  buffer[i+0] == 'C'   && 
-                  buffer[i+1] == 'I'   &&
-                  buffer[i+2] == 'D'   &&
-                  buffer[i+3] == ':'   &&
-                  buffer[i+4] == this->id[0] &&
-                  buffer[i+5] == this->id[1] ){
-               this->__CID_requested = false;
-            }
-         }
-      }
-   }
-
-   this->timeoutCounter = millis();
-   return;
-}
-
-// Performs necessary three-way handshake with client device
-bool heavenliClient::establishConnection() {
-   return false;
-}
-
-int heavenliClient::getID() {
-   return this->id;
-}
-
-void heavenliClient::setID(char* newID) {
-
-   // Ensure ID is not 0, 255, or FF
-   if (  (newID[0] == 0 && newID[1] == 0)    ||
-         (newID[0] == 255 && newID[1] == 255)){
-      return;
-   } else {
-      this->id[0] = newID[0];
-      this->id[1] = newID[1];
-      EEPROM.update(this->IDaddress, this->id);
-      return;
-   }
-}
-
+/*
+ * Generates Packet to be sent to host
+ */
 size_t heavenliClient::outPacket(uint8_t*& buffer) {
    size_t   numBytes = 0;
    uint8_t  byteLimit = 56;
@@ -150,23 +91,19 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
 
          // Plugin has requested the ID of the Client Device (HOST: getClientID)
          if (  this->__CID_requested   == true  && 
-               this->outBufferFull     == false &&
-               this->__CID_sent        == false ){
+               this->__CID_sent        == false &&
+               this->outBufferFull     == false ){
 
             // Number of bytes it will take to send parameter information
             uint8_t paramBytes = 0;
             char tmb[10];
 
-            // Get upper and lower bytes of ID;
-            //char idu = ((this->id & 65280)>>8) - '0';
-            //char idl = (this->id & 255) - '0';
             tmb[paramBytes] = 'C'; paramBytes++;
             tmb[paramBytes] = 'I'; paramBytes++;
             tmb[paramBytes] = 'D'; paramBytes++;
             tmb[paramBytes] = ':'; paramBytes++;
             tmb[paramBytes] = this->id[0]; paramBytes++;
             tmb[paramBytes] = this->id[1]; paramBytes++;
-            tmb[paramBytes] = 't'; paramBytes++;
 
             // Check if we have enough space in out output buffer
             if (paramBytes + numBytes >= byteLimit) {
@@ -191,4 +128,72 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
    }
    return numBytes;
 }
+void heavenliClient::processPacket(const uint8_t* buffer, size_t size) {
+
+   // Before we can start sending or receiving data
+   //
+   char tmp[] = "SYNACK";
+   if (strcmp(tmp, buffer) == 0) {
+      this->synackReceived = true;
+      this->connectionEstablished = true;
+   } else {
+
+      // Read buffer for paramters
+      for (int i = 0; i < size; i++) {
+
+         if (i+3 <= size) {
+
+            // Host has requested the Client ID
+            if (  buffer[i+0] == 'C'   && 
+                  buffer[i+1] == 'I'   &&
+                  buffer[i+2] == 'D'   &&
+                  buffer[i+3] == '?'   ){
+               this->__CID_requested = true;
+            }
+
+            // Host is assigning Client ID
+            if (  buffer[i+0] == 'C'   && 
+                  buffer[i+1] == 'I'   &&
+                  buffer[i+2] == 'D'   &&
+                  buffer[i+3] == ':'   ){
+               uint8_t tmp[2];
+               tmp[0] = buffer[i+4];
+               tmp[1] = buffer[i+5];
+               this->setID(tmp);
+               this->__CID_requested = false;
+            }
+
+         }
+      }
+   }
+
+   this->timeoutCounter = millis();
+   return;
+}
+
+// Performs necessary three-way handshake with client device
+bool heavenliClient::establishConnection() {
+   return false;
+}
+
+// IMPLEMENTED THIS FOR FUTURE USE NOW PLS
+int heavenliClient::getID() {
+   return this->id;
+}
+
+void heavenliClient::setID(char* newID) {
+
+   // Ensure ID is not 0, 255, or FF
+   if (  (newID[0] == 0 && newID[1] == 0)    ||
+         (newID[0] == 255 && newID[1] == 255)){
+      return;
+   } else {
+      this->id[0] = newID[0];
+      this->id[1] = newID[1];
+      EEPROM.update(this->IDaddress+0, this->id[0]);
+      EEPROM.update(this->IDaddress+1, this->id[1]);
+      return;
+   }
+}
+
 
