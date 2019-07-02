@@ -209,9 +209,9 @@ def drawHome():
                         stateMach['targetBulb'] = i
 
                         # Record previous color(s)
-                        stateMach['prevHue'] = stateMach['lamps'][Light].getBulbHSV(i)[0]
-                        stateMach['prevSat'] = stateMach['lamps'][Light].getBulbHSV(i)[1]
-                        stateMach['prevVal'] = stateMach['lamps'][Light].getBulbHSV(i)[2]
+                        stateMach['prevHue'] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[0]
+                        stateMach['prevSat'] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[1]
+                        stateMach['prevVal'] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[2]
 
             # Watch all-set for input
             if (len(stateMach['lamps']) > 0):
@@ -227,13 +227,13 @@ def drawHome():
                     stateMach['targetBulb'] = stateMach["lamps"][Light].getNumBulbs()
 
                     # Record previous color(s)
-                    stateMach['prevHue'] = stateMach['lamps'][Light].getBulbHSV(0)[0]
-                    stateMach['prevSat'] = stateMach['lamps'][Light].getBulbHSV(0)[1]
-                    stateMach['prevVal'] = stateMach['lamps'][Light].getBulbHSV(0)[2]
+                    stateMach['prevHue'] = stateMach['lamps'][Light].getBulbCurrentHSV(0)[0]
+                    stateMach['prevSat'] = stateMach['lamps'][Light].getBulbCurrentHSV(0)[1]
+                    stateMach['prevVal'] = stateMach['lamps'][Light].getBulbCurrentHSV(0)[2]
                     for i in range(stateMach['targetBulb']):
-                        stateMach['prevHues'][i] = stateMach['lamps'][Light].getBulbHSV(i)[0]
-                        stateMach['prevSats'][i] = stateMach['lamps'][Light].getBulbHSV(i)[1]
-                        stateMach['prevVals'][i] = stateMach['lamps'][Light].getBulbHSV(i)[2]
+                        stateMach['prevHues'][i] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[0]
+                        stateMach['prevSats'][i] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[1]
+                        stateMach['prevVals'][i] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[2]
     except Exception as OOF:
         print(traceback.format_exc())
         print("Error:", OOF)
@@ -248,7 +248,7 @@ def drawSettingColor():
 
     if (len(stateMach['lamps']) > 0):
         if (stateMach['targetBulb'] == stateMach['lamps'][Light].getNumBulbs()):
-            tmcHSV = stateMach['lamps'][Light].getBulbtHSV(0)
+            tmcHSV = stateMach['lamps'][Light].getBulbTargetHSV(0)
             if (stateMach['currentHue'] == None):
                 stateMach['currentHue'] = stateMach['lamps'][Light].getBulbHSV(0)[0]
             if (stateMach['currentSat'] == None):
@@ -256,7 +256,7 @@ def drawSettingColor():
             if (stateMach['currentVal'] == None):
                 stateMach['currentVal'] = stateMach['lamps'][Light].getBulbHSV(0)[2]
         else:
-            tmcHSV = stateMach['lamps'][Light].getBulbtHSV(stateMach['targetBulb'])
+            tmcHSV = stateMach['lamps'][Light].getBulbTargetHSV(stateMach['targetBulb'])
             if (stateMach['currentHue'] == None):
                 stateMach['currentHue'] = stateMach['lamps'][Light].getBulbHSV(targetBulb)[0]
             if (stateMach['currentSat'] == None):
