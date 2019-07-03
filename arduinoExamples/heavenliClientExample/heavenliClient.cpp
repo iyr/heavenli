@@ -3,7 +3,6 @@
 #include "heavenliClient.h"
 #include "heavenliLamp.h"
 #include <EEPROM.h>
-#include <Vector.h>
 
 heavenliClient::heavenliClient() {
    this->isConnected       = false; 
@@ -20,7 +19,8 @@ heavenliClient::heavenliClient() {
 
 void heavenliClient::init(hliLamp* lamp) {
    this->numLamps = 1;
-   lamp->init();
+   this->lamp = lamp;
+   this->lamp->init();
    return;
 }
 
@@ -96,7 +96,7 @@ void heavenliClient::update(hliLamp* lamp) {
    }
    */
 
-   lamp->update(2.72);
+   this->lamp->update(2.72);
    if ((millis() - this->timeoutCounter) > 1500) {
       this->isConnected = false;
       this->synackReceived = false;
@@ -284,5 +284,3 @@ void heavenliClient::setID(uint8_t* newID) {
       return;
    }
 }
-
-

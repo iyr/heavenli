@@ -44,16 +44,32 @@ class Plugin():
     # Necessary for Heavenli integration
     def update(self):
         if (time.time() - self.curTime > 1.0):
+            #ports = getSerialPorts()
             pass
-            if (len(self.devices) <= 0):
-                self.getDevices()
+            #if (len(self.devices) <= len(ports)):
+                #self.getDevices()
+            self.getDevices()
+            #print("numPorts: " + str(len(ports)))
+            #print(ports)
+            #print("numDevcs: " + str(len(self.devices)))
+            #print(self.devices)
             try:
+                # Iterate through all connected devices
                 for i in range(len(self.devices)):
 
                     # Listen for data on known client devices
                     if (self.devices[i].isClient == 1):
                         self.devices[i].listen()
-                        self.devices[i].requestClientID()
+
+                        # Device is a client, get ID
+                        if (len(self.devices[i].clientID) != 2):
+                            self.devices[i].requestClientID()
+
+                        # If Device has no lamps (ready), 
+                        # ping until lamps are availabled
+                        if (self.devices[i].getNumLamps() == 0 and
+                                len(self.devices[i].clientID) == 2):
+                            self.devices[i].requestNumLamps()
                     else:
                         pass
                         # Attempt to establish connection
@@ -63,7 +79,7 @@ class Plugin():
             except Exception as OOF:
                 print(traceback.format_exc())
                 print("Error:", OOF)
-                if (self.devices[i].isClient <= 1):
+                if (self.devices[i].isClient < 2):
                     del self.devices[i]
 
             self.curTime = time.time()
@@ -77,18 +93,28 @@ class Plugin():
             pass
             print("No Serial devices available :(")
         else:
-            #if (len(self.clients) <= 0):
+
+            # First call
             if (len(self.devices) <= 0):
                 print("Found Serial devices on ports: " + str(ports))
                 for i in range(len(ports)):
                     self.devices.append(self.Device(ports[i]))
+
+            # Successive calls
             else:
                 for i in range(len(self.devices)):
-                    pass
+                    if (self.devices[i].port not in ports):
+                        print("Found Serial devices on port: " + str(ports))
+                        self.devices.append(self.Device(ports[i]))
         return
                     
-
+    # Collect lamps from devices
     def getLamps(self):
+        for i in range(len(self.devices)):
+            for j in range(len(self.devices[i].getConnectedLamps())):
+                if (self.devices[i].getConnectedLamps()[j] not in self.lamps):
+                    self.lamps.append(self.devices[i].getConnectedLamps()[j])
+        print("ARDUINO PLUGIN: number of lamps: " + str(len(self.lamps)))
         return self.lamps
 
     # This class abstracts Serial Devices connected to the system
@@ -123,7 +149,7 @@ class Plugin():
             self.connectedLamps = []
 
             # ID of the client device
-            self.clientID = [None, None]
+            self.clientID = [255, 255]
 
         def __del__(self):
             self.serialDevice.reset_output_buffer()
@@ -145,7 +171,10 @@ class Plugin():
                     mess = str(cobs.decode( mess[:-1] ) )[2:-1]
                     print("Data received. Packet:", mess)
 
+                    # Get Client ID
                     if ("CID!" in str(mess)):
+
+                        # Parse Client ID from packet
                         pos = str(mess).index("CID!")+4
                         if ("\\x" in mess):
                             print("CID contains improperly formatted bytes")
@@ -160,6 +189,7 @@ class Plugin():
                             ID_b = ord(demess[1])
                             print("demess:", ID_a, ID_b)
 
+                        # Check if ID is valid
                         if (    ID_a == 255 or
                                 ID_b == 255 ):
                             print("Invalid Client ID:", ID_a, ID_b)
@@ -171,12 +201,40 @@ class Plugin():
                             self.clientID[1] = ID_b
                             self.serialDevice.flushInput()
 
+                    # Get Lamp ID
+                    if (("CID:" + str(self.clientID) in str(mess)) and ("LID:" in str(mess))):
+
+                        # Parse Lamp ID from packet
+                        pos = str(mess).index("LID:")+4
+                        if ("\\x" in mess):
+                            demess = mess[pos:pos+8].encode(encoding="utf-8")
+                            ID_a = int(demess[2:4], 16)
+                            ID_b = int(demess[6:8], 16)
+                        else:
+                            demess = mess[pos:pos+2]
+                            ID_a = ord(demess[0])
+                            ID_b = ord(demess[1])
+
+                        # Check if ID is valid
+                        if (    ID_a == 255 or
+                                ID_b == 255 ):
+                            print("Invalid Lamp ID:", ID_a, ID_b)
+                            newID = [random.randint(1, 254), random.randint(1, 254)]
+                            self.setClientID(newID)
+                        else:
+                            print("Received Lamp ID:", ID_a, ID_b)
+                            if (len(self.connectedLamps) <= 0):
+                                tml = Lamp()
+                                tml.setID(str(ID_a)+str(ID_b))
+                                self.connectedLamps.append(tml)
+                            self.serialDevice.flushInput()
+
             except Exception as OOF:
                 self.synReceived = False
                 self.connectionEstablished = False
                 self.serialDevice.reset_output_buffer()
                 self.serialDevice.close()
-                if (self.isClient <= 1):
+                if (self.isClient < 2):
                     del self.serialDevice
                 print(traceback.format_exc())
                 print("Error Decoding Packet: ", OOF)
@@ -232,21 +290,40 @@ class Plugin():
                 print(traceback.format_exc())
                 print("Error Decoding Packet: ", OOF)
 
+        # Returns a list of currently connected lamps
+        def getConnectedLamps(self):
+            return self.connectedLamps
+
+        # Number of lamps host is coordinating
+        def getNumLamps(self):
+            return len(self.getConnectedLamps())
+
+        # Request number of lamps on the client device (for reference)
         def requestNumLamps(self):
+            enmass = cobs.encode(b'CID:')+bytes(self.clientID)
             enmass = cobs.encode(b'NL?')+b'\x01'+b'\x00'
             self.serialDevice.write(enmass)
             pass
             return
 
+        # Get alias of lamp
+        def requestAlias(self, lamp):
+            enmass = cobs.encode(b'LID:')+bytes(lamp.getID())
+            enmass += cobs.encode(b'KN?')+b'\x01'+b'\x00'
+            self.serialDevice.write(enmass)
+            pass
+            return
+
         def requestNumBulbs(self, lamp):
-            enmass = cobs.encode(b'NB?')+b'\x01'+b'\x00'
+            enmass = cobs.encode(b'LID:')+bytes(lamp.getID())
+            enmass += cobs.encode(b'NB?')+b'\x01'+b'\x00'
             self.serialDevice.write(enmass)
             pass
             return
 
         def setNumBulbs(self, lamp, newNumBulbs):
             varInBytes = (newNumBulbs).to_bytes(1, byteorder='little')
-            enmass = cobs.encode(b'NB:')+varInBytes+b'\x01'+b'\x00'
+            enmass = cobs.encode(b'NB!')+varInBytes+b'\x01'+b'\x00'
             self.serialDevice.write(enmass)
             pass
             return
@@ -273,7 +350,11 @@ class Plugin():
             pass
             return
             
+        def getConnectedLamps(self):
+            return self.connectedLamps
+
         def requestAllParameters(self, lamp):
+            requestAlias(lamp)
             pass
             return
 

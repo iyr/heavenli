@@ -16,14 +16,14 @@ class Lamp:
         #
 
         # Lamp name
-        self.alias = None
+        self.alias = []
 
         # Angle In which bulbs are arranged
-        self.angularOffset = None
+        self.angularOffset = 0
 
         # 0 - Lamp is Circularly Arranged
         # 1 - Lamp is LinearLy Arranged
-        self.arrangement = None
+        self.arrangement = -1
 
         # Arrays that store the colors of the bulbs
         self.bulbsPreviousHSV = []
@@ -31,7 +31,7 @@ class Lamp:
         self.bulbsTargetHSV = []
 
         # Unique ID
-        self.ID = []
+        self.lid = 'FF'
 
         # Restricts which quantities of bulbs this lamp can use if
         # is not a meta lamp and it has user-changeable bulb quantities
@@ -41,7 +41,7 @@ class Lamp:
         # Determines whether the user can change the bulb quantities from within the interface.
         # Is set to 'False' if only 1 validBulbCount is provided or
         # if the lamp is a meta lamp
-        self.mutableBulbCount = None
+        self.mutableBulbCount = False
 
         # -1 - Bulbs turn to White Light when clock is touched
         # -2 - Bulbs turn to prev color(s) when clock is touched, default is white when no prev
@@ -51,12 +51,12 @@ class Lamp:
 
         # 0: recursive base-case for lamp tree, lamps comprised of bulbs
         # 1+: lamps comprised of lamps
-        self.metaLampLevel = None
+        self.metaLampLevel = False
 
         self.mainLightOn = False
 
         # Number of Bulbs
-        self.numBulbs = None
+        self.numBulbs = 0
 
         for i in range(10):
             self.bulbsCurrentHSV.append((i*(1.0/3)+0.16667, 1.00, 1.00))
@@ -65,31 +65,71 @@ class Lamp:
     # Returns True iff all lamp parameters are set
     # and lamp is to send/receive color data streams from heavenli
     # Returns False if a requred parameter is not set
-    def isReady(self):
+    def isReady(self, disPass=False):
 
-        # Check if id is set and valid
-        if (len(self.id) != 2):
-            print("Lamp ID not set or valid")
-            return False
+        # Number of errors
+        Err = 0
+
+        #
+        # BEGIN: Parameter checks
+        #
+
+        # Check if id is set and 
+        # set place-holder ID
+        if (len(self.lid) != 2):
+            tmid = "FF"
+            print(tmid + ": Lamp ID not set or valid")
+            Err += 1
+        elif (disPass):
+            tmid = str(self.lid)
+            print(tmid + ": PASSED: ID")
+        else:
+            tmid = str(self.lid)
 
         # Check if alias is valid
         if (len(self.alias) <= 0):
-            print(self.id, "alias not set")
-            return False
-        if (len(self.alias) > 16):
-            print(self.id, "alias too long: len(alias)", len(self.alias))
-            return False
+            print(tmid + ": alias not set")
+            Err += 1
+        elif (len(self.alias) > 16):
+            print(tmid + ": alias too long: len(alias)" + str(len(self.alias)))
+            Err += 1
+        elif (disPass):
+            print(tmid + ": PASSED: Alias: " + self.alias)
+
+        # Check if angularOffset is valid
+        #if (self.angularOffset == None):
+            #print(tmid + ": angularOffset not set")
+            #Err += 1
+
+        # Check if arrangement is valid
+        if (self.arrangement < 0 or
+                self.arrangement > 1):
+            print(tmid + ": invalid arrangement or no arrangement set: " + str(self.arrangement))
+            Err += 1
+        elif (disPass):
+            print(tmid + ": PASSED: Arrangement: " + str(self.arrangement))
 
         # Check if Number of Bulbs is set and valid
-        if (numBulbs is None):
-            print(self.id, "number of bulbs not set")
-            return False
-        if ( (numBulbs < 0) or (numBulbs > 10) ):
-            print(self.id, "invalid number of bulbs:", self.numBulbs)
-            return False
+        if ( (self.numBulbs < 0) or (self.numBulbs > 10) ):
+            print(tmid + ": invalid number of bulbs:" + str(self.numBulbs))
+            Err += 1
+        elif (disPass):
+            print(tmid + ": PASSED: Number of Bulbs: " + str(self.numBulbs))
 
-        pass
-        return False
+        #
+        # END: Parameter checks
+        #
+
+        # Lamp passed all checks
+        if (Err <= 0):
+            if (disPass):
+                print("Lamp: " + str(ord(tmid[0])) + str(ord(tmid[1])) + " \"" + str(self.alias) + "\"" + " passed all checks, woot.")
+            return True
+
+        # Lamp failed some checks
+        else:
+            print("Lamp: " + str(ord(tmid[0])) + str(ord(tmid[1])) + " failed " + str(Err) + " checks, boo.")
+            return False
 
     # Return the knick-name of the lamp
     def getAlias(self):
@@ -176,12 +216,12 @@ class Lamp:
             self.bulbsTargetHSV[i] = colorsys.rgb_to_hsv(RGBs[i])
 
     # Returns ID of the lamp
-    def getID():
-        return self.id
+    def getID(self):
+        return self.lid
 
     # Sets ID of the lamp
-    def setID(n):
-        self.id = n
+    def setID(self, n):
+        self.lid = n
         return
             
     # Returns the control mode for the lamp

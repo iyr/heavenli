@@ -55,11 +55,14 @@ def getAllLamps():
             tmp = plugins[i].getLamps()
             if len(tmp) > 0 and tmp is not None:
                 for i in range(len(tmp)):
-                    tml.append(tmp[i])
+                    if (tmp[i].isReady(False)):
+                        tml.append(tmp[i])
+                    else:
+                        print("Lamp is missing properties")
         except Exception as OOF:
             print(traceback.format_exc())
             print("Error: ", OOF)
 
-    print("Number of lamps: ", len(tml))
-    print(tml)
+    #print("Number of lamps: ", len(tml))
+    #print(tml)
     return tml

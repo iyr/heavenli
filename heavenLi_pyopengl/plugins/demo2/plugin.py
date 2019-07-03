@@ -15,6 +15,7 @@ class Plugin:
         quack[0].setNumBulbs(3)
         quack[0].setArn(0)
         quack[0].setAngle(0)
+        quack[0].setID('q2')
 
         return quack
 

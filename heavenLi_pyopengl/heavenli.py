@@ -77,6 +77,7 @@ def framerate():
         stateMach['t1'] = t
 
     if t - stateMach['t0'] >= 1.0:
+        stateMach['lamps'] = plugins.pluginLoader.getAllLamps()
         print("%.0f frames in %3.1f seconds = %6.3f FPS" % (stateMach['frames'],seconds,stateMach['fps']))
         stateMach['t0'] = t
         stateMach['frames'] = 0
@@ -615,7 +616,7 @@ def display():
     #stateMach['tDiff'] = 3.14159/stateMach['fps']
     #stateMach['tDiff'] = 6.28318/stateMach['fps']
 
-
+    # Constrain Animation Cursor
     if (stateMach['currentState'] == 0 or stateMach['prvState'] == 0):
         stateMach['interactionCursor'] = 1.0
     else:
@@ -634,6 +635,8 @@ def display():
         drawSettingColor()
 
     stateMach['tDiff'] = 3.14159/stateMach['fps']
+
+    # Update Colors of Lamps
     for i in range(len(stateMach['lamps'])):
         stateMach['lamps'][i].updateBulbs(stateMach['tDiff']/2)
 
