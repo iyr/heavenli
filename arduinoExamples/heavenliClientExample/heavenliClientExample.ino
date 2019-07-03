@@ -11,12 +11,10 @@ void setup() {
    commPort.setPacketHandler(&packetReceived);
    commPort.begin(115200);
    quack.init();
-   digitalWrite(LED_BUILTIN, LOW);
-   delay(1000);
    digitalWrite(LED_BUILTIN, HIGH);
-   delay(1000);
+   delay(500);
    digitalWrite(LED_BUILTIN, LOW);
-   delay(1000);
+   delay(500);
    digitalWrite(LED_BUILTIN, HIGH);
    delay(200);
    digitalWrite(LED_BUILTIN, LOW);

@@ -15,9 +15,11 @@ class heavenliClient
       void        update();
       void        update(hliLamp lamp);
       void        update(hliLamp* lamps);
+      int         getNumLamps();
       size_t      outPacket(uint8_t*& buffer);
 
    private:
+      void        assignLampID();
       uint32_t    runtimeCounter1;  // Used for timing
       uint32_t    timeoutCounter;   // 
       int         getID();
