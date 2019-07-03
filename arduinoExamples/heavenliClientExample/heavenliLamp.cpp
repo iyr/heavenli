@@ -230,7 +230,7 @@ int hliLamp::getID() {
    return this->id;
 }
 
-void hliLamp::getID(char*& ID) {
+void hliLamp::getID(uint8_t*& ID) {
    ID = new uint8_t[2];
    ID[0] = this->id[0];
    ID[1] = this->id[1];

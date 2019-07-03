@@ -92,8 +92,8 @@ class Plugin():
                     mess = str(cobs.decode( mess[:-1] ) )[2:-1]
                     print("Data received. Packet:", mess)
 
-                    if ("CID:" in str(mess)):
-                        pos = str(mess).index("CID:")+4
+                    if ("CID!" in str(mess)):
+                        pos = str(mess).index("CID!")+4
                         if ("\\x" in mess):
                             print("CID contains improperly formatted bytes")
                             print("Ungarbling bytes...")
@@ -110,8 +110,6 @@ class Plugin():
                         if (    ID_a == 255 or
                                 ID_b == 255 ):
                             print("Invalid Client ID:", ID_a, ID_b)
-                            #newID = [ord('A'), ord('b')]
-                            #print("Sending:", newID, chr(newID[0]), chr(newID[1]))
                             newID = [random.randint(1, 254), random.randint(1, 254)]
                             self.setClientID(newID)
                         else:
@@ -169,6 +167,12 @@ class Plugin():
                 print(traceback.format_exc())
                 print("Error Decoding Packet: ", OOF)
 
+        def requestNumLamps(self):
+            enmass = cobs.encode(b'NL?')+b'\x01'+b'\x00'
+            self.serialDevice.write(enmass)
+            pass
+            return
+
         def requestNumBulbs(self, lamp):
             enmass = cobs.encode(b'NB?')+b'\x01'+b'\x00'
             self.serialDevice.write(enmass)
@@ -190,7 +194,7 @@ class Plugin():
             return
 
         def setClientID(self, newID):
-            enmass = cobs.encode(b'CID:'+bytes(newID))+b'\x01'+b'\x00'
+            enmass = cobs.encode(b'CID!'+bytes(newID))+b'\x01'+b'\x00'
             print(enmass)
             self.serialDevice.write(enmass)
             pass

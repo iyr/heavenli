@@ -10,11 +10,12 @@ class heavenliClient
       heavenliClient();
       bool        establishConnection();
       bool        connectionEstablished;
-      void        init();
+      void        init(hliLamp* lamp);
+      void        init(hliLamp* lamps, uint8_t numLamps);
       void        processPacket(const uint8_t* buffer, size_t size);
       void        update();
-      void        update(hliLamp lamp);
-      //void        update(hliLamp* lamps);
+      void        update(hliLamp* lamp);
+      void        update(hliLamp* lamps, uint8_t numLamps);
       int         getNumLamps();
       size_t      outPacket(uint8_t*& buffer);
 
@@ -24,17 +25,18 @@ class heavenliClient
       uint32_t    timeoutCounter;   // 
       uint32_t**  lampIDs = NULL;
       int         getID();
-      void        setID(char* newID);
+      void        setID(uint8_t* newID);
       const int   IDaddress = 'h';
       uint32_t    timeOut;
 
       int         numLamps;
-      char        id[2];
+      uint8_t     id[2];
       bool        synackReceived;
       bool        isConnected;      // True if the connected device is a valid heavenli client
       bool        outBufferFull;    // True if the output buffer is full
       
-      bool        __NL_requested;   // Plugin has requested total number of lamps of client
+      bool        __CNL_requested;  // Plugin has requested total number of lamps of client
+      bool        __CNL_sent;       // Plugin has requested total number of lamps of client
       bool        __CID_requested;  // Plugin has requested the ID of the client device
       bool        __CID_sent;       // CID packet has been sent
 

@@ -7,7 +7,7 @@ PacketSerial   commPort;
 
 void setup() {
    pinMode(LED_BUILTIN, OUTPUT);
-   client.init(quack);
+   client.init(&quack);
    commPort.setPacketHandler(&packetReceived);
    commPort.begin(115200);
    digitalWrite(LED_BUILTIN, HIGH);
@@ -35,7 +35,7 @@ void loop() {
 
    size = client.outPacket(buffer);
    commPort.send(buffer, size);
-   client.update(quack);
+   client.update(&quack);
    commPort.update();
    digitalWrite(LED_BUILTIN, LOW);
    delay(1000);

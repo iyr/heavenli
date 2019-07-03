@@ -18,17 +18,17 @@ heavenliClient::heavenliClient() {
    this->id[1] = EEPROM.read(this->IDaddress+1);
 }
 
-void heavenliClient::init(hliLamp lamp) {
+void heavenliClient::init(hliLamp* lamp) {
    this->numLamps = 1;
-   //lamp.init();
+   lamp->init();
    return;
 }
 
 void heavenliClient::init(hliLamp* lamps, uint8_t numLamps) {
    this->numLamps = numLamps;
-   //for (int i = 0; i < numLamps; i++){
-      //lamps[i].init();
-   //}
+   for (int i = 0; i < numLamps; i++){
+      lamps[i].init();
+   }
    return;
 }
 
@@ -43,8 +43,9 @@ void heavenliClient::update()
    return;
 }
 
-void heavenliClient::update(hliLamp lamp) {
+void heavenliClient::update(hliLamp* lamp) {
 
+   /*
    // Check for new lamps
    char* tmid;
    if (lampIDs == NULL) {
@@ -93,8 +94,9 @@ void heavenliClient::update(hliLamp lamp) {
          this->lampIDs[numLamps][1] = tmid[1];
       }
    }
+   */
 
-   lamp.update(2.72);
+   lamp->update(2.72);
    if ((millis() - this->timeoutCounter) > 1500) {
       this->isConnected = false;
       this->synackReceived = false;
@@ -104,8 +106,7 @@ void heavenliClient::update(hliLamp lamp) {
    return;
 }
 
-/*
-void heavenliClient::update(hliLamp* lamps, int numLamps)
+void heavenliClient::update(hliLamp* lamps, uint8_t numLamps)
 {
    if ((millis() - this->timeoutCounter) > 1500) {
       this->isConnected = false;
@@ -115,7 +116,6 @@ void heavenliClient::update(hliLamp* lamps, int numLamps)
    }
    return;
 }
-*/
 
 /*
  * Generates Packet to be sent to host
@@ -156,7 +156,7 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
             tmb[paramBytes] = 'C'; paramBytes++;
             tmb[paramBytes] = 'I'; paramBytes++;
             tmb[paramBytes] = 'D'; paramBytes++;
-            tmb[paramBytes] = ':'; paramBytes++;
+            tmb[paramBytes] = '!'; paramBytes++;
             tmb[paramBytes] = this->id[0]; paramBytes++;
             tmb[paramBytes] = this->id[1]; paramBytes++;
 
@@ -170,7 +170,33 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
                this->__CID_requested = false;
                this->__CID_sent = true;
             }
+         }
 
+         // Plugin has requested the ID of the Client Device (HOST: getClientID)
+         if (  this->__CNL_requested   == true  && 
+               this->__CNL_sent        == false &&
+               this->outBufferFull     == false ){
+
+            // Number of bytes it will take to send parameter information
+            uint8_t paramBytes = 0;
+            char tmb[10];
+
+            tmb[paramBytes] = 'C'; paramBytes++;
+            tmb[paramBytes] = 'N'; paramBytes++;
+            tmb[paramBytes] = 'L'; paramBytes++;
+            tmb[paramBytes] = '!'; paramBytes++;
+            tmb[paramBytes] = this->numLamps; paramBytes++;
+
+            // Check if we have enough space in out output buffer
+            if (paramBytes + numBytes >= byteLimit) {
+               this->outBufferFull = true;
+            } else {
+               for (int i = 0; i < paramBytes; i++)
+                  message[numBytes+i] = tmb[i];
+               numBytes += paramBytes;
+               this->__CNL_requested = false;
+               this->__CNL_sent = true;
+            }
          }
 
          // Write contents to buffer
@@ -183,6 +209,7 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
    }
    return numBytes;
 }
+
 void heavenliClient::processPacket(const uint8_t* buffer, size_t size) {
 
    // Before we can start sending or receiving data
@@ -206,11 +233,19 @@ void heavenliClient::processPacket(const uint8_t* buffer, size_t size) {
                this->__CID_requested = true;
             }
 
+            // Host has requested the Client Number of Lamps
+            if (  buffer[i+0] == 'C'   && 
+                  buffer[i+1] == 'N'   &&
+                  buffer[i+2] == 'L'   &&
+                  buffer[i+3] == '?'   ){
+               this->__CNL_requested = true;
+            }
+
             // Host is assigning Client ID
             if (  buffer[i+0] == 'C'   && 
                   buffer[i+1] == 'I'   &&
                   buffer[i+2] == 'D'   &&
-                  buffer[i+3] == ':'   ){
+                  buffer[i+3] == '!'   ){
                uint8_t tmp[2];
                tmp[0] = buffer[i+4];
                tmp[1] = buffer[i+5];
@@ -236,8 +271,7 @@ int heavenliClient::getID() {
    return this->id;
 }
 
-void heavenliClient::setID(char* newID) {
-
+void heavenliClient::setID(uint8_t* newID) {
    // Ensure ID is not 0, 255, or FF
    if (  (newID[0] == 0 && newID[1] == 0)    ||
          (newID[0] == 255 && newID[1] == 255)){
