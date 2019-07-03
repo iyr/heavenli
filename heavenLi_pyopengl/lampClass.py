@@ -31,7 +31,7 @@ class Lamp:
         self.bulbsTargetHSV = []
 
         # Unique ID
-        self.ID = None
+        self.ID = []
 
         # Restricts which quantities of bulbs this lamp can use if
         # is not a meta lamp and it has user-changeable bulb quantities
@@ -62,9 +62,40 @@ class Lamp:
             self.bulbsCurrentHSV.append((i*(1.0/3)+0.16667, 1.00, 1.00))
         self.bulbsTargetHSV = self.bulbsCurrentHSV.copy()
 
+    # Returns True iff all lamp parameters are set
+    # and lamp is to send/receive color data streams from heavenli
+    # Returns False if a requred parameter is not set
+    def isReady(self):
+
+        # Check if id is set and valid
+        if ((len(self.id) != 2):
+            print("Lamp ID not set or valid")
+            return False
+
+        # Check if alias is valid
+        if (len(self.alias) <= 0):
+            print(self.id, "alias not set")
+            return False
+        if (len(self.alias) > 16):
+            print(self.id, "alias too long: len(alias)", len(self.alias))
+            return False
+
+        # Check if Number of Bulbs is set and valid
+        if (numBulbs is None):
+            print(self.id, "number of bulbs not set")
+            return False
+        if ( (numBulbs < 0) or (numBulbs > 10) ):
+            print(self.id, "invalid number of bulbs:", self.numBulbs)
+            return False
+
+        pass
+        return False
+
+    # Return the knick-name of the lamp
     def getAlias(self):
         return self.alias
 
+    # Set the knick-name of the lamp
     def setAlias(self, newAlias):
         self.alias = newAlias
         return
