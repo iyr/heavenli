@@ -68,7 +68,7 @@ class Lamp:
     def isReady(self):
 
         # Check if id is set and valid
-        if ((len(self.id) != 2):
+        if (len(self.id) != 2):
             print("Lamp ID not set or valid")
             return False
 

@@ -200,7 +200,7 @@ class Plugin():
             pass
             return
             
-        def requestAllParamters(self, lamp):
+        def requestAllParameters(self, lamp):
             pass
             return
 
