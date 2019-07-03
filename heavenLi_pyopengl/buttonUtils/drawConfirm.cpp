@@ -116,7 +116,7 @@ PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
 
       confirmVerts = verts.size()/2;
 
-      // Pack Vertics and Colors into global array buffers
+      // Pack Vertices and Colors into global array buffers
       if (confirmCoordBuffer == NULL) {
          confirmCoordBuffer = new GLfloat[confirmVerts*2];
       } else {

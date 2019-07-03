@@ -41,6 +41,56 @@ class Plugin():
         self.t0 = 0
         pass
 
+    # Necessary for Heavenli integration
+    def update(self):
+        if (time.time() - self.curTime > 1.0):
+            pass
+            if (len(self.devices) <= 0):
+                self.getDevices()
+            try:
+                for i in range(len(self.devices)):
+
+                    # Listen for data on known client devices
+                    if (self.devices[i].isClient == 1):
+                        self.devices[i].listen()
+                        self.devices[i].requestClientID()
+                    else:
+                        pass
+                        # Attempt to establish connection
+                        # if the device is a heavenli client.
+                        self.devices[i].establishConnection()
+
+            except Exception as OOF:
+                print(traceback.format_exc())
+                print("Error:", OOF)
+                if (self.devices[i].isClient <= 1):
+                    del self.devices[i]
+
+            self.curTime = time.time()
+        pass
+        return
+
+    # Scans Serial ports for potential Heavenli clients
+    def getDevices(self):
+        ports = getSerialPorts()
+        if (len(ports) <= 0):
+            pass
+            print("No Serial devices available :(")
+        else:
+            #if (len(self.clients) <= 0):
+            if (len(self.devices) <= 0):
+                print("Found Serial devices on ports: " + str(ports))
+                for i in range(len(ports)):
+                    self.devices.append(self.Device(ports[i]))
+            else:
+                for i in range(len(self.devices)):
+                    pass
+        return
+                    
+
+    def getLamps(self):
+        return self.lamps
+
     # This class abstracts Serial Devices connected to the system
     # Note: All HeavenLi Client Devices are Serial Devices, but not all Serial Devices are Clients
     class Device():
@@ -64,9 +114,10 @@ class Plugin():
             self.connectionEstablished = False
 
             # Serial Port of the device
-            self.serialDevice = serial.Serial(port, 115200)
+            self.serialDevice = serial.Serial(port, 115200, timeout=1.0, write_timeout=1.0) 
             self.serialDevice.close()
             self.serialDevice.open()
+            self.serialDevice.reset_output_buffer()
 
             # List of all lamps handled by device
             self.connectedLamps = []
@@ -75,7 +126,9 @@ class Plugin():
             self.clientID = [None, None]
 
         def __del__(self):
+            self.serialDevice.reset_output_buffer()
             self.serialDevice.close()
+            print("Deleting Serial Device on ", self)
             del self.serialDevice
             pass
 
@@ -121,8 +174,10 @@ class Plugin():
             except Exception as OOF:
                 self.synReceived = False
                 self.connectionEstablished = False
+                self.serialDevice.reset_output_buffer()
                 self.serialDevice.close()
-                del self.serialDevice
+                if (self.isClient <= 1):
+                    del self.serialDevice
                 print(traceback.format_exc())
                 print("Error Decoding Packet: ", OOF)
 
@@ -130,7 +185,7 @@ class Plugin():
         # to connect to heavenli client devices
         def establishConnection(self):
             try:
-                bytesToRead = self.serialDevice.inWaiting()
+                bytesToRead = self.serialDevice.in_waiting
                 if (bytesToRead > 0):
                     # Listen for Synchronize Packet from client devices
                     print("[HOST] Incoming Bytes: " + str(int(bytesToRead)))
@@ -142,10 +197,16 @@ class Plugin():
                     # If Synchronize Packet received, note it, then send a synack packet
                     if (mess == "SYN"):
                         print("Syn packet received. Packet:", mess)
-                        print("Sending synack packet")
+                        print("Sending SynAck packet")
                         self.synReceived = True
+
+                        # Clear Output Buffer
+                        while (self.serialDevice.out_waiting > 0):
+                            self.serialDevice.reset_output_buffer()
+                            pass
                         enmass = cobs.encode(b'SYNACK')+b'\x01'+b'\x00'
                         self.serialDevice.write(enmass)
+                        print("SynAck sent")
 
                     # If Ack Packet received, we know this device is a client
                     elif (  mess == "ACK" and 
@@ -158,12 +219,16 @@ class Plugin():
                     else:
                         pass
                         print("Data received. Packet:", mess)
+                else:
+                    self.synReceived = False
 
             except Exception as OOF:
                 self.synReceived = False
                 self.connectionEstablished = False
+                self.serialDevice.reset_output_buffer()
                 self.serialDevice.close()
-                del self.serialDevice
+                if (self.isClient <= 1):
+                    del self.serialDevice
                 print(traceback.format_exc())
                 print("Error Decoding Packet: ", OOF)
 
@@ -188,7 +253,15 @@ class Plugin():
 
         def requestClientID(self):
             enmass = cobs.encode(b'CID?')+b'\x01'+b'\x00'
-            self.serialDevice.write(enmass)
+            try:
+                self.serialDevice.write(enmass)
+            except Exception as OOF:
+                self.synReceived = False
+                self.connectionEstablished = False
+                self.serialDevice.close()
+                if (self.isClient <= 1):
+                    del self.serialDevice
+                print(traceback.format_exc())
             #print("Requesting Client ID on port:", self.port)
             pass
             return
@@ -203,53 +276,4 @@ class Plugin():
         def requestAllParameters(self, lamp):
             pass
             return
-
-        def __del__(self):
-            print("Removing device on port:", self.port)
-            self.serialDevice.close()
-            del self.serialDevice
-            return
-
-    # Necessary for Heavenli integration
-    def update(self):
-        if (time.time() - self.curTime > 1.0):
-            pass
-            self.getDevices()
-            #print("Number of Devices:", len(self.devices))
-            #print(self.devices)
-            try:
-                for i in range(len(self.devices)):
-                    if (self.devices[i].isClient == 1):
-                        self.devices[i].listen()
-                        self.devices[i].requestClientID()
-                    else:
-                        pass
-                        #print("Listening for SYN packets on: ", self.devices[i].port)
-                        self.devices[i].establishConnection()
-
-            except Exception as OOF:
-                print(traceback.format_exc())
-                print("Error:", OOF)
-                del self.devices[i]
-
-            self.curTime = time.time()
-        pass
-        return
-
-    # Scans Serial ports for potential Heavenli clients
-    def getDevices(self):
-        ports = getSerialPorts()
-        if (len(ports) <= 0):
-            pass
-            #print("No Serial devices available :(")
-        else:
-            if (len(self.clients) <= 0):
-                print("Found Serial devices on ports: " + str(ports))
-                for i in range(len(ports)):
-                    self.devices.append(self.Device(ports[i]))
-        return
-                    
-
-    def getLamps(self):
-        return self.lamps
 
