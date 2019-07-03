@@ -7,10 +7,9 @@ PacketSerial   commPort;
 
 void setup() {
    pinMode(LED_BUILTIN, OUTPUT);
-   client.init();
+   client.init(quack);
    commPort.setPacketHandler(&packetReceived);
    commPort.begin(115200);
-   quack.init();
    digitalWrite(LED_BUILTIN, HIGH);
    delay(500);
    digitalWrite(LED_BUILTIN, LOW);

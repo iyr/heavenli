@@ -110,8 +110,9 @@ class Plugin():
                         if (    ID_a == 255 or
                                 ID_b == 255 ):
                             print("Invalid Client ID:", ID_a, ID_b)
-                            newID = [ord('A'), ord('b')]
+                            #newID = [ord('A'), ord('b')]
                             #print("Sending:", newID, chr(newID[0]), chr(newID[1]))
+                            newID = [random.randint(1, 254), random.randint(1, 254)]
                             self.setClientID(newID)
                         else:
                             print("Received client ID:", ID_a, ID_b)

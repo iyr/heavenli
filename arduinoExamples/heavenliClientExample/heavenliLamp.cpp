@@ -10,7 +10,102 @@ hliLamp::hliLamp() {
    this->bulbsTargetRGB[10][3];
    this->bulbsCurrentRGB[10][3];
    this->alias[16] = 'demo';
-   this->id = 255;
+   int extraEntropy = 0;
+   int seed = 0;
+   for (int i = 0; i < 9; i++)
+      seed ^= __TIME__[i]^__DATE__[i];
+
+   randomSeed(seed^extraEntropy);
+   this->id[0] = random(1, 254);
+   this->id[1] = random(1, 254);
+   uint8_t RGB[3] = {128, 0, 77};
+   this->setBulbsTargetRGB(RGB);
+   RGB[0]=0; RGB[1]=0; RGB[2]=0;
+   this->setBulbsCurrentRGB(RGB);
+}
+
+/*
+ * Constructor overload for adding extra RNG entropy
+ */
+hliLamp::hliLamp(long extraEntropy) {
+   this->numBulbs = 1;
+   //this->isMetaLamp = false;
+   this->bulbsTargetRGB[10][3];
+   this->bulbsCurrentRGB[10][3];
+   this->alias[16] = 'demo';
+   long EE = extraEntropy;
+   long seed = 0;
+   for (int i = 0; i < 9; i++)
+      seed ^= __TIME__[i]^__DATE__[i];
+
+   randomSeed(seed^extraEntropy);
+   this->id[0] = random(1, 254);
+   this->id[1] = random(1, 254);
+
+   uint8_t RGB[3] = {128, 0, 77};
+   this->setBulbsTargetRGB(RGB);
+   RGB[0]=0; RGB[1]=0; RGB[2]=0;
+   this->setBulbsCurrentRGB(RGB);
+}
+
+/*
+ * Constructor overload for adding extra RNG entropy
+ * and Setting Lamp alias (limited to 16 characters)
+ */
+hliLamp::hliLamp(char* alias, size_t numChars, long extraEntropy) {
+   this->numBulbs = 1;
+   //this->isMetaLamp = false;
+   this->bulbsTargetRGB[10][3];
+   this->bulbsCurrentRGB[10][3];
+   for (int i = 0; i < 16; i++)
+      if (i <= numChars)
+         this->alias[i] = alias[i];
+      else
+         this->alias[i] = 0;
+
+   // Generate a seed for the Random Number Generator
+   // to produce unique-ish (not really, use extraEntropy) per-device IDs
+   long seed = 0;
+   for (int i = 0; i < 9; i++)
+      seed ^= __TIME__[i]^__DATE__[i];
+
+   // Allows tweaking/tuning of entropy for the RNG
+   long EE = extraEntropy;
+   randomSeed(seed^EE);
+   this->id[0] = random(1, 254);
+   this->id[1] = random(1, 254);
+
+   uint8_t RGB[3] = {128, 0, 77};
+   this->setBulbsTargetRGB(RGB);
+   RGB[0]=0; RGB[1]=0; RGB[2]=0;
+   this->setBulbsCurrentRGB(RGB);
+}
+
+/*
+ * Constructor overload for Setting Lamp alias (limited to 16 characters)
+ */
+hliLamp::hliLamp(char* alias, size_t numChars) {
+   this->numBulbs = 1;
+   //this->isMetaLamp = false;
+   this->bulbsTargetRGB[10][3];
+   this->bulbsCurrentRGB[10][3];
+   for (int i = 0; i < 16; i++)
+      if (i <= numChars)
+         this->alias[i] = alias[i];
+      else
+         this->alias[i] = 0;
+
+   // Generate a seed for the Random Number Generator
+   // to produce unique-ish (not really, use extraEntropy) per-device IDs
+   long seed = 0;
+   for (int i = 0; i < 9; i++)
+      seed ^= __TIME__[i]^__DATE__[i];
+
+   // Allows tweaking/tuning of entropy for the RNG
+   long EE = 0;
+   randomSeed(seed^EE);
+   this->id[0] = random(1, 254);
+   this->id[1] = random(1, 254);
 
    uint8_t RGB[3] = {128, 0, 77};
    this->setBulbsTargetRGB(RGB);
@@ -135,8 +230,16 @@ int hliLamp::getID() {
    return this->id;
 }
 
-void hliLamp::setID(int newID) {
-   this->id = newID;
+void hliLamp::getID(char*& ID) {
+   ID = new uint8_t[2];
+   ID[0] = this->id[0];
+   ID[1] = this->id[1];
+   return;
+}
+
+void hliLamp::setID(const uint8_t* newID) {
+   this->id[0] = newID[0];
+   this->id[1] = newID[1];
    return;
 }
       

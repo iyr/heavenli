@@ -14,7 +14,7 @@ class heavenliClient
       void        processPacket(const uint8_t* buffer, size_t size);
       void        update();
       void        update(hliLamp lamp);
-      void        update(hliLamp* lamps);
+      //void        update(hliLamp* lamps);
       int         getNumLamps();
       size_t      outPacket(uint8_t*& buffer);
 
@@ -22,6 +22,7 @@ class heavenliClient
       void        assignLampID();
       uint32_t    runtimeCounter1;  // Used for timing
       uint32_t    timeoutCounter;   // 
+      uint32_t**  lampIDs = NULL;
       int         getID();
       void        setID(char* newID);
       const int   IDaddress = 'h';

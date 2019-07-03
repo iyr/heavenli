@@ -9,6 +9,9 @@ class hliLamp
 {
    public:
       hliLamp();
+      hliLamp(long extraEntropy);
+      hliLamp(char* alias, size_t numChars);
+      hliLamp(char* alias, size_t numChars, long extraEntropy);
       void           getAlias(char*& knickname);
       void           setAlias(char* newKnickname);
 
@@ -30,7 +33,8 @@ class hliLamp
       void           setBulbsTargetRGB(uint8_t* newRGB);
 
       int            getID();
-      void           setID(int newID);
+      void           getID(char*& ID);
+      void           setID(char* newID);
       
       char           getMasterSwitchBehavior();
       void           setMasterSwitchBehavior(char newBehavior);
@@ -56,7 +60,7 @@ class hliLamp
       uint8_t        metaLampLevel;
 
       char*          alias;
-      char*          id;
+      char           id[2];
       char           masterSwitchBehavior;
 
       bool           mutableBulbCount;

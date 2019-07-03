@@ -1,7 +1,9 @@
+
 #include "Arduino.h"
 #include "heavenliClient.h"
 #include "heavenliLamp.h"
 #include <EEPROM.h>
+#include <Vector.h>
 
 heavenliClient::heavenliClient() {
    this->isConnected       = false; 
@@ -14,18 +16,19 @@ heavenliClient::heavenliClient() {
    // Determine if device has an ID set (cannot be 0, 255, or FF)
    this->id[0] = EEPROM.read(this->IDaddress+0);
    this->id[1] = EEPROM.read(this->IDaddress+1);
-   /*
-   if (  this->id == 255   ||
-         this->id == 0     ){
-      this->__CID_requested = true;
-   } else {
-      this->__CID_requested = false;
-   }
-   */
 }
 
-void heavenliClient::init() {
-   this->numLamps = 0;
+void heavenliClient::init(hliLamp lamp) {
+   this->numLamps = 1;
+   //lamp.init();
+   return;
+}
+
+void heavenliClient::init(hliLamp* lamps, uint8_t numLamps) {
+   this->numLamps = numLamps;
+   //for (int i = 0; i < numLamps; i++){
+      //lamps[i].init();
+   //}
    return;
 }
 
@@ -41,6 +44,56 @@ void heavenliClient::update()
 }
 
 void heavenliClient::update(hliLamp lamp) {
+
+   // Check for new lamps
+   char* tmid;
+   if (lampIDs == NULL) {
+      lamp.getID(tmid);
+      this->lampIDs = new uint8_t[1][2];
+      this->lampIDs[0][0] = tmid[0];
+      this->lampIDs[0][1] = tmid[1];
+      numLamps++;
+   } else {
+      lamp.getID(tmid);
+      bool isKnownLamp = false;
+      for (int i = 0; i < numLamps; i++){
+         // Check the lamp ID against list of known lampIDs
+         if (  this->lampIDs[i][0] == tmid[0] &&
+               this->lampIDs[i][1] == tmid[1] )
+            isKnownLamp = true;
+      }
+
+      if (isKnownLamp == false) {
+         // Allocate Temporary buffer for current array of lamp IDs
+         tml = [numLamps][2];
+
+         // Copy the lamp IDs to the temporary array
+         for (int j = 0; j < numLamps; j++) {
+            tml[j][0] = this->lampIDs[j][0];
+            tml[j][1] = this->lampIDs[j][1];
+         }
+
+         // Deallocate current array
+         delete [] this->lampIDs;
+
+         // Update number of lamp IDs
+         numLamps++;
+
+         // Allocate new array of lamps
+         this->lampIDs = new uint8_t[numLamps][2];
+
+         // Copy old array of lamp IDs over
+         for (int j = 0; j < numLamps-1; j++) {
+            this->lampIDs[j][0] = tml[j][0];
+            this->lampIDs[j][1] = tml[j][1];
+         }
+
+         // Copy the new lamp ID to client array
+         this->lampIDs[numLamps][0] = tmid[0];
+         this->lampIDs[numLamps][1] = tmid[1];
+      }
+   }
+
    lamp.update(2.72);
    if ((millis() - this->timeoutCounter) > 1500) {
       this->isConnected = false;
@@ -51,7 +104,8 @@ void heavenliClient::update(hliLamp lamp) {
    return;
 }
 
-void heavenliClient::update(hliLamp* lamps)
+/*
+void heavenliClient::update(hliLamp* lamps, int numLamps)
 {
    if ((millis() - this->timeoutCounter) > 1500) {
       this->isConnected = false;
@@ -61,6 +115,7 @@ void heavenliClient::update(hliLamp* lamps)
    }
    return;
 }
+*/
 
 /*
  * Generates Packet to be sent to host
