@@ -38,7 +38,7 @@ void loop() {
    client.update(&quack);
    commPort.update();
    digitalWrite(LED_BUILTIN, LOW);
-   delay(100);
+   //delay(100);
 }
 
 void packetReceived(const uint8_t* buffer, size_t size) {

@@ -130,6 +130,7 @@ class Plugin():
             # Whether or not a heavenli client device is trying to connect,
             # Used to establish three-way handshake for tcp-style connection
             self.synReceived = False
+            self.synackSent = False
 
             # Whether or not the client device has established a connection
             self.connectionEstablished = False
@@ -224,6 +225,7 @@ class Plugin():
                             self.serialDevice.flushInput()
 
             except Exception as OOF:
+                self.synackSent = False
                 self.synReceived = False
                 self.connectionEstablished = False
                 self.serialDevice.reset_output_buffer()
@@ -249,7 +251,8 @@ class Plugin():
                     mess = str(cobs.decode( mess[0:-1] )[:-1])[2:-1]
 
                     # If Synchronize Packet received, note it, then send a synack packet
-                    if (mess == "SYN"):
+                    if (mess == "SYN" and
+                        self.synackSent == False):
                         print("Syn packet received. Packet:", mess)
                         print("Sending SynAck packet")
                         self.synReceived = True
@@ -260,6 +263,7 @@ class Plugin():
                             pass
                         enmass = cobs.encode(b'SYNACK')+b'\x01'+b'\x00'
                         self.serialDevice.write(enmass)
+                        self.synackSent = True
                         print("SynAck sent")
                         print("output buffer:" + str(self.serialDevice.out_waiting))
 
@@ -279,6 +283,7 @@ class Plugin():
 
             except Exception as OOF:
                 self.synReceived = False
+                self.synackSent = False
                 self.connectionEstablished = False
                 self.serialDevice.reset_output_buffer()
                 self.serialDevice.close()

@@ -125,8 +125,8 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
    uint8_t  byteLimit = 56;
    uint8_t  message[byteLimit];
    
-   // If not a real client, listen for syn packets
-   if (millis() - this->runtimeCounter1 > 0) {
+
+   if (millis() - this->runtimeCounter1 > 1000) {
       if (this->isConnected == false) {
          if (this->synackReceived == true) {
             String message = "ACK";
