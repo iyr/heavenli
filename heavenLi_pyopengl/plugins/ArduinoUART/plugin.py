@@ -131,12 +131,13 @@ class Plugin():
             # Used to establish three-way handshake for tcp-style connection
             self.synReceived = False
             self.synackSent = False
+            self.synackTimeout = time.time()
 
             # Whether or not the client device has established a connection
             self.connectionEstablished = False
 
             # Serial Port of the device
-            self.serialDevice = serial.Serial(port, 115200, timeout=0.1, write_timeout=10.0) 
+            self.serialDevice = serial.Serial(port, 115200, timeout=None, write_timeout=10.0) 
             self.serialDevice.close()
             self.serialDevice.open()
 
@@ -145,6 +146,7 @@ class Plugin():
 
             # ID of the client device
             self.clientID = [255, 255]
+
 
         def __del__(self):
             self.serialDevice.reset_output_buffer()
@@ -251,8 +253,9 @@ class Plugin():
                     mess = str(cobs.decode( mess[0:-1] )[:-1])[2:-1]
 
                     # If Synchronize Packet received, note it, then send a synack packet
-                    if (mess == "SYN" and
-                        self.synackSent == False):
+                    #if (mess == "SYN" and
+                        #self.synackSent == False):
+                    if (mess == "SYN"):
                         print("Syn packet received. Packet:", mess)
                         print("Sending SynAck packet")
                         self.synReceived = True
@@ -265,7 +268,7 @@ class Plugin():
                         self.serialDevice.write(enmass)
                         self.synackSent = True
                         print("SynAck sent")
-                        print("output buffer:" + str(self.serialDevice.out_waiting))
+                        self.synackTimeout = time.time()
 
                     # If Ack Packet received, we know this device is a client
                     elif (  mess == "ACK" and 
@@ -278,6 +281,10 @@ class Plugin():
                     else:
                         pass
                         print("Data received. Packet:", mess)
+
+                    if (time.time() - self.synackTimeout > 1.0):
+                        synackSent = False
+                        self.synackTimeout = time.time()
                 else:
                     self.synReceived = False
 
