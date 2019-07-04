@@ -44,15 +44,10 @@ class Plugin():
     # Necessary for Heavenli integration
     def update(self):
         if (time.time() - self.curTime > 1.0):
-            #ports = getSerialPorts()
             pass
             #if (len(self.devices) <= len(ports)):
                 #self.getDevices()
             self.getDevices()
-            #print("numPorts: " + str(len(ports)))
-            #print(ports)
-            #print("numDevcs: " + str(len(self.devices)))
-            #print(self.devices)
             try:
                 # Iterate through all connected devices
                 for i in range(len(self.devices)):
@@ -105,6 +100,7 @@ class Plugin():
                     if (self.devices[i].port not in ports):
                         print("Found Serial devices on port: " + str(ports))
                         self.devices.append(self.Device(ports[i]))
+        print("ARDUINO PLUGIN: number of devices: " + str(len(self.devices)))
         return
                     
     # Collect lamps from devices
@@ -139,10 +135,9 @@ class Plugin():
             self.connectionEstablished = False
 
             # Serial Port of the device
-            self.serialDevice = serial.Serial(port, 115200, timeout=1.0, write_timeout=10.0) 
+            self.serialDevice = serial.Serial(port, 115200, timeout=0.1, write_timeout=10.0) 
             self.serialDevice.close()
             self.serialDevice.open()
-            self.serialDevice.reset_output_buffer()
 
             # List of all lamps handled by device
             self.connectedLamps = []
@@ -241,6 +236,8 @@ class Plugin():
         # This function performs the TCP-like three-way handshake
         # to connect to heavenli client devices
         def establishConnection(self):
+            #print("output buffer:" + str(self.serialDevice.out_waiting))
+            #print("input buffer:" + str(self.serialDevice.in_waiting))
             try:
                 bytesToRead = self.serialDevice.in_waiting
                 if (bytesToRead > 0):
@@ -264,6 +261,7 @@ class Plugin():
                         enmass = cobs.encode(b'SYNACK')+b'\x01'+b'\x00'
                         self.serialDevice.write(enmass)
                         print("SynAck sent")
+                        print("output buffer:" + str(self.serialDevice.out_waiting))
 
                     # If Ack Packet received, we know this device is a client
                     elif (  mess == "ACK" and 
