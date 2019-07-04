@@ -79,8 +79,7 @@ class Plugin():
             except Exception as OOF:
                 print(traceback.format_exc())
                 print("Error:", OOF)
-                if (self.devices[i].isClient < 2):
-                    del self.devices[i]
+                del self.devices[i]
 
             self.curTime = time.time()
         pass
@@ -91,7 +90,7 @@ class Plugin():
         ports = getSerialPorts()
         if (len(ports) <= 0):
             pass
-            print("No Serial devices available :(")
+            #print("No Serial devices available :(")
         else:
 
             # First call
@@ -114,7 +113,7 @@ class Plugin():
             for j in range(len(self.devices[i].getConnectedLamps())):
                 if (self.devices[i].getConnectedLamps()[j] not in self.lamps):
                     self.lamps.append(self.devices[i].getConnectedLamps()[j])
-        print("ARDUINO PLUGIN: number of lamps: " + str(len(self.lamps)))
+        #print("ARDUINO PLUGIN: number of lamps: " + str(len(self.lamps)))
         return self.lamps
 
     # This class abstracts Serial Devices connected to the system
@@ -140,7 +139,7 @@ class Plugin():
             self.connectionEstablished = False
 
             # Serial Port of the device
-            self.serialDevice = serial.Serial(port, 115200, timeout=1.0, write_timeout=1.0) 
+            self.serialDevice = serial.Serial(port, 115200, timeout=1.0, write_timeout=10.0) 
             self.serialDevice.close()
             self.serialDevice.open()
             self.serialDevice.reset_output_buffer()
