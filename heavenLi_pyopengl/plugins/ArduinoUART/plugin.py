@@ -23,7 +23,9 @@ def getSerialPorts():
         try:
             s = serial.Serial(port)
             s.close()
-            result.append(port)
+            if (str(port) not in "/dev/ttyAMA0" and
+                str(port) not in "/dev/ttyS0"):
+                result.append(port)
         except (OSError, serial.SerialException):
             #print("Port: " + str(port) + " not available")
             pass
@@ -46,8 +48,9 @@ class Plugin():
         if (time.time() - self.curTime > 1.0):
             pass
             #if (len(self.devices) <= len(ports)):
-                #self.getDevices()
-            self.getDevices()
+            if (len(self.devices) <= 0):
+                self.getDevices()
+            #self.getDevices()
             try:
                 # Iterate through all connected devices
                 for i in range(len(self.devices)):
@@ -66,10 +69,10 @@ class Plugin():
                                 len(self.devices[i].clientID) == 2):
                             self.devices[i].requestNumLamps()
                     else:
-                        pass
                         # Attempt to establish connection
                         # if the device is a heavenli client.
                         self.devices[i].establishConnection()
+                        pass
 
             except Exception as OOF:
                 print(traceback.format_exc())
@@ -137,9 +140,17 @@ class Plugin():
             self.connectionEstablished = False
 
             # Serial Port of the device
-            self.serialDevice = serial.Serial(port, 115200, timeout=None, write_timeout=10.0) 
-            self.serialDevice.close()
+            #self.serialDevice = serial.Serial(port, 115200, timeout=1.0, write_timeout=10.0)#, rtscts=True, dsrdtr=True)
+            #self.serialDevice.close()
+            self.serialDevice = serial.Serial()
+            self.serialDevice.port = port
+            self.serialDevice.baudrate = 115200
+            #self.serialDevice.xonxoff = True
+            self.serialDevice.setDTR(True)
+            self.serialDevice.setRTS(True)
+            self.serialDevice.write_timeout=10.0
             self.serialDevice.open()
+            time.sleep(2.0)
 
             # List of all lamps handled by device
             self.connectedLamps = []
@@ -149,7 +160,7 @@ class Plugin():
 
 
         def __del__(self):
-            self.serialDevice.reset_output_buffer()
+            #self.serialDevice.reset_output_buffer()
             self.serialDevice.close()
             print("Deleting Serial Device on ", self)
             del self.serialDevice
