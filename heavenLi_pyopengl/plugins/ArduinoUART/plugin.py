@@ -145,8 +145,8 @@ class Plugin():
             self.serialDevice.port = port
             self.serialDevice.baudrate = 115200
             self.serialDevice.xonxoff = True
-            self.serialDevice.setDTR(False)
-            self.serialDevice.setRTS(False)
+            self.serialDevice.setDTR(True)
+            self.serialDevice.setRTS(True)
             self.serialDevice.timeout = 1.0
             self.serialDevice.write_timeout = 10.0
             self.serialDevice.open()

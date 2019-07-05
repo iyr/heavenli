@@ -30,14 +30,14 @@ void setup() {
 void loop() {
    size_t size;
    uint8_t* buffer;
-   digitalWrite(LED_BUILTIN, HIGH);
+   digitalWrite(LED_BUILTIN, LOW);
    delay(20);
 
    size = client.outPacket(buffer);
    commPort.send(buffer, size);
    client.update(&quack);
    commPort.update();
-   digitalWrite(LED_BUILTIN, LOW);
+   digitalWrite(LED_BUILTIN, HIGH);
    //delay(100);
 }
 
