@@ -141,16 +141,16 @@ class Plugin():
 
             # Serial Port of the device
             #self.serialDevice = serial.Serial(port, 115200, timeout=1.0, write_timeout=10.0)#, rtscts=True, dsrdtr=True)
-            #self.serialDevice.close()
             self.serialDevice = serial.Serial()
             self.serialDevice.port = port
             self.serialDevice.baudrate = 115200
-            #self.serialDevice.xonxoff = True
-            self.serialDevice.setDTR(True)
-            self.serialDevice.setRTS(True)
-            self.serialDevice.write_timeout=10.0
+            self.serialDevice.xonxoff = True
+            self.serialDevice.setDTR(False)
+            self.serialDevice.setRTS(False)
+            self.serialDevice.timeout = 1.0
+            self.serialDevice.write_timeout = 10.0
             self.serialDevice.open()
-            time.sleep(2.0)
+            #time.sleep(2.0)
 
             # List of all lamps handled by device
             self.connectedLamps = []
@@ -276,6 +276,7 @@ class Plugin():
                             self.serialDevice.reset_output_buffer()
                             pass
                         enmass = cobs.encode(b'SYNACK')+b'\x01'+b'\x00'
+                        time.sleep(0.1)
                         self.serialDevice.write(enmass)
                         self.synackSent = True
                         print("SynAck sent")
@@ -293,11 +294,12 @@ class Plugin():
                         pass
                         print("Data received. Packet:", mess)
 
-                    if (time.time() - self.synackTimeout > 1.0):
-                        synackSent = False
-                        self.synackTimeout = time.time()
                 else:
                     self.synReceived = False
+
+                #if (time.time() - self.synackTimeout > 1.0):
+                    #synackSent = False
+                    #self.synackTimeout = time.time()
 
             except Exception as OOF:
                 self.synReceived = False
