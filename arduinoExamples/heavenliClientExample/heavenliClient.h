@@ -32,10 +32,14 @@ class heavenliClient
 
       int         numLamps;
       uint8_t     id[2];
+      uint8_t     tma;
+      uint8_t     tmb;
       bool        synackReceived;
       bool        isConnected;      // True if the connected device is a valid heavenli client
       bool        outBufferFull;    // True if the output buffer is full
       
+      bool        client_addressed; // True iff packet received has addressed this client by ID
+
       bool        __CNL_requested;  // Plugin has requested total number of lamps of client
       bool        __CNL_sent;       // Plugin has requested total number of lamps of client
       bool        __CID_requested;  // Plugin has requested the ID of the client device

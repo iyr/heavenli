@@ -64,7 +64,7 @@ class Plugin():
                             self.devices[i].requestClientID()
 
                         # If Device has no lamps (ready), 
-                        # ping until lamps are availabled
+                        # ping until lamps are available
                         if (self.devices[i].getNumLamps() == 0 and
                                 len(self.devices[i].clientID) == 2):
                             self.devices[i].requestNumLamps()
@@ -140,7 +140,6 @@ class Plugin():
             self.connectionEstablished = False
 
             # Serial Port of the device
-            #self.serialDevice = serial.Serial(port, 115200, timeout=1.0, write_timeout=10.0)#, rtscts=True, dsrdtr=True)
             self.serialDevice = serial.Serial()
             self.serialDevice.port = port
             self.serialDevice.baudrate = 115200
@@ -150,7 +149,6 @@ class Plugin():
             self.serialDevice.timeout = 1.0
             self.serialDevice.write_timeout = 10.0
             self.serialDevice.open()
-            #time.sleep(2.0)
 
             # List of all lamps handled by device
             self.connectedLamps = []
@@ -160,7 +158,6 @@ class Plugin():
 
 
         def __del__(self):
-            #self.serialDevice.reset_output_buffer()
             self.serialDevice.close()
             print("Deleting Serial Device on ", self)
             del self.serialDevice
@@ -175,9 +172,7 @@ class Plugin():
                     zeroByte = b'\x00'
                     mess = self.serialDevice.read_until( zeroByte )
                     print("Data BEFORE COBS decoding: ", mess)
-                    #mess = str(cobs.decode( mess[0:-1] )[:-1])[2:-1] ORIGINAL
                     mess = str(cobs.decode( mess[:-1] ) )[2:-1]
-                    print("Data received. Packet:", mess)
 
                     # Fix non-character bytes
                     while (mess.count("\\x") > 0):
@@ -188,6 +183,7 @@ class Plugin():
                         tmsb = mess[badBytePos+4:]
                         tmsa = mess[:badBytePos]+str(chr(tmc))
                         mess = tmsa+tmsb
+                    print("Data received. Packet:", mess)
 
                     # Get Client ID
                     if ("CID!" in str(mess)):
@@ -211,9 +207,29 @@ class Plugin():
                             self.clientID[0] = ID_a
                             self.clientID[1] = ID_b
                             self.serialDevice.flushInput()
+                    elif (("CID:" + str(self.clientID)) in mess):
+                        print("Received packet from CID:" + str(self.clientID))
+
+                    # Get Client number of lamps
+                    tms = chr(self.clientID[0]) + chr(self.clientID[1])
+                    if (("CID:" + tms) in str(mess) and ("CNL!" in str(mess))):
+                        pos = mess.index("CNL!")+4
+                        demess = mess[pos:pos+1]
+                        numLamps = ord(demess[0])
+                        tml = []
+                        if (numLamps > 1):
+                            print("Client: " + str(self.clientID) + " has " + str(numLamps) + " lamps connected")
+                        elif (numLamps == 1):
+                            print("Client: " + str(self.clientID) + " has " + str(numLamps) + " lamp connected")
+
+                        for i in range(numLamps):
+                            tml.append(Lamp())
+
+                        self.connectedLamps = tml
+                        print("connectedLamps", self.connectedLamps)
 
                     # Get Lamp ID
-                    if (("CID:" + str(self.clientID) in str(mess)) and ("LID:" in str(mess))):
+                    if ((("CID:" + str(self.clientID)) in str(mess)) and ("LID:" in str(mess))):
 
                         # Parse Lamp ID from packet
                         pos = str(mess).index("LID:")+4
@@ -245,6 +261,8 @@ class Plugin():
                     del self.serialDevice
                 print(traceback.format_exc())
                 print("Error Decoding Packet: ", OOF)
+
+            return  # END: listen()
 
         # This function performs the TCP-like three-way handshake
         # to connect to heavenli client devices
@@ -290,7 +308,7 @@ class Plugin():
                         self.requestClientID()
                     else:
                         pass
-                        print("Data received. Packet:", mess)
+                        #print("Data received. Packet:", mess)
 
                 else:
                     self.synReceived = False
@@ -320,8 +338,11 @@ class Plugin():
 
         # Request number of lamps on the client device (for reference)
         def requestNumLamps(self):
-            enmass = cobs.encode(b'CID:')+bytes(self.clientID)
-            enmass = cobs.encode(b'NL?')+b'\x01'+b'\x00'
+            print("Requesting number of lamps on client:" + str(self.clientID))
+            tms = [(self.clientID[0]), (self.clientID[1])]
+            #enmass = cobs.encode(b'CID:'+bytearray(tms))+b'\x01'+b'\x00'
+            enmass = cobs.encode(b'CID:'+bytearray(tms)+b'CNL?')+b'\x01'+b'\x00'
+            print("enmass: ", enmass)
             self.serialDevice.write(enmass)
             pass
             return
