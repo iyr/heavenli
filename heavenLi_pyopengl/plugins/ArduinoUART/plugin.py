@@ -179,23 +179,26 @@ class Plugin():
                     mess = str(cobs.decode( mess[:-1] ) )[2:-1]
                     print("Data received. Packet:", mess)
 
+                    # Fix non-character bytes
+                    while (mess.count("\\x") > 0):
+                        badBytePos = mess.index("\\x")
+                        tmc = int(mess[badBytePos+2:badBytePos+4], 16)
+
+                        # Splice bad byte out of string
+                        tmsb = mess[badBytePos+4:]
+                        tmsa = mess[:badBytePos]+str(chr(tmc))
+                        mess = tmsa+tmsb
+
                     # Get Client ID
                     if ("CID!" in str(mess)):
 
                         # Parse Client ID from packet
                         pos = str(mess).index("CID!")+4
-                        if ("\\x" in mess):
-                            print("CID contains improperly formatted bytes")
-                            print("Ungarbling bytes...")
-                            demess = mess[pos:pos+8].encode(encoding="utf-8")
-                            ID_a = int(demess[2:4], 16)
-                            ID_b = int(demess[6:8], 16)
-                            print("ungarbled demess:", ID_a, ID_b, chr(ID_a), chr(ID_b))
-                        else:
-                            demess = mess[pos:pos+2]
-                            ID_a = ord(demess[0])
-                            ID_b = ord(demess[1])
-                            print("demess:", ID_a, ID_b)
+                        demess = mess[pos:pos+2]
+
+                        ID_a = ord(demess[0])
+                        ID_b = ord(demess[1])
+                        print("demess:", ID_a, ID_b, chr(ID_a), chr(ID_b))
 
                         # Check if ID is valid
                         if (    ID_a == 255 or
@@ -214,21 +217,16 @@ class Plugin():
 
                         # Parse Lamp ID from packet
                         pos = str(mess).index("LID:")+4
-                        if ("\\x" in mess):
-                            demess = mess[pos:pos+8].encode(encoding="utf-8")
-                            ID_a = int(demess[2:4], 16)
-                            ID_b = int(demess[6:8], 16)
-                        else:
-                            demess = mess[pos:pos+2]
-                            ID_a = ord(demess[0])
-                            ID_b = ord(demess[1])
+                        demess = mess[pos:pos+2]
+                        ID_a = ord(demess[0])
+                        ID_b = ord(demess[1])
 
                         # Check if ID is valid
                         if (    ID_a == 255 or
                                 ID_b == 255 ):
                             print("Invalid Lamp ID:", ID_a, ID_b)
                             newID = [random.randint(1, 254), random.randint(1, 254)]
-                            self.setClientID(newID)
+                            #self.setClientID(newID)
                         else:
                             print("Received Lamp ID:", ID_a, ID_b)
                             if (len(self.connectedLamps) <= 0):
