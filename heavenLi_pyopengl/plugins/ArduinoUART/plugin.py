@@ -163,6 +163,14 @@ class Plugin():
             del self.serialDevice
             pass
 
+        def getLampIDs(self):
+            tml = []
+            if (len(self.connectedLamps) <= 0):
+                return tml
+            else:
+                for i in range(len(self.connectedLamps)):
+                    tml.append(self.connectedLamps[i].lid)
+
         # See if device has received any data
         def listen(self):
             try:
@@ -267,8 +275,6 @@ class Plugin():
         # This function performs the TCP-like three-way handshake
         # to connect to heavenli client devices
         def establishConnection(self):
-            #print("output buffer:" + str(self.serialDevice.out_waiting))
-            #print("input buffer:" + str(self.serialDevice.in_waiting))
             try:
                 bytesToRead = self.serialDevice.in_waiting
                 if (bytesToRead > 0):
