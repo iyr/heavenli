@@ -77,7 +77,7 @@ def framerate():
         stateMach['t1'] = t
 
     if t - stateMach['t0'] >= 1.0:
-        #stateMach['lamps'] = plugins.pluginLoader.getAllLamps()
+        stateMach['lamps'] = plugins.pluginLoader.getAllLamps()
         print("%.0f frames in %3.1f seconds = %6.3f FPS" % (stateMach['frames'],seconds,stateMach['fps']))
         stateMach['t0'] = t
         stateMach['frames'] = 0
