@@ -65,6 +65,7 @@ class Lamp:
     # Returns True iff all lamp parameters are set
     # and lamp is to send/receive color data streams from heavenli
     # Returns False if a requred parameter is not set
+    # Dispass: Display lamp checks
     def isReady(self, disPass=False):
 
         # Number of errors
@@ -82,7 +83,11 @@ class Lamp:
             Err += 1
         elif (disPass):
             tmid = str(self.lid)
-            print(tmid + ": PASSED: ID")
+            if (tmid == 'FF'):
+                print(tmid + ": Lamp ID not set or valid")
+                Err += 1
+            else:
+                print(tmid + ": PASSED: ID")
         else:
             tmid = str(self.lid)
 
@@ -110,7 +115,7 @@ class Lamp:
             print(tmid + ": PASSED: Arrangement: " + str(self.arrangement))
 
         # Check if Number of Bulbs is set and valid
-        if ( (self.numBulbs < 0) or (self.numBulbs > 10) ):
+        if ( (self.numBulbs <= 0) or (self.numBulbs > 10) ):
             print(tmid + ": invalid number of bulbs:" + str(self.numBulbs))
             Err += 1
         elif (disPass):
