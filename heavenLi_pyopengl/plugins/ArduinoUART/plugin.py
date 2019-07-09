@@ -108,11 +108,17 @@ class Plugin():
                     
     # Collect lamps from devices
     def getLamps(self):
+
+        # Iterate through connected devices
         for i in range(len(self.devices)):
+
+            # Iterate through connected lamps on devices
             for j in range(len(self.devices[i].getConnectedLamps())):
+
+                # Check for any new lamps not already connected
                 if (self.devices[i].getConnectedLamps()[j] not in self.lamps):
                     self.lamps.append(self.devices[i].getConnectedLamps()[j])
-        #print("ARDUINO PLUGIN: number of lamps: " + str(len(self.lamps)))
+        print("ARDUINO PLUGIN: number of lamps: " + str(len(self.lamps)))
         return self.lamps
 
     # This class abstracts Serial Devices connected to the system
@@ -397,9 +403,6 @@ class Plugin():
             pass
             return
             
-        def getConnectedLamps(self):
-            return self.connectedLamps
-
         def requestAllParameters(self, lamp):
             requestAlias(lamp)
             pass
