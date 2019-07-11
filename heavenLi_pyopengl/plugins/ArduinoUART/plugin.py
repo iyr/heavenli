@@ -45,11 +45,11 @@ class Plugin():
 
     # Necessary for Heavenli integration
     def update(self):
-        if (time.time() - self.curTime > 1.0):
+        if (time.time() - self.curTime > 0.05):
             pass
             #if (len(self.devices) <= len(ports)):
-            if (len(self.devices) <= 0):
-                self.getDevices()
+            #if (len(self.devices) <= 0):
+                #self.getDevices()
             #self.getDevices()
             try:
                 # Iterate through all connected devices
@@ -66,7 +66,7 @@ class Plugin():
                         # If Device has no lamps (ready), 
                         # ping until lamps are available
                         if (self.devices[i].getNumLamps() == 0 and
-                                len(self.devices[i].clientID) == 2):
+                            len(self.devices[i].clientID) == 2):
                             self.devices[i].requestNumLamps()
                     else:
                         # Attempt to establish connection
@@ -109,15 +109,18 @@ class Plugin():
     # Collect lamps from devices
     def getLamps(self):
 
+        quack = []
         # Iterate through connected devices
         for i in range(len(self.devices)):
 
             # Iterate through connected lamps on devices
             for j in range(len(self.devices[i].getConnectedLamps())):
 
+                quack += self.devices[i].getConnectedLamps()
                 # Check for any new lamps not already connected
-                if (self.devices[i].getConnectedLamps()[j] not in self.lamps):
-                    self.lamps.append(self.devices[i].getConnectedLamps()[j])
+                #if (self.devices[i].getConnectedLamps()[j] not in self.lamps):
+                    #self.lamps.append(self.devices[i].getConnectedLamps()[j])
+        self.lamps = quack
         print("ARDUINO PLUGIN: number of lamps: " + str(len(self.lamps)))
         return self.lamps
 
@@ -142,6 +145,10 @@ class Plugin():
             self.synackSent = False
             self.synackTimeout = time.time()
 
+            # Allow host to send requests without utterly spamming the poor microcontroller
+            self.requestSent = False
+            self.requestTimeout = time.time()
+
             # Whether or not the client device has established a connection
             self.connectionEstablished = False
 
@@ -155,6 +162,7 @@ class Plugin():
             self.serialDevice.timeout = 1.0
             self.serialDevice.write_timeout = 10.0
             self.serialDevice.open()
+            self.deviceNumLamps = 0
 
             # List of all lamps handled by device
             self.connectedLamps = []
@@ -229,21 +237,25 @@ class Plugin():
                     if (("CID:" + tms) in str(mess) and ("CNL!" in str(mess))):
                         pos = mess.index("CNL!")+4
                         demess = mess[pos:pos+1]
-                        numLamps = ord(demess[0])
+                        deviceNumLamps = ord(demess[0])
                         tml = []
-                        if (numLamps > 1):
-                            print("Client: " + str(self.clientID) + " has " + str(numLamps) + " lamps connected")
-                        elif (numLamps == 1):
-                            print("Client: " + str(self.clientID) + " has " + str(numLamps) + " lamp connected")
+                        if (deviceNumLamps > 1):
+                            print("Client: " + str(self.clientID) + " has " + str(deviceNumLamps) + " lamps connected")
+                        elif (deviceNumLamps == 1):
+                            print("Client: " + str(self.clientID) + " has " + str(deviceNumLamps) + " lamp connected")
 
-                        for i in range(numLamps):
+                        for i in range(deviceNumLamps):
                             tml.append(Lamp())
 
+                        self.deviceNumLamps = deviceNumLamps
                         self.connectedLamps = tml
                         print("connectedLamps", self.connectedLamps)
+                        self.requestAllParameters(self.connectedLamps[0])
 
                     # Get Lamp ID
-                    if ((("CID:" + str(self.clientID)) in str(mess)) and ("LID:" in str(mess))):
+                    #if ((("CID:" + str(self.clientID)) in str(mess)) and ("LID:" in str(mess))):
+                    tms = chr(self.clientID[0]) + chr(self.clientID[1])
+                    if ((("CID:" + tms) in str(mess)) and ("LID:" in str(mess))):
 
                         # Parse Lamp ID from packet
                         pos = str(mess).index("LID:")+4
@@ -256,14 +268,50 @@ class Plugin():
                                 ID_b == 255 ):
                             print("Invalid Lamp ID:", ID_a, ID_b)
                             newID = [random.randint(1, 254), random.randint(1, 254)]
-                            #self.setClientID(newID)
                         else:
                             print("Received Lamp ID:", ID_a, ID_b)
-                            if (len(self.connectedLamps) <= 0):
-                                tml = Lamp()
-                                tml.setID(str(ID_a)+str(ID_b))
-                                self.connectedLamps.append(tml)
+                            if (len(self.connectedLamps) < 2):
+                                #self.connectedLamps.append(Lamp())
+                                print("ID on first lamp" + str(self.connectedLamps[0].getID()))
+                                self.connectedLamps[0].setID([ID_a, ID_b])
+                                print("ID on first lamp" + str(self.connectedLamps[0].getID()))
+                                #tml = Lamp()
+                                #tml.setID(str(ID_a)+str(ID_b))
+                                #self.connectedLamps.append(tml)
+
+                                # Parse Lamp number of bulbs from packet
+                                if ("NB:" in str(mess)):  
+                                    pos = str(mess).index("NB:")+3
+                                    demess = mess[pos:pos+1]
+                                    print(str(self.connectedLamps[0].getID()) + ": numBulbs: " + str(ord(demess[0])))
+                                    self.connectedLamps[0].setNumBulbs(ord(demess[0]))
+
+                                # Parse Lamp Bulb Count Mutability from packet
+                                if ("CM:" in str(mess)):
+                                    pos = str(mess).index("CM:")+3
+                                    demess = mess[pos:pos+1]
+                                    self.connectedLamps[0].setBulbCountMutability(bool(demess[0]))
+
+                                # Parse Lamp Arrangement from packet
+                                if ("AR:" in str(mess)):
+                                    pos = str(mess).index("AR:")+3
+                                    demess = mess[pos:pos+1]
+                                    self.connectedLamps[0].setArn(ord(demess[0]))
+
+                                # Parse Lamp Meta Level from packet
+                                if ("LL:" in str(mess)):
+                                    pos = str(mess).index("LL:")+3
+                                    demess = mess[pos:pos+1]
+                                    self.connectedLamps[0].setMetaLampLevel(ord(demess[0]))
+
+                                # Parse Lamp from packet
+                                if ("SB:" in str(mess)):
+                                    pos = str(mess).index("SB:")+3
+                                    demess = mess[pos:pos+1]
+                                    self.connectedLamps[0].setMasterSwitchBehavior(ord(demess[0]))
+
                             self.serialDevice.flushInput()
+
 
             except Exception as OOF:
                 self.synackSent = False
@@ -322,12 +370,13 @@ class Plugin():
                         pass
                         #print("Data received. Packet:", mess)
 
-                else:
-                    self.synReceived = False
+                #else:
+                    #self.synReceived = False
 
-                #if (time.time() - self.synackTimeout > 1.0):
-                    #synackSent = False
-                    #self.synackTimeout = time.time()
+                elif (time.time() - self.synackTimeout > 1.0):
+                    synackSent = False
+                    synReceived = False
+                    self.synackTimeout = time.time()
 
             except Exception as OOF:
                 self.synReceived = False
@@ -404,7 +453,11 @@ class Plugin():
             return
             
         def requestAllParameters(self, lamp):
-            requestAlias(lamp)
+            tms = [(self.clientID[0]), (self.clientID[1])]
+            tml = [(lamp.lid[0]), (lamp.lid[1])]
+            enmass = cobs.encode(b'CID:'+bytes(tms)+b'LID:'+bytes(tml)+b'PAR?')+b'\x01'+b'\x00'
+            print(enmass)
+            self.serialDevice.write(enmass)
             pass
             return
 

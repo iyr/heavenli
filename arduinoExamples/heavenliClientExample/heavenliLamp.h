@@ -50,20 +50,20 @@ class hliLamp
       void     update(float frameTime);
 
    private:
-      float       angularOffset;
+      float       angularOffset = 0.0f;
       
       uint8_t**   bulbsTargetRGB;
       uint8_t**   bulbsCurrentRGB;
       uint8_t*    validBulbCounts;
-      uint8_t     numBulbs;
-      uint8_t     arrangement;
-      uint8_t     metaLampLevel;
+      uint8_t     numBulbs = 1;
+      uint8_t     arrangement = 1;
+      uint8_t     metaLampLevel = 0;
 
-      char*       alias;
+      char*       alias = 'quack';
       char        id[2];
-      char        masterSwitchBehavior;
+      char        masterSwitchBehavior = -1;
 
-      bool        mutableBulbCount;
+      bool        mutableBulbCount = false;
 };
 
 #endif

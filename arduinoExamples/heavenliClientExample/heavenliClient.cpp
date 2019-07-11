@@ -50,6 +50,7 @@ void heavenliClient::update()
  * Update Lamp state, keep tab on connection to host
  */
 void heavenliClient::update(hliLamp* lamp) {
+   this->lamp = lamp;
    this->lamp->update(2.72);
    if ((millis() - this->timeoutCounter) > 1500) {
       //this->isConnected = false;
@@ -65,7 +66,7 @@ void heavenliClient::update(hliLamp* lamp) {
  */
 void heavenliClient::update(hliLamp* lamps, uint8_t numLamps)
 {
-   if ((millis() - this->timeoutCounter) > 1500) {
+   if ((millis() - this->timeoutCounter) > 15) {
       //this->isConnected = false;
       this->synackReceived = false;
       this->__CID_sent = false;
@@ -178,6 +179,68 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
             }
          }
 
+         // Plugin has requested all base parameters of a lamp
+         if (  this->__ALL_requested   == true  && 
+               this->client_addressed  == true  &&
+               this->outBufferFull     == false ){
+
+            // Number of bytes it will take to send parameter information
+            uint8_t paramBytes = 0;
+            uint8_t tmb[50];
+
+            uint8_t* tmid;
+            this->lamp->getID(tmid);
+            tmb[paramBytes] = 'L'; paramBytes++;
+            tmb[paramBytes] = 'I'; paramBytes++;
+            tmb[paramBytes] = 'D'; paramBytes++;
+            tmb[paramBytes] = ':'; paramBytes++;
+            tmb[paramBytes] = tmid[0]; paramBytes++;
+            tmb[paramBytes] = tmid[1]; paramBytes++;
+            
+            tmb[paramBytes] = 'N'; paramBytes++;
+            tmb[paramBytes] = 'B'; paramBytes++;
+            tmb[paramBytes] = ':'; paramBytes++;
+            tmb[paramBytes] = this->lamp->getNumBulbs(); paramBytes++;
+
+            tmb[paramBytes] = 'C'; paramBytes++;
+            tmb[paramBytes] = 'M'; paramBytes++;
+            tmb[paramBytes] = ':'; paramBytes++;
+            tmb[paramBytes] = this->lamp->getBulbCountMutability(); paramBytes++;
+
+            tmb[paramBytes] = 'A'; paramBytes++;
+            tmb[paramBytes] = 'R'; paramBytes++;
+            tmb[paramBytes] = ':'; paramBytes++;
+            tmb[paramBytes] = this->lamp->getArrangement(); paramBytes++;
+
+            //tmb[paramBytes] = 'A'; paramBytes++;
+            //tmb[paramBytes] = 'O'; paramBytes++;
+            //tmb[paramBytes] = ':'; paramBytes++;
+
+            tmb[paramBytes] = 'L'; paramBytes++;
+            tmb[paramBytes] = 'L'; paramBytes++;
+            tmb[paramBytes] = ':'; paramBytes++;
+            tmb[paramBytes] = this->lamp->getMetaLampLevel(); paramBytes++;
+
+            tmb[paramBytes] = 'S'; paramBytes++;
+            tmb[paramBytes] = 'B'; paramBytes++;
+            tmb[paramBytes] = ':'; paramBytes++;
+            tmb[paramBytes] = this->lamp->getMasterSwitchBehavior(); paramBytes++;
+
+            //tmb[paramBytes] = 'V'; paramBytes++;
+            //tmb[paramBytes] = 'Q'; paramBytes++;
+            //tmb[paramBytes] = ':'; paramBytes++;
+
+            // Check if we have enough space in out output buffer
+            if (paramBytes + numBytes >= byteLimit) {
+               this->outBufferFull = true;
+            } else {
+               for (int i = 0; i < paramBytes; i++)
+                  message[numBytes+i] = tmb[i];
+               numBytes += paramBytes;
+               this->__CNL_requested = false;
+            }
+         }
+
          // Write contents to buffer
          buffer = new uint8_t[numBytes];
          for (int i = 0; i < numBytes; i++)
@@ -186,6 +249,7 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
       this->runtimeCounter1 = millis();
       this->client_addressed = false;
    }
+
    //this->client_addressed = false;
    return numBytes;
 }
@@ -243,10 +307,28 @@ void heavenliClient::processPacket(const uint8_t* buffer, size_t size) {
             if (  buffer[i+0] == 'C'   && 
                   buffer[i+1] == 'N'   &&
                   buffer[i+2] == 'L'   &&
-                  buffer[i+3] == '?'   ){
-                  //buffer[i+3] == '?'   &&
-                  //this->client_addressed == true){
+                  //buffer[i+3] == '?'   ){
+                  buffer[i+3] == '?'   &&
+                  this->client_addressed == true){
                this->__CNL_requested = true;
+            }
+
+            // Host has requested lamp parameters
+            if (  buffer[i+0] == 'L'   &&
+                  buffer[i+1] == 'I'   &&
+                  buffer[i+2] == 'D'   &&
+                  buffer[i+3] == ':'   &&
+                  buffer[i+4] == 255   &&
+                  buffer[i+5] == 255   ){
+               this->__ALL_requested = true;
+            }
+
+            // Host has requested lamp parameters
+            if (  buffer[i+0] == 'P'   &&
+                  buffer[i+1] == 'A'   &&
+                  buffer[i+2] == 'R'   &&
+                  buffer[i+3] == '?'   ){
+               this->__ALL_requested = true;
             }
          }
       }

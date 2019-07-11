@@ -31,7 +31,7 @@ class Lamp:
         self.bulbsTargetHSV = []
 
         # Unique ID
-        self.lid = 'FF'
+        self.lid = [255, 255]
 
         # Restricts which quantities of bulbs this lamp can use if
         # is not a meta lamp and it has user-changeable bulb quantities
@@ -53,7 +53,7 @@ class Lamp:
         # 1+: lamps comprised of lamps
         self.metaLampLevel = False
 
-        self.mainLightOn = False
+        self.mainLightOn = True
 
         # Number of Bulbs
         self.numBulbs = 0
@@ -78,48 +78,52 @@ class Lamp:
         # Check if id is set and 
         # set place-holder ID
         if (len(self.lid) != 2):
-            tmid = "FF"
-            print(tmid + ": Lamp ID not set or valid")
+            tmid = b'\xFF\xFF'
+            print(str(tmid) + ": Lamp ID not set or valid")
+            Err += 1
+        elif (self.lid[0] == 255 and self.lid[1] == 255):
+            tmid = b'\xFF\xFF'
+            print(str(tmid) + ": Lamp ID not set or valid")
             Err += 1
         elif (disPass):
-            tmid = str(self.lid)
-            if (tmid == 'FF'):
-                print(tmid + ": Lamp ID not set or valid")
+            tmid = bytes(self.lid)
+            if (tmid == b'\xFF\xFF'):
+                print(str(tmid) + ": Lamp ID not set or valid")
                 Err += 1
             else:
-                print(tmid + ": PASSED: ID")
+                print(str(tmid) + ": PASSED: ID")
         else:
             tmid = str(self.lid)
 
         # Check if alias is valid
         if (len(self.alias) <= 0):
-            print(tmid + ": alias not set")
-            Err += 1
+            print(str(tmid) + ": alias not set")
+            #Err += 1
         elif (len(self.alias) > 16):
-            print(tmid + ": alias too long: len(alias)" + str(len(self.alias)))
-            Err += 1
+            print(str(tmid) + ": alias too long: len(alias)" + str(len(self.alias)))
+            #Err += 1
         elif (disPass):
-            print(tmid + ": PASSED: Alias: " + self.alias)
+            print(str(tmid) + ": PASSED: Alias: " + self.alias)
 
         # Check if angularOffset is valid
         #if (self.angularOffset == None):
-            #print(tmid + ": angularOffset not set")
+            #print(str(tmid) + ": angularOffset not set")
             #Err += 1
 
         # Check if arrangement is valid
         if (self.arrangement < 0 or
                 self.arrangement > 1):
-            print(tmid + ": invalid arrangement or no arrangement set: " + str(self.arrangement))
+            print(str(tmid) + ": invalid arrangement or no arrangement set: " + str(self.arrangement))
             Err += 1
         elif (disPass):
-            print(tmid + ": PASSED: Arrangement: " + str(self.arrangement))
+            print(str(tmid) + ": PASSED: Arrangement: " + str(self.arrangement))
 
         # Check if Number of Bulbs is set and valid
         if ( (self.numBulbs <= 0) or (self.numBulbs > 10) ):
-            print(tmid + ": invalid number of bulbs:" + str(self.numBulbs))
+            print(str(tmid) + ": invalid number of bulbs:" + str(self.numBulbs))
             Err += 1
         elif (disPass):
-            print(tmid + ": PASSED: Number of Bulbs: " + str(self.numBulbs))
+            print(str(tmid) + ": PASSED: Number of Bulbs: " + str(self.numBulbs))
 
         #
         # END: Parameter checks
@@ -128,12 +132,12 @@ class Lamp:
         # Lamp passed all checks
         if (Err <= 0):
             if (disPass):
-                print("Lamp: " + str(ord(tmid[0])) + str(ord(tmid[1])) + " \"" + str(self.alias) + "\"" + " passed all checks, woot.")
+                print("Lamp: " + str(tmid) + " \"" + str(self.alias) + "\"" + " passed all checks, woot.")
             return True
 
         # Lamp failed some checks
         else:
-            print("Lamp: " + str(ord(tmid[0])) + str(ord(tmid[1])) + " failed " + str(Err) + " checks, boo.")
+            print("Lamp: " + str(tmid) + " failed " + str(Err) + " checks, boo.")
             return False
 
     # Return the knick-name of the lamp
@@ -239,11 +243,11 @@ class Lamp:
         return
 
     
-    def getMetaLampLevel():
-        return this.metaLampLevel
+    def getMetaLampLevel(self):
+        return self.metaLampLevel
 
-    def setMetaLampLevel(newLevel):
-        this.metaLampLevel = newLevel
+    def setMetaLampLevel(self, newLevel):
+        self.metaLampLevel = newLevel
         return
 
     # Set/get functions for the number of bulbs belonging to the lamp
@@ -261,8 +265,12 @@ class Lamp:
         self.numBulbs = n
         return
 
-    def getBulbCountMutability():
-        return this.mutableBulbCount
+    def setBulbCountMutability(self, mutability):
+        self.mutableBulbCount = mutability
+        return
+
+    def getBulbCountMutability(self):
+        return self.mutableBulbCount
 
     # If current colors =/= target colors, animate smooth color transition
     def updateBulbs(self, frametime):

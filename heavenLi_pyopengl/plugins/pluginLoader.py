@@ -55,7 +55,7 @@ def getAllLamps():
             tmp = plugins[i].getLamps()
             if len(tmp) > 0 and tmp is not None:
                 for i in range(len(tmp)):
-                    if (tmp[i].isReady(True)):
+                    if (tmp[i].isReady(False)):
                         tml.append(tmp[i])
                     else:
                         print("Lamp is missing properties")
