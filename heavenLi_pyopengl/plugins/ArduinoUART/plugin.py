@@ -271,41 +271,37 @@ class Plugin():
                         else:
                             print("Received Lamp ID:", ID_a, ID_b)
                             if (len(self.connectedLamps) < 2):
-                                #self.connectedLamps.append(Lamp())
-                                print("ID on first lamp" + str(self.connectedLamps[0].getID()))
+                                #print("ID on first lamp" + str(self.connectedLamps[0].getID()))
                                 self.connectedLamps[0].setID([ID_a, ID_b])
-                                print("ID on first lamp" + str(self.connectedLamps[0].getID()))
-                                #tml = Lamp()
-                                #tml.setID(str(ID_a)+str(ID_b))
-                                #self.connectedLamps.append(tml)
+                                #print("ID on first lamp" + str(self.connectedLamps[0].getID()))
 
                                 # Parse Lamp number of bulbs from packet
-                                if ("NB:" in str(mess)):  
+                                if ("NB!" in str(mess)):  
                                     pos = str(mess).index("NB:")+3
                                     demess = mess[pos:pos+1]
                                     print(str(self.connectedLamps[0].getID()) + ": numBulbs: " + str(ord(demess[0])))
                                     self.connectedLamps[0].setNumBulbs(ord(demess[0]))
 
                                 # Parse Lamp Bulb Count Mutability from packet
-                                if ("CM:" in str(mess)):
+                                if ("CM!" in str(mess)):
                                     pos = str(mess).index("CM:")+3
                                     demess = mess[pos:pos+1]
                                     self.connectedLamps[0].setBulbCountMutability(bool(demess[0]))
 
                                 # Parse Lamp Arrangement from packet
-                                if ("AR:" in str(mess)):
+                                if ("AR!" in str(mess)):
                                     pos = str(mess).index("AR:")+3
                                     demess = mess[pos:pos+1]
                                     self.connectedLamps[0].setArn(ord(demess[0]))
 
                                 # Parse Lamp Meta Level from packet
-                                if ("LL:" in str(mess)):
+                                if ("LL!" in str(mess)):
                                     pos = str(mess).index("LL:")+3
                                     demess = mess[pos:pos+1]
                                     self.connectedLamps[0].setMetaLampLevel(ord(demess[0]))
 
                                 # Parse Lamp from packet
-                                if ("SB:" in str(mess)):
+                                if ("SB!" in str(mess)):
                                     pos = str(mess).index("SB:")+3
                                     demess = mess[pos:pos+1]
                                     self.connectedLamps[0].setMasterSwitchBehavior(ord(demess[0]))

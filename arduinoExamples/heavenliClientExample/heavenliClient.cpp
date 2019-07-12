@@ -199,36 +199,36 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
             
             tmb[paramBytes] = 'N'; paramBytes++;
             tmb[paramBytes] = 'B'; paramBytes++;
-            tmb[paramBytes] = ':'; paramBytes++;
+            tmb[paramBytes] = '!'; paramBytes++;
             tmb[paramBytes] = this->lamp->getNumBulbs(); paramBytes++;
 
             tmb[paramBytes] = 'C'; paramBytes++;
             tmb[paramBytes] = 'M'; paramBytes++;
-            tmb[paramBytes] = ':'; paramBytes++;
+            tmb[paramBytes] = '!'; paramBytes++;
             tmb[paramBytes] = this->lamp->getBulbCountMutability(); paramBytes++;
 
             tmb[paramBytes] = 'A'; paramBytes++;
             tmb[paramBytes] = 'R'; paramBytes++;
-            tmb[paramBytes] = ':'; paramBytes++;
+            tmb[paramBytes] = '!'; paramBytes++;
             tmb[paramBytes] = this->lamp->getArrangement(); paramBytes++;
 
             //tmb[paramBytes] = 'A'; paramBytes++;
             //tmb[paramBytes] = 'O'; paramBytes++;
-            //tmb[paramBytes] = ':'; paramBytes++;
+            //tmb[paramBytes] = '!'; paramBytes++;
 
             tmb[paramBytes] = 'L'; paramBytes++;
             tmb[paramBytes] = 'L'; paramBytes++;
-            tmb[paramBytes] = ':'; paramBytes++;
+            tmb[paramBytes] = '!'; paramBytes++;
             tmb[paramBytes] = this->lamp->getMetaLampLevel(); paramBytes++;
 
             tmb[paramBytes] = 'S'; paramBytes++;
             tmb[paramBytes] = 'B'; paramBytes++;
-            tmb[paramBytes] = ':'; paramBytes++;
+            tmb[paramBytes] = '!'; paramBytes++;
             tmb[paramBytes] = this->lamp->getMasterSwitchBehavior(); paramBytes++;
 
             //tmb[paramBytes] = 'V'; paramBytes++;
             //tmb[paramBytes] = 'Q'; paramBytes++;
-            //tmb[paramBytes] = ':'; paramBytes++;
+            //tmb[paramBytes] = '!'; paramBytes++;
 
             // Check if we have enough space in out output buffer
             if (paramBytes + numBytes >= byteLimit) {
