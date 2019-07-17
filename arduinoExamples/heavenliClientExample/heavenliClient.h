@@ -1,5 +1,4 @@
-#ifndef hliClient
-#define hliClient
+#ifndef hliClient #define hliClient
 
 #include "Arduino.h"
 #include "heavenliLamp.h"
