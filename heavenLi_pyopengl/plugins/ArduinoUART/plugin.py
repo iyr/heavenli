@@ -49,11 +49,7 @@ class Plugin():
     def update(self):
         if (time.time() - self.t0 > 0.05):
             pass
-            #if (len(
-            #if (len(self.devices) <= len(ports)):
-            #if (len(self.devices) <= 0):
-                #self.getDevices()
-            #self.getDevices()
+
             try:
                 # Iterate through all connected devices
                 for i in range(len(self.devices)):
@@ -110,7 +106,7 @@ class Plugin():
                     if (self.devices[i].port not in ports):
                         print("Found Serial devices on port: " + str(ports))
                         self.devices.append(self.Device(ports[i]))
-        print("ARDUINO PLUGIN: number of devices: " + str(len(self.devices)))
+        #print("ARDUINO PLUGIN: number of devices: " + str(len(self.devices)))
         return
                     
     # Collect lamps from devices
@@ -128,7 +124,7 @@ class Plugin():
                 #if (self.devices[i].getConnectedLamps()[j] not in self.lamps):
                     #self.lamps.append(self.devices[i].getConnectedLamps()[j])
         self.lamps = quack
-        print("ARDUINO PLUGIN: number of lamps: " + str(len(self.lamps)))
+        #print("ARDUINO PLUGIN: number of lamps: " + str(len(self.lamps)))
         return self.lamps
 
     # This class abstracts Serial Devices connected to the system
@@ -311,7 +307,11 @@ class Plugin():
                                 if ("SB!" in str(mess)):
                                     pos = str(mess).index("SB!")+3
                                     demess = mess[pos:pos+1]
-                                    self.connectedLamps[0].setMasterSwitchBehavior(ord(demess[0]))
+                                    demess = ord(demess[0])
+                                    if (demess > 127):
+                                        demess -= 256
+                                    print("Received Master Switch Behavior: " + str(demess))
+                                    self.connectedLamps[0].setMasterSwitchBehavior(demess)
 
                             self.serialDevice.flushInput()
 
@@ -391,6 +391,9 @@ class Plugin():
                     del self.serialDevice
                 print(traceback.format_exc())
                 print("Error Decoding Packet: ", OOF)
+
+        # Set the Target Colors of the bulbs
+        #def setTargetColors(self):
 
         # Returns a list of currently connected lamps
         def getConnectedLamps(self):
