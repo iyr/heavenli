@@ -12,6 +12,11 @@ class hliLamp
       hliLamp(long extraEntropy);
       hliLamp(char* alias, size_t numChars);
       hliLamp(char* alias, size_t numChars, long extraEntropy);
+
+      // Getter/Setter for whether lamp has beend addressed by ID
+      bool     setAddressed(bool add);
+      bool     getAddressed(bool add);
+
       void     getAlias(char*& knickname);
       void     setAlias(char* newKnickname);
 
@@ -64,6 +69,7 @@ class hliLamp
       char        masterSwitchBehavior = -1;
 
       bool        mutableBulbCount = false;
+      bool        lampAddressed = false;
 };
 
 #endif

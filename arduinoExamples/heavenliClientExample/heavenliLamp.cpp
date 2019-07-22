@@ -117,6 +117,10 @@ void hliLamp::init() {
    return;
 }
 
+// Getter/Setter for whether lamp has beend addressed by ID
+bool hliLamp::setAddressed(bool add);
+bool hliLamp::getAddressed(bool add);
+
 void hliLamp::getAlias(char*& knickname) {
    knickname = new char[16];
    for (uint8_t i = 0; i < 16; i++) {
