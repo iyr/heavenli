@@ -1,4 +1,3 @@
-
 #include "Arduino.h"
 #include "heavenliClient.h"
 #include "heavenliLamp.h"
@@ -37,6 +36,7 @@ void heavenliClient::init(hliLamp* lamps, uint8_t numLamps) {
 
 void heavenliClient::update()
 {
+   this->lamp->update(2.72);
    if ((millis() - this->timeoutCounter) > 1500) {
       //this->isConnected = false;
       this->synackReceived = false;
@@ -329,6 +329,33 @@ void heavenliClient::processPacket(const uint8_t* buffer, size_t size) {
                   buffer[i+2] == 'R'   &&
                   buffer[i+3] == '?'   ){
                this->__ALL_requested = true;
+            }
+
+            // Host has requested lamp parameters
+            uint8_t* tmlid;
+            this->lamp->getID(tmlid);
+            if (  buffer[i+0] == 'L'   &&
+                  buffer[i+1] == 'I'   &&
+                  buffer[i+2] == 'D'   &&
+                  buffer[i+3] == ':'   &&
+                  buffer[i+4] == tmlid[0]   &&
+                  buffer[i+5] == tmlid[1]   ){
+               this->__lamp_addressed = true;
+            }
+
+            // Host is setting lamp bulbs target colors
+            if (  buffer[i+0] == 'B'   &&
+                  buffer[i+1] == 'T'   &&
+                  buffer[i+2] == 'C'   &&
+                  buffer[i+3] == '!'   ){
+
+               uint8_t tmc[3];
+               for (int j = 0; j < 10; j++) {
+                  tmc[0] = buffer[j*3 + i + 4];
+                  tmc[1] = buffer[j*3 + i + 5];
+                  tmc[2] = buffer[j*3 + i + 6];
+                  this->lamp->setBulbTargetRGB(j, tmc);
+               }
             }
          }
       }

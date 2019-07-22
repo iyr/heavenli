@@ -67,6 +67,9 @@ class Plugin():
                         if (self.devices[i].getNumLamps() == 0 and
                             len(self.devices[i].clientID) == 2):
                             self.devices[i].requestNumLamps()
+
+                        if (self.devices[i].getNumLamps() > 0):
+                            self.devices[i].setTargetColors()
                     else:
                         # Attempt to establish connection
                         # if the device is a heavenli client.
@@ -393,7 +396,29 @@ class Plugin():
                 print("Error Decoding Packet: ", OOF)
 
         # Set the Target Colors of the bulbs
-        #def setTargetColors(self):
+        def setTargetColors(self, lamp):
+            tmcid = [(self.clientID[0]), (self.clientID[1])]
+            tmlid = [(lamp.lid[0]), (lamp.lid[1])]
+            tmtc = []
+
+            # Pack all bulb target RGB colors into one array
+            for i in range(10):
+
+                # Append color if iterate is less than numBulbs, else append black
+                if (i < lamp.numBulbs):
+                    tmc = lamp.getBulbTargetRGB(i)
+                    for j in range(3):
+                        tmtc.append(tmc[j])
+                else:
+                    for j in range(3):
+                        tmtc.append(0)
+
+            enmass = cobs.encode(b'CID:'+bytearray(tmcid)+b'LID:'+bytearray(tmlid)+b'BTC!'+bytearray(tmtc))+b'\x01'+b'\x00'
+            print(len(enmass))
+            print("enmass: ", enmass)
+            self.serialDevice.write(enmass)
+            pass
+            return
 
         # Returns a list of currently connected lamps
         def getConnectedLamps(self):
@@ -407,17 +432,16 @@ class Plugin():
         def requestNumLamps(self):
             print("Requesting number of lamps on client:" + str(self.clientID))
             tms = [(self.clientID[0]), (self.clientID[1])]
-            #enmass = cobs.encode(b'CID:'+bytearray(tms))+b'\x01'+b'\x00'
             enmass = cobs.encode(b'CID:'+bytearray(tms)+b'CNL?')+b'\x01'+b'\x00'
-            print("enmass: ", enmass)
             self.serialDevice.write(enmass)
             pass
             return
 
         # Get alias of lamp
         def requestAlias(self, lamp):
-            enmass = cobs.encode(b'LID:')+bytes(lamp.getID())
-            enmass += cobs.encode(b'KN?')+b'\x01'+b'\x00'
+            tmcid = [(self.clientID[0]), (self.clientID[1])]
+            tmlid = [(lamp.lid[0]), (lamp.lid[1])]
+            enmass = cobs.encode(b'CID:'+bytearray(tmcid)+b'LID:'+bytearray(tmlid)+b'KN?')+b'\x01'+b'\x00'
             self.serialDevice.write(enmass)
             pass
             return
