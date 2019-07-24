@@ -20,7 +20,7 @@ hliLamp::hliLamp() {
    this->id[1] = random(1, 254);
    uint8_t RGB[3] = {128, 0, 77};
    this->setBulbsTargetRGB(RGB);
-   RGB[0]=0; RGB[1]=0; RGB[2]=0;
+   RGB[0]=0; RGB[1]=200; RGB[2]=0;
    this->setBulbsCurrentRGB(RGB);
 }
 
@@ -107,19 +107,27 @@ hliLamp::hliLamp(char* alias, size_t numChars) {
    this->id[0] = random(1, 254);
    this->id[1] = random(1, 254);
 
+   // Set initial colors
    uint8_t RGB[3] = {128, 0, 77};
    this->setBulbsTargetRGB(RGB);
    RGB[0]=0; RGB[1]=0; RGB[2]=0;
    this->setBulbsCurrentRGB(RGB);
 }
 
+// Eh
 void hliLamp::init() {
    return;
 }
 
 // Getter/Setter for whether lamp has beend addressed by ID
-bool hliLamp::setAddressed(bool add);
-bool hliLamp::getAddressed(bool add);
+bool hliLamp::setAddressed(bool add){
+   this->lampAddressed = add;
+   return this->lampAddressed;
+}
+
+bool hliLamp::isAddressed(){
+   return this->lampAddressed;
+}
 
 void hliLamp::getAlias(char*& knickname) {
    knickname = new char[16];
@@ -181,6 +189,7 @@ void hliLamp::getBulbsCurrentRGB(uint8_t** RGB) {
 void hliLamp::setBulbsCurrentRGB(uint8_t* newRGB) {
    uint8_t RGB[3] = {0, 0, 0};
    // Sanity Check to verrify bounds
+   /*
    if (sizeof(RGB)/sizeof(*RGB) != sizeof(newRGB)/sizeof(*newRGB))
       return;
    else
@@ -193,6 +202,14 @@ void hliLamp::setBulbsCurrentRGB(uint8_t* newRGB) {
       }
       return;
    }
+   */
+   for (int i = 0; i < 10; i++)
+   {
+      this->bulbsCurrentRGB[i][0] = newRGB[0];
+      this->bulbsCurrentRGB[i][1] = newRGB[1];
+      this->bulbsCurrentRGB[i][2] = newRGB[2];
+   }
+   return;
 }
 
 void hliLamp::getBulbTargetRGB(uint8_t bulb, uint8_t* RGB) {
@@ -216,6 +233,7 @@ void hliLamp::getBulbsTargetRGB(uint8_t** RGB) {
 void hliLamp::setBulbsTargetRGB(uint8_t* newRGB) {
    uint8_t RGB[3] = {0, 0, 0};
    // Sanity Check
+   /*
    if (sizeof(RGB)/sizeof(*RGB) != sizeof(newRGB)/sizeof(*newRGB))
       return;
    else
@@ -228,6 +246,14 @@ void hliLamp::setBulbsTargetRGB(uint8_t* newRGB) {
       }
       return;
    }
+   */
+   for (int i = 0; i < 10; i++)
+   {
+      this->bulbsTargetRGB[i][0] = newRGB[0];
+      this->bulbsTargetRGB[i][1] = newRGB[1];
+      this->bulbsTargetRGB[i][2] = newRGB[2];
+   }
+   return;
 }
 
 int hliLamp::getID() {
@@ -287,103 +313,77 @@ void hliLamp::getValidBulbQuantities(uint8_t*& quantities) {
 }
 
 void hliLamp::update(float frameTime) {
-   int r;
-   int g;
-   int b;
-   int rT;
-   int gT;
-   int bT;
-   int difR;
-   int difG;
-   int difB;
-   int rd = 0;
-   int gd = 0;
-   int bd = 0;
-   int delta = frameTime;
-   int threshold = 13;
-   int tmf;
-   for (int i = 0; i < this->numBulbs; i++) {
-     r = this->bulbsCurrentRGB[i][0];
-     g = this->bulbsCurrentRGB[i][1];
-     b = this->bulbsCurrentRGB[i][2];
+   float curR, curG, curB;
+   float tarR, tarG, tarB;
+   float difR, difG, difB;
+   float rd = 0, gd = 0, bd = 0;
+   uint8_t fR, fG, fB;
+   float delta = frameTime;
+   float threshold = 0.05;
+   float tmf;
+   for (int i = 0; i < 10; i++) {
+      curR = float(this->bulbsCurrentRGB[i][0])/255.0;
+      curG = float(this->bulbsCurrentRGB[i][1])/255.0;
+      curB = float(this->bulbsCurrentRGB[i][2])/255.0;
   
-     rT = this->bulbsTargetRGB[i][0];
-     gT = this->bulbsTargetRGB[i][1];
-     bT = this->bulbsTargetRGB[i][2];
+      tarR = float(this->bulbsTargetRGB[i][0])/255.0;
+      tarG = float(this->bulbsTargetRGB[i][1])/255.0;
+      tarB = float(this->bulbsTargetRGB[i][2])/255.0;
 
-      if (  r != rT  ||
-            g != gT  ||
-            b != bT  ){
-         difR = abs(r - rT);
-         difG = abs(g - gT);
-         difB = abs(b - bT);
-         rd = 0;
-         gd = 0;
-         bd = 0;
+      if (  curR != tarR  ||
+            curG != tarG  ||
+            curB != tarB  ){
+         difR = abs(curR - tarR);
+         difG = abs(curG - tarG);
+         difB = abs(curB - tarB);
+         rd = 0.0;
+         gd = 0.0;
+         bd = 0.0;
          delta = frameTime;
-         threshold = 12;
-         tmf = int(float((i+2)*2)/float(this->numBulbs*3));
+         tmf = float((i+2)*2)/float(this->numBulbs*3);
          delta *= tmf;
 
          if (difR > threshold)
-            if (rT > r)
+            if (tarR > curR)
                rd = delta;
             else
                rd = -delta;
 
          if (difG > threshold)
-            if (gT > g)
+            if (tarG > curG)
                gd = delta;
             else
                gd = -delta;
 
          if (difB > threshold)
-            if (bT > b)
+            if (tarB > curB)
                bd = delta;
             else
                bd = -delta;
 
          if (difR > threshold)
-            difR = r + rd;
+            difR = curR + rd;
          else
-            difR = rT;
+            difR = tarR;
 
          if (difG > threshold)
-            difG = g + gd;
+            difG = curG + gd;
          else
-            difG = gT;
+            difG = tarG;
 
          if (difB > threshold)
-            difB = b + bd;
+            difB = curB + bd;
          else
-            difB = bT;
-        /* 
-         if (difR >= 255)
-            difR = 255;
-         else if (difR <= 0)
-            difR = 0;
+            difB = tarB;
 
-         if (difB >= 255)
-            difB = 255;
-         else if (difB <= 0)
-            difB = 0;
+         fR = constrain(int(difR*255.0), 0, 255);
+         fG = constrain(int(difG*255.0), 0, 255);
+         fB = constrain(int(difB*255.0), 0, 255);
 
-         if (difG >= 255)
-            difG = 255;
-         else if (difG <= 0)
-            difG = 0;
-         */
-
-         difR = constrain(difR, 0, 255);
-         difG = constrain(difG, 0, 255);
-         difB = constrain(difB, 0, 255);
-
-         this->bulbsCurrentRGB[i][0] = difR;
-         this->bulbsCurrentRGB[i][1] = difG;
-         this->bulbsCurrentRGB[i][2] = difB;
+         this->bulbsCurrentRGB[i][0] = fR;
+         this->bulbsCurrentRGB[i][1] = fG;
+         this->bulbsCurrentRGB[i][2] = fB;
       }
    }
-
    return;
 }
-

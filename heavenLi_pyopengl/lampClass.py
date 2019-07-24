@@ -67,7 +67,6 @@ class Lamp:
     # Returns False if a requred parameter is not set
     # Dispass: Display lamp checks
     def isReady(self, dispChecks=False):
-
         # Number of errors
         Err = 0
 
@@ -77,52 +76,60 @@ class Lamp:
 
         # Check if id is set and 
         # set place-holder ID
-        if (dispChecks and (len(self.lid) != 2)):
+        if (len(self.lid) != 2):
             tmid = b'\xFF\xFF'
-            print(str(tmid) + ": ERROR: Lamp ID not set or valid")
+            if (dispChecks):
+                print(str(tmid) + ": ERROR: Lamp ID not set or valid")
             Err += 1
-        elif (dispChecks and (self.lid[0] == 255 and self.lid[1] == 255)):
+        elif (self.lid[0] == 255 and self.lid[1] == 255):
             tmid = b'\xFF\xFF'
-            print(str(tmid) + ": ERROR: Lamp ID not set or valid")
+            if (dispChecks):
+                print(str(tmid) + ": ERROR: Lamp ID not set or valid")
             Err += 1
         elif (dispChecks):
             tmid = bytes(self.lid)
-            if (tmid == b'\xFF\xFF'):
-                print(str(tmid) + ": ERROR: Lamp ID not set or valid")
-                Err += 1
-            else:
-                print(str(tmid) + ": PASSED: ID")
+            if (dispChecks):
+                if (tmid == b'\xFF\xFF'):
+                    print(str(tmid) + ": ERROR: Lamp ID not set or valid")
+                    Err += 1
+                else:
+                    print(str(tmid) + ": PASSED: ID")
         else:
-            tmid = str(self.lid)
+            tmid = bytes(self.lid)
 
         # Check if alias is valid
-        if (dispChecks and (len(self.alias) <= 0)):
-            print(str(tmid) + ": WARNING: alias not set")
+        if (len(self.alias) <= 0):
+            if (dispChecks):
+                print(str(tmid) + ": WARNING: alias not set")
             #Err += 1
             pass
-        elif (dispChecks and (len(self.alias) > 16)):
-            print(str(tmid) + ": ERROR: alias too long: len(alias)" + str(len(self.alias)))
+        elif (len(self.alias) > 16):
+            if (dispChecks):
+                print(str(tmid) + ": ERROR: alias too long: len(alias)" + str(len(self.alias)))
             Err += 1
         elif (dispChecks):
             print(str(tmid) + ": PASSED: Alias: " + self.alias)
 
         # Check if angularOffset is valid
-        if (dispChecks and (self.angularOffset == None)):
-            print(str(tmid) + ": WARNING: angularOffset not set")
+        if (self.angularOffset == None):
+            if (dispChecks):
+                print(str(tmid) + ": WARNING: angularOffset not set")
             Err += 1
         elif (dispChecks):
-            print(str(tmid) + ": PASSED: Angular Offset:" + self.angularOffset)
+            print(str(tmid) + ": PASSED: Angular Offset:" + str(self.angularOffset))
 
         # Check if arrangement is valid
-        if (dispChecks and ((self.arrangement < 0) or (self.arrangement > 1))):
-            print(str(tmid) + ": ERROR: invalid arrangement or no arrangement set: " + str(self.arrangement))
+        if ((self.arrangement < 0) or (self.arrangement > 1)):
+            if (dispChecks):
+                print(str(tmid) + ": ERROR: invalid arrangement or no arrangement set: " + str(self.arrangement))
             Err += 1
         elif (dispChecks):
             print(str(tmid) + ": PASSED: Arrangement: " + str(self.arrangement))
 
         # Check if Number of Bulbs is set and valid
-        if (dispChecks and ((self.numBulbs <= 0) or (self.numBulbs > 10))):
-            print(str(tmid) + ": ERROR: invalid number of bulbs:" + str(self.numBulbs))
+        if ((self.numBulbs <= 0) or (self.numBulbs > 10)):
+            if (dispChecks):
+                print(str(tmid) + ": ERROR: invalid number of bulbs:" + str(self.numBulbs))
             Err += 1
         elif (dispChecks):
             print(str(tmid) + ": PASSED: Number of Bulbs: " + str(self.numBulbs))
@@ -132,7 +139,7 @@ class Lamp:
         #
 
         # Lamp passed all checks
-        if (Err <= 0):
+        if (Err == 0):
             if (dispChecks):
                 print("Lamp: " + str(tmid) + " \"" + str(self.alias) + "\"" + " passed all checks, woot.")
             return True
@@ -355,12 +362,9 @@ class Lamp:
 
     def setMainLight(self, lightOn):
 
-        print("mainLightOn: " + str(self.mainLightOn))
-        print("masterSwitchBehavior: " + str(self.masterSwitchBehavior))
         # Lamp is being turned on
         if (self.mainLightOn == False) and (lightOn == True):
             if (self.masterSwitchBehavior == -1):
-                print("QUACK")
                 try:
                     self.setBulbsTargetHSV((1.0, 0.0, 1.0))
                 except Exception as OOF:
@@ -370,7 +374,6 @@ class Lamp:
         # Lamp is being turn off
         if (self.mainLightOn == True) and (lightOn == False):
             if self.masterSwitchBehavior >= -2:
-                print("MOO")
                 try:
                     self.setBulbsTargetHSV((0.0, 0.0, 0.0))
                 except Exception as OOF:

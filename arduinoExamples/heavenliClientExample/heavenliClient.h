@@ -9,7 +9,7 @@ class heavenliClient
       heavenliClient();
       bool        establishConnection();
       bool        connectionEstablished;
-      void        init(hliLamp* lamp);
+      void        init();
       void        init(hliLamp* lamps, uint8_t numLamps);
       void        processPacket(const uint8_t* buffer, size_t size);
       void        update();
@@ -17,22 +17,25 @@ class heavenliClient
       void        update(hliLamp* lamps, uint8_t numLamps);
       int         getNumLamps();
       size_t      outPacket(uint8_t*& buffer);
+      hliLamp     lamp;
 
    private:
-      hliLamp*    lamp;
+      //hliLamp*    lamp;
       void        assignLampID();
       uint32_t    runtimeCounter1;  // Used for timing
       uint32_t    timeoutCounter;   // 
+      uint32_t    timeOut;
+      uint32_t    updateTimer;
       uint32_t**  lampIDs = NULL;
       int         getID();
       void        setID(uint8_t* newID);
       const int   IDaddress = 'h';
-      uint32_t    timeOut;
 
       int         numLamps;
       uint8_t     id[2];
       uint8_t     tma;
       uint8_t     tmb;
+      uint8_t     selectedLamp      = 0;     // Currently selected lamp (index)
       bool        synackReceived    = false;
       bool        isConnected;      // True if the connected device is a valid heavenli client
       bool        outBufferFull     = false; // True if the output buffer is full
@@ -43,6 +46,8 @@ class heavenliClient
       bool        __CNL_sent        = false; // Plugin has requested total number of lamps of client
       bool        __CID_requested;  // Plugin has requested the ID of the client device
       bool        __CID_sent;       // CID packet has been sent
+
+      bool        __BCC_sent        = false; // The Bulbs' Current Colors have been sent
 
       bool        __ALL_requested;  // Plugin has requested all base parameters of a lamp
       bool        __LID_requested;  // Lamp has requested a unique ID from the plugin

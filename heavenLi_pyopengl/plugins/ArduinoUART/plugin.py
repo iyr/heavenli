@@ -47,7 +47,7 @@ class Plugin():
 
     # Necessary for Heavenli integration
     def update(self):
-        if (time.time() - self.t0 > 0.05):
+        if (time.time() - self.t0 > 0.01):#0.125):#0.005):
             pass
 
             try:
@@ -69,7 +69,13 @@ class Plugin():
                             self.devices[i].requestNumLamps()
 
                         if (self.devices[i].getNumLamps() > 0):
-                            self.devices[i].setTargetColors()
+                            if (time.time() - self.devices[i].targetColorTimer > 0.125):
+                                if ( self.devices[i].connectedLamps[0].isReady(False)):
+                                    self.devices[i].setTargetColors(self.devices[i].connectedLamps[0])
+                                else:
+                                    print("requesting parameters")
+                                    self.devices[i].requestAllParameters(self.devices[i].connectedLamps[0])
+                                self.devices[i].targetColorTimer = time.time()
                     else:
                         # Attempt to establish connection
                         # if the device is a heavenli client.
@@ -147,13 +153,16 @@ class Plugin():
 
             # Whether or not a heavenli client device is trying to connect,
             # Used to establish three-way handshake for tcp-style connection
-            self.synReceived = False
-            self.synackSent = False
-            self.synackTimeout = time.time()
+            self.synReceived    = False
+            self.synackSent     = False
+            self.synackTimeout  = time.time()
 
             # Allow host to send requests without utterly spamming the poor microcontroller
-            self.requestSent = False
+            self.requestSent    = False
             self.requestTimeout = time.time()
+            self.requestTimer   = time.time()
+
+            self.targetColorTimer = time.time()
 
             # Whether or not the client device has established a connection
             self.connectionEstablished = False
@@ -166,7 +175,7 @@ class Plugin():
             self.serialDevice.setDTR(True)
             self.serialDevice.setRTS(True)
             self.serialDevice.timeout = 1.0
-            self.serialDevice.write_timeout = 10.0
+            self.serialDevice.write_timeout = 3.0
             self.serialDevice.open()
             self.deviceNumLamps = 0
 
@@ -259,7 +268,6 @@ class Plugin():
                         self.requestAllParameters(self.connectedLamps[0])
 
                     # Get Lamp ID
-                    #if ((("CID:" + str(self.clientID)) in str(mess)) and ("LID:" in str(mess))):
                     tms = chr(self.clientID[0]) + chr(self.clientID[1])
                     if ((("CID:" + tms) in str(mess)) and ("LID:" in str(mess))):
 
@@ -276,16 +284,18 @@ class Plugin():
                             newID = [random.randint(1, 254), random.randint(1, 254)]
                         else:
                             print("Received Lamp ID:", ID_a, ID_b)
+                            #print("Received Lamp ID:", chr(ID_a), chr(ID_b))
                             if (len(self.connectedLamps) < 2):
-                                #print("ID on first lamp" + str(self.connectedLamps[0].getID()))
                                 self.connectedLamps[0].setID([ID_a, ID_b])
-                                #print("ID on first lamp" + str(self.connectedLamps[0].getID()))
 
                                 # Parse Lamp number of bulbs from packet
                                 if ("NB!" in str(mess)):  
                                     pos = str(mess).index("NB!")+3
                                     demess = mess[pos:pos+1]
-                                    print(str(self.connectedLamps[0].getID()) + ": numBulbs: " + str(ord(demess[0])))
+                                    print("demess: ", ord(demess[0]))
+                                    print(str(self.connectedLamps[0].getID()) + 
+                                            ": numBulbs: " + 
+                                            str(ord(demess[0])))
                                     self.connectedLamps[0].setNumBulbs(ord(demess[0]))
 
                                 # Parse Lamp Bulb Count Mutability from packet
@@ -397,27 +407,38 @@ class Plugin():
 
         # Set the Target Colors of the bulbs
         def setTargetColors(self, lamp):
-            tmcid = [(self.clientID[0]), (self.clientID[1])]
-            tmlid = [(lamp.lid[0]), (lamp.lid[1])]
-            tmtc = []
+            try:
+                tmcid = [(self.clientID[0]), (self.clientID[1])]
+                tmlid = [(lamp.lid[0]), (lamp.lid[1])]
+                tmtc = []
 
-            # Pack all bulb target RGB colors into one array
-            for i in range(10):
+                # Pack all bulb target RGB colors into one array
+                for i in range(10):
 
-                # Append color if iterate is less than numBulbs, else append black
-                if (i < lamp.numBulbs):
-                    tmc = lamp.getBulbTargetRGB(i)
-                    for j in range(3):
-                        tmtc.append(tmc[j])
-                else:
-                    for j in range(3):
-                        tmtc.append(0)
+                    # Append color if iterate is less than numBulbs, else append black
+                    if (i < lamp.numBulbs):
+                        tmc = lamp.getBulbTargetRGB(i)
+                        for j in range(3):
+                            tmtc.append(int(tmc[j]*255))
+                    else:
+                        for j in range(3):
+                            tmtc.append(int(0))
 
-            enmass = cobs.encode(b'CID:'+bytearray(tmcid)+b'LID:'+bytearray(tmlid)+b'BTC!'+bytearray(tmtc))+b'\x01'+b'\x00'
-            print(len(enmass))
-            print("enmass: ", enmass)
-            self.serialDevice.write(enmass)
-            pass
+                enmass = cobs.encode(b'CID:'+bytearray(tmcid)+b'LID:'+bytearray(tmlid)+b'BTC!'+bytearray(tmtc))+b'\x01'+b'\x00'
+                #print("enmass: ", enmass)
+                #print(len(enmass))
+                self.serialDevice.write(enmass)
+                pass
+            except Exception as OOF:
+                self.synReceived = False
+                self.synackSent = False
+                self.connectionEstablished = False
+                self.serialDevice.reset_output_buffer()
+                self.serialDevice.close()
+                if (self.isClient <= 1):
+                    del self.serialDevice
+                print(traceback.format_exc())
+
             return
 
         # Returns a list of currently connected lamps
@@ -430,27 +451,36 @@ class Plugin():
 
         # Request number of lamps on the client device (for reference)
         def requestNumLamps(self):
-            print("Requesting number of lamps on client:" + str(self.clientID))
-            tms = [(self.clientID[0]), (self.clientID[1])]
-            enmass = cobs.encode(b'CID:'+bytearray(tms)+b'CNL?')+b'\x01'+b'\x00'
-            self.serialDevice.write(enmass)
-            pass
+            # Avoid spamming micro controller
+            if (time.time() - self.requestTimer > 0.5):
+                print("Requesting number of lamps on client:" + str(self.clientID))
+                tms = [(self.clientID[0]), (self.clientID[1])]
+                enmass = cobs.encode(b'CID:'+bytearray(tms)+b'CNL?')+b'\x01'+b'\x00'
+                self.serialDevice.write(enmass)
+                pass
+                self.requestTimer = time.time()
             return
 
         # Get alias of lamp
         def requestAlias(self, lamp):
-            tmcid = [(self.clientID[0]), (self.clientID[1])]
-            tmlid = [(lamp.lid[0]), (lamp.lid[1])]
-            enmass = cobs.encode(b'CID:'+bytearray(tmcid)+b'LID:'+bytearray(tmlid)+b'KN?')+b'\x01'+b'\x00'
-            self.serialDevice.write(enmass)
-            pass
+            # Avoid spamming micro controller
+            if (time.time() - self.requestTimer > 0.5):
+                tmcid = [(self.clientID[0]), (self.clientID[1])]
+                tmlid = [(lamp.lid[0]), (lamp.lid[1])]
+                enmass = cobs.encode(b'CID:'+bytearray(tmcid)+b'LID:'+bytearray(tmlid)+b'KN?')+b'\x01'+b'\x00'
+                self.serialDevice.write(enmass)
+                pass
+                self.requestTimer = time.time()
             return
 
         def requestNumBulbs(self, lamp):
-            enmass = cobs.encode(b'LID:')+bytes(lamp.getID())
-            enmass += cobs.encode(b'NB?')+b'\x01'+b'\x00'
-            self.serialDevice.write(enmass)
-            pass
+            # Avoid spamming micro controller
+            if (time.time() - self.requestTimer > 0.5):
+                enmass = cobs.encode(b'LID:')+bytes(lamp.getID())
+                enmass += cobs.encode(b'NB?')+b'\x01'+b'\x00'
+                self.serialDevice.write(enmass)
+                pass
+                self.requestTimer = time.time()
             return
 
         def setNumBulbs(self, lamp, newNumBulbs):
@@ -461,18 +491,21 @@ class Plugin():
             return
 
         def requestClientID(self):
-            enmass = cobs.encode(b'CID?')+b'\x01'+b'\x00'
-            try:
-                self.serialDevice.write(enmass)
-            except Exception as OOF:
-                self.synReceived = False
-                self.connectionEstablished = False
-                self.serialDevice.close()
-                if (self.isClient <= 1):
-                    del self.serialDevice
-                print(traceback.format_exc())
-            #print("Requesting Client ID on port:", self.port)
-            pass
+            # Avoid spamming micro controller
+            if (time.time() - self.requestTimer > 0.5):
+                enmass = cobs.encode(b'CID?')+b'\x01'+b'\x00'
+                try:
+                    self.serialDevice.write(enmass)
+                except Exception as OOF:
+                    self.synReceived = False
+                    self.connectionEstablished = False
+                    self.serialDevice.close()
+                    if (self.isClient <= 1):
+                        del self.serialDevice
+                    print(traceback.format_exc())
+                #print("Requesting Client ID on port:", self.port)
+                pass
+                self.requestTimer = time.time()
             return
 
         def setClientID(self, newID):
@@ -483,11 +516,14 @@ class Plugin():
             return
             
         def requestAllParameters(self, lamp):
-            tms = [(self.clientID[0]), (self.clientID[1])]
-            tml = [(lamp.lid[0]), (lamp.lid[1])]
-            enmass = cobs.encode(b'CID:'+bytes(tms)+b'LID:'+bytes(tml)+b'PAR?')+b'\x01'+b'\x00'
-            print(enmass)
-            self.serialDevice.write(enmass)
-            pass
+            # Avoid spamming micro controller
+            if (time.time() - self.requestTimer > 0.5):
+                tms = [(self.clientID[0]), (self.clientID[1])]
+                tml = [(lamp.lid[0]), (lamp.lid[1])]
+                enmass = cobs.encode(b'CID:'+bytes(tms)+b'LID:'+bytes(tml)+b'PAR?')+b'\x01'+b'\x00'
+                print(enmass)
+                self.serialDevice.write(enmass)
+                pass
+                self.requestTimer = time.time()
             return
 

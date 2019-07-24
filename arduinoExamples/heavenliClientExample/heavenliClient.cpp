@@ -13,19 +13,21 @@ heavenliClient::heavenliClient() {
    this->tmb               = 0;
    this->runtimeCounter1   = millis();
    this->timeoutCounter    = millis();
+   this->updateTimer       = millis();
 
    // Determine if device has an ID set (cannot be 0, 255, or FF)
    this->id[0] = EEPROM.read(this->IDaddress+0);
    this->id[1] = EEPROM.read(this->IDaddress+1);
 }
 
-void heavenliClient::init(hliLamp* lamp) {
+// Initialize client with exactly one lamp
+void heavenliClient::init() {
    this->numLamps = 1;
-   this->lamp = lamp;
-   this->lamp->init();
+   this->lamp.init();
    return;
 }
 
+// Initialize client with more than one lamp
 void heavenliClient::init(hliLamp* lamps, uint8_t numLamps) {
    this->numLamps = numLamps;
    for (int i = 0; i < numLamps; i++){
@@ -36,7 +38,11 @@ void heavenliClient::init(hliLamp* lamps, uint8_t numLamps) {
 
 void heavenliClient::update()
 {
-   this->lamp->update(2.72);
+   if (millis() - this->updateTimer > 16) {
+      this->lamp.update(2.72/100.0);
+      this->updateTimer = millis();
+   }
+
    if ((millis() - this->timeoutCounter) > 1500) {
       //this->isConnected = false;
       this->synackReceived = false;
@@ -50,8 +56,7 @@ void heavenliClient::update()
  * Update Lamp state, keep tab on connection to host
  */
 void heavenliClient::update(hliLamp* lamp) {
-   this->lamp = lamp;
-   this->lamp->update(2.72);
+   this->lamp.update(2.72);
    if ((millis() - this->timeoutCounter) > 1500) {
       //this->isConnected = false;
       this->synackReceived = false;
@@ -76,7 +81,7 @@ void heavenliClient::update(hliLamp* lamps, uint8_t numLamps)
 }
 
 /*
- * Generates Packet to be sent to host
+ * Prepares Packet to be sent to host
  */
 size_t heavenliClient::outPacket(uint8_t*& buffer) {
    size_t   numBytes = 0;
@@ -130,8 +135,7 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
          }
 
          // Prepend Client ID to packet for host to address
-         if (  this->client_addressed  == true ){
-         //if ( true ){
+         if ( this->client_addressed  == true ){
             // Number of bytes it will take to send parameter information
             uint8_t paramBytes = 0;
             char tmb[10];
@@ -189,7 +193,7 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
             uint8_t tmb[50];
 
             uint8_t* tmid;
-            this->lamp->getID(tmid);
+            this->lamp.getID(tmid);
             tmb[paramBytes] = 'L'; paramBytes++;
             tmb[paramBytes] = 'I'; paramBytes++;
             tmb[paramBytes] = 'D'; paramBytes++;
@@ -200,17 +204,17 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
             tmb[paramBytes] = 'N'; paramBytes++;
             tmb[paramBytes] = 'B'; paramBytes++;
             tmb[paramBytes] = '!'; paramBytes++;
-            tmb[paramBytes] = this->lamp->getNumBulbs(); paramBytes++;
+            tmb[paramBytes] = this->lamp.getNumBulbs(); paramBytes++;
 
             tmb[paramBytes] = 'C'; paramBytes++;
             tmb[paramBytes] = 'M'; paramBytes++;
             tmb[paramBytes] = '!'; paramBytes++;
-            tmb[paramBytes] = this->lamp->getBulbCountMutability(); paramBytes++;
+            tmb[paramBytes] = this->lamp.getBulbCountMutability(); paramBytes++;
 
             tmb[paramBytes] = 'A'; paramBytes++;
             tmb[paramBytes] = 'R'; paramBytes++;
             tmb[paramBytes] = '!'; paramBytes++;
-            tmb[paramBytes] = this->lamp->getArrangement(); paramBytes++;
+            tmb[paramBytes] = this->lamp.getArrangement(); paramBytes++;
 
             //tmb[paramBytes] = 'A'; paramBytes++;
             //tmb[paramBytes] = 'O'; paramBytes++;
@@ -219,12 +223,12 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
             tmb[paramBytes] = 'L'; paramBytes++;
             tmb[paramBytes] = 'L'; paramBytes++;
             tmb[paramBytes] = '!'; paramBytes++;
-            tmb[paramBytes] = this->lamp->getMetaLampLevel(); paramBytes++;
+            tmb[paramBytes] = this->lamp.getMetaLampLevel(); paramBytes++;
 
             tmb[paramBytes] = 'S'; paramBytes++;
             tmb[paramBytes] = 'B'; paramBytes++;
             tmb[paramBytes] = '!'; paramBytes++;
-            tmb[paramBytes] = this->lamp->getMasterSwitchBehavior(); paramBytes++;
+            tmb[paramBytes] = this->lamp.getMasterSwitchBehavior(); paramBytes++;
 
             //tmb[paramBytes] = 'V'; paramBytes++;
             //tmb[paramBytes] = 'Q'; paramBytes++;
@@ -237,8 +241,38 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
                for (int i = 0; i < paramBytes; i++)
                   message[numBytes+i] = tmb[i];
                numBytes += paramBytes;
+            }
+         }
+
+         // If lamp was addressed, respond with current bulb colors
+         if (  //this->lamp.isAddressed()   == true  && 
+               this->client_addressed     == true  &&
+               this->__BCC_sent           == false &&
+               this->outBufferFull        == false ){
+            
+            // Number of bytes it will take to send parameter information
+            uint8_t paramBytes = 0;
+            uint8_t tmb[35];
+            uint8_t tmc[3];
+
+            for (int j = 0; j < 10; j++) {
+               this->lamp.getBulbCurrentRGB(j, tmc);
+               tmb[paramBytes] = tmc[0]; paramBytes++;
+               tmb[paramBytes] = tmc[1]; paramBytes++;
+               tmb[paramBytes] = tmc[2]; paramBytes++;
+            }
+
+            // Check if we have enough space in out output buffer
+            if (paramBytes + numBytes >= byteLimit) {
+               this->outBufferFull = true;
+            } else {
+               for (int i = 0; i < paramBytes; i++)
+                  message[numBytes+i] = tmb[i];
+               numBytes += paramBytes;
                this->__CNL_requested = false;
             }
+            this->lamp.setAddressed(false);
+            this->__BCC_sent = true;
          }
 
          // Write contents to buffer
@@ -246,6 +280,7 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
          for (int i = 0; i < numBytes; i++)
             buffer[i] = message[i];
       }
+
       this->runtimeCounter1 = millis();
       this->client_addressed = false;
    }
@@ -254,6 +289,10 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
    return numBytes;
 }
 
+
+/*
+ * Unpack/Parse/Process data received from HeavenLi host over Serial
+ */
 void heavenliClient::processPacket(const uint8_t* buffer, size_t size) {
 
    // Before we can start sending or receiving data
@@ -295,7 +334,6 @@ void heavenliClient::processPacket(const uint8_t* buffer, size_t size) {
                   buffer[i+1] == 'I'   &&
                   buffer[i+2] == 'D'   &&
                   buffer[i+3] == ':'   &&
-                  //buffer[i+3] == ':'   ){
                   buffer[i+4] == this->id[0] &&
                   buffer[i+5] == this->id[1] ){
                this->tma = buffer[i+4];
@@ -307,20 +345,9 @@ void heavenliClient::processPacket(const uint8_t* buffer, size_t size) {
             if (  buffer[i+0] == 'C'   && 
                   buffer[i+1] == 'N'   &&
                   buffer[i+2] == 'L'   &&
-                  //buffer[i+3] == '?'   ){
                   buffer[i+3] == '?'   &&
                   this->client_addressed == true){
                this->__CNL_requested = true;
-            }
-
-            // Host has requested lamp parameters
-            if (  buffer[i+0] == 'L'   &&
-                  buffer[i+1] == 'I'   &&
-                  buffer[i+2] == 'D'   &&
-                  buffer[i+3] == ':'   &&
-                  buffer[i+4] == 255   &&
-                  buffer[i+5] == 255   ){
-               this->__ALL_requested = true;
             }
 
             // Host has requested lamp parameters
@@ -328,6 +355,43 @@ void heavenliClient::processPacket(const uint8_t* buffer, size_t size) {
                   buffer[i+1] == 'A'   &&
                   buffer[i+2] == 'R'   &&
                   buffer[i+3] == '?'   ){
+               this->__ALL_requested = true;
+            }
+
+            if (  buffer[i+0] == 'L'   &&
+                  buffer[i+1] == 'I'   &&
+                  buffer[i+2] == 'D'   &&
+                  buffer[i+3] == ':'   ){
+
+               uint8_t index = i+4;
+
+               // Host has requested parameters for the client's sole lamp
+               if (  buffer[index+0]   == 255   &&
+                     buffer[index+1]   == 255   &&
+                     this->numLamps    == 1     ){
+                  //this->__ALL_requested = true;
+               } else {
+
+                  // Host is addressing client's sole lamp (defensive sanity check)
+                  uint8_t* tmlid;
+                  this->lamp.getID(tmlid);
+                  if (  buffer[index+0]   == tmlid[0] &&
+                        buffer[index+1]   == tmlid[1] &&
+                        this->numLamps    == 1        ){
+                     this->__ALL_requested = false;
+                     this->selectedLamp = 0;
+                     this->lamp.setAddressed(true);
+                  }
+               }
+            }
+            /*
+            // Host has requested lamp parameters
+            if (  buffer[i+0] == 'L'   &&
+                  buffer[i+1] == 'I'   &&
+                  buffer[i+2] == 'D'   &&
+                  buffer[i+3] == ':'   &&
+                  buffer[i+4] == 255   &&
+                  buffer[i+5] == 255   ){
                this->__ALL_requested = true;
             }
 
@@ -342,6 +406,7 @@ void heavenliClient::processPacket(const uint8_t* buffer, size_t size) {
                   buffer[i+5] == tmlid[1]   ){
                this->__lamp_addressed = true;
             }
+            */
 
             // Host is setting lamp bulbs target colors
             if (  buffer[i+0] == 'B'   &&
@@ -349,12 +414,15 @@ void heavenliClient::processPacket(const uint8_t* buffer, size_t size) {
                   buffer[i+2] == 'C'   &&
                   buffer[i+3] == '!'   ){
 
-               uint8_t tmc[3];
-               for (int j = 0; j < 10; j++) {
-                  tmc[0] = buffer[j*3 + i + 4];
-                  tmc[1] = buffer[j*3 + i + 5];
-                  tmc[2] = buffer[j*3 + i + 6];
-                  this->lamp->setBulbTargetRGB(j, tmc);
+               //if (this->lamp->isAddressed()) {
+               if (this->lamp.isAddressed()) {
+                  uint8_t tmc[3];
+                  for (int j = 0; j < 10; j++) {
+                     tmc[0] = buffer[j*3 + i + 4];
+                     tmc[1] = buffer[j*3 + i + 5];
+                     tmc[2] = buffer[j*3 + i + 6];
+                     this->lamp.setBulbTargetRGB(j, tmc);
+                  }
                }
             }
          }
