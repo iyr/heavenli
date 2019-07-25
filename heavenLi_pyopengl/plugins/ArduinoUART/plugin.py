@@ -59,7 +59,10 @@ class Plugin():
                         self.devices[i].listen()
 
                         # Device is a client, get ID
-                        if (len(self.devices[i].clientID) != 2):
+                        if (len(self.devices[i].clientID) != 2 or 
+                               (self.devices[i].clientID[0] == 255 and
+                                   self.devices[i].clientID[1] == 255)):
+
                             self.devices[i].requestClientID()
 
                         # If Device has no lamps (ready), 
@@ -69,7 +72,7 @@ class Plugin():
                             self.devices[i].requestNumLamps()
 
                         if (self.devices[i].getNumLamps() > 0):
-                            if (time.time() - self.devices[i].targetColorTimer > 0.125):
+                            if (time.time() - self.devices[i].targetColorTimer > 0.25):
                                 if ( self.devices[i].connectedLamps[0].isReady(False)):
                                     self.devices[i].setTargetColors(self.devices[i].connectedLamps[0])
                                 else:
@@ -209,7 +212,10 @@ class Plugin():
                     zeroByte = b'\x00'
                     mess = self.serialDevice.read_until( zeroByte )
                     print("Data BEFORE COBS decoding: ", mess)
-                    mess = str(cobs.decode( mess[:-1] ) )[2:-1]
+                    try:
+                        mess = str(cobs.decode( mess[:-1] ) )[2:-1]
+                    except:
+                        return
 
                     # Fix non-character bytes
                     while (mess.count("\\x") > 0):
@@ -220,7 +226,7 @@ class Plugin():
                         tmsb = mess[badBytePos+4:]
                         tmsa = mess[:badBytePos]+str(chr(tmc))
                         mess = tmsa+tmsb
-                    print("Data received. Packet:", mess)
+                    print("Data received. Packet:", mess, "End: Packet.")
 
                     # Get Client ID
                     if ("CID!" in str(mess)):
@@ -348,6 +354,7 @@ class Plugin():
             try:
                 bytesToRead = self.serialDevice.in_waiting
                 if (bytesToRead > 0):
+                    print(bytesToRead)
                     # Listen for Synchronize Packet from client devices
                     print("[HOST] Incoming Bytes: " + str(int(bytesToRead)))
                     zeroByte = b'\x00'
@@ -367,9 +374,9 @@ class Plugin():
                         while (self.serialDevice.out_waiting > 0):
                             self.serialDevice.reset_output_buffer()
                             pass
-                        enmass = cobs.encode(b'SYNACK')+b'\x01'+b'\x00'
+                        enmess = cobs.encode(b'SYNACK')+b'\x01'+b'\x00'
                         time.sleep(0.1)
-                        self.serialDevice.write(enmass)
+                        self.serialDevice.write(enmess)
                         self.synackSent = True
                         print("SynAck sent")
                         self.synackTimeout = time.time()
@@ -424,10 +431,9 @@ class Plugin():
                         for j in range(3):
                             tmtc.append(int(0))
 
-                enmass = cobs.encode(b'CID:'+bytearray(tmcid)+b'LID:'+bytearray(tmlid)+b'BTC!'+bytearray(tmtc))+b'\x01'+b'\x00'
-                #print("enmass: ", enmass)
-                #print(len(enmass))
-                self.serialDevice.write(enmass)
+                enmess = cobs.encode(b'CID:'+bytearray(tmcid)+b'LID:'+bytearray(tmlid)+b'BTC!'+bytearray(tmtc))+b'\x01'+b'\x00'
+                #print(len(enmess), "enmess: ", enmess)
+                self.serialDevice.write(enmess)
                 pass
             except Exception as OOF:
                 self.synReceived = False
@@ -455,8 +461,8 @@ class Plugin():
             if (time.time() - self.requestTimer > 0.5):
                 print("Requesting number of lamps on client:" + str(self.clientID))
                 tms = [(self.clientID[0]), (self.clientID[1])]
-                enmass = cobs.encode(b'CID:'+bytearray(tms)+b'CNL?')+b'\x01'+b'\x00'
-                self.serialDevice.write(enmass)
+                enmess = cobs.encode(b'CID:'+bytearray(tms)+b'CNL?')+b'\x01'+b'\x00'
+                self.serialDevice.write(enmess)
                 pass
                 self.requestTimer = time.time()
             return
@@ -467,8 +473,8 @@ class Plugin():
             if (time.time() - self.requestTimer > 0.5):
                 tmcid = [(self.clientID[0]), (self.clientID[1])]
                 tmlid = [(lamp.lid[0]), (lamp.lid[1])]
-                enmass = cobs.encode(b'CID:'+bytearray(tmcid)+b'LID:'+bytearray(tmlid)+b'KN?')+b'\x01'+b'\x00'
-                self.serialDevice.write(enmass)
+                enmess = cobs.encode(b'CID:'+bytearray(tmcid)+b'LID:'+bytearray(tmlid)+b'KN?')+b'\x01'+b'\x00'
+                self.serialDevice.write(enmess)
                 pass
                 self.requestTimer = time.time()
             return
@@ -476,26 +482,26 @@ class Plugin():
         def requestNumBulbs(self, lamp):
             # Avoid spamming micro controller
             if (time.time() - self.requestTimer > 0.5):
-                enmass = cobs.encode(b'LID:')+bytes(lamp.getID())
-                enmass += cobs.encode(b'NB?')+b'\x01'+b'\x00'
-                self.serialDevice.write(enmass)
+                enmess = cobs.encode(b'LID:')+bytes(lamp.getID())
+                enmess += cobs.encode(b'NB?')+b'\x01'+b'\x00'
+                self.serialDevice.write(enmess)
                 pass
                 self.requestTimer = time.time()
             return
 
         def setNumBulbs(self, lamp, newNumBulbs):
             varInBytes = (newNumBulbs).to_bytes(1, byteorder='little')
-            enmass = cobs.encode(b'NB!')+varInBytes+b'\x01'+b'\x00'
-            self.serialDevice.write(enmass)
+            enmess = cobs.encode(b'NB!')+varInBytes+b'\x01'+b'\x00'
+            self.serialDevice.write(enmess)
             pass
             return
 
         def requestClientID(self):
             # Avoid spamming micro controller
             if (time.time() - self.requestTimer > 0.5):
-                enmass = cobs.encode(b'CID?')+b'\x01'+b'\x00'
+                enmess = cobs.encode(b'CID?')+b'\x01'+b'\x00'
                 try:
-                    self.serialDevice.write(enmass)
+                    self.serialDevice.write(enmess)
                 except Exception as OOF:
                     self.synReceived = False
                     self.connectionEstablished = False
@@ -509,20 +515,21 @@ class Plugin():
             return
 
         def setClientID(self, newID):
-            enmass = cobs.encode(b'CID!'+bytes(newID))+b'\x01'+b'\x00'
-            print(enmass)
-            self.serialDevice.write(enmass)
+            enmess = cobs.encode(b'CID!'+bytes(newID))+b'\x01'+b'\x00'
+            print(enmess)
+            self.serialDevice.write(enmess)
             pass
             return
             
+        # Get minimum require parameters from lamp
         def requestAllParameters(self, lamp):
             # Avoid spamming micro controller
             if (time.time() - self.requestTimer > 0.5):
                 tms = [(self.clientID[0]), (self.clientID[1])]
                 tml = [(lamp.lid[0]), (lamp.lid[1])]
-                enmass = cobs.encode(b'CID:'+bytes(tms)+b'LID:'+bytes(tml)+b'PAR?')+b'\x01'+b'\x00'
-                print(enmass)
-                self.serialDevice.write(enmass)
+                enmess = cobs.encode(b'CID:'+bytes(tms)+b'LID:'+bytes(tml)+b'PAR?')+b'\x01'+b'\x00'
+                #print(enmess)
+                self.serialDevice.write(enmess)
                 pass
                 self.requestTimer = time.time()
             return

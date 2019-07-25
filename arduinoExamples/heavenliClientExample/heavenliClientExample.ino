@@ -1,11 +1,11 @@
 #include "heavenliClient.h"
 #include <PacketSerial.h>
-#include <Adafruit_NeoPixel.h>
+//#include <Adafruit_NeoPixel.h>
 
 #define LED_PIN   17
 #define LED_COUNT 10
 
-Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+//Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 heavenliClient client;
 PacketSerial   commPort;
 
@@ -18,9 +18,9 @@ void setup() {
    commPort.setPacketHandler(&packetReceived);
    commPort.begin(115200);
 
-   strip.begin();
-   strip.show();
-   strip.setBrightness(64);
+   //strip.begin();
+   //strip.show();
+   //strip.setBrightness(64);
 
    digitalWrite(LED_BUILTIN, HIGH);
    delay(500);
@@ -59,10 +59,10 @@ void loop() {
    tmc[2] = 8;
    */
    for (int i = 0; i < 10; i++) {
-      strip.setPixelColor(i, strip.Color(tmc[0], tmc[1], tmc[2]));
+      //strip.setPixelColor(i, strip.Color(tmc[0], tmc[1], tmc[2]));
    }
 
-   strip.show();
+   //strip.show();
    size_t size;
    uint8_t* buffer;
    size = client.outPacket(buffer);
@@ -73,5 +73,6 @@ void loop() {
 
 void packetReceived(const uint8_t* buffer, size_t size) {
    client.processPacket(buffer, size);
+   commPort.send(buffer, size);
    return;
 }

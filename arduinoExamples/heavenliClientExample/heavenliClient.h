@@ -3,6 +3,10 @@
 #include "Arduino.h"
 #include "heavenliLamp.h"
 
+/*
+ * Definition for an Arduino-based HeavenLi client
+ * that interfaces with the Arduino plugin over UART
+ */
 class heavenliClient 
 {
    public:
@@ -21,6 +25,9 @@ class heavenliClient
 
    private:
       //hliLamp*    lamp;
+      size_t      writeACK(uint8_t*& buffer);   // outPacket helper
+      size_t      writeSYN(uint8_t*& buffer);   // outPacket helper
+      size_t      writeCID(uint8_t*& buffer);   // outPacket helper
       void        assignLampID();
       uint32_t    runtimeCounter1;  // Used for timing
       uint32_t    timeoutCounter;   // 
