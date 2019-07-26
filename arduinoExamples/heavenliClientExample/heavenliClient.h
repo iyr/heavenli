@@ -25,9 +25,11 @@ class heavenliClient
 
    private:
       //hliLamp*    lamp;
-      size_t      writeACK(uint8_t*& buffer);   // outPacket helper
-      size_t      writeSYN(uint8_t*& buffer);   // outPacket helper
-      size_t      writeCID(uint8_t*& buffer);   // outPacket helper
+      size_t      writeACK(uint8_t*& buffer);   // outPacket helper, send "ACK"
+      size_t      writeSYN(uint8_t*& buffer);   // outPacket helper, send "SYN"
+      size_t      writeCID(uint8_t*& buffer);   // outPacket helper, send "CID!"
+      size_t      writeCNL(uint8_t*& buffer);   // outPacket helper, send "CID:##CNL:#"
+      size_t      writeLPR(uint8_t*& buffer);   // outPacket helper, send lamp parameters
       void        assignLampID();
       uint32_t    runtimeCounter1;  // Used for timing
       uint32_t    timeoutCounter;   // 
@@ -38,7 +40,7 @@ class heavenliClient
       void        setID(uint8_t* newID);
       const int   IDaddress = 'h';
 
-      int         numLamps;
+      uint8_t     numLamps;
       uint8_t     id[2];
       uint8_t     tma;
       uint8_t     tmb;

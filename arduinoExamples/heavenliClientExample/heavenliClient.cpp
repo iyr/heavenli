@@ -81,40 +81,115 @@ void heavenliClient::update(hliLamp* lamps, uint8_t numLamps)
 }
 
 size_t heavenliClient::writeACK(uint8_t*& buffer) {
+   size_t paramBytes = 0;
    buffer = new uint8_t[3];
-   buffer[0] = 'A';
-   buffer[1] = 'C';
-   buffer[2] = 'K';
-   return 4;
+   buffer[paramBytes] = 'A'; paramBytes++;
+   buffer[paramBytes] = 'C'; paramBytes++;
+   buffer[paramBytes] = 'K'; paramBytes++;
+   return paramBytes+1;
 }
 
 size_t heavenliClient::writeSYN(uint8_t*& buffer) {
+   size_t paramBytes = 0;
    buffer = new uint8_t[3];
-   buffer[0] = 'S';
-   buffer[1] = 'Y';
-   buffer[2] = 'N';
-   return 4;
+   buffer[paramBytes] = 'S'; paramBytes++;
+   buffer[paramBytes] = 'Y'; paramBytes++;
+   buffer[paramBytes] = 'N'; paramBytes++;
+   return paramBytes+1;
 }
 
 size_t heavenliClient::writeCID(uint8_t*& buffer) {
+   size_t paramBytes = 0;
    buffer = new uint8_t[6];
-   buffer[0] = 'C';
-   buffer[1] = 'I';
-   buffer[2] = 'D';
-   buffer[3] = '!';
-   buffer[4] = this->id[0];
-   buffer[5] = this->id[1];
-   return 7;
+   buffer[paramBytes] = 'C'; paramBytes++;
+   buffer[paramBytes] = 'I'; paramBytes++;
+   buffer[paramBytes] = 'D'; paramBytes++;
+   buffer[paramBytes] = '!'; paramBytes++;
+   buffer[paramBytes] = this->id[0]; paramBytes++;
+   buffer[paramBytes] = this->id[1]; paramBytes++;
+   return paramBytes+1;
 }
 
+size_t heavenliClient::writeCNL(uint8_t*& buffer) {
+   size_t paramBytes = 0;
+   buffer = new uint8_t[6];
+   buffer[paramBytes] = 'C'; paramBytes++;
+   buffer[paramBytes] = 'I'; paramBytes++;
+   buffer[paramBytes] = 'D'; paramBytes++;
+   buffer[paramBytes] = ':'; paramBytes++;
+   buffer[paramBytes] = this->id[0]; paramBytes++;
+   buffer[paramBytes] = this->id[1]; paramBytes++;
+   buffer[paramBytes] = 'C'; paramBytes++;
+   buffer[paramBytes] = 'N'; paramBytes++;
+   buffer[paramBytes] = 'L'; paramBytes++;
+   buffer[paramBytes] = '!'; paramBytes++;
+   buffer[paramBytes] = this->numLamps; paramBytes++;
+   return paramBytes+1;
+}
+
+size_t heavenliClient::writeLPR(uint8_t*& buffer) {
+   size_t paramBytes = 0;
+   uint8_t* tmid;
+   this->lamp.getID(tmid);
+
+   buffer = new uint8_t[6];
+   buffer[paramBytes] = 'C'; paramBytes++;
+   buffer[paramBytes] = 'I'; paramBytes++;
+   buffer[paramBytes] = 'D'; paramBytes++;
+   buffer[paramBytes] = ':'; paramBytes++;
+   buffer[paramBytes] = this->id[0]; paramBytes++;
+   buffer[paramBytes] = this->id[1]; paramBytes++;
+
+   buffer[paramBytes] = 'L'; paramBytes++;
+   buffer[paramBytes] = 'I'; paramBytes++;
+   buffer[paramBytes] = 'D'; paramBytes++;
+   buffer[paramBytes] = ':'; paramBytes++;
+   buffer[paramBytes] = tmid[0]; paramBytes++;
+   buffer[paramBytes] = tmid[1]; paramBytes++;
+            
+   buffer[paramBytes] = 'N'; paramBytes++;
+   buffer[paramBytes] = 'B'; paramBytes++;
+   buffer[paramBytes] = '!'; paramBytes++;
+   buffer[paramBytes] = this->lamp.getNumBulbs(); paramBytes++;
+
+   buffer[paramBytes] = 'C'; paramBytes++;
+   buffer[paramBytes] = 'M'; paramBytes++;
+   buffer[paramBytes] = '!'; paramBytes++;
+   buffer[paramBytes] = this->lamp.getBulbCountMutability(); paramBytes++;
+
+   buffer[paramBytes] = 'A'; paramBytes++;
+   buffer[paramBytes] = 'R'; paramBytes++;
+   buffer[paramBytes] = '!'; paramBytes++;
+   buffer[paramBytes] = this->lamp.getArrangement(); paramBytes++;
+
+   //buffer[paramBytes] = 'A'; paramBytes++;
+   //buffer[paramBytes] = 'O'; paramBytes++;
+   //buffer[paramBytes] = '!'; paramBytes++;
+
+   buffer[paramBytes] = 'L'; paramBytes++;
+   buffer[paramBytes] = 'L'; paramBytes++;
+   buffer[paramBytes] = '!'; paramBytes++;
+   buffer[paramBytes] = this->lamp.getMetaLampLevel(); paramBytes++;
+
+   buffer[paramBytes] = 'S'; paramBytes++;
+   buffer[paramBytes] = 'B'; paramBytes++;
+   buffer[paramBytes] = '!'; paramBytes++;
+   buffer[paramBytes] = this->lamp.getMasterSwitchBehavior(); paramBytes++;
+
+   //buffer[paramBytes] = 'V'; paramBytes++;
+   //buffer[paramBytes] = 'Q'; paramBytes++;
+   //buffer[paramBytes] = '!'; paramBytes++;
+
+   return paramBytes+1;
+}
 
 /*
  * Prepares Packet to be sent to host
  */
 size_t heavenliClient::outPacket(uint8_t*& buffer) {
-   size_t   numBytes = 0;
-   uint8_t  byteLimit = 56;
-   uint8_t  message[byteLimit];
+   //size_t   numBytes = 0;
+   //uint8_t  byteLimit = 56;
+   //uint8_t  message[byteLimit];
 
    if (millis() - this->runtimeCounter1 > 1000) {
 
@@ -134,12 +209,14 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
 
          // Plugin has requested the ID of the Client Device (HOST: getClientID)
          if (  this->__CID_requested   == true  && 
-               this->__CID_sent        == false &&
+               //this->__CID_sent        == false &&
                this->outBufferFull     == false ){
 
+            this->__CID_requested = false;
             return this->writeCID(buffer);
          }
 
+         /*
          // Prepend Client ID to packet for host to address
          if (  this->client_addressed  == true  && (
                this->__CNL_requested   == true  ||
@@ -164,12 +241,14 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
                numBytes += paramBytes;
             }
          }
+         */
 
          // Plugin has requested the Number of lamps on the Client Device (HOST: requestNumLamps)
          if (  this->__CNL_requested   == true  && 
-               this->client_addressed  == true  &&
-               this->outBufferFull     == false ){
+               //this->__CNL_sent        == false &&
+               this->client_addressed  == true  ){
 
+            /*
             // Number of bytes it will take to send parameter information
             uint8_t paramBytes = 0;
             char tmb[10];
@@ -189,6 +268,9 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
                numBytes += paramBytes;
                this->__CNL_requested = false;
             }
+            */
+            this->__CNL_requested = false;
+            return this->writeCNL(buffer);
          }
 
          // Plugin has requested all base parameters of a lamp
@@ -196,6 +278,10 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
                this->client_addressed  == true  &&
                this->outBufferFull     == false ){
 
+            this->__ALL_requested = false;
+            return this->writeLPR(buffer);
+
+            /*
             // Number of bytes it will take to send parameter information
             uint8_t paramBytes = 0;
             uint8_t tmb[50];
@@ -250,6 +336,7 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
                   message[numBytes+i] = tmb[i];
                numBytes += paramBytes;
             }
+            */
          }
 
          // If lamp was addressed, respond with current bulb colors
@@ -258,6 +345,7 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
                this->__BCC_sent           == false &&
                this->outBufferFull        == false ){
             
+            /*
             // Number of bytes it will take to send parameter information
             uint8_t paramBytes = 0;
             uint8_t tmb[35];
@@ -281,8 +369,10 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
             }
             this->lamp.setAddressed(false);
             this->__BCC_sent = true;
+            */
          }
 
+         /*
          // Write contents to buffer
          if (numBytes < byteLimit) {
             buffer = new uint8_t[numBytes];
@@ -292,6 +382,7 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
             buffer = new uint8_t[0];
             return 0;
          }
+         */
 
       }
 
@@ -299,7 +390,8 @@ size_t heavenliClient::outPacket(uint8_t*& buffer) {
       this->client_addressed = false;
    }
 
-   return numBytes;
+   //return numBytes;
+   return 0;
 }
 
 
@@ -386,6 +478,7 @@ void heavenliClient::processPacket(const uint8_t* buffer, size_t size) {
                } else {
 
                   // Host is addressing client's sole lamp (defensive sanity check)
+                  /*
                   uint8_t* tmlid;
                   this->lamp.getID(tmlid);
                   if (  buffer[index+0]   == tmlid[0] &&
@@ -395,6 +488,7 @@ void heavenliClient::processPacket(const uint8_t* buffer, size_t size) {
                      this->selectedLamp = 0;
                      this->lamp.setAddressed(true);
                   }
+                  */
                }
             }
             /*
@@ -428,6 +522,12 @@ void heavenliClient::processPacket(const uint8_t* buffer, size_t size) {
                   buffer[i+2] == 'C'   &&
                   buffer[i+3] == '!'   ){
 
+               uint8_t tmc[3];
+               tmc[0] = buffer[i+5];
+               tmc[1] = buffer[i+6];
+               tmc[2] = buffer[i+7];
+               this->lamp.setBulbTargetRGB(buffer[i+4], tmc);
+               /*
                //if (this->lamp->isAddressed()) {
                if (this->lamp.isAddressed()) {
                   uint8_t tmc[3];
@@ -438,6 +538,7 @@ void heavenliClient::processPacket(const uint8_t* buffer, size_t size) {
                      this->lamp.setBulbTargetRGB(j, tmc);
                   }
                }
+               */
             }
          }
       }

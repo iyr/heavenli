@@ -72,9 +72,15 @@ class Plugin():
                             self.devices[i].requestNumLamps()
 
                         if (self.devices[i].getNumLamps() > 0):
-                            if (time.time() - self.devices[i].targetColorTimer > 0.25):
+                            if (time.time() - self.devices[i].targetColorTimer > 0.0125):
                                 if ( self.devices[i].connectedLamps[0].isReady(False)):
                                     self.devices[i].setTargetColors(self.devices[i].connectedLamps[0])
+
+                                    if (self.devices[i].currentBulb >= 9):
+                                        self.devices[i].currentBulb = 0
+                                    else:
+                                        self.devices[i].currentBulb += 1
+                                    
                                 else:
                                     print("requesting parameters")
                                     self.devices[i].requestAllParameters(self.devices[i].connectedLamps[0])
@@ -188,6 +194,9 @@ class Plugin():
             # ID of the client device
             self.clientID = [255, 255]
 
+            # Used for updating bulb target colors on devices round-robin style
+            self.currentBulb = 0
+
 
         def __del__(self):
             self.serialDevice.close()
@@ -298,7 +307,6 @@ class Plugin():
                                 if ("NB!" in str(mess)):  
                                     pos = str(mess).index("NB!")+3
                                     demess = mess[pos:pos+1]
-                                    print("demess: ", ord(demess[0]))
                                     print(str(self.connectedLamps[0].getID()) + 
                                             ": numBulbs: " + 
                                             str(ord(demess[0])))
@@ -420,19 +428,28 @@ class Plugin():
                 tmtc = []
 
                 # Pack all bulb target RGB colors into one array
-                for i in range(10):
+                #for i in range(10):
 
                     # Append color if iterate is less than numBulbs, else append black
-                    if (i < lamp.numBulbs):
-                        tmc = lamp.getBulbTargetRGB(i)
-                        for j in range(3):
-                            tmtc.append(int(tmc[j]*255))
-                    else:
-                        for j in range(3):
-                            tmtc.append(int(0))
-
-                enmess = cobs.encode(b'CID:'+bytearray(tmcid)+b'LID:'+bytearray(tmlid)+b'BTC!'+bytearray(tmtc))+b'\x01'+b'\x00'
+                    #if (i < lamp.numBulbs):
+                        #tmc = lamp.getBulbTargetRGB(i)
+                        #for j in range(3):
+                            #tmtc.append(int(tmc[j]*255))
+                    #else:
+                        #for j in range(3):
+                            #tmtc.append(int(0))
                 #print(len(enmess), "enmess: ", enmess)
+
+                tmc = lamp.getBulbTargetRGB(self.currentBulb)
+                tmtc.append(int(self.currentBulb))
+                tmtc.append(int(tmc[0]*255))
+                tmtc.append(int(tmc[1]*255))
+                tmtc.append(int(tmc[2]*255))
+                enmess = cobs.encode(
+                        b'CID:'+bytearray(tmcid)+
+                        b'LID:'+bytearray(tmlid)+
+                        b'BTC!'+bytearray(tmtc))+b'\x01'+b'\x00'
+                print(len(enmess), "enmess: ", enmess)
                 self.serialDevice.write(enmess)
                 pass
             except Exception as OOF:
@@ -462,6 +479,7 @@ class Plugin():
                 print("Requesting number of lamps on client:" + str(self.clientID))
                 tms = [(self.clientID[0]), (self.clientID[1])]
                 enmess = cobs.encode(b'CID:'+bytearray(tms)+b'CNL?')+b'\x01'+b'\x00'
+                print("enmess: ", enmess)
                 self.serialDevice.write(enmess)
                 pass
                 self.requestTimer = time.time()

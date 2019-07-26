@@ -73,6 +73,6 @@ void loop() {
 
 void packetReceived(const uint8_t* buffer, size_t size) {
    client.processPacket(buffer, size);
-   commPort.send(buffer, size);
+   //commPort.send(buffer, size);
    return;
 }
