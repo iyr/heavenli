@@ -20,21 +20,29 @@ class heavenliClient
       void        update(hliLamp* lamp);
       void        update(hliLamp* lamps, uint8_t numLamps);
       int         getNumLamps();
-      size_t      outPacket(uint8_t*& buffer);
+      size_t      outPacket(uint8_t* buffer);
       hliLamp     lamp;
 
    private:
       //hliLamp*    lamp;
+      /*
       size_t      writeACK(uint8_t*& buffer);   // outPacket helper, send "ACK"
       size_t      writeSYN(uint8_t*& buffer);   // outPacket helper, send "SYN"
       size_t      writeCID(uint8_t*& buffer);   // outPacket helper, send "CID!"
       size_t      writeCNL(uint8_t*& buffer);   // outPacket helper, send "CID:##CNL:#"
       size_t      writeLPR(uint8_t*& buffer);   // outPacket helper, send lamp parameters
+      */
+
+      size_t      writeACK(uint8_t* buffer);   // outPacket helper, send "ACK"
+      size_t      writeSYN(uint8_t* buffer);   // outPacket helper, send "SYN"
+      size_t      writeCID(uint8_t* buffer);   // outPacket helper, send "CID!"
+      size_t      writeCNL(uint8_t* buffer);   // outPacket helper, send "CID:##CNL:#"
+      size_t      writeLPR(uint8_t* buffer);   // outPacket helper, send lamp parameters
       void        assignLampID();
       uint32_t    runtimeCounter1;  // Used for timing
       uint32_t    timeoutCounter;   // 
-      uint32_t    timeOut;
       uint32_t    updateTimer;
+      uint32_t    CHB_timer;
       uint32_t**  lampIDs = NULL;
       int         getID();
       void        setID(uint8_t* newID);
@@ -51,6 +59,7 @@ class heavenliClient
       
       bool        client_addressed  = false; // True iff packet received has addressed this client by ID
 
+      bool        __CHB             = false; // Client 'heartbeat'
       bool        __CNL_requested   = false; // Plugin has requested total number of lamps of client
       bool        __CNL_sent        = false; // Plugin has requested total number of lamps of client
       bool        __CID_requested;  // Plugin has requested the ID of the client device

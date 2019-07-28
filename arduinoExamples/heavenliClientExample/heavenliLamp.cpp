@@ -273,11 +273,11 @@ void hliLamp::setID(const uint8_t* newID) {
    return;
 }
       
-char hliLamp::getMasterSwitchBehavior() {
+int8_t hliLamp::getMasterSwitchBehavior() {
    return this->masterSwitchBehavior;
 }
 
-void hliLamp::setMasterSwitchBehavior(char newBehavior) {
+void hliLamp::setMasterSwitchBehavior(int8_t newBehavior) {
    this->masterSwitchBehavior = newBehavior;
    return;
 }

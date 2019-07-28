@@ -52,8 +52,8 @@ class hliLamp
       void     setID(const uint8_t* newID);
       
       // Getter/Setter for how lamp responds to input from the master switch
-      char     getMasterSwitchBehavior();
-      void     setMasterSwitchBehavior(char newBehavior);
+      int8_t   getMasterSwitchBehavior();
+      void     setMasterSwitchBehavior(int8_t newBehavior);
 
       // Getter/Setter for number of bulbs on the lamp
       void     setNumBulbs(uint8_t newNumBulbs);
@@ -86,8 +86,8 @@ class hliLamp
       uint8_t     metaLampLevel = 0;
 
       char*       alias = 'quack';
-      char        id[2];
-      char        masterSwitchBehavior = -1;
+      uint8_t     id[2];
+      int8_t      masterSwitchBehavior = -1;
 
       bool        mutableBulbCount = false;
       bool        lampAddressed = false;

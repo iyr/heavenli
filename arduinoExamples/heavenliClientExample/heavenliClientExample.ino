@@ -22,6 +22,7 @@ void setup() {
    //strip.show();
    //strip.setBrightness(64);
 
+   /*
    digitalWrite(LED_BUILTIN, HIGH);
    delay(500);
    digitalWrite(LED_BUILTIN, LOW);
@@ -37,16 +38,17 @@ void setup() {
    digitalWrite(LED_BUILTIN, HIGH);
    delay(200);
    digitalWrite(LED_BUILTIN, LOW);
+   */
    timer = millis();
 }
 
 void loop() {
    if (millis() - timer > 1000) {
       if (flipflop) {
-         digitalWrite(LED_BUILTIN, HIGH);
+         digitalWrite(LED_BUILTIN, LOW);
          flipflop = !flipflop;
       } else {
-         digitalWrite(LED_BUILTIN, LOW);
+         digitalWrite(LED_BUILTIN, HIGH);
          flipflop = !flipflop;
       }
       timer = millis();
@@ -64,11 +66,12 @@ void loop() {
 
    //strip.show();
    size_t size;
-   uint8_t* buffer;
+   uint8_t buffer[56];
    size = client.outPacket(buffer);
-   commPort.send(buffer, size);
    client.update();
+   commPort.send(buffer, size);
    commPort.update();
+   //delete [] buffer;
 }
 
 void packetReceived(const uint8_t* buffer, size_t size) {

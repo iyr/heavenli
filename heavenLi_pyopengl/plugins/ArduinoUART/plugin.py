@@ -72,14 +72,18 @@ class Plugin():
                             self.devices[i].requestNumLamps()
 
                         if (self.devices[i].getNumLamps() > 0):
-                            if (time.time() - self.devices[i].targetColorTimer > 0.0125):
+                            #if (time.time() - self.devices[i].targetColorTimer > 0.0125):
+                            if (self.devices[i].RTS):
                                 if ( self.devices[i].connectedLamps[0].isReady(False)):
+                                #if ( True ):
+                                    pass
                                     self.devices[i].setTargetColors(self.devices[i].connectedLamps[0])
+                                    self.devices[i].RTS = False
 
-                                    if (self.devices[i].currentBulb >= 9):
-                                        self.devices[i].currentBulb = 0
-                                    else:
-                                        self.devices[i].currentBulb += 1
+                                    #if (self.devices[i].currentBulb >= 9):
+                                        #self.devices[i].currentBulb = 0
+                                    #else:
+                                        #self.devices[i].currentBulb += 1
                                     
                                 else:
                                     print("requesting parameters")
@@ -166,6 +170,10 @@ class Plugin():
             self.synackSent     = False
             self.synackTimeout  = time.time()
 
+            # When plugin has received all lamps on the client device and is ready
+            # to send/receive color/attrib data, this is true (READY TO SEND)
+            self.RTS            = False
+
             # Allow host to send requests without utterly spamming the poor microcontroller
             self.requestSent    = False
             self.requestTimeout = time.time()
@@ -219,11 +227,26 @@ class Plugin():
                 if (bytesToRead > 0):
                     print("[HOST] Incoming Bytes: " + str(int(bytesToRead)))
                     zeroByte = b'\x00'
-                    mess = self.serialDevice.read_until( zeroByte )
+                    zeroByteFound = False
+                    bop = 0
+                    #mess = self.serialDevice.read_until( zeroByte )
+                    mess = self.serialDevice.read(bytesToRead)
+                    while ((zeroByteFound == False) and (bop < bytesToRead)):
+                        #print(mess[bop], ord(zeroByte))
+                        if (mess[bop] == ord(zeroByte)):
+                            #mess = mess[:bop+1]
+                            mess = mess[:bop+1]
+                            print("Zero byte found!")
+                            zeroByteFound = True
+                        bop += 1
                     print("Data BEFORE COBS decoding: ", mess)
+                    #print("mess: ", mess)
                     try:
                         mess = str(cobs.decode( mess[:-1] ) )[2:-1]
-                    except:
+                    except Exception as OOF:
+                        print("failed to decode packet :(")
+                        print(traceback.format_exc())
+                        print("Error: ", OOF)
                         return
 
                     # Fix non-character bytes
@@ -235,11 +258,10 @@ class Plugin():
                         tmsb = mess[badBytePos+4:]
                         tmsa = mess[:badBytePos]+str(chr(tmc))
                         mess = tmsa+tmsb
-                    print("Data received. Packet:", mess, "End: Packet.")
+                    print("Data received. Packet:", mess, "End of Packet")
 
                     # Get Client ID
                     if ("CID!" in str(mess)):
-
                         # Parse Client ID from packet
                         pos = str(mess).index("CID!")+4
                         demess = mess[pos:pos+2]
@@ -264,7 +286,7 @@ class Plugin():
 
                     # Get Client number of lamps
                     tms = chr(self.clientID[0]) + chr(self.clientID[1])
-                    if (("CID:" + tms) in str(mess) and ("CNL!" in str(mess))):
+                    if ((("CID:" + tms) in str(mess)) and ("CNL!" in str(mess))):
                         pos = mess.index("CNL!")+4
                         demess = mess[pos:pos+1]
                         deviceNumLamps = ord(demess[0])
@@ -284,7 +306,7 @@ class Plugin():
 
                     # Get Lamp ID
                     tms = chr(self.clientID[0]) + chr(self.clientID[1])
-                    if ((("CID:" + tms) in str(mess)) and ("LID:" in str(mess))):
+                    if ((("CID:" + tms) in str(mess)) and ("LID:" in str(mess)) and (len(self.connectedLamps) > 0)):
 
                         # Parse Lamp ID from packet
                         pos = str(mess).index("LID:")+4
@@ -298,18 +320,18 @@ class Plugin():
                             print("Invalid Lamp ID:", ID_a, ID_b)
                             newID = [random.randint(1, 254), random.randint(1, 254)]
                         else:
-                            print("Received Lamp ID:", ID_a, ID_b)
+                            #print("Received Lamp ID:", ID_a, ID_b)
                             #print("Received Lamp ID:", chr(ID_a), chr(ID_b))
-                            if (len(self.connectedLamps) < 2):
+                            if (len(self.connectedLamps) == 1):
                                 self.connectedLamps[0].setID([ID_a, ID_b])
 
                                 # Parse Lamp number of bulbs from packet
                                 if ("NB!" in str(mess)):  
                                     pos = str(mess).index("NB!")+3
                                     demess = mess[pos:pos+1]
-                                    print(str(self.connectedLamps[0].getID()) + 
-                                            ": numBulbs: " + 
-                                            str(ord(demess[0])))
+                                    #print(str(self.connectedLamps[0].getID()) + 
+                                            #": numBulbs: " + 
+                                            #str(ord(demess[0])))
                                     self.connectedLamps[0].setNumBulbs(ord(demess[0]))
 
                                 # Parse Lamp Bulb Count Mutability from packet
@@ -337,10 +359,13 @@ class Plugin():
                                     demess = ord(demess[0])
                                     if (demess > 127):
                                         demess -= 256
-                                    print("Received Master Switch Behavior: " + str(demess))
                                     self.connectedLamps[0].setMasterSwitchBehavior(demess)
 
-                            self.serialDevice.flushInput()
+                                if (self.connectedLamps[0].isReady(False)):
+                                    self.RTS = True
+                                    pass
+
+                            #self.serialDevice.flushInput()
 
 
             except Exception as OOF:
@@ -369,6 +394,8 @@ class Plugin():
                     mess = self.serialDevice.read_until( zeroByte )
                     print("Data BEFORE COBS decoding: ", mess)
                     mess = str(cobs.decode( mess[0:-1] )[:-1])[2:-1]
+                    print(mess)
+                    #mess = str(cobs.decode( mess[0:-1] )[:-1])[2:-1]
 
                     # If Synchronize Packet received, note it, then send a synack packet
                     #if (mess == "SYN" and
@@ -428,28 +455,27 @@ class Plugin():
                 tmtc = []
 
                 # Pack all bulb target RGB colors into one array
-                #for i in range(10):
+                for i in range(10):
 
                     # Append color if iterate is less than numBulbs, else append black
-                    #if (i < lamp.numBulbs):
-                        #tmc = lamp.getBulbTargetRGB(i)
-                        #for j in range(3):
-                            #tmtc.append(int(tmc[j]*255))
-                    #else:
-                        #for j in range(3):
-                            #tmtc.append(int(0))
-                #print(len(enmess), "enmess: ", enmess)
+                    if (i < lamp.numBulbs):
+                        tmc = lamp.getBulbTargetRGB(i)
+                        for j in range(3):
+                            tmtc.append(int(tmc[j]*255))
+                    else:
+                        for j in range(3):
+                            tmtc.append(int(0))
 
-                tmc = lamp.getBulbTargetRGB(self.currentBulb)
-                tmtc.append(int(self.currentBulb))
-                tmtc.append(int(tmc[0]*255))
-                tmtc.append(int(tmc[1]*255))
-                tmtc.append(int(tmc[2]*255))
+                #tmc = lamp.getBulbTargetRGB(self.currentBulb)
+                #tmtc.append(int(self.currentBulb))
+                #tmtc.append(int(tmc[0]*255))
+                #tmtc.append(int(tmc[1]*255))
+                #tmtc.append(int(tmc[2]*255))
                 enmess = cobs.encode(
                         b'CID:'+bytearray(tmcid)+
                         b'LID:'+bytearray(tmlid)+
                         b'BTC!'+bytearray(tmtc))+b'\x01'+b'\x00'
-                print(len(enmess), "enmess: ", enmess)
+                #print(len(enmess), "enmess: ", enmess)
                 self.serialDevice.write(enmess)
                 pass
             except Exception as OOF:
@@ -527,7 +553,7 @@ class Plugin():
                     if (self.isClient <= 1):
                         del self.serialDevice
                     print(traceback.format_exc())
-                #print("Requesting Client ID on port:", self.port)
+                print("Requesting Client ID on port:", self.port)
                 pass
                 self.requestTimer = time.time()
             return
