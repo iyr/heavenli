@@ -402,9 +402,8 @@ void heavenliClient::processPacket(const uint8_t* buffer, size_t size) {
                tmc[2] = buffer[i+7];
                this->lamp.setBulbTargetRGB(buffer[i+4], tmc);
                */
-               /*
-               //if (this->lamp->isAddressed()) {
-               if (this->lamp.isAddressed()) {
+               //if (this->lamp.isAddressed()) {
+               //if (true) {
                   uint8_t tmc[3];
                   for (int j = 0; j < 10; j++) {
                      tmc[0] = buffer[j*3 + i + 4];
@@ -412,8 +411,7 @@ void heavenliClient::processPacket(const uint8_t* buffer, size_t size) {
                      tmc[2] = buffer[j*3 + i + 6];
                      this->lamp.setBulbTargetRGB(j, tmc);
                   }
-               }
-               */
+               //}
             }
          }
       }

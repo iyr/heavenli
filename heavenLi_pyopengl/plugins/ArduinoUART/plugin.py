@@ -217,18 +217,13 @@ class Plugin():
                     zeroByte = b'\x00'
                     zeroByteFound = False
                     bop = 0
-                    #mess = self.serialDevice.read_until( zeroByte )
                     mess = self.serialDevice.read(bytesToRead)
                     while ((zeroByteFound == False) and (bop < bytesToRead)):
-                        #print(mess[bop], ord(zeroByte))
                         if (mess[bop] == ord(zeroByte)):
-                            #mess = mess[:bop+1]
                             mess = mess[:bop+1]
-                            print("Zero byte found!")
                             zeroByteFound = True
                         bop += 1
                     print("Data BEFORE COBS decoding: ", mess)
-                    #print("mess: ", mess)
                     try:
                         mess = str(cobs.decode( mess[:-1] ) )[2:-1]
                     except Exception as OOF:
@@ -448,7 +443,7 @@ class Plugin():
                     if (i < lamp.numBulbs):
                         tmc = lamp.getBulbTargetRGB(i)
                         for j in range(3):
-                            tmtc.append(int(tmc[j]*255))
+                            tmtc.append(int(pow(tmc[j], 2)*255))
                     else:
                         for j in range(3):
                             tmtc.append(int(0))
