@@ -224,37 +224,10 @@ size_t heavenliClient::outPacket(uint8_t* buffer) {
 
          // Plugin has requested the ID of the Client Device (HOST: getClientID)
          if (  this->__CID_requested   == true  && 
-               this->isConnected       == true  &&
-               this->outBufferFull     == false ){
+               this->isConnected       == true  ){
 
             this->__CID_requested = false;
             return this->writeCID(buffer);
-
-         /*
-         // Prepend Client ID to packet for host to address
-         if (  this->client_addressed  == true  && (
-               this->__CNL_requested   == true  ||
-               this->__ALL_requested   == true )){
-            // Number of bytes it will take to send parameter information
-            uint8_t paramBytes = 0;
-            char tmb[10];
-
-            tmb[paramBytes] = 'C'; paramBytes++;
-            tmb[paramBytes] = 'I'; paramBytes++;
-            tmb[paramBytes] = 'D'; paramBytes++;
-            tmb[paramBytes] = ':'; paramBytes++;
-            tmb[paramBytes] = this->id[0]; paramBytes++;
-            tmb[paramBytes] = this->id[1]; paramBytes++;
-
-            // Check if we have enough space in out output buffer
-            if (paramBytes + numBytes >= byteLimit) {
-               this->outBufferFull = true;
-            } else {
-               for (int i = 0; i < paramBytes; i++)
-                  message[numBytes+i] = tmb[i];
-               numBytes += paramBytes;
-            }
-         */
          }
 
          // Plugin has requested the Number of lamps on the Client Device (HOST: requestNumLamps)
@@ -262,27 +235,6 @@ size_t heavenliClient::outPacket(uint8_t* buffer) {
                this->isConnected       == true  &&
                this->client_addressed  == true  ){
 
-            /*
-            // Number of bytes it will take to send parameter information
-            uint8_t paramBytes = 0;
-            char tmb[10];
-
-            tmb[paramBytes] = 'C'; paramBytes++;
-            tmb[paramBytes] = 'N'; paramBytes++;
-            tmb[paramBytes] = 'L'; paramBytes++;
-            tmb[paramBytes] = '!'; paramBytes++;
-            tmb[paramBytes] = this->numLamps; paramBytes++;
-
-            // Check if we have enough space in out output buffer
-            if (paramBytes + numBytes >= byteLimit) {
-               this->outBufferFull = true;
-            } else {
-               for (int i = 0; i < paramBytes; i++)
-                  message[numBytes+i] = tmb[i];
-               numBytes += paramBytes;
-               this->__CNL_requested = false;
-            }
-            */
             this->__CNL_requested = false;
             return this->writeCNL(buffer);
          }
@@ -290,68 +242,11 @@ size_t heavenliClient::outPacket(uint8_t* buffer) {
          // Plugin has requested all base parameters of a lamp
          if (  this->__ALL_requested   == true  && 
                this->client_addressed  == true  &&
-               this->isConnected       == true  &&
-               this->outBufferFull     == false ){
+               this->isConnected       == true  ){
 
             this->__ALL_requested = false;
             return this->writeLPR(buffer);
 
-            /*
-            // Number of bytes it will take to send parameter information
-            uint8_t paramBytes = 0;
-            uint8_t tmb[50];
-
-            uint8_t* tmid;
-            this->lamp.getID(tmid);
-            tmb[paramBytes] = 'L'; paramBytes++;
-            tmb[paramBytes] = 'I'; paramBytes++;
-            tmb[paramBytes] = 'D'; paramBytes++;
-            tmb[paramBytes] = ':'; paramBytes++;
-            tmb[paramBytes] = tmid[0]; paramBytes++;
-            tmb[paramBytes] = tmid[1]; paramBytes++;
-            
-            tmb[paramBytes] = 'N'; paramBytes++;
-            tmb[paramBytes] = 'B'; paramBytes++;
-            tmb[paramBytes] = '!'; paramBytes++;
-            tmb[paramBytes] = this->lamp.getNumBulbs(); paramBytes++;
-
-            tmb[paramBytes] = 'C'; paramBytes++;
-            tmb[paramBytes] = 'M'; paramBytes++;
-            tmb[paramBytes] = '!'; paramBytes++;
-            tmb[paramBytes] = this->lamp.getBulbCountMutability(); paramBytes++;
-
-            tmb[paramBytes] = 'A'; paramBytes++;
-            tmb[paramBytes] = 'R'; paramBytes++;
-            tmb[paramBytes] = '!'; paramBytes++;
-            tmb[paramBytes] = this->lamp.getArrangement(); paramBytes++;
-
-            //tmb[paramBytes] = 'A'; paramBytes++;
-            //tmb[paramBytes] = 'O'; paramBytes++;
-            //tmb[paramBytes] = '!'; paramBytes++;
-
-            tmb[paramBytes] = 'L'; paramBytes++;
-            tmb[paramBytes] = 'L'; paramBytes++;
-            tmb[paramBytes] = '!'; paramBytes++;
-            tmb[paramBytes] = this->lamp.getMetaLampLevel(); paramBytes++;
-
-            tmb[paramBytes] = 'S'; paramBytes++;
-            tmb[paramBytes] = 'B'; paramBytes++;
-            tmb[paramBytes] = '!'; paramBytes++;
-            tmb[paramBytes] = this->lamp.getMasterSwitchBehavior(); paramBytes++;
-
-            //tmb[paramBytes] = 'V'; paramBytes++;
-            //tmb[paramBytes] = 'Q'; paramBytes++;
-            //tmb[paramBytes] = '!'; paramBytes++;
-
-            // Check if we have enough space in out output buffer
-            if (paramBytes + numBytes >= byteLimit) {
-               this->outBufferFull = true;
-            } else {
-               for (int i = 0; i < paramBytes; i++)
-                  message[numBytes+i] = tmb[i];
-               numBytes += paramBytes;
-            }
-            */
          }
 
          // Update plugin
@@ -362,53 +257,6 @@ size_t heavenliClient::outPacket(uint8_t* buffer) {
             this->__CHB = false;
             return this->writeLPR(buffer);
          }
-
-
-         // If lamp was addressed, respond with current bulb colors
-         if (  false &&//this->lamp.isAddressed()   == true  && 
-               this->client_addressed     == true  &&
-               this->__BCC_sent           == false &&
-               this->outBufferFull        == false ){
-            
-            /*
-            // Number of bytes it will take to send parameter information
-            uint8_t paramBytes = 0;
-            uint8_t tmb[35];
-            uint8_t tmc[3];
-
-            for (int j = 0; j < 10; j++) {
-               this->lamp.getBulbCurrentRGB(j, tmc);
-               tmb[paramBytes] = tmc[0]; paramBytes++;
-               tmb[paramBytes] = tmc[1]; paramBytes++;
-               tmb[paramBytes] = tmc[2]; paramBytes++;
-            }
-
-            // Check if we have enough space in out output buffer
-            if (paramBytes + numBytes >= byteLimit) {
-               this->outBufferFull = true;
-            } else {
-               for (int i = 0; i < paramBytes; i++)
-                  message[numBytes+i] = tmb[i];
-               numBytes += paramBytes;
-               this->__CNL_requested = false;
-            }
-            this->lamp.setAddressed(false);
-            this->__BCC_sent = true;
-            */
-         }
-
-         /*
-         // Write contents to buffer
-         if (numBytes < byteLimit) {
-            buffer = new uint8_t[numBytes];
-            for (int i = 0; i < numBytes; i++)
-               buffer[i] = message[i];
-         } else {
-            buffer = new uint8_t[0];
-            return 0;
-         }
-         */
-
       }
 
       this->runtimeCounter1 = millis();
