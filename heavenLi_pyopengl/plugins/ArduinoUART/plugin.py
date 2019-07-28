@@ -72,18 +72,10 @@ class Plugin():
                             self.devices[i].requestNumLamps()
 
                         if (self.devices[i].getNumLamps() > 0):
-                            #if (time.time() - self.devices[i].targetColorTimer > 0.0125):
-                            if (self.devices[i].RTS):
+                            if (time.time() - self.devices[i].targetColorTimer > 0.0125):
                                 if ( self.devices[i].connectedLamps[0].isReady(False)):
-                                #if ( True ):
                                     pass
                                     self.devices[i].setTargetColors(self.devices[i].connectedLamps[0])
-                                    self.devices[i].RTS = False
-
-                                    #if (self.devices[i].currentBulb >= 9):
-                                        #self.devices[i].currentBulb = 0
-                                    #else:
-                                        #self.devices[i].currentBulb += 1
                                     
                                 else:
                                     print("requesting parameters")
@@ -169,10 +161,6 @@ class Plugin():
             self.synReceived    = False
             self.synackSent     = False
             self.synackTimeout  = time.time()
-
-            # When plugin has received all lamps on the client device and is ready
-            # to send/receive color/attrib data, this is true (READY TO SEND)
-            self.RTS            = False
 
             # Allow host to send requests without utterly spamming the poor microcontroller
             self.requestSent    = False
@@ -362,7 +350,6 @@ class Plugin():
                                     self.connectedLamps[0].setMasterSwitchBehavior(demess)
 
                                 if (self.connectedLamps[0].isReady(False)):
-                                    self.RTS = True
                                     pass
 
                             #self.serialDevice.flushInput()
@@ -572,7 +559,7 @@ class Plugin():
                 tms = [(self.clientID[0]), (self.clientID[1])]
                 tml = [(lamp.lid[0]), (lamp.lid[1])]
                 enmess = cobs.encode(b'CID:'+bytes(tms)+b'LID:'+bytes(tml)+b'PAR?')+b'\x01'+b'\x00'
-                #print(enmess)
+                print("enmess: ", enmess)
                 self.serialDevice.write(enmess)
                 pass
                 self.requestTimer = time.time()
