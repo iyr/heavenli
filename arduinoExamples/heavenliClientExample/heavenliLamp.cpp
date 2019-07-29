@@ -9,7 +9,7 @@ hliLamp::hliLamp() {
    //this->isMetaLamp = false;
    this->bulbsTargetRGB[10][3];
    this->bulbsCurrentRGB[10][3];
-   this->alias[16] = 'demo';
+   //this->alias[16] = 'demo';
    int extraEntropy = 0;
    int seed = 0;
    for (int i = 0; i < 9; i++)
@@ -32,7 +32,7 @@ hliLamp::hliLamp(long extraEntropy) {
    //this->isMetaLamp = false;
    this->bulbsTargetRGB[10][3];
    this->bulbsCurrentRGB[10][3];
-   this->alias[16] = 'demo';
+   //this->alias[16] = 'demo';
    long EE = extraEntropy;
    long seed = 0;
    for (int i = 0; i < 9; i++)
@@ -50,9 +50,10 @@ hliLamp::hliLamp(long extraEntropy) {
 
 /*
  * Constructor overload for adding extra RNG entropy
- * and Setting Lamp alias (limited to 16 characters)
+ * and Setting Lamp alias (limited to 16 uint8_tacters)
  */
-hliLamp::hliLamp(char* alias, size_t numChars, long extraEntropy) {
+/*
+hliLamp::hliLamp(uint8_t* alias, size_t numChars, long extraEntropy) {
    this->numBulbs = 1;
    //this->isMetaLamp = false;
    this->bulbsTargetRGB[10][3];
@@ -80,11 +81,13 @@ hliLamp::hliLamp(char* alias, size_t numChars, long extraEntropy) {
    RGB[0]=0; RGB[1]=0; RGB[2]=0;
    this->setBulbsCurrentRGB(RGB);
 }
+*/
 
 /*
- * Constructor overload for Setting Lamp alias (limited to 16 characters)
+ * Constructor overload for Setting Lamp alias (limited to 16 uint8_tacters)
  */
-hliLamp::hliLamp(char* alias, size_t numChars) {
+/*
+hliLamp::hliLamp(uint8_t* alias, size_t numChars) {
    this->numBulbs = 1;
    //this->isMetaLamp = false;
    this->bulbsTargetRGB[10][3];
@@ -113,6 +116,7 @@ hliLamp::hliLamp(char* alias, size_t numChars) {
    RGB[0]=0; RGB[1]=0; RGB[2]=0;
    this->setBulbsCurrentRGB(RGB);
 }
+*/
 
 // Eh
 void hliLamp::init() {
@@ -129,21 +133,23 @@ bool hliLamp::isAddressed(){
    return this->lampAddressed;
 }
 
-void hliLamp::getAlias(char*& knickname) {
-   knickname = new char[16];
+/*
+void hliLamp::getAlias(uint8_t*& knickname) {
+   knickname = new uint8_t[16];
    for (uint8_t i = 0; i < 16; i++) {
       knickname[i] = this->alias[i];
    }
    return;
 }
 
-void hliLamp::setAlias(char* newKnickname) {
-   this->alias = new char[16];
+void hliLamp::setAlias(uint8_t* newKnickname) {
+   this->alias = new uint8_t[16];
    for (uint8_t i = 0; i < 16; i++) {
       this->alias[i] = newKnickname[i];
    }
    return;
 }
+*/
 
 float hliLamp::getAngularOffset() {
    return this->angularOffset;
@@ -256,12 +262,11 @@ void hliLamp::setBulbsTargetRGB(uint8_t* newRGB) {
    return;
 }
 
-int hliLamp::getID() {
-   return this->id;
-}
+//int hliLamp::getID() {
+   //return this->id;
+//}
 
-void hliLamp::getID(uint8_t*& ID) {
-   ID = new uint8_t[2];
+void hliLamp::getID(uint8_t* ID) {
    ID[0] = this->id[0];
    ID[1] = this->id[1];
    return;
@@ -304,8 +309,8 @@ uint8_t hliLamp::getMetaLampLevel() {
    return this->metaLampLevel;
 }
 
-void hliLamp::getValidBulbQuantities(uint8_t*& quantities) {
-   quantities = new uint8_t[10];
+void hliLamp::getValidBulbQuantities(uint8_t* quantities) {
+   //quantities = new uint8_t[10];
    for (int i = 0; i < 10; i++) {
       quantities[i] = this->validBulbCounts[i];
    }

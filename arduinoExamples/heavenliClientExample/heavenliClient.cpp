@@ -1,7 +1,7 @@
 #include "Arduino.h"
 #include "heavenliClient.h"
 #include "heavenliLamp.h"
-#include <EEPROM.h>
+//#include <EEPROM.h>
 
 heavenliClient::heavenliClient() {
    this->isConnected       = false; 
@@ -17,8 +17,10 @@ heavenliClient::heavenliClient() {
    this->CHB_timer         = millis();
 
    // Determine if device has an ID set (cannot be 0, 255, or FF)
-   this->id[0] = EEPROM.read(this->IDaddress+0);
-   this->id[1] = EEPROM.read(this->IDaddress+1);
+   this->id[0] = random(1, 254);
+   this->id[1] = random(1, 254);
+   //this->id[0] = EEPROM.read(this->IDaddress+0);
+   //this->id[1] = EEPROM.read(this->IDaddress+1);
 }
 
 // Initialize client with exactly one lamp
@@ -87,32 +89,26 @@ void heavenliClient::update(hliLamp* lamps, uint8_t numLamps)
    return;
 }
 
-//size_t heavenliClient::writeACK(uint8_t*& buffer) {
 size_t heavenliClient::writeACK(uint8_t* buffer) {
    size_t paramBytes = 0;
-   //buffer = new uint8_t[4];
    buffer[paramBytes] = 'A'; paramBytes++;
    buffer[paramBytes] = 'C'; paramBytes++;
    buffer[paramBytes] = 'K'; paramBytes++;
    buffer[paramBytes] = 0; paramBytes++;
-   return paramBytes;//+1;
+   return paramBytes;
 }
 
-//size_t heavenliClient::writeSYN(uint8_t*& buffer) {
 size_t heavenliClient::writeSYN(uint8_t* buffer) {
    size_t paramBytes = 0;
-   //buffer = new uint8_t[4];
    buffer[paramBytes] = 'S'; paramBytes++;
    buffer[paramBytes] = 'Y'; paramBytes++;
    buffer[paramBytes] = 'N'; paramBytes++;
    buffer[paramBytes] = 0; paramBytes++;
-   return paramBytes;//+1;
+   return paramBytes;
 }
 
-//size_t heavenliClient::writeCID(uint8_t*& buffer) {
 size_t heavenliClient::writeCID(uint8_t* buffer) {
    size_t paramBytes = 0;
-   //buffer = new uint8_t[7];
    buffer[paramBytes] = 'C'; paramBytes++;
    buffer[paramBytes] = 'I'; paramBytes++;
    buffer[paramBytes] = 'D'; paramBytes++;
@@ -120,13 +116,11 @@ size_t heavenliClient::writeCID(uint8_t* buffer) {
    buffer[paramBytes] = this->id[0]; paramBytes++;
    buffer[paramBytes] = this->id[1]; paramBytes++;
    buffer[paramBytes] = 0; paramBytes++;
-   return paramBytes;//+1;
+   return paramBytes;
 }
 
-//size_t heavenliClient::writeCNL(uint8_t*& buffer) {
 size_t heavenliClient::writeCNL(uint8_t* buffer) {
    size_t paramBytes = 0;
-   //buffer = new uint8_t[11];
    buffer[paramBytes] = 'C'; paramBytes++;
    buffer[paramBytes] = 'I'; paramBytes++;
    buffer[paramBytes] = 'D'; paramBytes++;
@@ -138,16 +132,14 @@ size_t heavenliClient::writeCNL(uint8_t* buffer) {
    buffer[paramBytes] = 'L'; paramBytes++;
    buffer[paramBytes] = '!'; paramBytes++;
    buffer[paramBytes] = this->numLamps; paramBytes++;
-   return paramBytes;//+1;
+   return paramBytes;
 }
 
-//size_t heavenliClient::writeLPR(uint8_t*& buffer) {
 size_t heavenliClient::writeLPR(uint8_t* buffer) {
    size_t paramBytes = 0;
-   uint8_t* tmid;
+   uint8_t tmid[2];
    this->lamp.getID(tmid);
 
-   //buffer = new uint8_t[32];
    buffer[paramBytes] = 'C'; paramBytes++;
    buffer[paramBytes] = 'I'; paramBytes++;
    buffer[paramBytes] = 'D'; paramBytes++;
@@ -195,16 +187,13 @@ size_t heavenliClient::writeLPR(uint8_t* buffer) {
    //buffer[paramBytes] = 'Q'; paramBytes++;
    //buffer[paramBytes] = '!'; paramBytes++;
 
-   return paramBytes;//+1;
+   return paramBytes;
 }
 
 /*
  * Prepares Packet to be sent to host
  */
 size_t heavenliClient::outPacket(uint8_t* buffer) {
-   //size_t   numBytes = 0;
-   //uint8_t  byteLimit = 56;
-   //uint8_t  message[byteLimit];
 
    if (millis() - this->runtimeCounter1 > 500) {
 
@@ -274,9 +263,13 @@ size_t heavenliClient::outPacket(uint8_t* buffer) {
 void heavenliClient::processPacket(const uint8_t* buffer, size_t size) {
 
    // Before we can start sending or receiving data
-   //
    char tmp[] = "SYNACK";
-   if (strcmp(tmp, buffer) == 0) {
+   char tmb[size];
+   for (int i = 0; i < size; i++) {
+      tmb[i] = buffer[i];
+   }
+
+   if (strcmp(tmp, tmb) == 0) {
       this->synackReceived = true;
       this->connectionEstablished = true;
    } else 
@@ -427,9 +420,11 @@ bool heavenliClient::establishConnection() {
 }
 
 // IMPLEMENTED THIS FOR FUTURE USE NOW PLS
+/*
 int heavenliClient::getID() {
    return this->id;
 }
+*/
 
 void heavenliClient::setID(uint8_t* newID) {
    // Ensure ID is not 0, 255, or FF
@@ -439,8 +434,8 @@ void heavenliClient::setID(uint8_t* newID) {
    } else {
       this->id[0] = newID[0];
       this->id[1] = newID[1];
-      EEPROM.update(this->IDaddress+0, this->id[0]);
-      EEPROM.update(this->IDaddress+1, this->id[1]);
+      //EEPROM.update(this->IDaddress+0, this->id[0]);
+      //EEPROM.update(this->IDaddress+1, this->id[1]);
       return;
    }
 }

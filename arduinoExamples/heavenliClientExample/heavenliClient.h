@@ -19,20 +19,12 @@ class heavenliClient
       void        update();
       void        update(hliLamp* lamp);
       void        update(hliLamp* lamps, uint8_t numLamps);
-      int         getNumLamps();
+      //uint8_t     getNumLamps();
       size_t      outPacket(uint8_t* buffer);
       hliLamp     lamp;
 
    private:
       //hliLamp*    lamp;
-      /*
-      size_t      writeACK(uint8_t*& buffer);   // outPacket helper, send "ACK"
-      size_t      writeSYN(uint8_t*& buffer);   // outPacket helper, send "SYN"
-      size_t      writeCID(uint8_t*& buffer);   // outPacket helper, send "CID!"
-      size_t      writeCNL(uint8_t*& buffer);   // outPacket helper, send "CID:##CNL:#"
-      size_t      writeLPR(uint8_t*& buffer);   // outPacket helper, send lamp parameters
-      */
-
       size_t      writeACK(uint8_t* buffer);   // outPacket helper, send "ACK"
       size_t      writeSYN(uint8_t* buffer);   // outPacket helper, send "SYN"
       size_t      writeCID(uint8_t* buffer);   // outPacket helper, send "CID!"
@@ -44,7 +36,7 @@ class heavenliClient
       uint32_t    updateTimer;
       uint32_t    CHB_timer;
       uint32_t**  lampIDs = NULL;
-      int         getID();
+      //int         getID();
       void        setID(uint8_t* newID);
       const int   IDaddress = 'h';
 

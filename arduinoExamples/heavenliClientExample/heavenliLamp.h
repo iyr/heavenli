@@ -10,16 +10,16 @@ class hliLamp
    public:
       hliLamp();
       hliLamp(long extraEntropy);
-      hliLamp(char* alias, size_t numChars);
-      hliLamp(char* alias, size_t numChars, long extraEntropy);
+      //hliLamp(uint8_t* alias, size_t numChars);
+      //hliLamp(uint8_t* alias, size_t numChars, long extraEntropy);
 
       // Getter/Setter for whether lamp has beend addressed by ID
       bool     setAddressed(bool add);
       bool     isAddressed();
 
       // Getter/Setter for lamp's 16-Character "knick-name"
-      void     getAlias(char*& knickname);
-      void     setAlias(char* newKnickname);
+      //void     getAlias(uint8_t*& knickname);
+      //void     setAlias(uint8_t* newKnickname);
 
       // Getter/Setter for lamp's angular offset for adjusting heavenli rotation
       float    getAngularOffset();
@@ -47,8 +47,8 @@ class hliLamp
       void     setBulbsTargetRGB(uint8_t* newRGB);
 
       // Getter/Setter the lamp's 2-byte ID
-      int      getID();
-      void     getID(uint8_t*& ID);
+      //int      getID();
+      void     getID(uint8_t* ID);
       void     setID(const uint8_t* newID);
       
       // Getter/Setter for how lamp responds to input from the master switch
@@ -66,7 +66,7 @@ class hliLamp
       uint8_t  getMetaLampLevel();
 
       // If bulb-count mutability is true, list valid quantities for the lamp
-      void     getValidBulbQuantities(uint8_t*& quantities);
+      void     getValidBulbQuantities(uint8_t* quantities);
 
       // Eh
       void     init();
@@ -85,7 +85,7 @@ class hliLamp
       uint8_t     arrangement = 1;
       uint8_t     metaLampLevel = 0;
 
-      char*       alias = 'quack';
+      //uint8_t*       alias = "quack";
       uint8_t     id[2];
       int8_t      masterSwitchBehavior = -1;
 

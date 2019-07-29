@@ -57,6 +57,10 @@ class Plugin():
                     # Listen for data on known client devices
                     if (self.devices[i].isClient == 1):
                         self.devices[i].listen()
+                        if (time.time() - self.devices[i].statusDump > 1):
+                            self.devices[i].upTime = time.time() - self.devices[i].startTime
+                            print("Device: " + str(self.devices[i].clientID) + ", Uptime: " + str(self.devices[i].upTime))
+                            self.devices[i].statusDump = time.time()
 
                         # Device is a client, get ID
                         if (len(self.devices[i].clientID) != 2 or 
@@ -166,6 +170,9 @@ class Plugin():
             self.requestSent    = False
             self.requestTimeout = time.time()
             self.requestTimer   = time.time()
+            self.upTime         = time.time()
+            self.startTime      = time.time()
+            self.statusDump     = time.time()
 
             self.targetColorTimer = time.time()
 
@@ -213,7 +220,7 @@ class Plugin():
             try:
                 bytesToRead = self.serialDevice.inWaiting()
                 if (bytesToRead > 0):
-                    print("[HOST] Incoming Bytes: " + str(int(bytesToRead)))
+                    #print("[HOST] Incoming Bytes: " + str(int(bytesToRead)))
                     zeroByte = b'\x00'
                     zeroByteFound = False
                     bop = 0
@@ -223,7 +230,7 @@ class Plugin():
                             mess = mess[:bop+1]
                             zeroByteFound = True
                         bop += 1
-                    print("Data BEFORE COBS decoding: ", mess)
+                    #print("Data BEFORE COBS decoding: ", mess)
                     try:
                         mess = str(cobs.decode( mess[:-1] ) )[2:-1]
                     except Exception as OOF:
@@ -241,7 +248,7 @@ class Plugin():
                         tmsb = mess[badBytePos+4:]
                         tmsa = mess[:badBytePos]+str(chr(tmc))
                         mess = tmsa+tmsb
-                    print("Data received. Packet:", mess, "End of Packet")
+                    #print("Data received. Packet:", mess, "End of Packet")
 
                     # Get Client ID
                     if ("CID!" in str(mess)):
@@ -369,15 +376,12 @@ class Plugin():
             try:
                 bytesToRead = self.serialDevice.in_waiting
                 if (bytesToRead > 0):
-                    print(bytesToRead)
                     # Listen for Synchronize Packet from client devices
                     print("[HOST] Incoming Bytes: " + str(int(bytesToRead)))
                     zeroByte = b'\x00'
                     mess = self.serialDevice.read_until( zeroByte )
                     print("Data BEFORE COBS decoding: ", mess)
                     mess = str(cobs.decode( mess[0:-1] )[:-1])[2:-1]
-                    print(mess)
-                    #mess = str(cobs.decode( mess[0:-1] )[:-1])[2:-1]
 
                     # If Synchronize Packet received, note it, then send a synack packet
                     #if (mess == "SYN" and
