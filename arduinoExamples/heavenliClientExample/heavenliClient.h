@@ -13,6 +13,7 @@ class heavenliClient
       heavenliClient();
       bool        establishConnection();
       bool        connectionEstablished;
+      bool        useHostColors = true;   // if true, uses color data sent from host
       void        init();
       void        init(hliLamp* lamps, uint8_t numLamps);
       void        processPacket(const uint8_t* buffer, size_t size);
