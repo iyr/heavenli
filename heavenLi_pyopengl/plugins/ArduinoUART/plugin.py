@@ -2,7 +2,7 @@
 # Necessary import for all plugins
 from lampClass import *
 
-import glob, serial, sys, time, traceback, random
+import glob, serial, sys, time, traceback, random, struct
 from cobs import cobs
 
 # Largely based on solution by Thomas on stackoverflow
@@ -220,7 +220,7 @@ class Plugin():
             try:
                 bytesToRead = self.serialDevice.inWaiting()
                 if (bytesToRead > 0):
-                    #print("[HOST] Incoming Bytes: " + str(int(bytesToRead)))
+                    print("[HOST] Incoming Bytes: " + str(int(bytesToRead)))
                     zeroByte = b'\x00'
                     zeroByteFound = False
                     bop = 0
@@ -230,7 +230,7 @@ class Plugin():
                             mess = mess[:bop+1]
                             zeroByteFound = True
                         bop += 1
-                    #print("Data BEFORE COBS decoding: ", mess)
+                    print("Data BEFORE COBS decoding: ", mess)
                     try:
                         mess = str(cobs.decode( mess[:-1] ) )[2:-1]
                     except Exception as OOF:
@@ -248,7 +248,7 @@ class Plugin():
                         tmsb = mess[badBytePos+4:]
                         tmsa = mess[:badBytePos]+str(chr(tmc))
                         mess = tmsa+tmsb
-                    #print("Data received. Packet:", mess, "End of Packet")
+                    print("Data received. Packet:", mess, "End of Packet")
 
                     # Get Client ID
                     if ("CID!" in str(mess)):
@@ -335,6 +335,15 @@ class Plugin():
                                     pos = str(mess).index("AR!")+3
                                     demess = mess[pos:pos+1]
                                     self.connectedLamps[0].setArn(ord(demess[0]))
+
+                                if ("AO!" in str(mess)):
+                                    pos = str(mess).index("AO!")+3
+                                    demess = mess[pos:pos+4]
+                                    tmb = [ord(demess[0]), ord(demess[1]), ord(demess[2]), ord(demess[3])]
+                                    tmf = struct.unpack('<f', bytearray(tmb))
+                                    self.connectedLamps[0].setAngle(tmf[0])
+                                    #print(tmf[0])
+
 
                                 # Parse Lamp Meta Level from packet
                                 if ("LL!" in str(mess)):

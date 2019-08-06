@@ -169,9 +169,40 @@ size_t heavenliClient::writeLPR(uint8_t* buffer) {
    buffer[paramBytes] = '!'; paramBytes++;
    buffer[paramBytes] = this->lamp.getArrangement(); paramBytes++;
 
-   //buffer[paramBytes] = 'A'; paramBytes++;
-   //buffer[paramBytes] = 'O'; paramBytes++;
-   //buffer[paramBytes] = '!'; paramBytes++;
+   buffer[paramBytes] = 'A'; paramBytes++;
+   buffer[paramBytes] = 'O'; paramBytes++;
+   buffer[paramBytes] = '!'; paramBytes++;
+
+   float tmf = this->lamp.getAngularOffset();
+   uint8_t tmbb[4];
+   memcpy(&tmbb, &tmf, sizeof(float));
+
+   buffer[paramBytes] = tmbb[0]; paramBytes++;
+   buffer[paramBytes] = tmbb[1]; paramBytes++;
+   buffer[paramBytes] = tmbb[2]; paramBytes++;
+   buffer[paramBytes] = tmbb[3]; paramBytes++;
+   /*
+   */
+
+   /*
+   uint32_t f0, f1, f2, f3;
+   float tmf = this->lamp.getAngularOffset();
+   uint8_t tmbb = 0;
+
+   f0 = (11111111000000000000000000000000 & tmf) >> 24;
+   f1 = (00000000111111110000000000000000 & tmf) >> 16;
+   f2 = (00000000000000001111111100000000 & tmf) >> 8;
+   f3 = (00000000000000000000000011111111 & tmf);
+
+   tmbb = f0;
+   buffer[paramBytes] = tmbb; paramBytes++;
+   tmbb = f1;
+   buffer[paramBytes] = tmbb; paramBytes++;
+   tmbb = f2;
+   buffer[paramBytes] = tmbb; paramBytes++;
+   tmbb = f3;
+   buffer[paramBytes] = tmbb; paramBytes++;
+   */
 
    buffer[paramBytes] = 'L'; paramBytes++;
    buffer[paramBytes] = 'L'; paramBytes++;
