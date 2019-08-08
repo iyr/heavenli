@@ -1,6 +1,6 @@
-
 /*
  * Arduino Code that implements a HeavenLi client device
+ * Based on Adafruit Circuit Playground using NeoPixel (WS2812B) LEDs
  */
 
 // HeavenLi Client Library
@@ -49,18 +49,18 @@ void loop() {
    // Initialize empty array of bytes to store bulb colors
    uint8_t rgb[3];
 
-   // Get RGB values of the indexed bulb on the virtual lamp
-   client.lamp.getBulbCurrentRGB(0, rgb);
-   // Set NeoPixel LED color to bulb color with basic color calibration
-   for (int i = 0; i < 5; i++) {
-      strip.setPixelColor(i, strip.Color(rgb[0], (rgb[1]*2)/3, rgb[2]/2));
-   }
+   // Calculate number of LEDs along a strip each bulb affects
+   uint8_t LEDsPerBulb = LED_COUNT / client.lamp.getNumBulbs();
 
-   // Get RGB values of the indexed bulb on the virtual lamp
-   client.lamp.getBulbCurrentRGB(1, rgb);
-   // Set NeoPixel LED color to bulb color with basic color calibration
-   for (int i = 5; i < 10; i++) {
-      strip.setPixelColor(i, strip.Color(rgb[0], (rgb[1]*2)/3, rgb[2]/2));
+   // Iterate through lamp's bulbs
+   for (int bulb = 0; bulb < client.lamp.getNumBulbs(); bulb++) {
+      // Get RGB values of bulb
+      client.lamp.getBulbCurrentRGB(bulb, rgb);
+
+      // Set respective led colors according to the bulb's rgb
+      for (int led = 0; led < LEDsPerBulb; led++) {
+         strip.setPixelColor(led + bulb*LEDsPerBulb, rgb[0], rgb[1], rgb[2]);
+      }
    }
 
    // Update the colors of the LED strip
