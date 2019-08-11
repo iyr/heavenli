@@ -1,7 +1,7 @@
 # HeavenLi: 
 ##### HeavenLi Light interface
 ---
-![N|Solid](https://forwardsweep.net/upload/2019/08/08/20190808230018-4e4b5151.gif)
+![demo](https://forwardsweep.net/upload/2019/08/08/20190808230018-4e4b5151.gif)
 
 Intuitive, form-centric, performant. 
 HeavenLi Light interface is an extensible application for controlling color-capable (RGB) lights. 
