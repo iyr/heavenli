@@ -3,9 +3,9 @@
 ---
 ![demo](https://forwardsweep.net/upload/2019/08/11/20190811160638-834a1a8f.gif)
 
-Intuitive, form-centric, performant. 
-HeavenLi Light interface is an extensible application for controlling color-capable (RGB) lights. 
-HeavenLi is written in Python3 with all graphical draw code written in C/C++ and OpenGL.
+Intuitive, form-centric, performant.  
+HeavenLi Light interface is an extensible application for controlling color-capable (RGB) lights.  
+HeavenLi is written in Python3 with all graphical draw code written in C/C++ and OpenGL.  
 
 ---
 ### Contents
