@@ -32,8 +32,8 @@ def getSerialPorts():
 
     return result
 
+# Plugins are loaded as classes 
 class Plugin():
-
     def __init__(self):
         self.lamps = []
         self.clients = []
@@ -45,7 +45,7 @@ class Plugin():
         self.numPorts = 0
         pass
 
-    # Necessary for Heavenli integration
+    # Necessary for Heavenli integration, called on every frame-draw
     def update(self):
         if (time.time() - self.t0 > 0.01):#0.125):#0.005):
             pass
@@ -63,18 +63,15 @@ class Plugin():
                             self.devices[i].statusDump = time.time()
 
                         # Device is a client, get ID
-                        if (len(self.devices[i].clientID) != 2 or 
-                               (self.devices[i].clientID[0] == 255 and
-                                   self.devices[i].clientID[1] == 255)):
-
+                        if (len(self.devices[i].clientID) != 2 or (self.devices[i].clientID[0] == 255 and self.devices[i].clientID[1] == 255)):
                             self.devices[i].requestClientID()
 
                         # If Device has no lamps (ready), 
                         # ping until lamps are available
-                        if (self.devices[i].getNumLamps() == 0 and
-                            len(self.devices[i].clientID) == 2):
+                        if (self.devices[i].getNumLamps() == 0 and len(self.devices[i].clientID) == 2):
                             self.devices[i].requestNumLamps()
 
+                        # Set lamp target colors if lamp is ready
                         if (self.devices[i].getNumLamps() > 0):
                             if (time.time() - self.devices[i].targetColorTimer > 0.0125):
                                 if ( self.devices[i].connectedLamps[0].isReady(False)):
@@ -141,6 +138,7 @@ class Plugin():
                 # Check for any new lamps not already connected
                 #if (self.devices[i].getConnectedLamps()[j] not in self.lamps):
                     #self.lamps.append(self.devices[i].getConnectedLamps()[j])
+
         self.lamps = quack
         #print("ARDUINO PLUGIN: number of lamps: " + str(len(self.lamps)))
         return self.lamps
@@ -470,7 +468,7 @@ class Plugin():
                         b'CID:'+bytearray(tmcid)+
                         b'LID:'+bytearray(tmlid)+
                         b'BTC!'+bytearray(tmtc))+b'\x01'+b'\x00'
-                #print(len(enmess), "enmess: ", enmess)
+                print(len(enmess), "enmess: ", enmess)
                 self.serialDevice.write(enmess)
                 pass
             except Exception as OOF:
