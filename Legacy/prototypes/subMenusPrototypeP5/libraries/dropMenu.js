@@ -141,18 +141,18 @@ class dropMenu {
 
   //Detect User Input Helper
   watchPoint(px, py, pr) {
-	if (touches.length == 0 && !isMousePressed)
+	if (touches.length == 0 && !mouseIsPressed)
 	  this.interaction = false;
-	if (touches.length >= 1 || isMousePressed)
+	if (touches.length >= 1 || mouseIsPressed)
 	  this.interaction = true;
 
 	var wasMousePressed = false;
 	if (1 >= pow((mouseX-px), 2) / pow(pr/2, 2) + pow((mouseY - py), 2) / pow(pr/2, 2)) 
 	{
-	  if (touches.length >= 1 || isMousePressed) {
+	  if (touches.length >= 1 || mouseIsPressed) {
 		wasMousePressed	= true;
 	  } else 
-	  if (touches.length == 0 && !isMousePressed) {
+	  if (touches.length == 0 && !mouseIsPressed) {
 		wasMousePressed	= false;
 	  }
 	}
