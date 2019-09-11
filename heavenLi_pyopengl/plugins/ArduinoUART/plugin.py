@@ -218,7 +218,7 @@ class Plugin():
             try:
                 bytesToRead = self.serialDevice.inWaiting()
                 if (bytesToRead > 0):
-                    print("[HOST] Incoming Bytes: " + str(int(bytesToRead)))
+                    #print("[HOST] Incoming Bytes: " + str(int(bytesToRead)))
                     zeroByte = b'\x00'
                     zeroByteFound = False
                     bop = 0
@@ -228,7 +228,7 @@ class Plugin():
                             mess = mess[:bop+1]
                             zeroByteFound = True
                         bop += 1
-                    print("Data BEFORE COBS decoding: ", mess)
+                    #print("Data BEFORE COBS decoding: ", mess)
                     try:
                         mess = str(cobs.decode( mess[:-1] ) )[2:-1]
                     except Exception as OOF:
@@ -246,7 +246,7 @@ class Plugin():
                         tmsb = mess[badBytePos+4:]
                         tmsa = mess[:badBytePos]+str(chr(tmc))
                         mess = tmsa+tmsb
-                    print("Data received. Packet:", mess, "End of Packet")
+                    #print("Data received. Packet:", mess, "End of Packet")
 
                     # Get Client ID
                     if ("CID!" in str(mess)):
@@ -270,7 +270,8 @@ class Plugin():
                             self.clientID[1] = ID_b
                             self.serialDevice.flushInput()
                     elif (("CID:" + str(self.clientID)) in mess):
-                        print("Received packet from CID:" + str(self.clientID))
+                        pass
+                        #print("Received packet from CID:" + str(self.clientID))
 
                     # Get Client number of lamps
                     tms = chr(self.clientID[0]) + chr(self.clientID[1])
@@ -468,7 +469,7 @@ class Plugin():
                         b'CID:'+bytearray(tmcid)+
                         b'LID:'+bytearray(tmlid)+
                         b'BTC!'+bytearray(tmtc))+b'\x01'+b'\x00'
-                print(len(enmess), "enmess: ", enmess)
+                #print(len(enmess), "enmess: ", enmess)
                 self.serialDevice.write(enmess)
                 pass
             except Exception as OOF:
@@ -498,7 +499,6 @@ class Plugin():
                 print("Requesting number of lamps on client:" + str(self.clientID))
                 tms = [(self.clientID[0]), (self.clientID[1])]
                 enmess = cobs.encode(b'CID:'+bytearray(tms)+b'CNL?')+b'\x01'+b'\x00'
-                print("enmess: ", enmess)
                 self.serialDevice.write(enmess)
                 pass
                 self.requestTimer = time.time()
@@ -553,7 +553,6 @@ class Plugin():
 
         def setClientID(self, newID):
             enmess = cobs.encode(b'CID!'+bytes(newID))+b'\x01'+b'\x00'
-            print(enmess)
             self.serialDevice.write(enmess)
             pass
             return
@@ -565,7 +564,6 @@ class Plugin():
                 tms = [(self.clientID[0]), (self.clientID[1])]
                 tml = [(lamp.lid[0]), (lamp.lid[1])]
                 enmess = cobs.encode(b'CID:'+bytes(tms)+b'LID:'+bytes(tml)+b'PAR?')+b'\x01'+b'\x00'
-                print("enmess: ", enmess)
                 self.serialDevice.write(enmess)
                 pass
                 self.requestTimer = time.time()
