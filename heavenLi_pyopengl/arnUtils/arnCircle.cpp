@@ -39,12 +39,12 @@ PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
 
    if (!PyArg_ParseTuple(args,
             "fffflffO",
-            &gx, &gy,
-            &wx, &wy,
-            &numBulbs,
-            &ao,
-            &w2h,
-            &py_list
+            &gx, &gy,      // background position (X, Y)
+            &wx, &wy,      // background scale (X, Y)
+            &numBulbs,     // number of elements
+            &ao,           // background rotation angle
+            &w2h,          // width to height ratio
+            &py_list       // colors of the background segments
             ))
    {
       Py_RETURN_NONE;
@@ -283,14 +283,14 @@ PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
    GLint       vertIndex = 0;
    if (!PyArg_ParseTuple(args,
             "ffflOlffO",
-            &gx, &gy,
-            &scale, 
-            &features,
-            &detailColorPyTup,
-            &numBulbs,
-            &ao,
-            &w2h,
-            &py_list
+            &gx, &gy,            // icon positon (X, Y)
+            &scale,              // icon size
+            &features,           // iconography features
+            &detailColorPyTup,   // feature colors
+            &numBulbs,           // number of elements
+            &ao,                 // icon rotation angle
+            &w2h,                // width to hight ration
+            &py_list             // colors of the elements (bulbs)
             ))
    {
       Py_RETURN_NONE;

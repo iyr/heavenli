@@ -23,7 +23,7 @@ class Lamp:
 
         # 0 - Lamp is Circularly Arranged
         # 1 - Lamp is LinearLy Arranged
-        self.arrangement = -1
+        self.arrangement = 0
 
         # Arrays that store the colors of the bulbs
         self.bulbsPreviousHSV = []
@@ -51,7 +51,7 @@ class Lamp:
 
         # 0: recursive base-case for lamp tree, lamps comprised of bulbs
         # 1+: lamps comprised of lamps
-        self.metaLampLevel = False
+        self.metaLampLevel = 0
 
         self.mainLightOn = True
 
@@ -63,7 +63,7 @@ class Lamp:
         self.bulbsTargetHSV = self.bulbsCurrentHSV.copy()
 
     # Returns True iff all lamp parameters are set
-    # and lamp is to send/receive color data streams from heavenli
+    # and lamp is ready to send/receive color data streams from heavenli
     # Returns False if a requred parameter is not set
     # Dispass: Display lamp checks
     def isReady(self, dispChecks=False):
