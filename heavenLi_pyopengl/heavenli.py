@@ -27,7 +27,12 @@ def init():
     stateMach['wy'] = glutGet(GLUT_WINDOW_HEIGHT)
     stateMach['w2h'] = stateMach['wx']/stateMach['wy']
 
+    stateMach['MasterSwitch'].setTarSize(1.0)
+    stateMach['MasterSwitch'].setTarPosX(0.0)
+    stateMach['MasterSwitch'].setTarPosY(0.0)
+
     print("Initialization Finished")
+    return
 
 def framerate():
     global stateMach
@@ -63,6 +68,8 @@ def framerate():
     if stateMach['frameLimit'] and (stateMach['fps'] > 60):
         time.sleep(2*float(stateMach['fps'])/10000.0)
 
+    return
+
 def drawBackground():
     global stateMach
     if (len(stateMach['lamps']) > 0):
@@ -95,12 +102,14 @@ def drawHome():
     iconSize = 0.15
     try:
         drawClock(
-                0.0, 0.0,
-                stateMach['hour'],
-                stateMach['minute'],
-                1.0, stateMach['w2h'], 
-                stateMach['faceColor'],
-                stateMach['detailColor'])
+                stateMach['MasterSwitch'].getPosX(),    # X-Coordinate of position
+                stateMach['MasterSwitch'].getPosY(),    # Y-Coordinate of position
+                stateMach['hour'],                      # Hour to be displayed
+                stateMach['minute'],                    # Minute to be displayed
+                stateMach['MasterSwitch'].getSize(),    # Size of Clock
+                stateMach['w2h'],                       # w2h for proper aspect ratio scaling
+                stateMach['faceColor'],                 # color of the clock face
+                stateMach['detailColor'])               # color of the clock hands
 
         if (len(stateMach['lamps']) > 0):
             buttons = drawBulbButton(
@@ -202,6 +211,7 @@ def drawSettingColor():
 
     if (len(stateMach['lamps']) > 0):
         if (stateMach['targetBulb'] == stateMach['lamps'][Light].getNumBulbs()):
+            # Set All Lamp Elements
             tmcHSV = stateMach['lamps'][Light].getBulbTargetHSV(0)
             if (stateMach['currentHue'] == None):
                 stateMach['currentHue'] = stateMach['lamps'][Light].getBulbHSV(0)[0]
@@ -210,6 +220,7 @@ def drawSettingColor():
             if (stateMach['currentVal'] == None):
                 stateMach['currentVal'] = stateMach['lamps'][Light].getBulbHSV(0)[2]
         else:
+            # Set selected Lamp Element (targetBulb)
             tmcHSV = stateMach['lamps'][Light].getBulbTargetHSV(stateMach['targetBulb'])
             if (stateMach['currentHue'] == None):
                 stateMach['currentHue'] = stateMach['lamps'][Light].getBulbHSV(targetBulb)[0]
@@ -736,6 +747,11 @@ if __name__ == '__main__':
     stateMach['wereColorsTouched']  = False
     stateMach['colrSettingCursor']  = 0.0
     stateMach['interactionCursor']  = 0.0
+
+    stateMach['BackButton'] = UIelement
+    stateMach['ConfirmButton'] = UIelement
+    stateMach['MasterSwitch'] = UIelement
+    stateMach['AllSetButton'] = UIelement
 
     #stateMach['lamps'].append(getAllLamps()[0])
 
