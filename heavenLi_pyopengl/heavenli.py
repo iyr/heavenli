@@ -3,6 +3,7 @@
 print("Now Loading...")
 #import hliUtilImports
 from hliUtilImports import *
+from lampClass import *
 print("Done!")
 
 def init():
@@ -112,25 +113,8 @@ def drawHome():
                     stateMach['lamps'][Light].getBulbsCurrentRGB(),
                     stateMach['w2h'])
 
-            if (stateMach['lamps'][Light].getArn() == 0):
-                drawIconCircle(0.75, 0.75, 
-                        iconSize*0.85, 
-                        2,
-                        ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100)),
-                        stateMach['lamps'][Light].getNumBulbs(), 
-                        stateMach['lamps'][Light].getAngle(), 
-                        stateMach['w2h'], 
-                        stateMach['lamps'][Light].getBulbsCurrentRGB())
-
-            if (stateMach['lamps'][Light].getArn() == 1):
-                drawIconLinear(0.75, 0.75, 
-                        iconSize*0.85, 
-                        2,
-                        ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100)),
-                        stateMach['lamps'][Light].getNumBulbs(), 
-                        stateMach['lamps'][Light].getAngle(), 
-                        stateMach['w2h'], 
-                        stateMach['lamps'][Light].getBulbsCurrentRGB())
+            tmc = ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100))
+            drawIcon(0.75, 0.75, iconSize*0.85, tmc, stateMach['w2h'], stateMach['lamps'][Light])
 
         #printText(
                 #-0.9, -0.6,
@@ -263,25 +247,8 @@ def drawSettingColor():
                 stateMach['lamps'][Light].getBulbsCurrentRGB(),
                 stateMach['w2h'])
 
-        if (stateMach['lamps'][Light].getArn() == 0):
-            drawIconCircle(0.75, 0.75, 
-                    iconSize*0.85*pow(acc, 4), 
-                    2,
-                    ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100)),
-                    stateMach['lamps'][Light].getNumBulbs(), 
-                    stateMach['lamps'][Light].getAngle(), 
-                    stateMach['w2h'], 
-                    stateMach['lamps'][Light].getBulbsCurrentRGB())
-
-        if (stateMach['lamps'][Light].getArn() == 1):
-            drawIconLinear(0.75, 0.75, 
-                    iconSize*0.85*pow(acc, 4), 
-                    2,
-                    ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100)),
-                    stateMach['lamps'][Light].getNumBulbs(), 
-                    stateMach['lamps'][Light].getAngle(), 
-                    stateMach['w2h'], 
-                    stateMach['lamps'][Light].getBulbsCurrentRGB())
+        tmc = ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100))
+        drawIcon(0.75, 0.75, iconSize*0.85*pow(acc, 4), tmc, stateMach['w2h'], stateMach['lamps'][Light])
 
     # Draw Granularity Rocker Underneath Clock
     limit = 0.85
@@ -773,6 +740,7 @@ if __name__ == '__main__':
     #stateMach['lamps'].append(getAllLamps()[0])
 
     plugins.pluginLoader.initPlugins()
+
     stateMach['lamps'] = plugins.pluginLoader.getAllLamps()
 
     glutInit(sys.argv)
