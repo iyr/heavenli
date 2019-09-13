@@ -26,8 +26,9 @@ import colorsys
 from animUtils import *
 from drawArn import *
 from drawButtons import *
-#from lampClass import *
+from lampClass import *
 from rangeUtils import *
 from shaderUtils import *
 #from plugins.pluginLoader import *
 import plugins.pluginLoader
+from hliUIutils import *
