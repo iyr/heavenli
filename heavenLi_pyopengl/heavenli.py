@@ -27,10 +27,6 @@ def init():
     stateMach['wy'] = glutGet(GLUT_WINDOW_HEIGHT)
     stateMach['w2h'] = stateMach['wx']/stateMach['wy']
 
-    stateMach['MasterSwitch'].setTarSize(1.0)
-    stateMach['MasterSwitch'].setTarPosX(0.0)
-    stateMach['MasterSwitch'].setTarPosY(0.0)
-
     print("Initialization Finished")
     return
 
@@ -170,6 +166,7 @@ def drawHome():
                         # Set Color Picker as target Screen selecting bulb i
                         stateMach['targetScreen'] = 1
                         stateMach['targetBulb'] = i
+                        stateMach['MasterSwitch'].setTarSize(1.75)
 
                         # Record previous color(s)
                         stateMach['prevHue'] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[0]
@@ -188,6 +185,7 @@ def drawHome():
                     # Set Color Picker as target Screen selecting bulb all bulbs
                     stateMach['targetScreen'] = 1
                     stateMach['targetBulb'] = stateMach["lamps"][Light].getNumBulbs()
+                    stateMach['MasterSwitch'].setTarSize(1.75)
 
                     # Record previous color(s)
                     stateMach['prevHue'] = stateMach['lamps'][Light].getBulbCurrentHSV(0)[0]
@@ -281,13 +279,14 @@ def drawSettingColor():
     
     # Draw Clock
     drawClock(
-            0.0, 0.0,
-            stateMach['hour'],
-            stateMach['minute'],
-            1.0+acic*0.75, 
-            stateMach['w2h'], 
-            faceColor,
-            tuple([acc*x for x in detailColor]))
+            stateMach['MasterSwitch'].getPosX(),    # X-Coordinate of position
+            stateMach['MasterSwitch'].getPosY(),    # Y-Coordinate of position
+            stateMach['hour'],                      # Hour to be displayed
+            stateMach['minute'],                    # Minute to be displayed
+            stateMach['MasterSwitch'].getSize(),    # Size of Clock
+            stateMach['w2h'],                       # w2h for proper aspect ratio scaling
+            faceColor,                              # color of the clock face
+            tuple([acc*x for x in detailColor]))    # color of the clock hands
 
     # Draw Granularity Rocker on top of Clock
     if (stateMach['colrSettingCursor'] >= limit):
@@ -470,6 +469,7 @@ def drawSettingColor():
                         stateMach['currentHue'], 
                         stateMach['currentSat'], 
                         stateMach['currentVal'] ) )
+            stateMach['MasterSwitch'].setTarSize(1.0)
             stateMach['targetScreen'] = 0
 
         if ( stateMach['wereColorsTouched'] and len(stateMach['lamps']) > 0):
@@ -505,6 +505,7 @@ def drawSettingColor():
                         stateMach['prevHue'], 
                         stateMach['prevSat'], 
                         stateMach['prevVal'] ) )
+            stateMach['MasterSwitch'].setTarSize(1.0)
             stateMach['targetScreen'] = 0
 
 # Check if user is clicking in circle
@@ -582,10 +583,13 @@ def display():
         drawSettingColor()
 
     stateMach['tDiff'] = 3.14159/stateMach['fps']
+    stateMach['MasterSwitch'].setTimeSlice(stateMach['tDiff']*2)
 
     # Update Colors of Lamps
     for i in range(len(stateMach['lamps'])):
         stateMach['lamps'][i].updateBulbs(stateMach['tDiff']/2)
+
+    stateMach['MasterSwitch'].updateParams()
 
     glutSwapBuffers()
     plugins.pluginLoader.updatePlugins()
@@ -748,10 +752,18 @@ if __name__ == '__main__':
     stateMach['colrSettingCursor']  = 0.0
     stateMach['interactionCursor']  = 0.0
 
-    stateMach['BackButton'] = UIelement
-    stateMach['ConfirmButton'] = UIelement
-    stateMach['MasterSwitch'] = UIelement
-    stateMach['AllSetButton'] = UIelement
+    stateMach['AllSetButton'] = UIelement()
+    stateMach['BackButton'] = UIelement()
+    stateMach['ConfirmButton'] = UIelement()
+    stateMach['ColorTriangle'] = UIelement()
+    stateMach['HueRing'] = UIelement()
+
+    stateMach['MasterSwitch'] = UIelement()
+    stateMach['MasterSwitch'].setAccel(0.25)
+    stateMach['MasterSwitch'].setTarSize(1.0)
+    stateMach['MasterSwitch'].setTarPosX(0.0)
+    stateMach['MasterSwitch'].setTarPosY(0.0)
+
 
     #stateMach['lamps'].append(getAllLamps()[0])
 
