@@ -8,17 +8,17 @@ using namespace std;
 
 // Append vertices to input vectors
 int defineArch(
-      float bx,                  /* X-Coordinate */
-      float by,                  /* Y-Coordinate */
-      float bsx,                 /* x-Scale 2.0=spans display before GL scaling */
-      float bsy,                 /* y-Scale 2.0=spans display before GL scaling */
+      float bx,                  /* X-Coordinate                                          */
+      float by,                  /* Y-Coordinate                                          */
+      float bsx,                 /* x-Scale 2.0=spans display before GL scaling           */
+      float bsy,                 /* y-Scale 2.0=spans display before GL scaling           */
       float start,               /* Where, in degrees on the unit circle, the arch begins */
-      float end,                 /* Where, in degrees on the unit circle, the arch endgs */
-      float rs,                  /* Halo thickness */
-      char  circleSegments,      /* Number of sides */
-      float *color,              /* Polygon Color */
-      std::vector<float> &verts, /* Input Vector of x,y coordinates */
-      std::vector<float> &colrs  /* Input Vector of r,g,b values */
+      float end,                 /* Where, in degrees on the unit circle, the arch endgs  */
+      float rs,                  /* Halo thickness, expanding out from circle edge        */
+      char  circleSegments,      /* Number of sides                                       */
+      float *color,              /* Polygon Color                                         */
+      std::vector<float> &verts, /* Input Vector of x,y coordinates                       */
+      std::vector<float> &colrs  /* Input Vector of r,g,b values                          */
       ){
    float tma, R, G, B;
    float degSegment;
@@ -59,7 +59,9 @@ int defineArch(
    return verts.size()/2;
 }
 
-// Update vertices to allocated arrays
+/*
+ * Update Vertex position coordinates in pre-existing array passed via pointer starting 
+ */
 int updateArchGeometry(
       float bx,                  /* X-Coordinate */
       float by,                  /* Y-Coordinate */
@@ -103,13 +105,10 @@ int updateArchGeometry(
 
 // Update vertices to allocated arrays
 int updateArchColor(
-      float start,               /* Where, in degrees on the unit circle, the arch begins */
-      float end,                 /* Where, in degrees on the unit circle, the arch endgs */
-      float rs,                  /* Halo thickness */
-      char  circleSegments,      /* Number of sides */
-      float *color,              /* Polygon Color */
-      int   index,               /* Index of where to start writing to input arrays */
-      std::vector<float> &colrs  /* Input Vector of r,g,b values */
+      char  circleSegments,   /* Number of sides */
+      float *color,           /* Polygon Color */
+      int   index,            /* Index of where to start writing to input arrays */
+      float *colrs            /* Input Vector of r,g,b values */
       ){
    int colrIndex = index*3;
    float R, G, B;
