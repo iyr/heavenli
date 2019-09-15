@@ -479,8 +479,8 @@ PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
 	         hsv2rgb(currentTriHue, saturation, value, colors);
             colrIndex = updatePrimEllipseColor(
                   circleSegments, 
-                  colrIndex, 
                   colors,
+                  colrIndex, 
                   colrTriColorBuffer);
          }
       }

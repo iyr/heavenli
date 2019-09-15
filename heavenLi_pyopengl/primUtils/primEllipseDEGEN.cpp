@@ -96,10 +96,10 @@ int updatePrimEllipseGeometry(
 
 // Write to pre-allocated input array, updating color only 
 int updatePrimEllipseColor(
-      char circleSegments, /* Number of sides */
-      int   index,         /* Index of where to start writing to input arrays */
-      float *color,        /* Polygon Color */
-      float *colrs         /* Input Vector of r,g,b values */
+      char  circleSegments,   /* Number of sides */
+      float *color,           /* Polygon Color */
+      int   index,            /* Index of where to start writing to input arrays */
+      float *colrs            /* Input Vector of r,g,b values */
       ){
    int colrIndex = index*3;   /* index (r, g, b) */
    float R, G, B;
