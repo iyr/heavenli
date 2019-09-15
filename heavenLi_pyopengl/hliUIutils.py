@@ -2,6 +2,8 @@
 
 from lampClass import *
 from drawArn import *
+from animUtils import *
+import pytweening
 
 # Abstracts Lamp icon drawing
 def drawIcon(ix, iy, scale, color, w2h, Lamp):
@@ -134,14 +136,15 @@ class UIelement:
 # helper class for UIelement
 class UIparam:
     def __init__(self):
-        self.currentVal = 0.0
-        self.previousVal = 0.0
-        self.targetVal = 0.0
-        self.targetReached = True
-        self.tDiff = 1.0
-        self.accel = 1.0
-        self.curveBias = 0.5
-        self.prevDeltaSign = None
+        self.currentVal     = 0.0   # True value of the parameter
+        self.previousVal    = 0.0   # Parameter value before a new target value was set
+        self.targetVal      = 0.0   # Target Value that current value will 'drift' to
+        self.targetReached  = True
+        self.tDiff          = 1.0   # Time-slice for adjusting animation speed
+        self.accel          = 1.0   # temporarily adjust tDiff until animation finishes
+        self.curveBias      = 0.5
+        self.prevDeltaSign  = None
+        self.cursor         = 1.0
         return
 
     # Used for tuning animation speed
@@ -151,10 +154,11 @@ class UIparam:
 
     # Set Target Value for the Current Value to transition to
     def setTargetVal(self, target):
-        self.previousVal = self.currentVal
-        self.currentVal = self.targetVal
-        self.targetVal = target
-        self.targetReached = False
+        self.cursor         = 0.0
+        self.previousVal    = self.currentVal
+        self.accel          = 1.0
+        self.targetVal      = target
+        self.targetReached  = False
 
         delta = self.targetVal - self.currentVal
 
@@ -183,28 +187,45 @@ class UIparam:
         return
 
     def updateVal(self):
-        delta = self.targetVal - self.currentVal
 
-        # Avoid divide by zero
-        if (delta == 0.0 or delta == -0.0):
-            deltaSign = 1.0
-        else:
-            deltaSign = delta/abs(delta)
-
-        if (abs(delta) > self.tDiff*0.01 and self.prevDeltaSign == deltaSign):
-            change = (self.currentVal-self.previousVal)/(self.targetVal-self.previousVal)
-            if (abs(change) <= 0.1):
-                change = 0.1
-            elif(abs(change) > 0.90):
-                change = self.targetVal - self.currentVal
-
-            if (delta <= 0.0):
-                self.currentVal -= float(self.accel*self.tDiff*abs(change))
-            if (delta > 0.0):
-                self.currentVal += float(self.accel*self.tDiff*abs(change))
+        if (self.cursor < 1.0):
+            if (self.cursor < 0.0):
+                self.cursor = 0.0
+            delta = self.targetVal - self.previousVal
+            #self.currentVal = delta*self.cursor + self.previousVal
+            #self.currentVal = delta*animCurve(1.0-self.cursor) + self.previousVal
+            #self.currentVal = delta*pow(self.cursor, 2.0) + self.previousVal
+            self.currentVal = delta*pytweening.easeInOutSine(self.cursor) + self.previousVal
+            self.cursor     += self.tDiff*self.accel*0.4
         else:
             self.currentVal = self.targetVal
-            self.targetReached = True
-            self.accel = 1.0
-            self.prevDeltaSign = None
+            self.cursor     = 1.0
+
+#
+        #delta = self.targetVal - self.currentVal
+#
+        ## Avoid divide by zero
+        #if (delta == 0.0 or delta == -0.0):
+            #deltaSign = 1.0
+        #else:
+            #deltaSign = delta/abs(delta)
+#
+        #if (abs(delta) > self.tDiff*0.01 and self.prevDeltaSign == deltaSign):
+            #change = (self.currentVal-self.previousVal)/(self.targetVal-self.previousVal)
+            #if (abs(change) <= 0.1):
+                #change = 0.1
+            #elif(abs(change) > 0.90):
+                #change = self.targetVal - self.currentVal
+#
+            #if (delta <= 0.0):
+                #self.currentVal -= float(self.accel*self.tDiff*abs(change))
+            #if (delta > 0.0):
+                #self.currentVal += float(self.accel*self.tDiff*abs(change))
+        #else:
+            #self.currentVal = self.targetVal
+            #self.targetReached = True
+            #self.accel = 1.0
+            #self.prevDeltaSign = None
+#
+
         return
