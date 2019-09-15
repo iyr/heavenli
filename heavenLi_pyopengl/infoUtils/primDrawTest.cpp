@@ -65,25 +65,12 @@ PyObject* primTest_drawButtons(PyObject* self, PyObject *args) {
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
 
-      definePill(
-            -0.5, -0.5, 
-            0.5, 0.5, 
-            0.25, 
-            60, 
-            faceColor,
-            detailColor,
-            verts,
-            colrs);
-
-      definePill(
-            0.5, -0.5, 
-            -0.5, 0.5, 
-            0.25, 
-            60, 
-            detailColor,
-            extraColor,
-            verts,
-            colrs);
+      defineArch(gx, gy, scale, scale, 45.0, 135.0, 0.1, 60, faceColor, verts, colrs);
+      defineQuad(gx+0.25, gy+0.25, gx+0.5, gy+0.5, faceColor, verts, colrs);
+      defineQuad(gx-0.25, gy-0.25, gx-0.5, gy-0.5, faceColor, verts, colrs);
+      //defineEllipse(gx+0.5, gy, scale/2.0f, scale/2.0, 60, faceColor, verts, colrs);
+      //defineArch(gx, gy, scale, scale, 225.0, 315.0, 0.1, 60, faceColor, verts, colrs);
+      defineEllipse(gx-0.5, gy, scale/4.0f, scale/4.0, 60, faceColor, verts, colrs);
 
       primTestVerts = verts.size()/2;
 
@@ -112,10 +99,10 @@ PyObject* primTest_drawButtons(PyObject* self, PyObject *args) {
       for (unsigned int i = 0; i < primTestVerts; i++) {
          primTestCoordBuffer[i*2]   = verts[i*2];
          primTestCoordBuffer[i*2+1] = verts[i*2+1];
-         primTestIndices[i]          = i;
-         primTestColorBuffer[i*3+0]  = colrs[i*3+0];
-         primTestColorBuffer[i*3+1]  = colrs[i*3+1];
-         primTestColorBuffer[i*3+2]  = colrs[i*3+2];
+         primTestIndices[i]         = i;
+         primTestColorBuffer[i*3+0] = colrs[i*3+0];
+         primTestColorBuffer[i*3+1] = colrs[i*3+1];
+         primTestColorBuffer[i*3+2] = colrs[i*3+2];
       }
 
       // Calculate Initial Transformation Matrix
@@ -188,38 +175,19 @@ PyObject* primTest_drawButtons(PyObject* self, PyObject *args) {
       glEnableVertexAttribArray(vertAttribColor);
    }
 
-   updatePillGeometry(
-            -0.5, -0.5, 
-            0.5, 0.5, 
-            0.25, 
-            1, 
-            0,
-            primTestCoordBuffer);
+   //int index = 0;
+   //index = updateArchColor(60, faceColor, index, primTestColorBuffer);
+   //index = updatePrimEllipseColor(60, faceColor, index, primTestColorBuffer);
+   //index = updateArchColor(60, faceColor, index, primTestColorBuffer);
+   //index = updatePrimEllipseColor(60, faceColor, index, primTestColorBuffer);
 
-      // Set active VBO
-      glBindBuffer(GL_ARRAY_BUFFER, primTestVBO);
-      // Convenience variables
-      GLintptr offset = 0;
-      // Load Vertex coordinate data into VBO
-      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*primTestVerts, primTestCoordBuffer);
-
-   /*
-   // Geometry allocated, check if color needs to be updated
-   for (int i = 0; i < 3; i++) {
-      if ( primTestColorBuffer[extraPrimTestVerts*3+i] != extraColor[i] ) {
-         for (unsigned int k = extraPrimTestVerts; k < primTestVerts; k++) {
-            primTestColorBuffer[k*3 + i] = extraColor[i];
-         }
-         // Update Contents of VBO
-         // Set active VBO
-         glBindBuffer(GL_ARRAY_BUFFER, primTestVBO);
-         // Convenience variable
-         GLintptr offset = 2*sizeof(GLfloat)*primTestVerts;
-         // Load Vertex Color data into VBO
-         glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*primTestVerts, primTestColorBuffer);
-      }
-   }
-   */
+   // Update Contents of VBO
+   // Set active VBO
+   glBindBuffer(GL_ARRAY_BUFFER, primTestVBO);
+   // Convenience variable
+   GLintptr offset = 2*sizeof(GLfloat)*primTestVerts;
+   // Load Vertex Color data into VBO
+   glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*primTestVerts, primTestColorBuffer);
 
    // Update Transfomation Matrix if any change in parameters
    if (  primTestPrevState.ao != ao     ||
