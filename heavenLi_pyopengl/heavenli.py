@@ -135,11 +135,11 @@ def drawHome():
                 #'NnOoPpQqRrSsTtUuVvWwXxYyZz',
                 #( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100)))
 
-        #primTest(0.0, 0.0, 
-                #1.0, stateMach['w2h'],
-                #(0.5, 0.0, 1.0),
-                #(1.0, 0.5, 0.0),
-                #(0.0, 1.0, 0.5))
+        primTest(stateMach['someVar']/100-0.3333333333, 0.0, 
+                0.75, stateMach['w2h'],
+                (0.5, stateMach['someVar']/100, 1.0),
+                (1.0, 0.5, 0.0),
+                (0.0, 1.0, 0.5))
 
         # Watch Home Screen for input
         if (watchScreen()):
@@ -599,6 +599,7 @@ def idleWindowOpen():
     glutPostRedisplay()
 
 def idleWindowMinimized():
+    framerate()
     pass
 
 # change view angle
@@ -752,18 +753,18 @@ if __name__ == '__main__':
     stateMach['colrSettingCursor']  = 0.0
     stateMach['interactionCursor']  = 0.0
 
-    stateMach['AllSetButton'] = UIelement()
-    stateMach['BackButton'] = UIelement()
-    stateMach['ConfirmButton'] = UIelement()
-    stateMach['ColorTriangle'] = UIelement()
-    stateMach['HueRing'] = UIelement()
+    stateMach['AllSetButton']       = UIelement()
+    stateMach['BackButton']         = UIelement()
+    stateMach['ConfirmButton']      = UIelement()
+    stateMach['ColorTriangle']      = UIelement()
+    stateMach['HueRing']            = UIelement()
+    stateMach['BulbButtons']        = UIelement()
+    stateMach['MasterSwitch']       = UIelement()
 
-    stateMach['MasterSwitch'] = UIelement()
-    stateMach['MasterSwitch'].setAccel(0.25)
     stateMach['MasterSwitch'].setTarSize(1.0)
+    stateMach['MasterSwitch'].setAccel(0.25)
     stateMach['MasterSwitch'].setTarPosX(0.0)
     stateMach['MasterSwitch'].setTarPosY(0.0)
-
 
     #stateMach['lamps'].append(getAllLamps()[0])
 
@@ -776,9 +777,9 @@ if __name__ == '__main__':
     # Disable anti-aliasing if running on a Raspberry Pi Zero
     if (machine() == "armv6l" or machine() == "armv7l"):
         print("Disabling Antialiasing")
-        glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE)
+        glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE)
     else:
-        glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE)
+        glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_MULTISAMPLE)
 
     glutInitWindowPosition(stateMach['windowPosX'], stateMach['windowPosY'])
     glutInitWindowSize(stateMach['windowDimW'], stateMach['windowDimH'])
