@@ -65,12 +65,11 @@ PyObject* primTest_drawButtons(PyObject* self, PyObject *args) {
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
 
-      defineArch(gx, gy, scale, scale, 45.0, 135.0, 0.1, 60, faceColor, verts, colrs);
-      defineQuad(gx+0.25, gy+0.25, gx+0.5, gy+0.5, faceColor, verts, colrs);
-      defineQuad(gx-0.25, gy-0.25, gx-0.5, gy-0.5, faceColor, verts, colrs);
-      //defineEllipse(gx+0.5, gy, scale/2.0f, scale/2.0, 60, faceColor, verts, colrs);
-      //defineArch(gx, gy, scale, scale, 225.0, 315.0, 0.1, 60, faceColor, verts, colrs);
-      defineEllipse(gx-0.5, gy, scale/4.0f, scale/4.0, 60, faceColor, verts, colrs);
+      //defineArch(gx, gy, scale, scale, 45.0, 135.0, 0.1, 60, faceColor, verts, colrs);
+      //defineQuad2pt(gx+0.25, gy+0.25, gx+0.5, gy+0.5, faceColor, verts, colrs);
+      defineQuadRad(gx, gy, 0.15, 0.15, faceColor, verts, colrs);
+      defineQuad2pt(gx-0.25, gy-0.25, gx-0.5, gy-0.5, faceColor, verts, colrs);
+      //defineQuad2pt(gx+0.25, gy+0.25, gx+0.5, gy+0.5, faceColor, verts, colrs);
 
       primTestVerts = verts.size()/2;
 
@@ -175,17 +174,27 @@ PyObject* primTest_drawButtons(PyObject* self, PyObject *args) {
       glEnableVertexAttribArray(vertAttribColor);
    }
 
-   //int index = 0;
-   //index = updateArchColor(60, faceColor, index, primTestColorBuffer);
-   //index = updatePrimEllipseColor(60, faceColor, index, primTestColorBuffer);
-   //index = updateArchColor(60, faceColor, index, primTestColorBuffer);
-   //index = updatePrimEllipseColor(60, faceColor, index, primTestColorBuffer);
+   int index = 0;
+   index = updateQuad2ptGeometry(gx-0.25, gy-0.25, gx-0.5, gy-0.5, index, primTestCoordBuffer);
+   index = updateQuadRadGeometry(gx, gy, 0.15, 0.35*gx, index, primTestCoordBuffer);
 
    // Update Contents of VBO
    // Set active VBO
    glBindBuffer(GL_ARRAY_BUFFER, primTestVBO);
    // Convenience variable
-   GLintptr offset = 2*sizeof(GLfloat)*primTestVerts;
+   GLintptr offset = 2*sizeof(GLfloat);//2*sizeof(GLfloat)*primTestVerts;
+   // Load Vertex Coordinate data into VBO
+   glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*primTestVerts, primTestCoordBuffer);
+
+   index = 0;
+   index = updateQuadColor(faceColor, index, primTestColorBuffer);
+   index = updateQuadColor(faceColor, index, primTestColorBuffer);
+
+   // Update Contents of VBO
+   // Set active VBO
+   glBindBuffer(GL_ARRAY_BUFFER, primTestVBO);
+   // Convenience variable
+   offset = 2*sizeof(GLfloat)*primTestVerts;
    // Load Vertex Color data into VBO
    glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*primTestVerts, primTestColorBuffer);
 
