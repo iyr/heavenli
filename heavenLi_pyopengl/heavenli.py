@@ -762,7 +762,7 @@ if __name__ == '__main__':
     stateMach['MasterSwitch']       = UIelement()
 
     stateMach['MasterSwitch'].setTarSize(1.0)
-    stateMach['MasterSwitch'].setAccel(0.25)
+    stateMach['MasterSwitch'].setAccel(0.125)
     stateMach['MasterSwitch'].setTarPosX(0.0)
     stateMach['MasterSwitch'].setTarPosY(0.0)
 

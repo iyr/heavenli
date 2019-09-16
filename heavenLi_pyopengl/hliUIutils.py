@@ -145,6 +145,7 @@ class UIparam:
         self.curveBias      = 0.5
         self.prevDeltaSign  = None
         self.cursor         = 1.0
+        self.curve          = "Default"
         return
 
     # Used for tuning animation speed
@@ -186,46 +187,119 @@ class UIparam:
         self.accel = value
         return
 
-    def updateVal(self):
+    # Choose which animation curve to use
+    # For a good refernce on different animation curves, visit:
+    # https://easings.net/
+    def setCurve(self, curve):
+        self.curve = curve
+        return
 
+    def updateVal(self):
         if (self.cursor < 1.0):
             if (self.cursor < 0.0):
                 self.cursor = 0.0
-            delta = self.targetVal - self.previousVal
-            #self.currentVal = delta*self.cursor + self.previousVal
-            #self.currentVal = delta*animCurve(1.0-self.cursor) + self.previousVal
-            #self.currentVal = delta*pow(self.cursor, 2.0) + self.previousVal
-            self.currentVal = delta*pytweening.easeInOutSine(self.cursor) + self.previousVal
-            self.cursor     += self.tDiff*self.accel*0.4
+            delta           = self.targetVal - self.previousVal
+            self.currentVal = delta*self._curve(self.cursor) + self.previousVal
+            self.cursor     += self.tDiff*self.accel*0.25
         else:
             self.currentVal = self.targetVal
             self.cursor     = 1.0
 
-#
-        #delta = self.targetVal - self.currentVal
-#
-        ## Avoid divide by zero
-        #if (delta == 0.0 or delta == -0.0):
-            #deltaSign = 1.0
-        #else:
-            #deltaSign = delta/abs(delta)
-#
-        #if (abs(delta) > self.tDiff*0.01 and self.prevDeltaSign == deltaSign):
-            #change = (self.currentVal-self.previousVal)/(self.targetVal-self.previousVal)
-            #if (abs(change) <= 0.1):
-                #change = 0.1
-            #elif(abs(change) > 0.90):
-                #change = self.targetVal - self.currentVal
-#
-            #if (delta <= 0.0):
-                #self.currentVal -= float(self.accel*self.tDiff*abs(change))
-            #if (delta > 0.0):
-                #self.currentVal += float(self.accel*self.tDiff*abs(change))
-        #else:
-            #self.currentVal = self.targetVal
-            #self.targetReached = True
-            #self.accel = 1.0
-            #self.prevDeltaSign = None
-#
-
         return
+
+    def _curve(self, x):
+        if self.curve is "Default":
+            return pytweening.easeOutQuint(x)
+
+        elif self.curve is "easeInQuad":
+            return pytweening.easeInQuad(x)
+
+        elif self.curve is "easeOutQuade":
+            return pytweening.easeOutQuade(x)
+
+        elif self.curve is "easeInOutQuad":
+            return pytweening.easeInOutQuad(x)
+
+        elif self.curve is "easeInQubic":
+            return pytweening.easeInQubic(x)
+
+        elif self.curve is "easeOutQubic":
+            return pytweening.easeOutQubic(x)
+
+        elif self.curve is "easeInOutQubic":
+            return pytweening.easeInOutQubic(x)
+
+        elif self.curve is "easeInQuart":
+            return pytweening.easeInQuart(x)
+
+        elif self.curve is "easeOutQuart":
+            return pytweening.easeOutQuart(x)
+
+        elif self.curve is "easeInOutQuart":
+            return pytweening.easeInOutQuart(x)
+
+        elif self.curve is "easeInQuint":
+            return pytweening.easeInQuint(x)
+
+        elif self.curve is "easeOutQuint":
+            return pytweening.easeOutQuint(x)
+
+        elif self.curve is "easeInOutQuint":
+            return pytweening.easeInOutQuint(x)
+
+        elif self.curve is "easeInSine":
+            return pytweening.easeInSine(x)
+
+        elif self.curve is "easeOutSine":
+            return pytweening.easeOutSine(x)
+
+        elif self.curve is "easeInOutSine":
+            return pytweening.easeInOutSine(x)
+
+        elif self.curve is "easeInExpo":
+            return pytweening.easeInExpo(x)
+
+        elif self.curve is "easeOutExpo":
+            return pytweening.easeOutExpo(x)
+
+        elif self.curve is "easeInOutExpo":
+            return pytweening.easeInOutExpo(x)
+
+        elif self.curve is "easeInCirc":
+            return pytweening.easeInCirc(x)
+
+        elif self.curve is "easeOutCirc":
+            return pytweening.easeOutCirc(x)
+
+        elif self.curve is "easeInOutCirc":
+            return pytweening.easeInOutCirc(x)
+
+        elif self.curve is "easeInElastic":
+            return pytweening.easeInElastic(x)
+
+        elif self.curve is "easeOutElastic":
+            return pytweening.easeOutElastic(x)
+
+        elif self.curve is "easeInOutElastic":
+            return pytweening.easeInOutElastic(x)
+
+        elif self.curve is "easeInBack":
+            return pytweening.easeInBack(x)
+
+        elif self.curve is "easeOutBack":
+            return pytweening.easeOutBack(x)
+
+        elif self.curve is "easeInOutBack":
+            return pytweening.easeInOutBack(x)
+
+        elif self.curve is "easeInBounce":
+            return pytweening.easeInBounce(x)
+
+        elif self.curve is "easeOutBounce":
+            return pytweening.easeOutBounce(x)
+
+        elif self.curve is "easeInOutBounce":
+            return pytweening.easeInOutBounce(x)
+
+        else:
+            return pytweening.easeOutCirc(x)
