@@ -13,7 +13,7 @@ def init():
     glEnableClientState(GL_VERTEX_ARRAY)
     glEnableClientState(GL_COLOR_ARRAY)
     glEnable(GL_BLEND)
-    #glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
     print("Loading Shaders...")
     initShaders()
@@ -715,8 +715,8 @@ if __name__ == '__main__':
     stateMach['prevSats']           = [None for i in range(6)]
     stateMach['prevVals']           = [None for i in range(6)]
     stateMach['curBulb']            = 0
-    stateMach['faceColor']          = (0.3, 0.3, 0.3)
-    stateMach['detailColor']        = (0.9, 0.9, 0.9)
+    stateMach['faceColor']          = (0.3, 0.3, 0.3, 1.0)
+    stateMach['detailColor']        = (0.9, 0.9, 0.9, 1.0)
     stateMach['tStart']             = time.time()
     stateMach['t0']                 = time.time()
     stateMach['t1']                 = time.time()

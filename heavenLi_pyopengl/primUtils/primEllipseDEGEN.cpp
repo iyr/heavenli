@@ -17,41 +17,66 @@ int defineEllipse(
       std::vector<float> &verts, /* Input Vector of x,y coordinates */
       std::vector<float> &colrs  /* Input Vector of r,g,b values */
       ){
-   float R, G, B;
+   float R, G, B, A;
    char degSegment = 360 / circleSegments;
    degSegment /= 2;
    R = color[0];
    G = color[1];
    B = color[2];
+   A = color[3];
 
    // Prepend degenerate vertex iff not the first primitive in the vector
    if (verts.size() == 0) {
       /* X */ verts.push_back(float(bx + bsx*1.0f));
       /* Y */ verts.push_back(float(by + bsy*0.0f));
-      /* R */ colrs.push_back(R);  /* G */ colrs.push_back(G);  /* B */ colrs.push_back(B);
+      /* R */ colrs.push_back(R);  
+      /* G */ colrs.push_back(G);  
+      /* B */ colrs.push_back(B);
+      /* A */ colrs.push_back(A);
    } else {
       /* X */ verts.push_back(float(bx + bsx*1.0f));
       /* Y */ verts.push_back(float(by + bsy*0.0f));
-      /* R */ colrs.push_back(R);  /* G */ colrs.push_back(G);  /* B */ colrs.push_back(B);
+      /* R */ colrs.push_back(R);  
+      /* G */ colrs.push_back(G);  
+      /* B */ colrs.push_back(B);
+      /* A */ colrs.push_back(A);
+
       /* X */ verts.push_back(float(bx + bsx*1.0f));
       /* Y */ verts.push_back(float(by + bsy*0.0f));
-      /* R */ colrs.push_back(R);  /* G */ colrs.push_back(G);  /* B */ colrs.push_back(B);
+      /* R */ colrs.push_back(R);  
+      /* G */ colrs.push_back(G);  
+      /* B */ colrs.push_back(B);
+      /* A */ colrs.push_back(A);
    }
 
    for (char i = 0; i < circleSegments; i++ ) {
       /* X */ verts.push_back(float(bx + bsx*cos(degToRad(i*degSegment))));
       /* Y */ verts.push_back(float(by + bsy*sin(degToRad(i*degSegment))));
-      /* R */ colrs.push_back(R);  /* G */ colrs.push_back(G);  /* B */ colrs.push_back(B);
+      /* R */ colrs.push_back(R);  
+      /* G */ colrs.push_back(G);  
+      /* B */ colrs.push_back(B);
+      /* A */ colrs.push_back(A);
+
       /* X */ verts.push_back(float(bx + bsx*cos(degToRad(i*degSegment))));
       /* Y */ verts.push_back(float(by - bsy*sin(degToRad(i*degSegment))));
-      /* R */ colrs.push_back(R);  /* G */ colrs.push_back(G);  /* B */ colrs.push_back(B);
+      /* R */ colrs.push_back(R);  
+      /* G */ colrs.push_back(G);  
+      /* B */ colrs.push_back(B);
+      /* A */ colrs.push_back(A);
    }
    /* X */ verts.push_back(float(bx - bsx*1.0f));
    /* Y */ verts.push_back(float(by + bsy*0.0f));
-   /* R */ colrs.push_back(R);  /* G */ colrs.push_back(G);  /* B */ colrs.push_back(B);
+   /* R */ colrs.push_back(R);  
+   /* G */ colrs.push_back(G);  
+   /* B */ colrs.push_back(B);
+   /* A */ colrs.push_back(A);
+
    /* X */ verts.push_back(float(bx - bsx*1.0f));
    /* Y */ verts.push_back(float(by + bsy*0.0f));
-   /* R */ colrs.push_back(R);  /* G */ colrs.push_back(G);  /* B */ colrs.push_back(B);
+   /* R */ colrs.push_back(R);  
+   /* G */ colrs.push_back(G);  
+   /* B */ colrs.push_back(B);
+   /* A */ colrs.push_back(A);
 
    return verts.size()/2;
 }
@@ -76,6 +101,7 @@ int updatePrimEllipseGeometry(
    } else {
       /* X */ verts[vertIndex++] = (float(bx + bsx*1.0f));
       /* Y */ verts[vertIndex++] = (float(by + bsy*0.0f));
+
       /* X */ verts[vertIndex++] = (float(bx + bsx*1.0f));
       /* Y */ verts[vertIndex++] = (float(by + bsy*0.0f));
    }
@@ -83,11 +109,13 @@ int updatePrimEllipseGeometry(
    for (char i = 0; i < circleSegments; i++ ) {
       /* X */ verts[vertIndex++] = (float(bx + bsx*cos(degToRad(i*degSegment))));
       /* Y */ verts[vertIndex++] = (float(by + bsy*sin(degToRad(i*degSegment))));
+
       /* X */ verts[vertIndex++] = (float(bx + bsx*cos(degToRad(i*degSegment))));
       /* Y */ verts[vertIndex++] = (float(by - bsy*sin(degToRad(i*degSegment))));
    }
    /* X */ verts[vertIndex++] = (float(bx - bsx*1.0f));
    /* Y */ verts[vertIndex++] = (float(by + bsy*0.0f));
+
    /* X */ verts[vertIndex++] = (float(bx - bsx*1.0f));
    /* Y */ verts[vertIndex++] = (float(by + bsy*0.0f));
 
@@ -101,25 +129,50 @@ int updatePrimEllipseColor(
       int   index,            /* Index of where to start writing to input arrays */
       float *colrs            /* Input Vector of r,g,b values */
       ){
-   int colrIndex = index*3;   /* index (r, g, b) */
-   float R, G, B;
+   int colrIndex = index*4;   /* index (r, g, b, a) */
+   float R, G, B, A;
    R = color[0];
    G = color[1];
    B = color[2];
+   A = color[3];
 
    if (colrIndex == 0) {
-      /* R */ colrs[colrIndex++] = R;  /* G */ colrs[colrIndex++] = G;  /* B */ colrs[colrIndex++] = B;
+      /* R */ colrs[colrIndex++] = R;  
+      /* G */ colrs[colrIndex++] = G;  
+      /* B */ colrs[colrIndex++] = B;
+      /* A */ colrs[colrIndex++] = A;
    } else {
-      /* R */ colrs[colrIndex++] = R;  /* G */ colrs[colrIndex++] = G;  /* B */ colrs[colrIndex++] = B;
-      /* R */ colrs[colrIndex++] = R;  /* G */ colrs[colrIndex++] = G;  /* B */ colrs[colrIndex++] = B;
+      /* R */ colrs[colrIndex++] = R;  
+      /* G */ colrs[colrIndex++] = G;  
+      /* B */ colrs[colrIndex++] = B;
+      /* A */ colrs[colrIndex++] = A;
+      
+      /* R */ colrs[colrIndex++] = R;  
+      /* G */ colrs[colrIndex++] = G;  
+      /* B */ colrs[colrIndex++] = B;
+      /* A */ colrs[colrIndex++] = A;
    }
 
    for (char i = 0; i < circleSegments; i++ ) {
-      /* R */ colrs[colrIndex++] = R;  /* G */ colrs[colrIndex++] = G;  /* B */ colrs[colrIndex++] = B;
-      /* R */ colrs[colrIndex++] = R;  /* G */ colrs[colrIndex++] = G;  /* B */ colrs[colrIndex++] = B;
+      /* R */ colrs[colrIndex++] = R;  
+      /* G */ colrs[colrIndex++] = G;  
+      /* B */ colrs[colrIndex++] = B;
+      /* A */ colrs[colrIndex++] = A;
+      
+      /* R */ colrs[colrIndex++] = R;  
+      /* G */ colrs[colrIndex++] = G;  
+      /* B */ colrs[colrIndex++] = B;
+      /* A */ colrs[colrIndex++] = A;
    }
-   /* R */ colrs[colrIndex++] = R;  /* G */ colrs[colrIndex++] = G;  /* B */ colrs[colrIndex++] = B;
-   /* R */ colrs[colrIndex++] = R;  /* G */ colrs[colrIndex++] = G;  /* B */ colrs[colrIndex++] = B;
+   /* R */ colrs[colrIndex++] = R;  
+   /* G */ colrs[colrIndex++] = G;  
+   /* B */ colrs[colrIndex++] = B;
+   /* A */ colrs[colrIndex++] = A;
+   
+   /* R */ colrs[colrIndex++] = R;  
+   /* G */ colrs[colrIndex++] = G;  
+   /* B */ colrs[colrIndex++] = B;
+   /* A */ colrs[colrIndex++] = A;
 
-   return colrIndex/3;
+   return colrIndex/4;
 }

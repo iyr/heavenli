@@ -19,7 +19,7 @@ int definePill(
       std::vector<float> &verts, /* Input Vector of x,y coordinates */
       std::vector<float> &colrs  /* Input Vector of r,g,b values */
       ){
-   float slope, pR, pG, pB, qR, qG, qB, ang;
+   float slope, pR, pG, pB, pA, qR, qG, qB, qA, ang;
 
    if (qx >= px) {
       slope = (qy-py)/(qx-px);
@@ -32,9 +32,11 @@ int definePill(
    pR = float(pColor[0]);
    pG = float(pColor[1]);
    pB = float(pColor[2]);
+   pA = float(pColor[3]);
    qR = float(qColor[0]);
    qG = float(qColor[1]);
    qB = float(qColor[2]);
+   qA = float(pColor[3]);
 
    char degSegment = 360 / circleSegments;
    degSegment /= 2;
@@ -43,23 +45,40 @@ int definePill(
    if (verts.size() == 0) {
       /* pX */ verts.push_back(float(px + radius*cos(ang)));
       /* pY */ verts.push_back(float(py + radius*sin(ang)));
-      /* pR */ colrs.push_back(pR);  /* G */ colrs.push_back(pG);  /* B */ colrs.push_back(pB);
+      /* pR */ colrs.push_back(pR);  
+      /* pG */ colrs.push_back(pG);  
+      /* pB */ colrs.push_back(pB);
+      /* pA */ colrs.push_back(pA);
    } else {
       /* pX */ verts.push_back(float(px + radius*cos(ang)));
       /* pY */ verts.push_back(float(py + radius*sin(ang)));
+      /* pR */ colrs.push_back(pR);  
+      /* pG */ colrs.push_back(pG);  
+      /* pB */ colrs.push_back(pB);
+      /* pA */ colrs.push_back(pA);
+
       /* pX */ verts.push_back(float(px + radius*cos(ang)));
       /* pY */ verts.push_back(float(py + radius*sin(ang)));
-      /* pR */ colrs.push_back(pR);  /* G */ colrs.push_back(pG);  /* B */ colrs.push_back(pB);
-      /* pR */ colrs.push_back(pR);  /* G */ colrs.push_back(pG);  /* B */ colrs.push_back(pB);
+      /* pR */ colrs.push_back(pR);  
+      /* pG */ colrs.push_back(pG);  
+      /* pB */ colrs.push_back(pB);
+      /* pA */ colrs.push_back(pA);
    }
 
    for (char i = 1; i < circleSegments/2; i++ ) {
       /* pX */ verts.push_back(float(px + radius*cos(ang+degToRad(i*degSegment))));
       /* pY */ verts.push_back(float(py + radius*sin(ang+degToRad(i*degSegment))));
+      /* pR */ colrs.push_back(pR);  
+      /* pG */ colrs.push_back(pG);  
+      /* pB */ colrs.push_back(pB);
+      /* pA */ colrs.push_back(pA);
+
       /* pX */ verts.push_back(float(px + radius*cos(ang+degToRad(-i*degSegment))));
       /* pY */ verts.push_back(float(py + radius*sin(ang+degToRad(-i*degSegment))));
-      /* pR */ colrs.push_back(pR);  /* G */ colrs.push_back(pG);  /* B */ colrs.push_back(pB);
-      /* pR */ colrs.push_back(pR);  /* G */ colrs.push_back(pG);  /* B */ colrs.push_back(pB);
+      /* pR */ colrs.push_back(pR);  
+      /* pG */ colrs.push_back(pG);  
+      /* pB */ colrs.push_back(pB);
+      /* pA */ colrs.push_back(pA);
    }
 
    if (qx >= px) {
@@ -72,18 +91,32 @@ int definePill(
    for (char i = 1; i < circleSegments/2; i++ ) {
       /* qX */ verts.push_back(float(qx + radius*cos(ang+degToRad(-(circleSegments/2-i)*degSegment))));
       /* qY */ verts.push_back(float(qy + radius*sin(ang+degToRad(-(circleSegments/2-i)*degSegment))));
+      /* qR */ colrs.push_back(qR);  
+      /* qG */ colrs.push_back(qG);  
+      /* qB */ colrs.push_back(qB);
+      /* qA */ colrs.push_back(qA);
+
       /* qX */ verts.push_back(float(qx + radius*cos(ang+degToRad((circleSegments/2-i)*degSegment))));
       /* qY */ verts.push_back(float(qy + radius*sin(ang+degToRad((circleSegments/2-i)*degSegment))));
-      /* qR */ colrs.push_back(qR);  /* G */ colrs.push_back(qG);  /* B */ colrs.push_back(qB);
-      /* qR */ colrs.push_back(qR);  /* G */ colrs.push_back(qG);  /* B */ colrs.push_back(qB);
+      /* qR */ colrs.push_back(qR);  
+      /* qG */ colrs.push_back(qG);  
+      /* qB */ colrs.push_back(qB);
+      /* qA */ colrs.push_back(qA);
    }
 
    /* qX */ verts.push_back(float(qx + radius*cos(ang+degToRad(0.0f))));
    /* qY */ verts.push_back(float(qy + radius*sin(ang+degToRad(0.0f))));
+   /* qR */ colrs.push_back(qR);  
+   /* qG */ colrs.push_back(qG);  
+   /* qB */ colrs.push_back(qB);
+   /* qA */ colrs.push_back(qA);
+
    /* qX */ verts.push_back(float(qx + radius*cos(ang+degToRad(0.0f))));
    /* qY */ verts.push_back(float(qy + radius*sin(ang+degToRad(0.0f))));
-   /* qR */ colrs.push_back(qR);  /* G */ colrs.push_back(qG);  /* B */ colrs.push_back(qB);
-   /* qR */ colrs.push_back(qR);  /* G */ colrs.push_back(qG);  /* B */ colrs.push_back(qB);
+   /* qR */ colrs.push_back(qR);  
+   /* qG */ colrs.push_back(qG);  
+   /* qB */ colrs.push_back(qB);
+   /* qA */ colrs.push_back(qA);
 
    return verts.size()/2;
 }
@@ -175,38 +208,72 @@ int updatePillColor(
       int index,           /* Index of where to start writing */
       float *colrs         /* Input Vector of r,g,b values */
       ){
-   float pR, pG, pB, qR, qG, qB;
-   int colrIndex = index*3;
+   float pR, pG, pB, pA, qR, qG, qB, qA;
+   int colrIndex = index*4;
 
    pR = float(pColor[0]);
    pG = float(pColor[1]);
    pB = float(pColor[2]);
+   pA = float(pColor[3]);
+
    qR = float(qColor[0]);
    qG = float(qColor[1]);
    qB = float(qColor[2]);
+   qA = float(pColor[3]);
 
    // Prepend degenerate vertex iff not the first primitive in the vector
    if (colrIndex == 0) {
-      /* pR */ colrs[colrIndex++] = (pR);  /* G */ colrs[colrIndex++] = (pG);  /* B */ colrs[colrIndex++] = (pB);
+      /* pR */ colrs[colrIndex++] = (pR);  
+      /* pG */ colrs[colrIndex++] = (pG);  
+      /* pB */ colrs[colrIndex++] = (pB);
+      /* pA */ colrs[colrIndex++] = (pA);
    } else {
-      /* pR */ colrs[colrIndex++] = (pR);  /* G */ colrs[colrIndex++] = (pG);  /* B */ colrs[colrIndex++] = (pB);
-      /* pR */ colrs[colrIndex++] = (pR);  /* G */ colrs[colrIndex++] = (pG);  /* B */ colrs[colrIndex++] = (pB);
+      /* pR */ colrs[colrIndex++] = (pR);  
+      /* pG */ colrs[colrIndex++] = (pG);  
+      /* pB */ colrs[colrIndex++] = (pB);
+      /* pA */ colrs[colrIndex++] = (pA);
+
+      /* pR */ colrs[colrIndex++] = (pR);  
+      /* pG */ colrs[colrIndex++] = (pG);  
+      /* pB */ colrs[colrIndex++] = (pB);
+      /* pA */ colrs[colrIndex++] = (pA);
    }
 
    for (char i = 1; i < circleSegments/2; i++ ) {
-      /* pR */ colrs[colrIndex++] = (pR);  /* G */ colrs[colrIndex++] = (pG);  /* B */ colrs[colrIndex++] = (pB);
-      /* pR */ colrs[colrIndex++] = (pR);  /* G */ colrs[colrIndex++] = (pG);  /* B */ colrs[colrIndex++] = (pB);
+      /* pR */ colrs[colrIndex++] = (pR);  
+      /* pG */ colrs[colrIndex++] = (pG);  
+      /* pB */ colrs[colrIndex++] = (pB);
+      /* pA */ colrs[colrIndex++] = (pA);
+
+      /* pR */ colrs[colrIndex++] = (pR);  
+      /* pG */ colrs[colrIndex++] = (pG);  
+      /* pB */ colrs[colrIndex++] = (pB);
+      /* pA */ colrs[colrIndex++] = (pA);
    }
 
    for (char i = 1; i < circleSegments/2; i++ ) {
-      /* qR */ colrs[colrIndex++] = (qR);  /* G */ colrs[colrIndex++] = (qG);  /* B */ colrs[colrIndex++] = (qB);
-      /* qR */ colrs[colrIndex++] = (qR);  /* G */ colrs[colrIndex++] = (qG);  /* B */ colrs[colrIndex++] = (qB);
+      /* qR */ colrs[colrIndex++] = (qR);  
+      /* qG */ colrs[colrIndex++] = (qG);  
+      /* qB */ colrs[colrIndex++] = (qB);
+      /* qA */ colrs[colrIndex++] = (qA);
+
+      /* qR */ colrs[colrIndex++] = (qR);  
+      /* qG */ colrs[colrIndex++] = (qG);  
+      /* qB */ colrs[colrIndex++] = (qB);
+      /* qA */ colrs[colrIndex++] = (qA);
    }
 
-   /* qR */ colrs[colrIndex++] = (qR);  /* G */ colrs[colrIndex++] = (qG);  /* B */ colrs[colrIndex++] = (qB);
-   /* qR */ colrs[colrIndex++] = (qR);  /* G */ colrs[colrIndex++] = (qG);  /* B */ colrs[colrIndex++] = (qB);
+   /* qR */ colrs[colrIndex++] = (qR);  
+   /* qG */ colrs[colrIndex++] = (qG);  
+   /* qB */ colrs[colrIndex++] = (qB);
+   /* qA */ colrs[colrIndex++] = (qA);
 
-   return colrIndex/3;
+   /* qR */ colrs[colrIndex++] = (qR);  
+   /* qG */ colrs[colrIndex++] = (qG);  
+   /* qB */ colrs[colrIndex++] = (qB);
+   /* qA */ colrs[colrIndex++] = (qA);
+
+   return colrIndex/4;
 }
 
 /* useful overload */

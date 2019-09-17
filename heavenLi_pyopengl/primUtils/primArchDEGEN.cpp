@@ -20,11 +20,12 @@ int defineArch(
       std::vector<float> &verts, /* Input Vector of x,y coordinates                       */
       std::vector<float> &colrs  /* Input Vector of r,g,b values                          */
       ){
-   float tma, R, G, B;
+   float tma, R, G, B, A;
    float degSegment;
    R = color[0];
    G = color[1];
    B = color[2];
+   A = color[3];
    float begin;
    if (start <= end) {
       degSegment = abs(end - start) / float(circleSegments);
@@ -38,23 +39,34 @@ int defineArch(
    tma = float(degToRad(begin));
    /* X */ verts.push_back(float(bx+cos(tma)*bsx));
    /* Y */ verts.push_back(float(by+sin(tma)*bsy));
-   /* R */ colrs.push_back(R);   /* G */ colrs.push_back(G);   /* B */ colrs.push_back(B);
+   /* R */ colrs.push_back(R);   
+   /* G */ colrs.push_back(G);   
+   /* B */ colrs.push_back(B);
+   /* A */ colrs.push_back(A);
 
    for (int i = 0; i < circleSegments+1; i ++ ) {
       tma = float(degToRad(begin+i*degSegment));
       /* X */ verts.push_back(float(bx+cos(tma)*bsx));
       /* Y */ verts.push_back(float(by+sin(tma)*bsy));
+      /* R */ colrs.push_back(R);   
+      /* G */ colrs.push_back(G);   
+      /* B */ colrs.push_back(B);
+      /* A */ colrs.push_back(A);
+
       /* X */ verts.push_back(float(bx+cos(tma)*(bsx+rs)));
       /* Y */ verts.push_back(float(by+sin(tma)*(bsy+rs)));
-
-      /* R */ colrs.push_back(R);   /* G */ colrs.push_back(G);   /* B */ colrs.push_back(B);
-      /* R */ colrs.push_back(R);   /* G */ colrs.push_back(G);   /* B */ colrs.push_back(B);
+      /* R */ colrs.push_back(R);   
+      /* G */ colrs.push_back(G);   
+      /* B */ colrs.push_back(B);
+      /* A */ colrs.push_back(A);
    }
    tma = float(degToRad(begin+(circleSegments)*degSegment));
    /* X */ verts.push_back(float(bx+cos(tma)*(bsx+rs)));
    /* Y */ verts.push_back(float(by+sin(tma)*(bsy+rs)));
-
-   /* R */ colrs.push_back(R);   /* G */ colrs.push_back(G);   /* B */ colrs.push_back(B);
+   /* R */ colrs.push_back(R);   
+   /* G */ colrs.push_back(G);   
+   /* B */ colrs.push_back(B);
+   /* A */ colrs.push_back(A);
 
    return verts.size()/2;
 }
@@ -110,20 +122,34 @@ int updateArchColor(
       int   index,            /* Index of where to start writing to input arrays */
       float *colrs            /* Input Vector of r,g,b values */
       ){
-   int colrIndex = index*3;
-   float R, G, B;
+   int colrIndex = index*4;
+   float R, G, B, A;
    R = color[0];
    G = color[1];
    B = color[2];
+   A = color[3];
 
    // Prepend Degenerate Vertex
-   /* R */ colrs[colrIndex++] = R;   /* G */ colrs[colrIndex++] = G;   /* B */ colrs[colrIndex++] = B;
+   /* R */ colrs[colrIndex++] = R;   
+   /* G */ colrs[colrIndex++] = G;   
+   /* B */ colrs[colrIndex++] = B;
+   /* A */ colrs[colrIndex++] = A;
 
    for (int i = 0; i < circleSegments+1; i ++ ) {
-      /* R */ colrs[colrIndex++] = R;   /* G */ colrs[colrIndex++] = G;   /* B */ colrs[colrIndex++] = B;
-      /* R */ colrs[colrIndex++] = R;   /* G */ colrs[colrIndex++] = G;   /* B */ colrs[colrIndex++] = B;
-   }
-   /* R */ colrs[colrIndex++] = R;   /* G */ colrs[colrIndex++] = G;   /* B */ colrs[colrIndex++] = B;
+      /* R */ colrs[colrIndex++] = R;   
+      /* G */ colrs[colrIndex++] = G;   
+      /* B */ colrs[colrIndex++] = B;
+      /* A */ colrs[colrIndex++] = A;
 
-   return colrIndex/3;
+      /* R */ colrs[colrIndex++] = R;   
+      /* G */ colrs[colrIndex++] = G;   
+      /* B */ colrs[colrIndex++] = B;
+      /* A */ colrs[colrIndex++] = A;
+   }
+   /* R */ colrs[colrIndex++] = R;   
+   /* G */ colrs[colrIndex++] = G;   
+   /* B */ colrs[colrIndex++] = B;
+   /* A */ colrs[colrIndex++] = A;
+
+   return colrIndex/4;
 }

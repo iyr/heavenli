@@ -64,7 +64,8 @@ PyObject* initShaders_shaderUtils(PyObject* self, PyObject *args) {
       "varying    vec4 color;             \n"
       "uniform    sampler2D tex;          \n"
       "void main() {                      \n"
-         "gl_FragColor = vec4(1, 1, 1, texture2D(tex, texCoord).r)*color;           \n"
+         //"gl_FragColor = vec4(1, 1, 1, texture2D(tex, texCoord).r)*color;           \n"
+         "gl_FragColor = color;           \n"
       "}                                  \n";
 
    GLint linked;
