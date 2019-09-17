@@ -175,7 +175,7 @@ PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
       // Update offset to begin storing data in latter part of the buffer
       offset += 2*sizeof(GLfloat)*clockVerts;
 
-      // Load Vertex coordinate data into VBO
+      // Load Vertex Color data into VBO
       glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*clockVerts, clockColorBuffer);
       // Define how the Vertex color data is layed out in the buffer
       glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLintptr*)offset);

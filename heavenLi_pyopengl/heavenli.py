@@ -12,6 +12,8 @@ def init():
 
     glEnableClientState(GL_VERTEX_ARRAY)
     glEnableClientState(GL_COLOR_ARRAY)
+    glEnable(GL_BLEND)
+    #glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
     print("Loading Shaders...")
     initShaders()

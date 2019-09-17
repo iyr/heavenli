@@ -50,16 +50,21 @@ PyObject* initShaders_shaderUtils(PyObject* self, PyObject *args) {
       "attribute  vec4 vertColor;         \n"
       "uniform    mat4 MVP;               \n"
       "varying    vec4 color;             \n"
+      "varying    vec2 texCoord;          \n"
       "void main() {                      \n"
          "color = vertColor;              \n"
          "gl_Position = MVP * vertCoord;  \n"
+         "texCoord = vertCoord.zw;        \n"
       "}                                  \n";
+
    const GLchar fragShaderSource[] = 
       "#version 100			               \n"
-      "precision mediump float;		      \n"
+      "precision  mediump float;		      \n"
+      "varying    vec2 texCoord;          \n"
       "varying    vec4 color;             \n"
+      "uniform    sampler2D tex;          \n"
       "void main() {                      \n"
-         "gl_FragColor = color;           \n"
+         "gl_FragColor = vec4(1, 1, 1, texture2D(tex, texCoord).r)*color;           \n"
       "}                                  \n";
 
    GLint linked;
