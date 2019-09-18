@@ -33,7 +33,7 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
    PyObject *py_list;
    PyObject *py_tuple;
    GLfloat w2h, scale, tmo, currentHue, interactionCursor, tDiff, gx=0.0f, gy=0.0f, ao=0.0f;
-   GLfloat ringColor[3];
+   GLfloat ringColor[4];
    char circleSegments = 45;
    unsigned char numHues = 12;
 
@@ -54,6 +54,7 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
    ringColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(py_tuple, 0)));
    ringColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(py_tuple, 1)));
    ringColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(py_tuple, 2)));
+   ringColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(py_tuple, 3)));
 
    // (Re)Allocate and Define Geometry/Color buffers
    if (  prevHueRingNumHues   != numHues  ||
@@ -65,7 +66,7 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
       float ang, tmx, tmy, azi;
-      float colors[3] = {0.0, 0.0, 0.0};
+      float colors[4] = {0.0, 0.0, 0.0, 1.0};
       float tmr = float(0.15f);
 
       // Allocate buffer for storing relative positions of each button
@@ -143,10 +144,10 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
 
       // (Re)Allocate buffer for color data
       if (hueRingColorBuffer == NULL) {
-         hueRingColorBuffer = new GLfloat[hueRingVerts*3];
+         hueRingColorBuffer = new GLfloat[hueRingVerts*4];
       } else {
          delete [] hueRingColorBuffer;
-         hueRingColorBuffer = new GLfloat[hueRingVerts*3];
+         hueRingColorBuffer = new GLfloat[hueRingVerts*4];
       }
 
       // (Re)Allocate buffer for indices
@@ -162,9 +163,10 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
          hueRingCoordBuffer[i*2]    = verts[i*2];
          hueRingCoordBuffer[i*2+1]  = verts[i*2+1];
          hueRingIndices[i]          = i;
-         hueRingColorBuffer[i*3+0]  = colrs[i*3+0];
-         hueRingColorBuffer[i*3+1]  = colrs[i*3+1];
-         hueRingColorBuffer[i*3+2]  = colrs[i*3+2];
+         hueRingColorBuffer[i*4+0]  = colrs[i*4+0];
+         hueRingColorBuffer[i*4+1]  = colrs[i*4+1];
+         hueRingColorBuffer[i*4+2]  = colrs[i*4+2];
+         hueRingColorBuffer[i*4+3]  = colrs[i*4+3];
       }
 
       // Calculate initial transformation matrix
@@ -210,7 +212,7 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
       glBindBuffer(GL_ARRAY_BUFFER, hueRingVBO);
 
       // Allocate space to hold all vertex coordinate and color data
-      glBufferData(GL_ARRAY_BUFFER, 5*sizeof(GLfloat)*hueRingVerts, NULL, GL_STATIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, 6*sizeof(GLfloat)*hueRingVerts, NULL, GL_STATIC_DRAW);
 
       // Convenience variables
       GLintptr offset = 0;
@@ -228,9 +230,9 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
       offset += 2*sizeof(GLfloat)*hueRingVerts;
 
       // Load Vertex coordinate data into VBO
-      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*hueRingVerts, hueRingColorBuffer);
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*4*hueRingVerts, hueRingColorBuffer);
       // Define how the Vertex color data is layed out in the buffer
-      glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLintptr*)offset);
+      glVertexAttribPointer(vertAttribColor, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (GLintptr*)offset);
       // Enable the vertex attribute
       glEnableVertexAttribArray(vertAttribColor);
    }
@@ -291,7 +293,7 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
       // Load Vertex coordinate data into VBO
       glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*hueRingVerts, hueRingCoordBuffer);
       offset += 2*sizeof(GLfloat)*hueRingVerts;
-      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*hueRingVerts, hueRingColorBuffer);
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*4*hueRingVerts, hueRingColorBuffer);
    }
 
    prevHueRingSel = currentHue;
@@ -377,11 +379,11 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
    }
 
    // Check if selection Ring Color needs to be updated
-   for (int i = 0; i < 3; i++) {
+   for (int i = 0; i < 4; i++) {
       //if (hueRingColorBuffer[numHues*circleSegments*9+i] != ringColor[i]) {
-      if (hueRingColorBuffer[hueDotsVerts*3+i] != ringColor[i]) {
+      if (hueRingColorBuffer[hueDotsVerts*4+i] != ringColor[i]) {
          for (unsigned int k = hueDotsVerts; k < hueRingVerts; k++) {
-            hueRingColorBuffer[k*3+i] = ringColor[i];
+            hueRingColorBuffer[k*4+i] = ringColor[i];
          }
 
          // Update Contents of VBO
@@ -390,7 +392,7 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
          // Convenience variable
          GLintptr offset = 2*sizeof(GLfloat)*hueRingVerts;
          // Load Vertex Color data into VBO
-         glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*hueRingVerts, hueRingColorBuffer);
+         glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*4*hueRingVerts, hueRingColorBuffer);
       }
    }
          
@@ -439,7 +441,7 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
       // Set active VBO
       glBindBuffer(GL_ARRAY_BUFFER, hueRingVBO);
       // Define how the Vertex color data is layed out in the buffer
-      glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*hueRingVerts));
+      glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*hueRingVerts));
    }
 
    // Pass Transformation Matrix to shader
@@ -451,7 +453,7 @@ PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
    // Define how the Vertex coordinate data is layed out in the buffer
    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
    // Define how the Vertex color data is layed out in the buffer
-   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*hueRingVerts));
+   glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*hueRingVerts));
    //glEnableVertexAttribArray(0);
    //glEnableVertexAttribArray(1);
    glDrawArrays(GL_TRIANGLE_STRIP, 0, hueRingVerts);
