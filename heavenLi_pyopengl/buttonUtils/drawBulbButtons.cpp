@@ -33,23 +33,29 @@ GLboolean   bulbButtonFirstRun  = GL_TRUE;  // Determines if function is running
 
 PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
 {
-   PyObject* faceColorPyTup;
-   PyObject* detailColorPyTup;
-   PyObject* py_list;
-   PyObject* py_tuple;
-   PyObject* py_float;
-   GLdouble faceColor[3];
-   GLdouble detailColor[3]; 
-   GLdouble *bulbColors;
-   //double bulbColor[3];
-   GLfloat angularOffset, buttonScale, w2h, gx=0.0f, gy=0.0f, scale=1.0f, ao=0.0f;
-   GLint arn, numBulbs;
+   PyObject*   faceColorPyTup;
+   PyObject*   detailColorPyTup;
+   PyObject*   py_list;
+   PyObject*   py_tuple;
+   PyObject*   py_float;
+   GLfloat     faceColor[4];
+   GLfloat     detailColor[4]; 
+   GLfloat     *bulbColors;
+   GLfloat     angularOffset, 
+               buttonScale, 
+               w2h, 
+               gx=0.0f, 
+               gy=0.0f, 
+               scale=1.0f, 
+               ao=0.0f;
+   GLint arn, numBulbs, circleSegments;
 
    // Parse input arguments
    if (!PyArg_ParseTuple(args, 
-            "iiffOOOf", 
+            "iiiffOOOf", 
             &arn,
             &numBulbs,
+            &circleSegments,
             &angularOffset,
             &buttonScale,
             &faceColorPyTup,
@@ -61,20 +67,20 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
    }
 
    // Parse array of tuples containing RGB Colors of bulbs
-   bulbColors = new double[numBulbs*3];
+   bulbColors = new float[numBulbs*3];
    for (int i = 0; i < numBulbs; i++){
       py_tuple = PyList_GetItem(py_list, i);
 
       for (int j = 0; j < 3; j++){
          py_float = PyTuple_GetItem(py_tuple, j);
-         bulbColors[i*3+j] = double(PyFloat_AsDouble(py_float));
+         bulbColors[i*3+j] = float(PyFloat_AsDouble(py_float));
       }
    }
 
    // Parse RGB color tuples of face and detail colors
-   for (int i = 0; i < 3; i++){
-      faceColor[i] = PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, i));
-      detailColor[i] = PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, i));
+   for (int i = 0; i < 4; i++){
+      faceColor[i] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, i)));
+      detailColor[i] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, i)));
    }
 
    // Initialize / Update Vertex Geometry and Colors
@@ -93,7 +99,6 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
       // Set Number of edges on circles
-      char circleSegments = 60;
       char degSegment = 360 / circleSegments;
 
       // Setup Transformations
@@ -137,98 +142,13 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
          buttonCoords[j*2+0] = tmx;
          buttonCoords[j*2+1] = tmy;
 
-         // Define Vertices / Colors for Button Face
-//#        pragma omp parallel for
-         for (int i = 0; i < circleSegments+1; i++){
-            /* X */ verts.push_back(float(tmx+0.0));
-            /* Y */ verts.push_back(float(tmy+0.0));
-            /* R */ colrs.push_back(float(faceColor[0]));
-            /* G */ colrs.push_back(float(faceColor[1]));
-            /* B */ colrs.push_back(float(faceColor[2]));
-
-            /* X */ verts.push_back(float(tmx+0.4*cos(degToRad(i*degSegment))*buttonScale));
-            /* Y */ verts.push_back(float(tmy+0.4*sin(degToRad(i*degSegment))*buttonScale));
-            /* R */ colrs.push_back(float(faceColor[0]));
-            /* G */ colrs.push_back(float(faceColor[1]));
-            /* B */ colrs.push_back(float(faceColor[2]));
-
-            /* X */ verts.push_back(float(tmx+0.4*cos(degToRad((i+1)*degSegment))*buttonScale));
-            /* Y */ verts.push_back(float(tmy+0.4*sin(degToRad((i+1)*degSegment))*buttonScale));
-            /* R */ colrs.push_back(float(faceColor[0]));
-            /* G */ colrs.push_back(float(faceColor[1]));
-            /* B */ colrs.push_back(float(faceColor[2]));
-         }
-
-         if (j == 0) {
-            colorsStart = colrs.size();
-         }
-         // Define Vertices for Bulb Icon
-//#        pragma omp parallel for
-         for (int i = 0; i < circleSegments+1; i++){
-            /* X */ verts.push_back(float(tmx+0.0*buttonScale));
-            /* Y */ verts.push_back(float(tmy+0.1*buttonScale));
-            /* R */ colrs.push_back(float(bulbColors[j*3+0]));
-            /* G */ colrs.push_back(float(bulbColors[j*3+1]));
-            /* B */ colrs.push_back(float(bulbColors[j*3+2]));
-
-            /* X */ verts.push_back(float(tmx+0.2*cos(degToRad(i*degSegment))*buttonScale));
-            /* Y */ verts.push_back(float(tmy+(0.1+0.2*sin(degToRad(i*degSegment)))*buttonScale));
-            /* R */ colrs.push_back(float(bulbColors[j*3+0]));
-            /* G */ colrs.push_back(float(bulbColors[j*3+1]));
-            /* B */ colrs.push_back(float(bulbColors[j*3+2]));
-
-            /* X */ verts.push_back(float(tmx+0.2*cos(degToRad((i+1)*degSegment))*buttonScale));
-            /* Y */ verts.push_back(float(tmy+(0.1+0.2*sin(degToRad((i+1)*degSegment)))*buttonScale));
-            /* R */ colrs.push_back(float(bulbColors[j*3+0]));
-            /* G */ colrs.push_back(float(bulbColors[j*3+1]));
-            /* B */ colrs.push_back(float(bulbColors[j*3+2]));
-         }
-         if (j == 0) {
-            colorsEnd = colrs.size();
-         }
-
-         // Define Verts for bulb screw base
-         GLfloat tmp[54] = {
-            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.085*buttonScale),
-            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.085*buttonScale),
-            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.119*buttonScale),
-            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.085*buttonScale),
-            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.119*buttonScale),
-            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.119*buttonScale),
-   
-            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.119*buttonScale),
-            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.119*buttonScale),
-            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.153*buttonScale),
-   
-            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.136*buttonScale),
-            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.170*buttonScale),
-            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.204*buttonScale),
-            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.136*buttonScale),
-            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.170*buttonScale),
-            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.204*buttonScale),
-   
-            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.187*buttonScale),
-            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.221*buttonScale),
-            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.255*buttonScale),
-            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.187*buttonScale),
-            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.221*buttonScale),
-            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.255*buttonScale),
-   
-            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.238*buttonScale),
-            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.272*buttonScale),
-            /* X, Y */ float(tmx-0.051*buttonScale), float(tmy-0.306*buttonScale),
-            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.238*buttonScale),
-            /* X, Y */ float(tmx+0.051*buttonScale), float(tmy-0.306*buttonScale),
-            /* X, Y */ float(tmx-0.051*buttonScale), float(tmy-0.306*buttonScale),
-         };
-   
-         for (int i = 0; i < 27; i++) {
-            /* X */ verts.push_back(float(tmp[i*2+0]));
-            /* Y */ verts.push_back(float(tmp[i*2+1]));
-            /* R */ colrs.push_back(float(detailColor[0]));
-            /* G */ colrs.push_back(float(detailColor[1]));
-            /* B */ colrs.push_back(float(detailColor[2]));
-         }
+         defineEllipse(tmx, tmy, 0.4f*buttonScale, 0.4f*buttonScale, circleSegments, faceColor, verts, colrs);
+         float tmbc[4];
+         tmbc[0] = bulbColors[j*3+0];
+         tmbc[1] = bulbColors[j*3+1];
+         tmbc[2] = bulbColors[j*3+2];
+         tmbc[3] = 1.0;
+         defineBulb(tmx, tmy+0.035, 0.15*buttonScale, circleSegments, tmbc, detailColor, verts, colrs);
 
          if (j == 0) {
             vertsPerBulb = verts.size()/2;
@@ -248,10 +168,10 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
 
       // (Re)allocate color buffer
       if (bulbButtonColorBuffer == NULL) {
-         bulbButtonColorBuffer = new GLfloat[bulbButtonVerts*3];
+         bulbButtonColorBuffer = new GLfloat[bulbButtonVerts*4];
       } else {
          delete [] bulbButtonColorBuffer;
-         bulbButtonColorBuffer = new GLfloat[bulbButtonVerts*3];
+         bulbButtonColorBuffer = new GLfloat[bulbButtonVerts*4];
       }
 
       // (Re)allocate index array
@@ -263,14 +183,14 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
       }
 
       // Pack bulbButtonIndices, vertex and color bufferes
-//#     pragma omp parallel for
       for (unsigned int i = 0; i < bulbButtonVerts; i++){
          bulbButtonCoordBuffer[i*2]   = verts[i*2];
          bulbButtonCoordBuffer[i*2+1] = verts[i*2+1];
          bulbButtonIndices[i]         = i;
-         bulbButtonColorBuffer[i*3+0] = colrs[i*3+0];
-         bulbButtonColorBuffer[i*3+1] = colrs[i*3+1];
-         bulbButtonColorBuffer[i*3+2] = colrs[i*3+2];
+         bulbButtonColorBuffer[i*4+0] = colrs[i*4+0];
+         bulbButtonColorBuffer[i*4+1] = colrs[i*4+1];
+         bulbButtonColorBuffer[i*4+2] = colrs[i*4+2];
+         bulbButtonColorBuffer[i*4+3] = colrs[i*4+3];
       }
 
       // Calculate initial Transformation matrix
@@ -313,7 +233,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
       glBindBuffer(GL_ARRAY_BUFFER, bulbButtonVBO);
 
       // Allocate space to hold all vertex coordinate and color data
-      glBufferData(GL_ARRAY_BUFFER, 5*sizeof(GLfloat)*bulbButtonVerts, NULL, GL_STATIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, 6*sizeof(GLfloat)*bulbButtonVerts, NULL, GL_STATIC_DRAW);
 
       // Convenience variables
       GLintptr offset = 0;
@@ -331,9 +251,9 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
       offset += 2*sizeof(GLfloat)*bulbButtonVerts;
 
       // Load Vertex coordinate data into VBO
-      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*bulbButtonVerts, bulbButtonColorBuffer);
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*4*bulbButtonVerts, bulbButtonColorBuffer);
       // Define how the Vertex color data is layed out in the buffer
-      glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLintptr*)offset);
+      glVertexAttribPointer(vertAttribColor, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (GLintptr*)offset);
       // Enable the vertex attribute
       glEnableVertexAttribArray(vertAttribColor);
    } 
@@ -344,7 +264,6 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
             prevAngOffset        != angularOffset  ||
             prevBulbButtonScale  != buttonScale    ){
       // Set Number of edges on circles
-      char circleSegments = 60;
       char degSegment = 360 / circleSegments;
 
       // Setup Transformations
@@ -354,6 +273,7 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
       }
 
       float tmx, tmy, ang;
+      int index = 0;
       // Define verts / colors for each bulb button
       for (int j = 0; j < numBulbs; j++) {
          if (arn == 0) {
@@ -381,72 +301,8 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
          buttonCoords[j*2+0] = tmx;
          buttonCoords[j*2+1] = tmy;
 
-         // Define Vertices / Colors for Button Face
-//#        pragma omp parallel for
-         for (int i = 0; i < circleSegments+1; i++){
-            /* X */ bulbButtonCoordBuffer[j*vertsPerBulb*2+i*6+0] = (float(tmx+0.0));
-            /* Y */ bulbButtonCoordBuffer[j*vertsPerBulb*2+i*6+1] = (float(tmy+0.0));
-
-            /* X */ bulbButtonCoordBuffer[j*vertsPerBulb*2+i*6+2] = (float(tmx+0.4*cos(degToRad(i*degSegment))*buttonScale));
-            /* Y */ bulbButtonCoordBuffer[j*vertsPerBulb*2+i*6+3] = (float(tmy+0.4*sin(degToRad(i*degSegment))*buttonScale));
-
-            /* X */ bulbButtonCoordBuffer[j*vertsPerBulb*2+i*6+4] = (float(tmx+0.4*cos(degToRad((i+1)*degSegment))*buttonScale));
-            /* Y */ bulbButtonCoordBuffer[j*vertsPerBulb*2+i*6+5] = (float(tmy+0.4*sin(degToRad((i+1)*degSegment))*buttonScale));
-         }
-
-         // Define Vertices for Bulb Icon
-//#        pragma omp parallel for
-         for (int i = 0; i < circleSegments+1; i++){
-            /* X */ bulbButtonCoordBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+0] = (float(tmx+0.0*buttonScale));
-            /* Y */ bulbButtonCoordBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+1] = (float(tmy+0.1*buttonScale));
-
-            /* X */ bulbButtonCoordBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+2] = (float(tmx+0.2*cos(degToRad(i*degSegment))*buttonScale));
-            /* Y */ bulbButtonCoordBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+3] = (float(tmy+(0.1+0.2*sin(degToRad(i*degSegment)))*buttonScale));
-
-            /* X */ bulbButtonCoordBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+4] = (float(tmx+0.2*cos(degToRad((i+1)*degSegment))*buttonScale));
-            /* Y */ bulbButtonCoordBuffer[j*vertsPerBulb*2+(circleSegments+1)*6+i*6+5] = (float(tmy+(0.1+0.2*sin(degToRad((i+1)*degSegment)))*buttonScale));
-         }
-
-         // Define Verts for bulb screw base
-         GLfloat tmp[54] = {
-            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.085*buttonScale),
-            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.085*buttonScale),
-            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.119*buttonScale),
-            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.085*buttonScale),
-            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.119*buttonScale),
-            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.119*buttonScale),
-   
-            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.119*buttonScale),
-            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.119*buttonScale),
-            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.153*buttonScale),
-   
-            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.136*buttonScale),
-            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.170*buttonScale),
-            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.204*buttonScale),
-            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.136*buttonScale),
-            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.170*buttonScale),
-            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.204*buttonScale),
-   
-            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.187*buttonScale),
-            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.221*buttonScale),
-            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.255*buttonScale),
-            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.187*buttonScale),
-            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.221*buttonScale),
-            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.255*buttonScale),
-   
-            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.238*buttonScale),
-            /* X, Y */ float(tmx-0.085*buttonScale), float(tmy-0.272*buttonScale),
-            /* X, Y */ float(tmx-0.051*buttonScale), float(tmy-0.306*buttonScale),
-            /* X, Y */ float(tmx+0.085*buttonScale), float(tmy-0.238*buttonScale),
-            /* X, Y */ float(tmx+0.051*buttonScale), float(tmy-0.306*buttonScale),
-            /* X, Y */ float(tmx-0.051*buttonScale), float(tmy-0.306*buttonScale),
-         };
-   
-//#        pragma omp parallel for
-         for (int i = 0; i < 27; i++) {
-            /* X */ bulbButtonCoordBuffer[j*vertsPerBulb*2+i*2+(circleSegments+1)*12+0] = (float(tmp[i*2+0]));
-            /* Y */ bulbButtonCoordBuffer[j*vertsPerBulb*2+i*2+(circleSegments+1)*12+1] = (float(tmp[i*2+1]));
-         }
+         index = updatePrimEllipseGeometry(tmx, tmy, 0.4f*buttonScale, 0.4f*buttonScale, circleSegments, index, bulbButtonCoordBuffer);
+         index = updateBulbGeometry(tmx, tmy+0.035f, 0.15f*buttonScale, circleSegments, index, bulbButtonCoordBuffer);
       }
 
       // Set active VBO
@@ -455,80 +311,26 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
       GLintptr offset = 0;
       // Load Vertex Coordinate data into VBO
       glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*bulbButtonVerts, bulbButtonCoordBuffer);
-
-      offset = 2*sizeof(GLfloat)*bulbButtonVerts;
-      // Load Vertex Color data into VBO
-      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*bulbButtonVerts, bulbButtonColorBuffer);
    }
    // Vertices / Geometry already calculated
    // Check if colors need to be updated
-   //else
-   {
-      /*
-       * Iterate through each color channel 
-       * 0 - RED
-       * 1 - GREEN
-       * 2 - BLUE
-       */
-      for (int i = 0; i < 3; i++) {
-
-         // Update face color, if needed
-         if (float(faceColor[i]) != bulbButtonColorBuffer[i]) {
-            for (int j = 0; j < numBulbs; j++) {
-//#              pragma omp parallel for
-               for (int k = 0; k < colorsStart/3; k++) {
-                  bulbButtonColorBuffer[ j*vertsPerBulb*3 + k*3 + i ] = float(faceColor[i]);
-               }
-            }
-            // Update Contents of VBO
-            // Set active VBO
-            glBindBuffer(GL_ARRAY_BUFFER, bulbButtonVBO);
-            // Convenience variable
-            GLintptr offset = 2*sizeof(GLfloat)*bulbButtonVerts;
-            // Load Vertex Color data into VBO
-            glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*bulbButtonVerts, bulbButtonColorBuffer);
-         }
-
-         // Update Detail Color, if needed
-         if (float(detailColor[i]) != bulbButtonColorBuffer[colorsEnd+i]) {
-            for (int j = 0; j < numBulbs; j++) {
-               for (int k = 0; k < (detailEnd - colorsEnd)/3; k++) {
-                  bulbButtonColorBuffer[ colorsEnd + j*vertsPerBulb*3 + k*3 + i ] = float(detailColor[i]);
-               }
-            }
-            // Update Contents of VBO
-            // Set active VBO
-            glBindBuffer(GL_ARRAY_BUFFER, bulbButtonVBO);
-            // Convenience variable
-            GLintptr offset = 2*sizeof(GLfloat)*bulbButtonVerts;
-            // Load Vertex Color data into VBO
-            glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*bulbButtonVerts, bulbButtonColorBuffer);
-         }
-      }
-      
-      // Update any bulb colors, if needed
-      // Iterate through colors (R0, G1, B2)
-      for (int i = 0; i < 3; i++) {
-
-         // Iterate though bulbs
-         for (int j = 0; j < numBulbs; j++) {
-
-            // Iterate through color buffer to update colors
-            if (float(bulbColors[i+j*3]) != bulbButtonColorBuffer[colorsStart + i + j*vertsPerBulb*3]) {
-               for (int k = 0; k < (colorsEnd-colorsStart)/3; k++) {
-                  bulbButtonColorBuffer[ j*vertsPerBulb*3 + colorsStart + i + k*3 ] = float(bulbColors[i+j*3]);
-               }
-               // Update Contents of VBO
-               // Set active VBO
-               glBindBuffer(GL_ARRAY_BUFFER, bulbButtonVBO);
-               // Convenience variable
-               GLintptr offset = 2*sizeof(GLfloat)*bulbButtonVerts;
-               // Load Vertex Color data into VBO
-               glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*bulbButtonVerts, bulbButtonColorBuffer);
-            }
-         }
-      }
-   } 
+   int index = 0;
+   for (int j = 0; j < numBulbs; j++) {
+      index = updatePrimEllipseColor(circleSegments, faceColor, index, bulbButtonColorBuffer);
+      float tmbc[4];
+      tmbc[0] = bulbColors[j*3+0];
+      tmbc[1] = bulbColors[j*3+1];
+      tmbc[2] = bulbColors[j*3+2];
+      tmbc[3] = 1.0;
+      index = updateBulbColor(circleSegments, tmbc, detailColor, index, bulbButtonColorBuffer);
+   }
+   // Update Contents of VBO
+   // Set active VBO
+   glBindBuffer(GL_ARRAY_BUFFER, bulbButtonVBO);
+   // Convenience variable
+   GLintptr offset = 2*sizeof(GLfloat)*bulbButtonVerts;
+   // Load Vertex Color data into VBO
+   glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*4*bulbButtonVerts, bulbButtonColorBuffer);
 
    //PyList_ClearFreeList();
    py_list = PyList_New(numBulbs);
@@ -579,14 +381,13 @@ PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
    // Define how the Vertex coordinate data is layed out in the buffer
    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
    // Define how the Vertex color data is layed out in the buffer
-   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*bulbButtonVerts));
+   glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*bulbButtonVerts));
    //glEnableVertexAttribArray(0);
    //glEnableVertexAttribArray(1);
-   glDrawArrays(GL_TRIANGLES, 0, bulbButtonVerts);
+   glDrawArrays(GL_TRIANGLE_STRIP, 0, bulbButtonVerts);
 
    // Unbind Buffer Object
    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
    return py_list;
 }
-
