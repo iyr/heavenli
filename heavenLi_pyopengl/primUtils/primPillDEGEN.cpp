@@ -33,6 +33,7 @@ int definePill(
    pG = float(pColor[1]);
    pB = float(pColor[2]);
    pA = float(pColor[3]);
+
    qR = float(qColor[0]);
    qG = float(qColor[1]);
    qB = float(qColor[2]);
