@@ -113,6 +113,7 @@ def drawHome():
             buttons = drawBulbButton(
                     stateMach['lamps'][Light].getArn(),
                     stateMach['lamps'][Light].getNumBulbs(),
+                    60,
                     stateMach['lamps'][Light].getAngle(),
                     iconSize*2.66,
                     stateMach['faceColor'],
@@ -137,11 +138,11 @@ def drawHome():
                 #'NnOoPpQqRrSsTtUuVvWwXxYyZz',
                 #( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100)))
 
-        primTest(stateMach['someVar']/100-0.3333333333, 0.0, 
-                0.75, stateMach['w2h'],
-                (0.5, stateMach['someVar']/100, 1.0),
-                (1.0, 0.5, 0.0),
-                (0.0, 1.0, 0.5))
+        #primTest(stateMach['someVar']/100-0.3333333333, 0.0, 
+                #0.75, stateMach['w2h'],
+                #(0.5, stateMach['someVar']/100, 1.0, 1.0),
+                #(1.0, 0.5, 0.0, 1.0),
+                #(0.0, 1.0, 0.5, 1.0))
 
         # Watch Home Screen for input
         if (watchScreen()):
@@ -235,22 +236,25 @@ def drawSettingColor():
     acc = animCurve(stateMach['colrSettingCursor'])
     faceColor = (stateMach['faceColor'][0]*acc, 
             stateMach['faceColor'][1]*acc,
-            stateMach['faceColor'][2]*acc)
+            stateMach['faceColor'][2]*acc,
+            stateMach['faceColor'][3]*acc)
     detailColor = (stateMach['detailColor'][0]*acc, 
             stateMach['detailColor'][1]*acc,
-            stateMach['detailColor'][2]*acc)
+            stateMach['detailColor'][2]*acc,
+            stateMach['detailColor'][3]*acc)
     cmx = 0.15
         
     if (stateMach['wereColorsTouched']):
-        selectRingColor = (1.0, 1.0, 1.0)
+        selectRingColor = (1.0, 1.0, 1.0, 1.0)
     else:
-        selectRingColor = (0.3, 0.3, 0.3)
+        selectRingColor = (0.3, 0.3, 0.3, 1.0)
 
     iconSize = 0.15
     if (len(stateMach['lamps']) > 0):
         drawBulbButton(
                 stateMach['lamps'][Light].getArn(),
                 stateMach['lamps'][Light].getNumBulbs(),
+                60,
                 stateMach['lamps'][Light].getAngle(),
                 iconSize*2.66*pow(acc, 4),
                 faceColor,

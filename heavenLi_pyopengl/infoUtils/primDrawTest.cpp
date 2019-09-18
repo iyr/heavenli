@@ -27,9 +27,9 @@ PyObject* primTest_drawButtons(PyObject* self, PyObject *args) {
    PyObject *extraColorPyTup;
    PyObject *detailColorPyTup;
    GLfloat gx, gy, scale, w2h, ao=0.0f;
-   GLfloat faceColor[3];
-   GLfloat extraColor[3];
-   GLfloat detailColor[3];
+   GLfloat faceColor[4];
+   GLfloat extraColor[4];
+   GLfloat detailColor[4];
 
    // Parse Inputs
    if ( !PyArg_ParseTuple(args,
@@ -47,14 +47,17 @@ PyObject* primTest_drawButtons(PyObject* self, PyObject *args) {
    faceColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 0)));
    faceColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 1)));
    faceColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 2)));
+   faceColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 3)));
 
    extraColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 0)));
    extraColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 1)));
    extraColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 2)));
+   extraColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 3)));
 
    detailColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 0)));
    detailColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 1)));
    detailColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2)));
+   detailColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 3)));
 
    // Allocate and Define Geometry/Color buffers
    if (  primTestCoordBuffer   == NULL  ||
@@ -82,10 +85,10 @@ PyObject* primTest_drawButtons(PyObject* self, PyObject *args) {
       }
 
       if (primTestColorBuffer == NULL) {
-         primTestColorBuffer = new GLfloat[primTestVerts*3];
+         primTestColorBuffer = new GLfloat[primTestVerts*4];
       } else {
          delete [] primTestColorBuffer;
-         primTestColorBuffer = new GLfloat[primTestVerts*3];
+         primTestColorBuffer = new GLfloat[primTestVerts*4];
       }
 
       if (primTestIndices == NULL) {
@@ -99,9 +102,10 @@ PyObject* primTest_drawButtons(PyObject* self, PyObject *args) {
          primTestCoordBuffer[i*2]   = verts[i*2];
          primTestCoordBuffer[i*2+1] = verts[i*2+1];
          primTestIndices[i]         = i;
-         primTestColorBuffer[i*3+0] = colrs[i*3+0];
-         primTestColorBuffer[i*3+1] = colrs[i*3+1];
-         primTestColorBuffer[i*3+2] = colrs[i*3+2];
+         primTestColorBuffer[i*4+0] = colrs[i*4+0];
+         primTestColorBuffer[i*4+1] = colrs[i*4+1];
+         primTestColorBuffer[i*4+2] = colrs[i*4+2];
+         primTestColorBuffer[i*4+3] = colrs[i*4+3];
       }
 
       // Calculate Initial Transformation Matrix
@@ -145,7 +149,7 @@ PyObject* primTest_drawButtons(PyObject* self, PyObject *args) {
       glBindBuffer(GL_ARRAY_BUFFER, primTestVBO);
 
       // Allocate space to hold all vertex coordinate and color data
-      glBufferData(GL_ARRAY_BUFFER, 5*sizeof(GLfloat)*primTestVerts, NULL, GL_STATIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, 6*sizeof(GLfloat)*primTestVerts, NULL, GL_STATIC_DRAW);
 
       // Convenience variables
       GLintptr offset = 0;
@@ -165,10 +169,10 @@ PyObject* primTest_drawButtons(PyObject* self, PyObject *args) {
       offset += 2*sizeof(GLfloat)*primTestVerts;
 
       // Load Vertex coordinate data into VBO
-      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*primTestVerts, primTestColorBuffer);
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*4*primTestVerts, primTestColorBuffer);
 
       // Define how the Vertex color data is layed out in the buffer
-      glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLintptr*)offset);
+      glVertexAttribPointer(vertAttribColor, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (GLintptr*)offset);
 
       // Enable the vertex attribute
       glEnableVertexAttribArray(vertAttribColor);
@@ -196,7 +200,7 @@ PyObject* primTest_drawButtons(PyObject* self, PyObject *args) {
    // Convenience variable
    offset = 2*sizeof(GLfloat)*primTestVerts;
    // Load Vertex Color data into VBO
-   glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*primTestVerts, primTestColorBuffer);
+   glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*4*primTestVerts, primTestColorBuffer);
 
    // Update Transfomation Matrix if any change in parameters
    if (  primTestPrevState.ao != ao     ||
@@ -244,7 +248,7 @@ PyObject* primTest_drawButtons(PyObject* self, PyObject *args) {
    // Define how the Vertex coordinate data is layed out in the buffer
    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
    // Define how the Vertex color data is layed out in the buffer
-   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*primTestVerts));
+   glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*primTestVerts));
 
    // Not sure if I actually need these
    //glEnableVertexAttribArray(0);
