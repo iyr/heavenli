@@ -237,7 +237,7 @@ def drawSettingColor():
     faceColor = (stateMach['faceColor'][0]*acc, 
             stateMach['faceColor'][1]*acc,
             stateMach['faceColor'][2]*acc,
-            stateMach['faceColor'][3]*acc)
+            1.0)
     detailColor = (stateMach['detailColor'][0]*acc, 
             stateMach['detailColor'][1]*acc,
             stateMach['detailColor'][2]*acc,
@@ -245,9 +245,9 @@ def drawSettingColor():
     cmx = 0.15
         
     if (stateMach['wereColorsTouched']):
-        selectRingColor = (1.0, 1.0, 1.0, 1.0)
+        selectRingColor = stateMach['detailColor']
     else:
-        selectRingColor = (0.3, 0.3, 0.3, 1.0)
+        selectRingColor = stateMach['faceColor']
 
     iconSize = 0.15
     if (len(stateMach['lamps']) > 0):
@@ -330,13 +330,15 @@ def drawSettingColor():
             stateMach['w2h'], acbic, 
             stateMach['tDiff'])
 
-    if ( stateMach['wereColorsTouched'] ):
+    #if ( stateMach['wereColorsTouched'] ):
+    if ( True ):
         extraColor = colorsys.hsv_to_rgb(
                 stateMach['currentHue'], 
                 stateMach['currentSat'], 
                 stateMach['currentVal'])
-    else:
-        extraColor = stateMach['detailColor']
+        extraColor = (extraColor[0], extraColor[1], extraColor[2], 1.0)
+    #else:
+        #extraColor = stateMach['detailColor']
 
     # Draw Confirm Button
     drawConfirm(
@@ -347,13 +349,15 @@ def drawSettingColor():
             extraColor, 
             stateMach['detailColor']);
 
-    if ( stateMach['wereColorsTouched'] ):
+    #if ( stateMach['wereColorsTouched'] ):
+    if ( True ):
         extraColor = colorsys.hsv_to_rgb(
                 stateMach['prevHue'], 
                 stateMach['prevSat'], 
                 stateMach['prevVal'])
-    else:
-        extraColor = stateMach['detailColor']
+        extraColor = (extraColor[0], extraColor[1], extraColor[2], 1.0)
+    #else:
+        #extraColor = stateMach['detailColor']
 
     # Draw Back Button
     drawArrow(

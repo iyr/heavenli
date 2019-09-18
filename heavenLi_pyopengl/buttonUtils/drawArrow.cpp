@@ -27,9 +27,9 @@ PyObject* drawArrow_drawButtons(PyObject* self, PyObject *args) {
    PyObject *extraColorPyTup;
    PyObject *detailColorPyTup;
    float gx, gy, ao, scale, w2h;
-   float faceColor[3];
-   float extraColor[3];
-   float detailColor[3];
+   float faceColor[4];
+   float extraColor[4];
+   float detailColor[4];
 
    // Parse Inputs
    if ( !PyArg_ParseTuple(args,
@@ -48,14 +48,17 @@ PyObject* drawArrow_drawButtons(PyObject* self, PyObject *args) {
    faceColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 0)));
    faceColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 1)));
    faceColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 2)));
+   faceColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 3)));
 
    extraColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 0)));
    extraColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 1)));
    extraColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 2)));
+   extraColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 3)));
 
    detailColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 0)));
    detailColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 1)));
    detailColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2)));
+   detailColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 3)));
 
    // Allocate and Define Geometry/Color buffers
    if (  arrowCoordBuffer  == NULL  ||
@@ -126,10 +129,10 @@ PyObject* drawArrow_drawButtons(PyObject* self, PyObject *args) {
       }
 
       if (arrowColorBuffer == NULL) {
-         arrowColorBuffer = new GLfloat[arrowVerts*3];
+         arrowColorBuffer = new GLfloat[arrowVerts*4];
       } else {
          delete [] arrowColorBuffer;
-         arrowColorBuffer = new GLfloat[arrowVerts*3];
+         arrowColorBuffer = new GLfloat[arrowVerts*4];
       }
 
       if (arrowIndices == NULL) {
@@ -143,9 +146,10 @@ PyObject* drawArrow_drawButtons(PyObject* self, PyObject *args) {
          arrowCoordBuffer[i*2]   = verts[i*2];
          arrowCoordBuffer[i*2+1] = verts[i*2+1];
          arrowIndices[i]          = i;
-         arrowColorBuffer[i*3+0]  = colrs[i*3+0];
-         arrowColorBuffer[i*3+1]  = colrs[i*3+1];
-         arrowColorBuffer[i*3+2]  = colrs[i*3+2];
+         arrowColorBuffer[i*4+0]  = colrs[i*4+0];
+         arrowColorBuffer[i*4+1]  = colrs[i*4+1];
+         arrowColorBuffer[i*4+2]  = colrs[i*4+2];
+         arrowColorBuffer[i*4+3]  = colrs[i*4+3];
       }
 
       // Calculate Initial Transformation Matrix
@@ -185,7 +189,7 @@ PyObject* drawArrow_drawButtons(PyObject* self, PyObject *args) {
       glBindBuffer(GL_ARRAY_BUFFER, arrowVBO);
 
       // Allocate space to hold all vertex coordinate and color data
-      glBufferData(GL_ARRAY_BUFFER, 5*sizeof(GLfloat)*arrowVerts, NULL, GL_STATIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, 6*sizeof(GLfloat)*arrowVerts, NULL, GL_STATIC_DRAW);
 
       // Convenience variables
       GLintptr offset = 0;
@@ -203,18 +207,18 @@ PyObject* drawArrow_drawButtons(PyObject* self, PyObject *args) {
       offset += 2*sizeof(GLfloat)*arrowVerts;
 
       // Load Vertex coordinate data into VBO
-      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*arrowVerts, arrowColorBuffer);
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*4*arrowVerts, arrowColorBuffer);
       // Define how the Vertex color data is layed out in the buffer
-      glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLintptr*)offset);
+      glVertexAttribPointer(vertAttribColor, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (GLintptr*)offset);
       // Enable the vertex attribute
       glEnableVertexAttribArray(vertAttribColor);
    }
 
    // Update Color, if needed
-   for (int i = 0; i < 3; i++) {
-      if ( arrowColorBuffer[extraArrowVerts*3+i] != extraColor[i] ) {
+   for (int i = 0; i < 4; i++) {
+      if ( arrowColorBuffer[extraArrowVerts*4+i] != extraColor[i] ) {
          for (unsigned int k = extraArrowVerts; k < arrowVerts; k++) {
-            arrowColorBuffer[k*3 + i] = extraColor[i];
+            arrowColorBuffer[k*4 + i] = extraColor[i];
          }
          // Update Contents of VBO
          // Set active VBO
@@ -222,7 +226,7 @@ PyObject* drawArrow_drawButtons(PyObject* self, PyObject *args) {
          // Convenience variable
          GLintptr offset = 2*sizeof(GLfloat)*arrowVerts;
          // Load Vertex Color data into VBO
-         glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*arrowVerts, arrowColorBuffer);
+         glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*4*arrowVerts, arrowColorBuffer);
       }
    }
 
@@ -260,7 +264,7 @@ PyObject* drawArrow_drawButtons(PyObject* self, PyObject *args) {
       // Set active VBO
       glBindBuffer(GL_ARRAY_BUFFER, arrowVBO);
       // Define how the Vertex color data is layed out in the buffer
-      glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*arrowVerts));
+      glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*arrowVerts));
    }
 
    // Pass Transformation Matrix to shader
@@ -272,7 +276,7 @@ PyObject* drawArrow_drawButtons(PyObject* self, PyObject *args) {
    // Define how the Vertex coordinate data is layed out in the buffer
    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
    // Define how the Vertex color data is layed out in the buffer
-   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*arrowVerts));
+   glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*arrowVerts));
    //glEnableVertexAttribArray(0);
    //glEnableVertexAttribArray(1);
    glDrawArrays(GL_TRIANGLE_STRIP, 0, arrowVerts);

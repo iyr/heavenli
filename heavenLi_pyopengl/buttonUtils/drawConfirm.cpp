@@ -27,9 +27,9 @@ PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
    PyObject *extraColorPyTup;
    PyObject *detailColorPyTup;
    GLfloat gx, gy, scale, w2h, ao=0.0f;
-   GLfloat faceColor[3];
-   GLfloat extraColor[3];
-   GLfloat detailColor[3];
+   GLfloat faceColor[4];
+   GLfloat extraColor[4];
+   GLfloat detailColor[4];
 
    // Parse Inputs
    if ( !PyArg_ParseTuple(args,
@@ -47,14 +47,17 @@ PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
    faceColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 0)));
    faceColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 1)));
    faceColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 2)));
+   faceColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 3)));
 
    extraColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 0)));
    extraColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 1)));
    extraColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 2)));
+   extraColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 3)));
 
    detailColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 0)));
    detailColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 1)));
    detailColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2)));
+   detailColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 3)));
 
    // Allocate and Define Geometry/Color buffers
    if (  confirmCoordBuffer   == NULL  ||
@@ -125,10 +128,10 @@ PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
       }
 
       if (confirmColorBuffer == NULL) {
-         confirmColorBuffer = new GLfloat[confirmVerts*3];
+         confirmColorBuffer = new GLfloat[confirmVerts*4];
       } else {
          delete [] confirmColorBuffer;
-         confirmColorBuffer = new GLfloat[confirmVerts*3];
+         confirmColorBuffer = new GLfloat[confirmVerts*4];
       }
 
       if (confirmIndices == NULL) {
@@ -142,9 +145,10 @@ PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
          confirmCoordBuffer[i*2]   = verts[i*2];
          confirmCoordBuffer[i*2+1] = verts[i*2+1];
          confirmIndices[i]          = i;
-         confirmColorBuffer[i*3+0]  = colrs[i*3+0];
-         confirmColorBuffer[i*3+1]  = colrs[i*3+1];
-         confirmColorBuffer[i*3+2]  = colrs[i*3+2];
+         confirmColorBuffer[i*4+0]  = colrs[i*4+0];
+         confirmColorBuffer[i*4+1]  = colrs[i*4+1];
+         confirmColorBuffer[i*4+2]  = colrs[i*4+2];
+         confirmColorBuffer[i*4+3]  = colrs[i*4+3];
       }
 
       // Calculate Initial Transformation Matrix
@@ -188,7 +192,7 @@ PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
       glBindBuffer(GL_ARRAY_BUFFER, confirmVBO);
 
       // Allocate space to hold all vertex coordinate and color data
-      glBufferData(GL_ARRAY_BUFFER, 5*sizeof(GLfloat)*confirmVerts, NULL, GL_STATIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, 6*sizeof(GLfloat)*confirmVerts, NULL, GL_STATIC_DRAW);
 
       // Convenience variables
       GLintptr offset = 0;
@@ -208,20 +212,20 @@ PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
       offset += 2*sizeof(GLfloat)*confirmVerts;
 
       // Load Vertex coordinate data into VBO
-      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*confirmVerts, confirmColorBuffer);
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*4*confirmVerts, confirmColorBuffer);
 
       // Define how the Vertex color data is layed out in the buffer
-      glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLintptr*)offset);
+      glVertexAttribPointer(vertAttribColor, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (GLintptr*)offset);
 
       // Enable the vertex attribute
       glEnableVertexAttribArray(vertAttribColor);
    }
 
    // Geometry allocated, check if color needs to be updated
-   for (int i = 0; i < 3; i++) {
-      if ( confirmColorBuffer[extraConfirmVerts*3+i] != extraColor[i] ) {
+   for (int i = 0; i < 4; i++) {
+      if ( confirmColorBuffer[extraConfirmVerts*4+i] != extraColor[i] ) {
          for (unsigned int k = extraConfirmVerts; k < confirmVerts; k++) {
-            confirmColorBuffer[k*3 + i] = extraColor[i];
+            confirmColorBuffer[k*4 + i] = extraColor[i];
          }
          // Update Contents of VBO
          // Set active VBO
@@ -229,7 +233,7 @@ PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
          // Convenience variable
          GLintptr offset = 2*sizeof(GLfloat)*confirmVerts;
          // Load Vertex Color data into VBO
-         glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*confirmVerts, confirmColorBuffer);
+         glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*4*confirmVerts, confirmColorBuffer);
       }
    }
 
@@ -267,7 +271,7 @@ PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
       // Set active VBO
       glBindBuffer(GL_ARRAY_BUFFER, confirmVBO);
       // Define how the Vertex color data is layed out in the buffer
-      glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*confirmVerts));
+      glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*confirmVerts));
    }
 
    // Pass Transformation Matrix to shader
@@ -279,7 +283,7 @@ PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
    // Define how the Vertex coordinate data is layed out in the buffer
    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
    // Define how the Vertex color data is layed out in the buffer
-   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*confirmVerts));
+   glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*confirmVerts));
 
    // Not sure if I actually need these
    //glEnableVertexAttribArray(0);
