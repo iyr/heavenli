@@ -10,6 +10,8 @@
 #include <math.h>
 #include <vector>
 #include <string>
+#include <map>
+
 using namespace std;
 
 GLfloat     *stringCoordBuffer  = NULL;  // Stores (X, Y) (float) for each vertex
@@ -22,12 +24,23 @@ Params      stringPrevState;             // Stores transformations to avoid redu
 GLuint      stringVBO;                   // Vertex Buffer Object ID
 GLboolean   stringFirstRun = GL_TRUE;    // Determines if function is running for the first time (for VBO initialization)
 
-PyObject* printText_drawButtons(PyObject* self, PyObject *args) {
+struct Character {
+   GLuint   TextureID;  // Texture ID of glyph
+   GLuint   sizeX;      // Size of glyph along x
+   GLuint   sizeY;      // Size of glyph along y
+   GLuint   bearingX;   // Offset from baseline to left of glyph
+   GLuint   bearingY;   // Offset form baseline to top of glyph
+   GLuint   advance;    // Spatial offset for next glyph
+};
+
+std::map<GLchar, Character> Characters;
+
+PyObject* printText_drawText(PyObject* self, PyObject *args) {
    PyObject *colourPyTup;
    PyObject *Pystring;
 
    GLfloat gx, gy, scale, w2h, ao=0.0f;
-   GLfloat textColor[3];
+   GLfloat textColor[4];
 
    // Parse Inputs
    if ( !PyArg_ParseTuple(args,
@@ -47,6 +60,7 @@ PyObject* printText_drawButtons(PyObject* self, PyObject *args) {
    textColor[0]   = float(PyFloat_AsDouble(PyTuple_GetItem(colourPyTup, 0)));
    textColor[1]   = float(PyFloat_AsDouble(PyTuple_GetItem(colourPyTup, 1)));
    textColor[2]   = float(PyFloat_AsDouble(PyTuple_GetItem(colourPyTup, 2)));
+   textColor[3]   = float(PyFloat_AsDouble(PyTuple_GetItem(colourPyTup, 3)));
 
    // (Re)allocate and Define Geometry/Color buffers
    if (  stringCoordBuffer == NULL        ||
@@ -54,11 +68,67 @@ PyObject* printText_drawButtons(PyObject* self, PyObject *args) {
          stringIndices     == NULL        ||
          prevString        != inputString ){
 
-      //printf("Input String: %s\n", inputString.c_str());
-
-      //printf("Initializing Geometry for Confirm Button\n");
       vector<float> verts;
       vector<float> colrs;
+
+      FT_Library ft;
+      if (FT_Init_FreeType(&ft))
+         printf("ERROR: failed to initialize FreeType Library\n");
+
+      FT_Face face;
+      if (FT_New_Face(ft, "fonts/arial.ttf", 0, &face))
+         printf("ERROR: failed to load font\n");
+
+      FT_Set_Pixel_Sizes(face, 0, 48);
+
+      if (FT_Load_Char(face, 'X', FT_LOAD_RENDER))
+         printf("ERROR: failed to load glyph\n");
+
+      glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+      Characters.clear();
+      for (GLubyte c = 0; c < 128; c++) {
+         if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+            printf("ERROR: failed to load glyph\n");
+
+         GLuint texture;
+         glGenTextures(1, &texture);
+         glBindTexture(GL_TEXTURE_2D, texture);
+         glTexImage2D(
+               GL_TEXTURE_2D,             // Target, should just remain 'GL_TEXTURE_2D'
+               0,                         // Mipmap, should remain 0 for now
+               GL_ALPHA,                  // Internal Format, should remain just ALPHA for now
+               face->glyph->bitmap.width, // Texture Width
+               face->glyph->bitmap.rows,  // Texture Height
+               0,                         // Border, must remain 0 for ES 2.0 compliance
+               GL_ALPHA,                  // Must be the same as 'Internal Format' for ES 2.0 compliance
+               GL_UNSIGNED_BYTE,          // Texture Type
+               face->glyph->bitmap.buffer // Buffer containing texture data
+               );
+
+         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+         Character character = {
+            texture,
+            face->glyph->bitmap.width,
+            face->glyph->bitmap.rows,
+            face->glyph->bitmap_left,
+            face->glyph->bitmap_top,
+            face->glyph->advance.x
+         };
+
+         Characters.insert(std::pair<GLchar, Character>(c, character));
+      }
+
+      FT_Done_Face(face);
+      FT_Done_FreeType(ft);
+
+      //printf("Input String: %s\n", inputString.c_str());
+      //printf("Initializing Geometry for Confirm Button\n");
+      /*
       char circleSegments  = 20;
       float lineWidth      = 0.0f;
       float charSpacing    = 0.5f;
@@ -83,6 +153,7 @@ PyObject* printText_drawButtons(PyObject* self, PyObject *args) {
                verts, 
                colrs);
       }
+      */
 
       stringVerts = verts.size()/2;
 
@@ -95,10 +166,10 @@ PyObject* printText_drawButtons(PyObject* self, PyObject *args) {
       }
 
       if (stringColorBuffer == NULL) {
-         stringColorBuffer = new GLfloat[stringVerts*3];
+         stringColorBuffer = new GLfloat[stringVerts*4];
       } else {
          delete [] stringColorBuffer;
-         stringColorBuffer = new GLfloat[stringVerts*3];
+         stringColorBuffer = new GLfloat[stringVerts*4];
       }
 
       if (stringIndices == NULL) {
@@ -112,9 +183,10 @@ PyObject* printText_drawButtons(PyObject* self, PyObject *args) {
          stringCoordBuffer[i*2+0]  = verts[i*2+0];
          stringCoordBuffer[i*2+1]  = verts[i*2+1];
          stringIndices[i]          = i;
-         stringColorBuffer[i*3+0]  = colrs[i*3+0];
-         stringColorBuffer[i*3+1]  = colrs[i*3+1];
-         stringColorBuffer[i*3+2]  = colrs[i*3+2];
+         stringColorBuffer[i*4+0]  = colrs[i*4+0];
+         stringColorBuffer[i*4+1]  = colrs[i*4+1];
+         stringColorBuffer[i*4+2]  = colrs[i*4+2];
+         stringColorBuffer[i*4+3]  = colrs[i*4+3];
       }
 
       prevString = inputString;
@@ -156,7 +228,7 @@ PyObject* printText_drawButtons(PyObject* self, PyObject *args) {
       glBindBuffer(GL_ARRAY_BUFFER, stringVBO);
 
       // Allocate space to hold all vertex coordinate and color data
-      glBufferData(GL_ARRAY_BUFFER, 5*sizeof(GLfloat)*stringVerts, NULL, GL_STATIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, 6*sizeof(GLfloat)*stringVerts, NULL, GL_STATIC_DRAW);
 
       // Convenience variables
       GLintptr offset = 0;
@@ -174,35 +246,11 @@ PyObject* printText_drawButtons(PyObject* self, PyObject *args) {
       offset += 2*sizeof(GLfloat)*stringVerts;
 
       // Load Vertex coordinate data into VBO
-      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*stringVerts, stringColorBuffer);
+      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*4*stringVerts, stringColorBuffer);
       // Define how the Vertex color data is layed out in the buffer
-      glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLintptr*)offset);
+      glVertexAttribPointer(vertAttribColor, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (GLintptr*)offset);
       // Enable the vertex attribute
       glEnableVertexAttribArray(vertAttribColor);
-   }
-
-   // Geometry already calculated, update colors
-   /*
-    * Iterate through each color channel 
-    * 0 - RED
-    * 1 - GREEN
-    * 2 - BLUE
-    */
-   for (GLuint i = 0; i < 3; i++) {
-      if (float(textColor[i]) != stringColorBuffer[i] ){
-         for (GLuint k = 0; k < stringVerts; k++) {
-            if (float(textColor[i]) != stringColorBuffer[i + k*3]){
-               stringColorBuffer[k*3 + i] = float(textColor[i]);
-            }
-         }
-         // Update Contents of VBO
-         // Set active VBO
-         glBindBuffer(GL_ARRAY_BUFFER, stringVBO);
-         // Convenience variable
-         GLintptr offset = 2*sizeof(GLfloat)*stringVerts;
-         // Load Vertex Color data into VBO
-         glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*3*stringVerts, stringColorBuffer);
-      }
    }
 
    // Update Transfomation Matrix if any change in parameters
@@ -239,7 +287,7 @@ PyObject* printText_drawButtons(PyObject* self, PyObject *args) {
       // Set active VBO
       glBindBuffer(GL_ARRAY_BUFFER, stringVBO);
       // Define how the Vertex color data is layed out in the buffer
-      glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*stringVerts));
+      glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*stringVerts));
    }
 
    // Pass Transformation Matrix to shader
@@ -251,7 +299,7 @@ PyObject* printText_drawButtons(PyObject* self, PyObject *args) {
    // Define how the Vertex coordinate data is layed out in the buffer
    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
    // Define how the Vertex color data is layed out in the buffer
-   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*stringVerts));
+   glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*stringVerts));
    //glEnableVertexAttribArray(0);
    //glEnableVertexAttribArray(1);
    glDrawArrays(GL_TRIANGLES, 0, stringVerts);

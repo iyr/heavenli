@@ -157,7 +157,7 @@ def drawHome():
                     stateMach['lamps'][i].setMainLight(stateMach['masterSwitch'])
 
             # Watch bulb buttons for input
-            if (len(stateMach['lamps']) > 0):
+            elif (len(stateMach['lamps']) > 0):
                 for i in range(len(buttons)):
                     if (watchDot(
                         mapRanges(buttons[i][0], -stateMach['w2h'], stateMach['w2h'], 0, stateMach['wx']*2),# X coord of button
@@ -177,7 +177,7 @@ def drawHome():
                         stateMach['prevVal'] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[2]
 
             # Watch all-set for input
-            if (len(stateMach['lamps']) > 0):
+            elif (len(stateMach['lamps']) > 0):
                 if (watchDot(
                     mapRanges(0.75, -1.0,  1.0, 0, stateMach['wx']*2),  # X coord of button
                     mapRanges(0.75,  1.0, -1.0, 0, stateMach['wy']*2),  # Y coord of button
@@ -198,6 +198,7 @@ def drawHome():
                         stateMach['prevHues'][i] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[0]
                         stateMach['prevSats'][i] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[1]
                         stateMach['prevVals'][i] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[2]
+
     except Exception as OOF:
         print(traceback.format_exc())
         print("Error:", OOF)

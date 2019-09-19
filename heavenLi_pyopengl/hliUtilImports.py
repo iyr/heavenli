@@ -23,12 +23,16 @@ print("Done!")
 
 print("Loading heavenLi Utilities...")
 import colorsys
-from animUtils import *
-from drawArn import *
-from drawButtons import *
-from lampClass import *
-from rangeUtils import *
-from shaderUtils import *
-#from plugins.pluginLoader import *
-import plugins.pluginLoader
-from hliUIutils import *
+try:
+    from animUtils import *
+    from drawArn import *
+    from drawButtons import *
+    from lampClass import *
+    from rangeUtils import *
+    from shaderUtils import *
+    import plugins.pluginLoader
+    from hliUIutils import *
+    from drawText import *
+except Exception as OOF:
+    print(traceback.format_exc())
+    print("Error:", OOF)

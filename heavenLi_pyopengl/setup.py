@@ -10,23 +10,33 @@ if (system() == 'Windows'):
     drawButtons_sfc_module = Extension(
             'drawButtons', 
             sources         = ['drawButtons.cpp'],
-            extra_link_args = ['opengl32.lib', 'glext.lib'])
+            extra_link_args = ['opengl32.lib', 'glext.lib', 'freetype.lib'])
+    drawText_sfc_module = Extension(
+            'drawText', 
+            sources         = ['drawText.cpp'],
+            extra_link_args = ['opengl32.lib', 'glext.lib', 'freetype.lib'])
     shaderUtils_sfc_module = Extension(
             'shaderUtils', 
             sources         = ['shaderUtils.cpp'],
             extra_link_args = ['opengl32.lib', 'glext.lib'])
 else:
+    drawArn_sfc_module = Extension(
+            'drawArn', 
+            sources             = ['drawArn.cpp'],
+            extra_compile_args  = ['-fopenmp', '-O3', '-march=native'],
+            extra_link_args     = ['-lGL', '-fopenmp'])
+
     drawButtons_sfc_module = Extension(
             'drawButtons', 
             sources             = ['drawButtons.cpp'],
             extra_compile_args  = ['-fopenmp', '-O3', '-march=native'],
             extra_link_args     = ['-lGL', '-fopenmp'])
 
-    drawArn_sfc_module = Extension(
-            'drawArn', 
-            sources             = ['drawArn.cpp'],
+    drawText_sfc_module = Extension(
+            'drawText', 
+            sources             = ['drawText.cpp'],
             extra_compile_args  = ['-fopenmp', '-O3', '-march=native'],
-            extra_link_args     = ['-lGL', '-fopenmp'])
+            extra_link_args     = ['-lGL', '-fopenmp', '-lfreetype'])
 
     shaderUtils_sfc_module = Extension(
             'shaderUtils', 
@@ -45,6 +55,11 @@ setup(name='drawArn', version = '0.2',
 setup(name='drawButtons', version = '0.1',
         description = 'draw Buttons implemented in c',
         ext_modules = [drawButtons_sfc_module]
+        )
+
+setup(name='drawText', version = '0.1',
+        description = 'draw text implemented with FreeType library in c++',
+        ext_modules = [drawText_sfc_module]
         )
 
 setup(name='shaderUtils', version = '0.1',
