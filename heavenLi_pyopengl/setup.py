@@ -11,9 +11,9 @@ if (system() == 'Windows'):
             'drawButtons', 
             sources         = ['drawButtons.cpp'],
             extra_link_args = ['opengl32.lib', 'glext.lib', 'freetype.lib'])
-    drawText_sfc_module = Extension(
-            'drawText', 
-            sources         = ['drawText.cpp'],
+    textUtils_sfc_module = Extension(
+            'textUtils', 
+            sources         = ['textUtils.cpp'],
             extra_link_args = ['opengl32.lib', 'glext.lib', 'freetype.lib'])
     shaderUtils_sfc_module = Extension(
             'shaderUtils', 
@@ -32,9 +32,9 @@ else:
             extra_compile_args  = ['-fopenmp', '-O3', '-march=native'],
             extra_link_args     = ['-lGL', '-fopenmp'])
 
-    drawText_sfc_module = Extension(
-            'drawText', 
-            sources             = ['drawText.cpp'],
+    textUtils_sfc_module = Extension(
+            'textUtils', 
+            sources             = ['textUtils.cpp'],
             extra_compile_args  = ['-fopenmp', '-O3', '-march=native'],
             extra_link_args     = ['-lGL', '-fopenmp', '-lfreetype'])
 
@@ -57,9 +57,9 @@ setup(name='drawButtons', version = '0.1',
         ext_modules = [drawButtons_sfc_module]
         )
 
-setup(name='drawText', version = '0.1',
+setup(name='textUtils', version = '0.1',
         description = 'draw text implemented with FreeType library in c++',
-        ext_modules = [drawText_sfc_module]
+        ext_modules = [textUtils_sfc_module]
         )
 
 setup(name='shaderUtils', version = '0.1',
