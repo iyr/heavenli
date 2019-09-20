@@ -24,7 +24,7 @@ Params      stringPrevState;             // Stores transformations to avoid redu
 GLuint      stringVBO;                   // Vertex Buffer Object ID
 GLboolean   stringFirstRun = GL_TRUE;    // Determines if function is running for the first time (for VBO initialization)
 
-PyObject* drawText_textUtils(PyObject* self, PyObject *args) {
+PyObject* drawText_fontUtils(PyObject* self, PyObject *args) {
    PyObject *colourPyTup;
    PyObject *Pystring;
 
