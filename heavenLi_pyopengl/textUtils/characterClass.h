@@ -33,7 +33,7 @@ class Character {
 };
 
 Character::Character(void) {
-   printf("Creating Character...");
+   //printf("Creating Character...\n");
 }
 
 Character::~Character(void) {

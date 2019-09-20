@@ -14,6 +14,8 @@
 #include "characterClass.h"
 
 using namespace std;
+//extern std::map<uint8_t, Character> Characters;
+extern Character* Characters;// = new Character[128];
 
 PyObject* loadChar_textUtils(PyObject* self, PyObject *args) {
    PyObject *Pylist;
@@ -30,12 +32,13 @@ PyObject* loadChar_textUtils(PyObject* self, PyObject *args) {
             &advance,
             &Pylist ) )
    {
+      printf("ERROR::loadChar: failed to parse arguments\n");
       Py_RETURN_NONE;
    }
 
    // Determine which character we're building
    const char* inputChars = PyUnicode_AsUTF8(Pystring);
-   GLchar character = inputChars[0];
+   uint8_t character = inputChars[0];
 
    // Get length of texture buffer
    GLuint bufferLength;
@@ -62,8 +65,12 @@ PyObject* loadChar_textUtils(PyObject* self, PyObject *args) {
    ch.setAdvance(advance);
    ch.setBitmap(buffer, bufferLength);
    
-   Characters.insert(std::pair<GLchar, Character>(character, ch));
+   Characters[character] = ch;
+   //Characters.insert(std::pair<uint8_t, Character>(character, ch));
+
    // Cleanup
    delete [] buffer;
+   //delete ch;
+
    Py_RETURN_NONE;
 }

@@ -6,7 +6,8 @@
 #include <map>
 
 using namespace std;
-std::map<GLchar, Character> Characters;
+//std::map<uint8_t, Character> Characters;
+Character* Characters = new Character[128];
 #include "textUtils/loadChar.cpp"
 #include "textUtils/drawText.cpp"
 

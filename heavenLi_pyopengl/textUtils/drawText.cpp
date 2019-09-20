@@ -60,24 +60,8 @@ PyObject* drawText_textUtils(PyObject* self, PyObject *args) {
       vector<float> verts;
       vector<float> colrs;
 
-      /*
-      FT_Library ft;
-      if (FT_Init_FreeType(&ft))
-         printf("ERROR: failed to initialize FreeType Library\n");
-
-      FT_Face face;
-      if (FT_New_Face(ft, "fonts/arial.ttf", 0, &face))
-         printf("ERROR: failed to load font\n");
-
-      FT_Set_Pixel_Sizes(face, 0, 48);
-
-      if (FT_Load_Char(face, 'X', FT_LOAD_RENDER))
-         printf("ERROR: failed to load glyph\n");
-      */
-
       glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-      Characters.clear();
       /*
       for (GLubyte c = 0; c < 128; c++) {
          if (FT_Load_Char(face, c, FT_LOAD_RENDER))
