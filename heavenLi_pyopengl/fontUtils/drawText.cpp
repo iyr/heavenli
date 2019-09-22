@@ -33,11 +33,11 @@ PyObject* drawText_fontUtils(PyObject* self, PyObject *args) {
 
    // Parse Inputs
    if ( !PyArg_ParseTuple(args,
-            "ffffOO",
+            "OffffO",
+            &Pystring,
             &gx, &gy,
             &scale,
             &w2h,
-            &Pystring,
             &colourPyTup) )
    {
       Py_RETURN_NONE;
@@ -60,77 +60,48 @@ PyObject* drawText_fontUtils(PyObject* self, PyObject *args) {
       vector<float> verts;
       vector<float> colrs;
 
-      glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
       /*
-      for (GLubyte c = 0; c < 128; c++) {
-         if (FT_Load_Char(face, c, FT_LOAD_RENDER))
-            printf("ERROR: failed to load glyph\n");
+      //void render_text(const char *text, float x, float y, float sx, float sy) {
+      struct point {
+            GLfloat x;
+            GLfloat y;
+            GLfloat s;
+            GLfloat t;
+            } coords[6 * strlen(text)];
 
-         GLuint texture;
-         glGenTextures(1, &texture);
-         glBindTexture(GL_TEXTURE_2D, texture);
-         glTexImage2D(
-               GL_TEXTURE_2D,             // Target, should just remain 'GL_TEXTURE_2D'
-               0,                         // Mipmap, should remain 0 for now
-               GL_ALPHA,                  // Internal Format, should remain just ALPHA for now
-               face->glyph->bitmap.width, // Texture Width
-               face->glyph->bitmap.rows,  // Texture Height
-               0,                         // Border, must remain 0 for ES 2.0 compliance
-               GL_ALPHA,                  // Must be the same as 'Internal Format' for ES 2.0 compliance
-               GL_UNSIGNED_BYTE,          // Texture Type
-               face->glyph->bitmap.buffer // Buffer containing texture data
-               );
+      int n = 0;
+      float x = 0.0;
+      float y = 0.0;
+      float sx = 10.0;
+      float sy = 10.0;
 
-         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-         Character character = {
-            texture,
-            face->glyph->bitmap.width,
-            face->glyph->bitmap.rows,
-            face->glyph->bitmap_left,
-            face->glyph->bitmap_top,
-            face->glyph->advance.x
-         };
-
-         Characters.insert(std::pair<GLchar, Character>(c, character));
+      for(const char *p = inputChars; *p; p++) { 
+         float x2 =  x + Characters[*p].bl * sx;
+         float y2 = -y - Characters[*p].bt * sy;
+         float w = Characters[*p].bw * sx;
+         float h = Characters[*p].bh * sy;
+   
+         // Advance the cursor to the start of the next character 
+         x += Characters[*p].ax * sx;
+         y += Characters[*p].ay * sy;
+   
+         // Skip glyphs that have no pixels 
+         if(!w || !h)
+         continue;
+   
+         coords[n++] = (point){x2,     -y2    , Characters[*p].tx,                                    0};
+         coords[n++] = (point){x2 + w, -y2    , Characters[*p].tx + Characters[*p].bw / atlas_width,  0};
+         coords[n++] = (point){x2,     -y2 - h, Characters[*p].tx,                                    Characters[*p].bh / atlas_height}; //remember: each glyph occupies a different amount of vertical space
+         coords[n++] = (point){x2 + w, -y2    , Characters[*p].tx + Characters[*p].bw / atlas_width,  0};
+         coords[n++] = (point){x2,     -y2 - h, Characters[*p].tx,                                    Characters[*p].bh / atlas_height};
+         coords[n++] = (point){x2 + w, -y2 - h, Characters[*p].tx + c[*p].bw / atlas_width,           Characters[*p].bh / atlas_height};
       }
 
-      FT_Done_Face(face);
-      FT_Done_FreeType(ft);
+      glBufferData(GL_ARRAY_BUFFER, sizeof coords, coords, GL_DYNAMIC_DRAW);
+      glDrawArrays(GL_TRIANGLES, 0, n);
+      //}
       */
 
-      //printf("Input String: %s\n", inputString.c_str());
-      //printf("Initializing Geometry for Confirm Button\n");
-      /*
-      char circleSegments  = 20;
-      float lineWidth      = 0.0f;
-      float charSpacing    = 0.5f;
-      //float charThickness  = 0.2f;
-      //float charThickness  = 0.15f;
-      //float charThickness  = 0.125f;
-      float charThickness  = 0.04f;
-      float charScale      = 1.0f;
-      stringVerts          = 0;
-      //printf("stringSize: %i\n", inputString.size());
-
-      for (unsigned int i = 0; i < inputString.size(); i++) {
-         drawChar(
-               inputChars[i],
-               lineWidth, 0.0f,  // X, Y coordinates 
-               charScale,        // Scale 
-               charThickness,    // Thickness/boldness 
-               charSpacing,      // Amount of empty space after character 
-               circleSegments, 
-               textColor, 
-               &lineWidth, 
-               verts, 
-               colrs);
-      }
-      */
 
       stringVerts = verts.size()/2;
 

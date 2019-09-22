@@ -32,8 +32,8 @@ try:
     from shaderUtils import *
     import plugins.pluginLoader
     from hliUIutils import *
-    #from textUtils import *
-    from initChars import *
+    from textUtils import *
+    #from initChars import *
 except Exception as OOF:
     print(traceback.format_exc())
     print("Error:", OOF)

@@ -9,6 +9,7 @@ print("Done!")
 def init():
     global stateMach
     stateMach['curBulb'] = 0
+    makeFont()
 
     glEnableClientState(GL_VERTEX_ARRAY)
     glEnableClientState(GL_COLOR_ARRAY)
@@ -124,6 +125,7 @@ def drawHome():
             tmc = ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100))
             drawIcon(0.75, 0.75, iconSize*0.85, tmc, stateMach['w2h'], stateMach['lamps'][Light])
 
+        drawText("Hello World!", 0.0, 0.0, 1.0, stateMach['w2h'], (1.0, 0.2, 1.0, 1.0))
         #printText(
                 #-0.9, -0.6,
                 #0.05, 
