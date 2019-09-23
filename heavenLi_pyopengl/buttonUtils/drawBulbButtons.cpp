@@ -31,7 +31,7 @@ Params      bulbButtonPrevState;            // Stores transformations to avoid r
 GLuint      bulbButtonVBO;                  // Vertex Buffer Object ID
 GLboolean   bulbButtonFirstRun  = GL_TRUE;  // Determines if function is running for the first time (for VBO initialization)
 
-PyObject* drawBulbButton_drawButtons(PyObject *self, PyObject *args)
+PyObject* drawBulbButton_drawUtils(PyObject *self, PyObject *args)
 {
    PyObject*   faceColorPyTup;
    PyObject*   detailColorPyTup;

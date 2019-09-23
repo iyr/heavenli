@@ -1,12 +1,3 @@
-#define GL_GLEXT_PROTOTYPES
-#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
-   #include <windows.h>
-   // These undefs necessary because microsoft
-   #undef near
-   #undef far
-#endif
-#include <GL/gl.h>
-#include <GL/glext.h>
 #include <algorithm>
 #include "characterStruct.h"
 
@@ -103,10 +94,10 @@ textAtlas::textAtlas(std::string faceName, GLuint numChars, character* glyphData
    }
 
    fprintf(stderr, "Generated a %d x %d (%d kb) texture atlas\n", this->textureWidth, this->textureHeight, this->textureWidth + this->textureHeight /1024);
-}
+};
 
 textAtlas::~textAtlas() {
    delete [] glyphData;
    glDeleteTextures(1, &this->tex);
-}
+};
 #endif

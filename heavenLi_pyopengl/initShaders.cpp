@@ -5,22 +5,44 @@
 #endif
 #include <GL/gl.h>
 #include <GL/glext.h>
+
 GLuint shaderProgram;
 
-GLuint LoadShader(const GLchar *shadersrc, GLenum type) {
-   GLuint shader;
-   GLint compiled;
+/*
+typedef struct {
+   GLuint   shaderProgram;
 
+   GLint    vertCoord;
+   GLint    vertColor;
+
+   GLint    vertSampler;
+
+   GLuint   textureID;
+}
+*/
+
+// Shader halper function
+GLuint LoadShader(const GLchar *shadersrc, GLenum type) {
+   GLuint shader;    // Output variable to store the compiled shader
+   GLint compiled;   // Used to determine if compilation was successful
+
+   // Set Shader type (EG vert, frac)
    shader = glCreateShader(type);
 
    // Sanity Check
    if (shader == 0)
       return 0;
 
+   // Load shader glsl
    glShaderSource(shader, 1, &shadersrc, NULL);
+
+   // Compile shader
    glCompileShader(shader);
+
+   // Get compilation status
    glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
 
+   // Print Error Message if compilation failed
    if (!compiled)
    {
       GLint infoLen = 0;
@@ -43,7 +65,7 @@ GLuint LoadShader(const GLchar *shadersrc, GLenum type) {
    return shader;
 }
 
-PyObject* initShaders_shaderUtils(PyObject* self, PyObject *args) {
+PyObject* initShaders_drawUtils(PyObject* self, PyObject *args) {
    const GLchar vertShaderSource[] = 
       "#version 100			               \n"
       "attribute  vec4 vertCoord;         \n"

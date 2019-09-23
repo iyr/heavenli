@@ -29,7 +29,7 @@ GLuint      hueRingVBO;                   // Vertex Buffer Object ID
 GLboolean   hueRingFirstRun = GL_TRUE;    // Determines if function is running for the first time (for VBO initialization)
 GLuint      hueDotsVerts;
 
-PyObject* drawHueRing_drawButtons(PyObject *self, PyObject *args) {
+PyObject* drawHueRing_drawUtils(PyObject *self, PyObject *args) {
    PyObject *py_list;
    PyObject *py_tuple;
    GLfloat w2h, scale, tmo, currentHue, interactionCursor, tDiff, gx=0.0f, gy=0.0f, ao=0.0f;

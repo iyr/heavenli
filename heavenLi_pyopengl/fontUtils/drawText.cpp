@@ -1,16 +1,4 @@
-#define GL_GLEXT_PROTOTYPES
-#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
-   #include <windows.h>
-   // These undefs necessary because microsoft
-   #undef near
-   #undef far
-#endif
-#include <GL/gl.h>
-#include <GL/glext.h>
 #include <math.h>
-#include <vector>
-#include <string>
-#include <map>
 
 using namespace std;
 
@@ -24,7 +12,7 @@ Params      stringPrevState;             // Stores transformations to avoid redu
 GLuint      stringVBO;                   // Vertex Buffer Object ID
 GLboolean   stringFirstRun = GL_TRUE;    // Determines if function is running for the first time (for VBO initialization)
 
-PyObject* drawText_fontUtils(PyObject* self, PyObject *args) {
+PyObject* drawText_drawUtils(PyObject* self, PyObject *args) {
    PyObject *colourPyTup;
    PyObject *Pystring;
 

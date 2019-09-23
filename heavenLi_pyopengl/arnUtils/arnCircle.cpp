@@ -1,15 +1,6 @@
-//#include <Python.h>
-#define GL_GLEXT_PROTOTYPES
-#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
-   #include <windows.h>
-   // These undefs necessary because microsoft
-   #undef near
-   #undef far
-#endif
-#include <GL/gl.h>
-#include <GL/glext.h>
-#include <vector>
-#include <math.h>
+/*
+ * Heavenli opengl drawcode for circular arrangments (backgroun+iconography)
+ */
 
 using namespace std;
 extern float offScreen;
@@ -28,7 +19,7 @@ Params      homeCirclePrevState;            // Stores transformations to avoid r
 GLuint      homeCircleVBO;                  // Vertex Buffer Object ID
 GLboolean   homeCircleFirstRun = GL_TRUE;   // Determines if function is running for the first time (for VBO initialization)
 
-PyObject* drawHomeCircle_drawArn(PyObject *self, PyObject *args) {
+PyObject* drawHomeCircle_drawUtils(PyObject *self, PyObject *args) {
    PyObject* py_list;
    PyObject* py_tuple;
    PyObject* py_float;
@@ -271,7 +262,7 @@ Params      iconCirclePrevState;            // Stores transformations to avoid r
 GLuint      iconCircleVBO;                  // Vertex Buffer Object ID
 GLboolean   iconCircleFirstRun = GL_TRUE;   // Determines if function is running for the first time (for VBO initialization)
 
-PyObject* drawIconCircle_drawArn(PyObject *self, PyObject *args) {
+PyObject* drawIconCircle_drawUtils(PyObject *self, PyObject *args) {
    PyObject*   detailColorPyTup;
    PyObject*   py_list;
    PyObject*   py_tuple;

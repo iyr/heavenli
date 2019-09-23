@@ -34,7 +34,7 @@ GLuint      colrTriVBO;                   // Vertex Buffer Object ID
 GLboolean   colrTriFirstRun   = GL_TRUE;  // Determines if function is running for the first time (for VBO initialization)
 GLuint      colrTriDotsVerts;
 
-PyObject* drawColrTri_drawButtons(PyObject *self, PyObject *args) {
+PyObject* drawColrTri_drawUtils(PyObject *self, PyObject *args) {
    PyObject *py_list;
    PyObject *py_tuple;
    float w2h, scale, currentTriHue, currentTriSat, currentTriVal, tDiff, gx=0.0f, gy=0.0f, ao=0.0f;

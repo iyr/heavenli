@@ -24,7 +24,7 @@ Params      clockPrevState;            // Stores transformations to avoid redund
 GLuint      clockVBO;                  // Vertex Buffer Object ID
 GLboolean   clockFirstRun = GL_TRUE;   // Determines if function is running for the first time (for VBO initialization)
 
-PyObject* drawClock_drawButtons(PyObject *self, PyObject *args)
+PyObject* drawClock_drawUtils(PyObject *self, PyObject *args)
 {
    PyObject* faceColorPyTup;
    PyObject* detailColorPyTup;

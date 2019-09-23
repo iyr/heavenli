@@ -1,7 +1,7 @@
 # Classes and utilities for UI animation
 
 from lampClass import *
-from drawArn import *
+from drawUtils import *
 from animUtils import *
 import pytweening
 

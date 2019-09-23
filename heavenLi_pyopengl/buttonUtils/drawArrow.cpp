@@ -22,7 +22,7 @@ Params      arrowPrevState;            // Stores transformations to avoid redund
 GLuint      arrowVBO;                  // Vertex Buffer Object ID
 GLboolean   arrowFirstRun = GL_TRUE;   // Determines if function is running for the first time (for VBO initialization)
 
-PyObject* drawArrow_drawButtons(PyObject* self, PyObject *args) {
+PyObject* drawArrow_drawUtils(PyObject* self, PyObject *args) {
    PyObject *faceColorPyTup;
    PyObject *extraColorPyTup;
    PyObject *detailColorPyTup;

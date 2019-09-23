@@ -22,7 +22,7 @@ Params      confirmPrevState;             // Stores transformations to avoid red
 GLuint      confirmVBO;                   // Vertex Buffer Object ID
 GLboolean   confirmFirstRun = GL_TRUE;    // Determines if function is running for the first time (for VBO initialization)
 
-PyObject* drawConfirm_drawButtons(PyObject* self, PyObject *args) {
+PyObject* drawConfirm_drawUtils(PyObject* self, PyObject *args) {
    PyObject *faceColorPyTup;
    PyObject *extraColorPyTup;
    PyObject *detailColorPyTup;

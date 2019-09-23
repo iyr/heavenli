@@ -22,7 +22,7 @@ Params      primTestPrevState;             // Stores transformations to avoid re
 GLuint      primTestVBO;                   // Vertex Buffer Object ID
 GLboolean   primTestFirstRun = GL_TRUE;    // Determines if function is running for the first time (for VBO initialization)
 
-PyObject* primTest_drawButtons(PyObject* self, PyObject *args) {
+PyObject* primTest_drawUtils(PyObject* self, PyObject *args) {
    PyObject *faceColorPyTup;
    PyObject *extraColorPyTup;
    PyObject *detailColorPyTup;

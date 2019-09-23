@@ -21,7 +21,7 @@ Params      granRockerPrevState;             // Stores transformations to avoid 
 GLuint      granRockerVBO;                   // Vertex Buffer Object ID
 GLboolean   granRockerFirstRun = GL_TRUE;    // Determines if function is running for the first time (for VBO initialization)
 
-PyObject* drawGranRocker_drawButtons(PyObject *self, PyObject *args) {
+PyObject* drawGranRocker_drawUtils(PyObject *self, PyObject *args) {
    PyObject *py_faceColor;
    PyObject *py_detailColor;
    int   numHues;

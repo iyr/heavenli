@@ -31,7 +31,7 @@ Params      homeLinearPrevState;            // Stores transformations to avoid r
 GLuint      homeLinearVBO;                  // Vertex Buffer Object ID
 GLboolean   homeLinearFirstRun = GL_TRUE;   // Determines if function is running for the first time (for VBO initialization)
 
-PyObject* drawHomeLinear_drawArn(PyObject *self, PyObject *args) {
+PyObject* drawHomeLinear_drawUtils(PyObject *self, PyObject *args) {
    PyObject* py_list;
    PyObject* py_tuple;
    PyObject* py_float;
@@ -291,7 +291,7 @@ Params      iconLinearPrevState;            // Stores transformations to avoid r
 GLuint      iconLinearVBO;                  // Vertex Buffer Object ID
 GLboolean   iconLinearFirstRun = GL_TRUE;   // Determines if function is running for the first time (for VBO initialization)
 
-PyObject* drawIconLinear_drawArn(PyObject *self, PyObject *args) {
+PyObject* drawIconLinear_drawUtils(PyObject *self, PyObject *args) {
    PyObject*   detailColorPyTup;
    PyObject*   py_list;
    PyObject*   py_tuple;

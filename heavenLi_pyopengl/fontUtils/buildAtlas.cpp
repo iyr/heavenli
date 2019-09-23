@@ -8,15 +8,12 @@
 #include <GL/gl.h>
 #include <GL/glext.h>
 #include <math.h>
-#include <vector>
 #include <string>
 #include <map>
-#include "atlasClass.h"
-#include "characterStruct.h"
 
 using namespace std;
 
-PyObject* buildAtlas_fontUtils(PyObject* self, PyObject *args) {
+PyObject* buildAtlas_drawUtils(PyObject* self, PyObject *args) {
 
    PyObject*   faceName;      // Name of the face we're building
    PyObject*   GlyphData;     // List of Character python objects that contain glyph metrics and bitmap

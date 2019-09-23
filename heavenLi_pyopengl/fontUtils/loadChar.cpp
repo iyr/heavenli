@@ -17,7 +17,7 @@ using namespace std;
 //extern std::map<uint8_t, Character> Characters;
 //extern Character* Characters;// = new Character[128];
 
-PyObject* loadChar_fontUtils(PyObject* self, PyObject *args) {
+PyObject* loadChar_drawUtils(PyObject* self, PyObject *args) {
    PyObject *Pylist;
    PyObject *Pystring;
    GLubyte* buffer;

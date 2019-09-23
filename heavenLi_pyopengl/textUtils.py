@@ -1,27 +1,5 @@
-from fontUtils import *
+from drawUtils import *
 import freetype
-
-#def initChars(fontFile="fonts/Barlow-Regular.ttf"):
-    #face = freetype.Face(fontFile)
-    #face.set_char_size(48*64)
-
-    #print("Generating font glyphs...")
-    #for c in range(128):
-        #face.load_char(chr(c))
-        ##bitmap = face.glyph.bitmap
-
-        ##print("Generating glyph for "+"\""+chr(c)+"\" "+"("+str(c)+")")
-        #loadChar(chr(c), 
-                #int(face.glyph.bitmap.width),
-                #int(face.glyph.bitmap.rows),
-                #int(face.glyph.bitmap_left),
-                #int(face.glyph.bitmap_top),
-                #int(face.glyph.linearHoriAdvance),
-                #int(face.glyph.linearVertAdvance),
-                #face.glyph.bitmap.buffer)
-    #print("Done!")
-
-    #return
 
 def makeFont(fontFile="fonts/Barlow-Regular.ttf", numChars=128, size=48):
     face = freetype.Face(fontFile)
