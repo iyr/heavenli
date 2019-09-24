@@ -1,5 +1,6 @@
 using namespace std;
 
+drawCall    arrowButton;
 GLfloat     *arrowCoordBuffer  = NULL; // Stores (X, Y) (float) for each vertex
 GLfloat     *arrowColorBuffer  = NULL; // Stores (R, G, B) (float) for each vertex
 GLushort    *arrowIndices      = NULL; // Stores index corresponding to each vertex
@@ -49,9 +50,12 @@ PyObject* drawArrow_drawUtils(PyObject* self, PyObject *args) {
    detailColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 3)));
 
    // Allocate and Define Geometry/Color buffers
+   /*
    if (  arrowCoordBuffer  == NULL  ||
          arrowColorBuffer  == NULL  ||
          arrowIndices      == NULL  ){
+   */
+   if (arrowButton.numVerts == 0){
 
       printf("Initializing Geometry for Arrow Button\n");
       vector<GLfloat> verts;
@@ -59,6 +63,8 @@ PyObject* drawArrow_drawUtils(PyObject* self, PyObject *args) {
 
       float px, py, qx, qy, radius;
       int circleSegments = 60;
+      
+      // Draw button face
       defineEllipse(
             0.0f, 0.0f,
             1.0f, 1.0f,
@@ -66,6 +72,7 @@ PyObject* drawArrow_drawUtils(PyObject* self, PyObject *args) {
             faceColor,
             verts, colrs);
 
+      // Draw check-mark base
       px = -0.125f, py = 0.625f;
       qx =  0.500f, qy =  0.00f;
       radius = float(sqrt(2.0)*0.125f);
@@ -77,7 +84,6 @@ PyObject* drawArrow_drawUtils(PyObject* self, PyObject *args) {
             detailColor,
             verts, colrs);
 
-
       px = -0.125f, py = -0.625f;
       extraArrowVerts = definePill(
             px, py, 
@@ -87,6 +93,7 @@ PyObject* drawArrow_drawUtils(PyObject* self, PyObject *args) {
             detailColor, 
             verts, colrs);
 
+      // Draw check-mark infill
       px = -0.125f, py =  0.625f;
       radius = 0.125f;
       definePill(
@@ -108,7 +115,10 @@ PyObject* drawArrow_drawUtils(PyObject* self, PyObject *args) {
 
       arrowVerts = verts.size()/2;
 
+      arrowButton.buildCache(arrowVerts, verts, colrs);
+
       // Pack Vertics and Colors into global array buffers
+      /*
       if (arrowCoordBuffer == NULL) {
          arrowCoordBuffer = new GLfloat[arrowVerts*2];
       } else {
@@ -139,30 +149,6 @@ PyObject* drawArrow_drawUtils(PyObject* self, PyObject *args) {
          arrowColorBuffer[i*4+2]  = colrs[i*4+2];
          arrowColorBuffer[i*4+3]  = colrs[i*4+3];
       }
-
-      // Calculate Initial Transformation Matrix
-      Matrix Ortho;
-      Matrix ModelView;
-
-      float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
-      MatrixLoadIdentity( &Ortho );
-      MatrixLoadIdentity( &ModelView );
-      MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
-      MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
-      if (w2h <= 1.0f) {
-         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
-      } else {
-         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
-      }
-      MatrixRotate( &ModelView, ao, 0.0f, 0.0f, 1.0f);
-      MatrixMultiply( &arrowMVP, &ModelView, &Ortho );
-
-      arrowPrevState.ao = ao;
-      arrowPrevState.dx = gx;
-      arrowPrevState.dy = gy;
-      arrowPrevState.sx = scale;
-      arrowPrevState.sy = scale;
-      arrowPrevState.w2h = w2h;
 
       // Create buffer object if one does not exist, otherwise, delete and make a new one
       if (arrowFirstRun == GL_TRUE) {
@@ -200,8 +186,37 @@ PyObject* drawArrow_drawUtils(PyObject* self, PyObject *args) {
       glVertexAttribPointer(vertAttribColor, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (GLintptr*)offset);
       // Enable the vertex attribute
       glEnableVertexAttribArray(vertAttribColor);
+      */
+
+
+      // Calculate Initial Transformation Matrix
+      /*
+      Matrix Ortho;
+      Matrix ModelView;
+
+      float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
+      MatrixLoadIdentity( &Ortho );
+      MatrixLoadIdentity( &ModelView );
+      MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
+      MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
+      if (w2h <= 1.0f) {
+         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
+      } else {
+         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
+      }
+      MatrixRotate( &ModelView, ao, 0.0f, 0.0f, 1.0f);
+      MatrixMultiply( &arrowMVP, &ModelView, &Ortho );
+
+      arrowPrevState.ao = ao;
+      arrowPrevState.dx = gx;
+      arrowPrevState.dy = gy;
+      arrowPrevState.sx = scale;
+      arrowPrevState.sy = scale;
+      arrowPrevState.w2h = w2h;
+      */
    }
 
+   /*
    // Update Color, if needed
    for (int i = 0; i < 4; i++) {
       if ( arrowColorBuffer[extraArrowVerts*4+i] != extraColor[i] ) {
@@ -218,7 +233,7 @@ PyObject* drawArrow_drawUtils(PyObject* self, PyObject *args) {
       }
    }
 
-   // Update Transfomation Matrix if any chaoe in parameters
+   // Update Transfomation Matrix if any change in parameters
    if (  arrowPrevState.ao != ao     ||
          arrowPrevState.dx != gx     ||
          arrowPrevState.dy != gy     ||
@@ -248,13 +263,12 @@ PyObject* drawArrow_drawUtils(PyObject* self, PyObject *args) {
       arrowPrevState.sx = scale;
       arrowPrevState.sy = scale;
       arrowPrevState.w2h = w2h;
-
-      // Set active VBO
-      glBindBuffer(GL_ARRAY_BUFFER, arrowVBO);
-      // Define how the Vertex color data is layed out in the buffer
-      glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*arrowVerts));
    }
+   */
+   arrowButton.updateMVP(gx, gy, scale, scale, ao, w2h);
 
+   arrowButton.draw();
+   /*
    // Pass Transformation Matrix to shader
    glUniformMatrix4fv( 0, 1, GL_FALSE, &arrowMVP.mat[0][0] );
 
@@ -271,6 +285,7 @@ PyObject* drawArrow_drawUtils(PyObject* self, PyObject *args) {
 
    // Unbind Buffer Object
    glBindBuffer(GL_ARRAY_BUFFER, 0);
+   */
 
    Py_RETURN_NONE;
 }
