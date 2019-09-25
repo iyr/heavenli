@@ -112,6 +112,7 @@ PyObject* drawConfirm_drawUtils(PyObject* self, PyObject *args) {
       }
    }
 
+   // Update colors, if needed
    if ( updateCache ){
       confirmButton.updateColorCache();
    }
