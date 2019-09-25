@@ -136,7 +136,7 @@ PyObject* drawBulbButton_drawUtils(PyObject *self, PyObject *args)
          tmbc[1] = bulbColors[j*3+1];
          tmbc[2] = bulbColors[j*3+2];
          tmbc[3] = 1.0;
-         defineBulb(tmx, tmy+0.035, 0.15*buttonScale, circleSegments, tmbc, detailColor, verts, colrs);
+         defineBulb(tmx, tmy+0.035f, 0.15f*buttonScale, circleSegments, tmbc, detailColor, verts, colrs);
 
          if (j == 0) {
             vertsPerBulb = verts.size()/2;

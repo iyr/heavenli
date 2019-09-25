@@ -220,11 +220,6 @@ PyObject* primTest_drawUtils(PyObject* self, PyObject *args) {
       primTestPrevState.sx = scale;
       primTestPrevState.sy = scale;
       primTestPrevState.w2h = w2h;
-
-      // Set active VBO
-      glBindBuffer(GL_ARRAY_BUFFER, primTestVBO);
-      // Define how the Vertex color data is layed out in the buffer
-      glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*primTestVerts));
    }
 
    // Pass Transformation Matrix to shader

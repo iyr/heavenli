@@ -544,9 +544,6 @@ PyObject* drawColrTri_drawUtils(PyObject *self, PyObject *args) {
       colrTriPrevState.sx = scale;
       colrTriPrevState.sy = scale;
       colrTriPrevState.w2h = w2h;
-
-      glBindBuffer(GL_ARRAY_BUFFER, colrTriVBO);
-      glBufferSubData(GL_ARRAY_BUFFER, 2*sizeof(GLfloat)*colrTriVerts, sizeof(GLfloat)*3*colrTriVerts, colrTriColorBuffer);
    }
 
    // Pass Transformation Matrix to shader

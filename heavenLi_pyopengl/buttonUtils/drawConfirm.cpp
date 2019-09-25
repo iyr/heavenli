@@ -255,11 +255,6 @@ PyObject* drawConfirm_drawUtils(PyObject* self, PyObject *args) {
       confirmPrevState.sx = scale;
       confirmPrevState.sy = scale;
       confirmPrevState.w2h = w2h;
-
-      // Set active VBO
-      glBindBuffer(GL_ARRAY_BUFFER, confirmVBO);
-      // Define how the Vertex color data is layed out in the buffer
-      glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*confirmVerts));
    }
 
    // Pass Transformation Matrix to shader

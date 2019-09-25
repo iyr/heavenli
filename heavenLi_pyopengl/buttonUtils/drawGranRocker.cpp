@@ -263,11 +263,6 @@ PyObject* drawGranRocker_drawUtils(PyObject *self, PyObject *args) {
       granRockerPrevState.sx = scale;
       granRockerPrevState.sy = scale;
       granRockerPrevState.w2h = w2h;
-
-      // Set active VBO
-      glBindBuffer(GL_ARRAY_BUFFER, granRockerVBO);
-      // Define how the Vertex color data is layed out in the buffer
-      glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*granRockerVerts));
    }
 
    // Pass Transformation Matrix to shader

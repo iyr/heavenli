@@ -25,7 +25,9 @@ print("Loading heavenLi Utilities...")
 import colorsys
 try:
     from animUtils import *
+    print("Loading drawUtils...")
     from drawUtils import *
+    print("Done!")
     from lampClass import *
     from rangeUtils import *
     import plugins.pluginLoader

@@ -17,6 +17,7 @@
 #include "matrixUtils.c"      // Minimal Matrix math library for basic 2D graphics
 #include "Params.h"           // Caches Matrix Transformation Calculations
 #include "primUtils.h"        // Library of Geometric Primitives for drawing shapes
+#include "drawCallClass.h"    // Helper class that abstracts VBO, Matrix Ops, etc.
 
 #include <vector>             // Used to dynamically build vertex data arrays
 #include <string>             // "quack"
@@ -52,7 +53,7 @@ float offScreen = 100.0;            // Used for moving geometry offscreen, will 
 #include "fontUtils/characterStruct.h"    // Provides a simple struct for caching character glyph data
 #include "fontUtils/atlasClass.h"         // Provides a class for building a Text Atlas + OpenGL texture mapping, etc.
 
-vector<textAtlas> fontAtlases;            // Used to store all generated fonts
+//std::vector<textAtlas> fontAtlases;            // Used to store all generated fonts
 
 #include "fontUtils/loadChar.cpp"         // Will likely get depricated
 #include "fontUtils/drawText.cpp"         // Draws an input string with a given font

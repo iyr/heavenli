@@ -425,11 +425,6 @@ PyObject* drawHueRing_drawUtils(PyObject *self, PyObject *args) {
       hueRingPrevState.sx = scale;
       hueRingPrevState.sy = scale;
       hueRingPrevState.w2h = w2h;
-
-      // Set active VBO
-      glBindBuffer(GL_ARRAY_BUFFER, hueRingVBO);
-      // Define how the Vertex color data is layed out in the buffer
-      glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*hueRingVerts));
    }
 
    // Pass Transformation Matrix to shader
