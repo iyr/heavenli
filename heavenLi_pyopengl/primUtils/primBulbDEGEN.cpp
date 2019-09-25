@@ -18,14 +18,14 @@ int defineBulb(
       std::vector<float> &colrs  /* Input Vector of r,g,b values                          */
       ){
    float thickness = 0.3f;
-   circleSegments /= 3;
+   circleSegments /= 2;
    defineEllipse(bx, by, bs*1.005f, bs*1.005f, circleSegments, color, verts, colrs);
-   defineArch(bx, by, bs, bs, 305.0f, 270.0f, bs*thickness, circleSegments, detailColor, verts, colrs);
+   defineArch(bx, by, bs, bs, 310.0f, 270.0f, bs*thickness, circleSegments, detailColor, verts, colrs);
    circleSegments /= 4;
    defineQuad2pt(bx-bs*thickness, by-bs*2.25f, bx+bs*thickness, by-bs*2.25f-bs*thickness, detailColor, verts, colrs);
    defineArch(bx+bs*thickness, by-bs*2.25f, 0.0f, 0.0f, 270.0f, 0.0f, bs*thickness, circleSegments, detailColor, verts, colrs);
    defineArch(bx-bs*thickness, by-bs*2.25f, 0.0f, 0.0f, 180.0f, 270.0f, bs*thickness, circleSegments, detailColor, verts, colrs);
-   defineArch(bx+(bs+bs*thickness*0.5f)*float(cos(degToRad(305.0f))), by+(bs+bs*thickness*0.5f)*float(sin(degToRad(305.0f))), 0.0f, 0.0f, 125.0f, 305.0f, bs*thickness*0.5f, circleSegments, detailColor, verts, colrs);
+   defineArch(bx+(bs+bs*thickness*0.5f)*float(cos(degToRad(310.0f))), by+(bs+bs*thickness*0.5f)*float(sin(degToRad(310.0f))), 0.0f, 0.0f, 125.0f, 310.0f, bs*thickness*0.5f, circleSegments, detailColor, verts, colrs);
    defineQuad2pt(bx-bs*thickness, by-bs*2.25f, bx-bs*thickness*2.0f, by-bs*1.6f, detailColor, verts, colrs);
    defineQuad2pt(bx+bs*thickness, by-bs*2.25f, bx+bs*thickness*2.0f, by-bs*1.6f, detailColor, verts, colrs);
    defineArch(bx, by-bs*1.6f, bs*thickness, bs*thickness, 0.0f, 90.0f, bs*thickness, circleSegments, detailColor, verts, colrs);
@@ -44,14 +44,14 @@ int updateBulbGeometry(
       ){
    int vertIndex = index*2;   /* index (X, Y)   */
    float thickness = 0.3f;
-   circleSegments /= 3;
+   circleSegments /= 2;
    index = updatePrimEllipseGeometry(bx, by, bs*1.005f, bs*1.005f, circleSegments, index, verts);
-   index = updateArchGeometry(bx, by, bs, bs, 305.0f, 270.0f, bs*thickness, circleSegments, index, verts);
+   index = updateArchGeometry(bx, by, bs, bs, 310.0f, 270.0f, bs*thickness, circleSegments, index, verts);
    circleSegments /= 4;
    index = updateQuad2ptGeometry(bx-bs*thickness, by-bs*2.25f, bx+bs*thickness, by-bs*2.25f-bs*thickness, index, verts);
    index = updateArchGeometry(bx+bs*thickness, by-bs*2.25f, 0.0f, 0.0f, 270.0f, 0.0f, bs*thickness, circleSegments, index, verts);
    index = updateArchGeometry(bx-bs*thickness, by-bs*2.25f, 0.0f, 0.0f, 180.0f, 270.0f, bs*thickness, circleSegments, index, verts);
-   index = updateArchGeometry(bx+(bs+bs*thickness*0.5f)*float(cos(degToRad(305.0f))), by+(bs+bs*thickness*0.5f)*float(sin(degToRad(305.0f))), 0.0f, 0.0f, 125.0f, 305.0f, bs*thickness*0.5f, circleSegments, index, verts);
+   index = updateArchGeometry(bx+(bs+bs*thickness*0.5f)*float(cos(degToRad(310.0f))), by+(bs+bs*thickness*0.5f)*float(sin(degToRad(310.0f))), 0.0f, 0.0f, 125.0f, 310.0f, bs*thickness*0.5f, circleSegments, index, verts);
    index = updateQuad2ptGeometry(bx-bs*thickness, by-bs*2.25f, bx-bs*thickness*2.0f, by-bs*1.6f, index, verts);
    index = updateQuad2ptGeometry(bx+bs*thickness, by-bs*2.25f, bx+bs*thickness*2.0f, by-bs*1.6f, index, verts);
    index = updateArchGeometry(bx, by-bs*1.6f, bs*thickness, bs*thickness, 0.0f, 90.0f, bs*thickness, circleSegments, index, verts);
@@ -67,7 +67,7 @@ int updateBulbColor(
       float *colrs            /* Input Vector of r,g,b values                    */
       ){
    int colrIndex = index*4;   /* index (r, g, b) */
-   circleSegments /= 3;
+   circleSegments /= 2;
    index = updatePrimEllipseColor(circleSegments, color, index, colrs);
    index = updateArchColor(circleSegments, detailColor, index, colrs);
    circleSegments /= 4;
