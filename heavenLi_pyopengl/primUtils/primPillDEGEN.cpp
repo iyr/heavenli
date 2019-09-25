@@ -137,7 +137,40 @@ int definePill(
    return definePill(px, py, qx, qy, radius, circleSegments, Color, Color, verts, colrs);
 }
 
-// Write to pre-allocated input array, updating vertices only 
+/*
+ * Used for updating a position index without recalculation or needless memory reads/writes
+ */
+int updatePillIndex(
+      char circleSegments, /* Number of sides */
+      int numElements,     /* Number of elements per vertex */
+      int index            /* Index of where to start writing */
+      ){
+   int subIndex = index*numElements;
+   char lim = circleSegments/2;
+
+   // Prepend degenerate vertex iff not the first primitive in the vector
+   if (subIndex == 0) {
+      subIndex += numElements;
+   } else {
+      subIndex += numElements*2;
+   }
+
+   for (char i = 1; i < lim; i++ ) {
+      subIndex += numElements*2;
+   }
+
+   for (char i = 1; i < lim; i++ ) {
+      subIndex += numElements*2;
+   }
+
+   subIndex += numElements*2;
+
+   return subIndex/numElements;
+}
+
+/*
+ * Write to pre-allocated input array, updating vertices only 
+ */
 int updatePillGeometry(
       float px,            /* x-coordinate of Point P */
       float py,            /* y-coordinate of Point P */
@@ -220,59 +253,66 @@ int updatePillColor(
    qR = float(qColor[0]);
    qG = float(qColor[1]);
    qB = float(qColor[2]);
-   qA = float(pColor[3]);
+   qA = float(qColor[3]);
 
    // Prepend degenerate vertex iff not the first primitive in the vector
    if (colrIndex == 0) {
-      /* pR */ colrs[colrIndex++] = (pR);  
-      /* pG */ colrs[colrIndex++] = (pG);  
-      /* pB */ colrs[colrIndex++] = (pB);
-      /* pA */ colrs[colrIndex++] = (pA);
+      /* pR */ colrs[colrIndex+0] = pR;
+      /* pG */ colrs[colrIndex+1] = pG;
+      /* pB */ colrs[colrIndex+2] = pB;
+      /* pA */ colrs[colrIndex+3] = pA;
+
+      colrIndex += 4;
    } else {
-      /* pR */ colrs[colrIndex++] = (pR);  
-      /* pG */ colrs[colrIndex++] = (pG);  
-      /* pB */ colrs[colrIndex++] = (pB);
-      /* pA */ colrs[colrIndex++] = (pA);
+      /* pR */ colrs[colrIndex+4] = pR;
+      /* pG */ colrs[colrIndex+5] = pG;
+      /* pB */ colrs[colrIndex+6] = pB;
+      /* pA */ colrs[colrIndex+7] = pA;
 
-      /* pR */ colrs[colrIndex++] = (pR);  
-      /* pG */ colrs[colrIndex++] = (pG);  
-      /* pB */ colrs[colrIndex++] = (pB);
-      /* pA */ colrs[colrIndex++] = (pA);
+      /* pR */ colrs[colrIndex+8] = pR;
+      /* pG */ colrs[colrIndex+9] = pG;
+      /* pB */ colrs[colrIndex+10] = pB;
+      /* pA */ colrs[colrIndex+11] = pA;
+      colrIndex += 8;
+   }
+
+   char i = 0;
+   for (char i = 1; i < circleSegments/2; i++ ) {
+      /* pR */ colrs[colrIndex+0] = pR;
+      /* pG */ colrs[colrIndex+1] = pG;
+      /* pB */ colrs[colrIndex+2] = pB;
+      /* pA */ colrs[colrIndex+3] = pA;
+
+      /* pR */ colrs[colrIndex+4] = pR;
+      /* pG */ colrs[colrIndex+5] = pG;
+      /* pB */ colrs[colrIndex+6] = pB;
+      /* pA */ colrs[colrIndex+7] = pA;
+      colrIndex += 8;
    }
 
    for (char i = 1; i < circleSegments/2; i++ ) {
-      /* pR */ colrs[colrIndex++] = (pR);  
-      /* pG */ colrs[colrIndex++] = (pG);  
-      /* pB */ colrs[colrIndex++] = (pB);
-      /* pA */ colrs[colrIndex++] = (pA);
+      /* qR */ colrs[colrIndex+0] = qR;
+      /* qG */ colrs[colrIndex+1] = qG;
+      /* qB */ colrs[colrIndex+2] = qB;
+      /* qA */ colrs[colrIndex+3] = qA;
 
-      /* pR */ colrs[colrIndex++] = (pR);  
-      /* pG */ colrs[colrIndex++] = (pG);  
-      /* pB */ colrs[colrIndex++] = (pB);
-      /* pA */ colrs[colrIndex++] = (pA);
+      /* qR */ colrs[colrIndex+4] = qR;
+      /* qG */ colrs[colrIndex+5] = qG;
+      /* qB */ colrs[colrIndex+6] = qB;
+      /* qA */ colrs[colrIndex+7] = qA;
+      colrIndex += 8;
    }
 
-   for (char i = 1; i < circleSegments/2; i++ ) {
-      /* qR */ colrs[colrIndex++] = (qR);  
-      /* qG */ colrs[colrIndex++] = (qG);  
-      /* qB */ colrs[colrIndex++] = (qB);
-      /* qA */ colrs[colrIndex++] = (qA);
+   /* qR */ colrs[colrIndex+0] = qR;
+   /* qG */ colrs[colrIndex+1] = qG;
+   /* qB */ colrs[colrIndex+2] = qB;
+   /* qA */ colrs[colrIndex+3] = qA;
 
-      /* qR */ colrs[colrIndex++] = (qR);  
-      /* qG */ colrs[colrIndex++] = (qG);  
-      /* qB */ colrs[colrIndex++] = (qB);
-      /* qA */ colrs[colrIndex++] = (qA);
-   }
-
-   /* qR */ colrs[colrIndex++] = (qR);  
-   /* qG */ colrs[colrIndex++] = (qG);  
-   /* qB */ colrs[colrIndex++] = (qB);
-   /* qA */ colrs[colrIndex++] = (qA);
-
-   /* qR */ colrs[colrIndex++] = (qR);  
-   /* qG */ colrs[colrIndex++] = (qG);  
-   /* qB */ colrs[colrIndex++] = (qB);
-   /* qA */ colrs[colrIndex++] = (qA);
+   /* qR */ colrs[colrIndex+4] = qR;
+   /* qG */ colrs[colrIndex+5] = qG;
+   /* qB */ colrs[colrIndex+6] = qB;
+   /* qA */ colrs[colrIndex+7] = qA;
+   colrIndex += 8;
 
    return colrIndex/4;
 }
