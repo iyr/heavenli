@@ -1,23 +1,17 @@
 using namespace std;
 
-GLfloat     *confirmCoordBuffer  = NULL;  // Stores (X, Y) (float) for each vertex
-GLfloat     *confirmColorBuffer  = NULL;  // Stores (R, G, B) (float) for each vertex
-GLushort    *confirmIndices      = NULL;  // Stores index corresponding to each vertex
-GLuint      confirmVerts;                 // Total number of vertices
-GLuint      extraConfirmVerts;
-Matrix      confirmMVP;                   // Transformation matrix passed to shader
-Params      confirmPrevState;             // Stores transformations to avoid redundant recalculation
-GLuint      confirmVBO;                   // Vertex Buffer Object ID
-GLboolean   confirmFirstRun = GL_TRUE;    // Determines if function is running for the first time (for VBO initialization)
+drawCall    confirmButton;       // drawCall object
+GLuint      extraConfirmVerts;   // Used for determining where to write to update cache
 
 PyObject* drawConfirm_drawUtils(PyObject* self, PyObject *args) {
-   PyObject *faceColorPyTup;
-   PyObject *extraColorPyTup;
-   PyObject *detailColorPyTup;
-   GLfloat gx, gy, scale, w2h, ao=0.0f;
-   GLfloat faceColor[4];
-   GLfloat extraColor[4];
-   GLfloat detailColor[4];
+   PyObject*   faceColorPyTup;
+   PyObject*   extraColorPyTup;
+   PyObject*   detailColorPyTup;
+   GLfloat     gx, gy, scale, w2h, ao=0.0f;
+   GLfloat     faceColor[4];
+   GLfloat     extraColor[4];
+   GLfloat     detailColor[4];
+   GLuint      confirmVerts;                 // Total number of vertices
 
    // Parse Inputs
    if ( !PyArg_ParseTuple(args,
@@ -47,10 +41,7 @@ PyObject* drawConfirm_drawUtils(PyObject* self, PyObject *args) {
    detailColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2)));
    detailColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 3)));
 
-   // Allocate and Define Geometry/Color buffers
-   if (  confirmCoordBuffer   == NULL  ||
-         confirmColorBuffer   == NULL  ||
-         confirmIndices       == NULL  ){
+   if (  confirmButton.numVerts == 0   ){
 
       printf("Initializing Geometry for Confirm Button\n");
       vector<GLfloat> verts;
@@ -107,174 +98,26 @@ PyObject* drawConfirm_drawUtils(PyObject* self, PyObject *args) {
 
       confirmVerts = verts.size()/2;
 
-      // Pack Vertices and Colors into global array buffers
-      if (confirmCoordBuffer == NULL) {
-         confirmCoordBuffer = new GLfloat[confirmVerts*2];
-      } else {
-         delete [] confirmCoordBuffer;
-         confirmCoordBuffer = new GLfloat[confirmVerts*2];
-      }
-
-      if (confirmColorBuffer == NULL) {
-         confirmColorBuffer = new GLfloat[confirmVerts*4];
-      } else {
-         delete [] confirmColorBuffer;
-         confirmColorBuffer = new GLfloat[confirmVerts*4];
-      }
-
-      if (confirmIndices == NULL) {
-         confirmIndices = new GLushort[confirmVerts];
-      } else {
-         delete [] confirmIndices;
-         confirmIndices = new GLushort[confirmVerts];
-      }
-
-      for (unsigned int i = 0; i < confirmVerts; i++) {
-         confirmCoordBuffer[i*2]   = verts[i*2];
-         confirmCoordBuffer[i*2+1] = verts[i*2+1];
-         confirmIndices[i]          = i;
-         confirmColorBuffer[i*4+0]  = colrs[i*4+0];
-         confirmColorBuffer[i*4+1]  = colrs[i*4+1];
-         confirmColorBuffer[i*4+2]  = colrs[i*4+2];
-         confirmColorBuffer[i*4+3]  = colrs[i*4+3];
-      }
-
-      // Calculate Initial Transformation Matrix
-      Matrix Ortho;
-      Matrix ModelView;
-
-      float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
-      MatrixLoadIdentity( &Ortho );
-      MatrixLoadIdentity( &ModelView );
-      MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
-
-      MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
-      if (w2h <= 1.0f) {
-         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
-      } else {
-         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
-      }
-      MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
-
-      // Cache Matrix to global memory
-      MatrixMultiply( &confirmMVP, &ModelView, &Ortho );
-
-      // Cache transformations to avoid recalculation
-      confirmPrevState.ao = ao;
-      confirmPrevState.dx = gx;
-      confirmPrevState.dy = gy;
-      confirmPrevState.sx = scale;
-      confirmPrevState.sy = scale;
-      confirmPrevState.w2h = w2h;
-
-      // Create buffer object if one does not exist, otherwise, delete and make a new one
-      if (confirmFirstRun == GL_TRUE) {
-         confirmFirstRun = GL_FALSE;
-         glGenBuffers(1, &confirmVBO);
-      } else {
-         glDeleteBuffers(1, &confirmVBO);
-         glGenBuffers(1, &confirmVBO);
-      }
-
-      // Set active VBO
-      glBindBuffer(GL_ARRAY_BUFFER, confirmVBO);
-
-      // Allocate space to hold all vertex coordinate and color data
-      glBufferData(GL_ARRAY_BUFFER, 6*sizeof(GLfloat)*confirmVerts, NULL, GL_STATIC_DRAW);
-
-      // Convenience variables
-      GLintptr offset = 0;
-      GLuint vertAttribCoord = glGetAttribLocation(3, "vertCoord");
-      GLuint vertAttribColor = glGetAttribLocation(3, "vertColor");
-
-      // Load Vertex coordinate data into VBO
-      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*confirmVerts, confirmCoordBuffer);
-
-      // Define how the Vertex coordinate data is layed out in the buffer
-      glVertexAttribPointer(vertAttribCoord, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLintptr*)offset);
-
-      // Enable the vertex attribute
-      glEnableVertexAttribArray(vertAttribCoord);
-
-      // Update offset to begin storing data in latter part of the buffer
-      offset += 2*sizeof(GLfloat)*confirmVerts;
-
-      // Load Vertex coordinate data into VBO
-      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*4*confirmVerts, confirmColorBuffer);
-
-      // Define how the Vertex color data is layed out in the buffer
-      glVertexAttribPointer(vertAttribColor, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (GLintptr*)offset);
-
-      // Enable the vertex attribute
-      glEnableVertexAttribArray(vertAttribColor);
+      confirmButton.buildCache(confirmVerts, verts, colrs);
    }
 
+   GLboolean updateCache = GL_FALSE;
    // Geometry allocated, check if color needs to be updated
    for (int i = 0; i < 4; i++) {
-      if ( confirmColorBuffer[extraConfirmVerts*4+i] != extraColor[i] ) {
-         for (unsigned int k = extraConfirmVerts; k < confirmVerts; k++) {
-            confirmColorBuffer[k*4 + i] = extraColor[i];
+      if ( confirmButton.colorCache[extraConfirmVerts*4+i] != extraColor[i] ) {
+         for (unsigned int k = extraConfirmVerts; k < confirmButton.numVerts; k++) {
+            confirmButton.colorCache[k*4 + i] = extraColor[i];
          }
-         // Update Contents of VBO
-         // Set active VBO
-         glBindBuffer(GL_ARRAY_BUFFER, confirmVBO);
-         // Convenience variable
-         GLintptr offset = 2*sizeof(GLfloat)*confirmVerts;
-         // Load Vertex Color data into VBO
-         glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*4*confirmVerts, confirmColorBuffer);
+         updateCache = GL_TRUE;
       }
    }
 
-   // Update Transfomation Matrix if any change in parameters
-   if (  confirmPrevState.ao != ao     ||
-         confirmPrevState.dx != gx     ||
-         confirmPrevState.dy != gy     ||
-         confirmPrevState.sx != scale  ||
-         confirmPrevState.sy != scale  ||
-         confirmPrevState.w2h != w2h   ){
-      
-      Matrix Ortho;
-      Matrix ModelView;
-
-      float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
-      MatrixLoadIdentity( &Ortho );
-      MatrixLoadIdentity( &ModelView );
-      MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
-      MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
-      if (w2h <= 1.0f) {
-         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
-      } else {
-         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
-      }
-      MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
-      MatrixMultiply( &confirmMVP, &ModelView, &Ortho );
-
-      confirmPrevState.ao = ao;
-      confirmPrevState.dx = gx;
-      confirmPrevState.dy = gy;
-      confirmPrevState.sx = scale;
-      confirmPrevState.sy = scale;
-      confirmPrevState.w2h = w2h;
+   if ( updateCache ){
+      confirmButton.updateColorCache();
    }
 
-   // Pass Transformation Matrix to shader
-   glUniformMatrix4fv( 0, 1, GL_FALSE, &confirmMVP.mat[0][0] );
-
-   // Set active VBO
-   glBindBuffer(GL_ARRAY_BUFFER, confirmVBO);
-
-   // Define how the Vertex coordinate data is layed out in the buffer
-   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
-   // Define how the Vertex color data is layed out in the buffer
-   glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*confirmVerts));
-
-   // Not sure if I actually need these
-   //glEnableVertexAttribArray(0);
-   //glEnableVertexAttribArray(1);
-   glDrawArrays(GL_TRIANGLE_STRIP, 0, confirmVerts);
-
-   // Unbind Buffer Object
-   glBindBuffer(GL_ARRAY_BUFFER, 0);
+   confirmButton.updateMVP(gx, gy, scale, scale, ao, w2h);
+   confirmButton.draw();
 
    Py_RETURN_NONE;
 }
