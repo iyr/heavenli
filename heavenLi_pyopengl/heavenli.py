@@ -6,6 +6,8 @@ from hliUtilImports import *
 from lampClass import *
 print("Done!")
 
+#import profile
+
 def init():
     global stateMach
     stateMach['curBulb'] = 0
@@ -38,6 +40,8 @@ def framerate():
     t = time.time()
     stateMach['frames'] += 1.0
     seconds = t - stateMach['t0']
+    if (seconds <= 0.0):
+        seconds = 0.00000000001
     stateMach['someVar'] += stateMach['someInc']
     if (stateMach['someVar'] > 100) or (stateMach['someVar'] < 0):
         stateMach['someInc'] = -stateMach['someInc']
@@ -47,7 +51,7 @@ def framerate():
     except:
         print("Too Fast, Too Quick!!")
 
-    if t - stateMach['t1'] >= 0.5:
+    if t - stateMach['t1'] >= (1/60.0):
         stateMach['t1'] = t
 
     if t - stateMach['t0'] >= 1.0:
@@ -65,7 +69,9 @@ def framerate():
             glutSetCursor(GLUT_CURSOR_NONE)
 
     if stateMach['frameLimit'] and (stateMach['fps'] > 60):
-        time.sleep(2*float(stateMach['fps'])/10000.0)
+        pass
+        #time.sleep(2*float(stateMach['fps'])/10000.0)
+        time.sleep(0.015)
 
     return
 
@@ -179,7 +185,6 @@ def drawHome():
                         stateMach['prevVal'] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[2]
 
             # Watch all-set for input
-            elif (len(stateMach['lamps']) > 0):
                 if (watchDot(
                     mapRanges(0.75, -1.0,  1.0, 0, stateMach['wx']*2),  # X coord of button
                     mapRanges(0.75,  1.0, -1.0, 0, stateMach['wy']*2),  # Y coord of button
@@ -573,8 +578,8 @@ def display():
 
     #stateMach['tDiff'] = 0.70568/stateMach['fps']
     #stateMach['tDiff'] = 1.30568/stateMach['fps']
-    stateMach['tDiff'] = 2.71828/stateMach['fps']
-    #stateMach['tDiff'] = 3.14159/stateMach['fps']
+    #stateMach['tDiff'] = 2.71828/stateMach['fps']
+    stateMach['tDiff'] = 3.14159/stateMach['fps']
     #stateMach['tDiff'] = 6.28318/stateMach['fps']
 
     # Constrain Animation Cursor
@@ -595,7 +600,6 @@ def display():
             stateMach['colrSettingCursor'] = constrain(stateMach['colrSettingCursor']+stateMach['tDiff'], 0, 1)
         drawSettingColor()
 
-    stateMach['tDiff'] = 3.14159/stateMach['fps']
     stateMach['MasterSwitch'].setTimeSlice(stateMach['tDiff']*2)
 
     # Update Colors of Lamps
@@ -606,9 +610,9 @@ def display():
 
     glutSwapBuffers()
     plugins.pluginLoader.updatePlugins()
-    framerate()
 
 def idleWindowOpen():
+    framerate()
     glutPostRedisplay()
 
 def idleWindowMinimized():
