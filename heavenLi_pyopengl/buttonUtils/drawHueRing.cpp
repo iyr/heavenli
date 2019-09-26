@@ -1,9 +1,8 @@
 using namespace std;
 
-GLfloat     *hueRingCoordBuffer  = NULL;  // Stores (X, Y) (float) for each vertex
-GLfloat     *hueRingColorBuffer  = NULL;  // Stores (R, G, B) (float) for each vertex
-GLushort    *hueRingIndices      = NULL;  // Stores index corresponding to each vertex
-GLuint      hueRingVerts;                 // Total number of vertices
+drawCall    hueRingButton;
+
+GLuint      hueDotsVerts;                 // Used for updating only a portion of the color cache
 GLubyte     prevHueRingNumHues;           // Used for updating Granularity changes
 GLfloat     prevHueDotScale      = 0.0;   // Used for animating granularity changes
 GLfloat     prevHueDotDist       = 0.0;   // Used for animating granularity changes
@@ -11,19 +10,23 @@ GLfloat     prevHueRingAng       = 0.0;   // Used for animating selection ring
 GLfloat     prevHueRingAni       = 0.0;   // Used to resolve edge-case bug for animating selection ring
 GLfloat     prevHueRingSel       = 0.0;   // Used to resolve edge-case bug for animating selection ring
 GLfloat     *hueButtonData       = NULL;  /* X, Y, hue per button */
-Matrix      hueRingMVP;                   // Transformation matrix passed to shader
-Params      hueRingPrevState;             // Stores transformations to avoid redundant recalculation
-GLuint      hueRingVBO;                   // Vertex Buffer Object ID
-GLboolean   hueRingFirstRun = GL_TRUE;    // Determines if function is running for the first time (for VBO initialization)
-GLuint      hueDotsVerts;
 
 PyObject* drawHueRing_drawUtils(PyObject *self, PyObject *args) {
-   PyObject *py_list;
-   PyObject *py_tuple;
-   GLfloat w2h, scale, tmo, currentHue, interactionCursor, tDiff, gx=0.0f, gy=0.0f, ao=0.0f;
-   GLfloat ringColor[4];
-   char circleSegments = 45;
-   unsigned char numHues = 12;
+   PyObject*      py_list;
+   PyObject*      py_tuple;
+   GLfloat        w2h, 
+                  scale, 
+                  tmo, 
+                  currentHue, 
+                  interactionCursor, 
+                  tDiff, 
+                  gx=0.0f, 
+                  gy=0.0f, 
+                  ao=0.0f;
+   GLfloat        ringColor[4];
+   char           circleSegments = 45;
+   unsigned char  numHues = 12;
+   GLuint         hueRingVerts;                 // Total number of vertices
 
    // Parse Inputs
    if (!PyArg_ParseTuple(args,
@@ -45,10 +48,8 @@ PyObject* drawHueRing_drawUtils(PyObject *self, PyObject *args) {
    ringColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(py_tuple, 3)));
 
    // (Re)Allocate and Define Geometry/Color buffers
-   if (  prevHueRingNumHues   != numHues  ||
-         hueRingCoordBuffer   == NULL     ||
-         hueRingColorBuffer   == NULL     ||
-         hueRingIndices       == NULL     ){
+   if (  prevHueRingNumHues      != numHues  ||
+         hueRingButton.numVerts  == 0        ){
 
       //printf("Initializing Geometry for Hue Ring\n");
       vector<GLfloat> verts;
@@ -122,107 +123,14 @@ PyObject* drawHueRing_drawUtils(PyObject *self, PyObject *args) {
       // Total number of Vertices, useful for array updating
       hueRingVerts = verts.size()/2;
 
-      // (Re)Allocate buffer for vertex data
-      if (hueRingCoordBuffer == NULL) {
-         hueRingCoordBuffer = new GLfloat[hueRingVerts*2];
-      } else {
-         delete [] hueRingCoordBuffer;
-         hueRingCoordBuffer = new GLfloat[hueRingVerts*2];
-      }
-
-      // (Re)Allocate buffer for color data
-      if (hueRingColorBuffer == NULL) {
-         hueRingColorBuffer = new GLfloat[hueRingVerts*4];
-      } else {
-         delete [] hueRingColorBuffer;
-         hueRingColorBuffer = new GLfloat[hueRingVerts*4];
-      }
-
-      // (Re)Allocate buffer for indices
-      if (hueRingIndices == NULL) {
-         hueRingIndices = new GLushort[hueRingVerts];
-      } else {
-         delete [] hueRingIndices;
-         hueRingIndices = new GLushort[hueRingVerts];
-      }
-
-      // Pack Vertics and Colors into global array buffers
-      for (unsigned int i = 0; i < hueRingVerts; i++) {
-         hueRingCoordBuffer[i*2]    = verts[i*2];
-         hueRingCoordBuffer[i*2+1]  = verts[i*2+1];
-         hueRingIndices[i]          = i;
-         hueRingColorBuffer[i*4+0]  = colrs[i*4+0];
-         hueRingColorBuffer[i*4+1]  = colrs[i*4+1];
-         hueRingColorBuffer[i*4+2]  = colrs[i*4+2];
-         hueRingColorBuffer[i*4+3]  = colrs[i*4+3];
-      }
-
-      // Calculate initial transformation matrix
-      Matrix Ortho;
-      Matrix ModelView;
-
-      float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
-      MatrixLoadIdentity( &Ortho );
-      MatrixLoadIdentity( &ModelView );
-      MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
-      MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
-      if (w2h <= 1.0f) {
-         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
-      } else {
-         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
-      }
-      MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
-      MatrixMultiply( &hueRingMVP, &ModelView, &Ortho );
-
-      hueRingPrevState.ao = ao;
-      hueRingPrevState.dx = gx;
-      hueRingPrevState.dy = gy;
-      hueRingPrevState.sx = scale;
-      hueRingPrevState.sy = scale;
-      hueRingPrevState.w2h = w2h;
-
       // Update State Machine variables
       prevHueRingAni = currentHue;
       prevHueRingSel = currentHue;
       prevHueRingNumHues = numHues;
       prevHueRingAng = float(prevHueRingAni*360.0 + 90.0);
 
-      // Create buffer object if one does not exist, otherwise, delete and make a new one
-      if (hueRingFirstRun == GL_TRUE) {
-         hueRingFirstRun = GL_FALSE;
-         glGenBuffers(1, &hueRingVBO);
-      } else {
-         glDeleteBuffers(1, &hueRingVBO);
-         glGenBuffers(1, &hueRingVBO);
-      }
+      hueRingButton.buildCache(hueRingVerts, verts, colrs);
 
-      // Set active VBO
-      glBindBuffer(GL_ARRAY_BUFFER, hueRingVBO);
-
-      // Allocate space to hold all vertex coordinate and color data
-      glBufferData(GL_ARRAY_BUFFER, 6*sizeof(GLfloat)*hueRingVerts, NULL, GL_STATIC_DRAW);
-
-      // Convenience variables
-      GLintptr offset = 0;
-      GLuint vertAttribCoord = glGetAttribLocation(3, "vertCoord");
-      GLuint vertAttribColor = glGetAttribLocation(3, "vertColor");
-
-      // Load Vertex coordinate data into VBO
-      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*hueRingVerts, hueRingCoordBuffer);
-      // Define how the Vertex coordinate data is layed out in the buffer
-      glVertexAttribPointer(vertAttribCoord, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLintptr*)offset);
-      // Enable the vertex attribute
-      glEnableVertexAttribArray(vertAttribCoord);
-
-      // Update offset to begin storing data in latter part of the buffer
-      offset += 2*sizeof(GLfloat)*hueRingVerts;
-
-      // Load Vertex coordinate data into VBO
-      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*4*hueRingVerts, hueRingColorBuffer);
-      // Define how the Vertex color data is layed out in the buffer
-      glVertexAttribPointer(vertAttribColor, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (GLintptr*)offset);
-      // Enable the vertex attribute
-      glEnableVertexAttribArray(vertAttribColor);
    }
 
    // Resolve an edge case where the selection ring can sometimes get stuck
@@ -271,17 +179,9 @@ PyObject* drawHueRing_drawUtils(PyObject *self, PyObject *args) {
             0.03f,
             circleSegments,
             hueDotsVerts,
-            hueRingCoordBuffer);
+            hueRingButton.coordCache);
 
-      // Update Contents of VBO
-      // Set active VBO
-      glBindBuffer(GL_ARRAY_BUFFER, hueRingVBO);
-      // Convenience variable
-      GLintptr offset = 0;
-      // Load Vertex coordinate data into VBO
-      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*hueRingVerts, hueRingCoordBuffer);
-      offset += 2*sizeof(GLfloat)*hueRingVerts;
-      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*4*hueRingVerts, hueRingColorBuffer);
+      hueRingButton.updateCoordCache();
    }
 
    prevHueRingSel = currentHue;
@@ -332,7 +232,7 @@ PyObject* drawHueRing_drawUtils(PyObject *self, PyObject *args) {
                prevHueDotScale, 
                circleSegments, 
                index, 
-               hueRingCoordBuffer);
+               hueRingButton.coordCache);
 
          // Determine which button dot represents the currently selected hue
          if (abs(currentHue - float(azi*i)) <= 1.0f / float(numHues*2)) {
@@ -351,37 +251,30 @@ PyObject* drawHueRing_drawUtils(PyObject *self, PyObject *args) {
             0.03f,
             circleSegments,
             hueDotsVerts,
-            hueRingCoordBuffer);
+            hueRingButton.coordCache);
 
-      // Update Contents of VBO
-      // Set active VBO
-      glBindBuffer(GL_ARRAY_BUFFER, hueRingVBO);
-      // Convenience variables
-      GLintptr offset = 0;
-      // Load Vertex coordinate data into VBO
-      glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*hueRingVerts, hueRingCoordBuffer);
-
+      hueRingButton.updateCoordCache();
+   
    } else {
       prevHueDotScale   = hueDotScale;
       prevHueDotDist    = hueDotDist;
    }
 
+   GLboolean updateCache = GL_FALSE;
    // Check if selection Ring Color needs to be updated
    for (int i = 0; i < 4; i++) {
-      //if (hueRingColorBuffer[numHues*circleSegments*9+i] != ringColor[i]) {
-      if (hueRingColorBuffer[hueDotsVerts*4+i] != ringColor[i]) {
-         for (unsigned int k = hueDotsVerts; k < hueRingVerts; k++) {
-            hueRingColorBuffer[k*4+i] = ringColor[i];
+      if (hueRingButton.colorCache[hueDotsVerts*4+i] != ringColor[i]) {
+         for (unsigned int k = hueDotsVerts; k < hueRingButton.numVerts; k++) {
+            hueRingButton.colorCache[k*4+i] = ringColor[i];
          }
 
-         // Update Contents of VBO
-         // Set active VBO
-         glBindBuffer(GL_ARRAY_BUFFER, hueRingVBO);
-         // Convenience variable
-         GLintptr offset = 2*sizeof(GLfloat)*hueRingVerts;
-         // Load Vertex Color data into VBO
-         glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*4*hueRingVerts, hueRingColorBuffer);
+         updateCache = GL_TRUE;
       }
+   }
+
+   // Update colors, if needed
+   if ( updateCache ){
+      hueRingButton.updateColorCache();
    }
          
    // Create a Python List of tuples containing data of each button dot
@@ -395,54 +288,8 @@ PyObject* drawHueRing_drawUtils(PyObject *self, PyObject *args) {
       PyList_SetItem(py_list, i, py_tuple);
    }
 
-   // Update Transfomation Matrix if any change in parameters
-   if (  hueRingPrevState.ao != ao     ||
-         hueRingPrevState.dx != gx     ||
-         hueRingPrevState.dy != gy     ||
-         hueRingPrevState.sx != scale  ||
-         hueRingPrevState.sy != scale  ||
-         hueRingPrevState.w2h != w2h   ){
-      
-      Matrix Ortho;
-      Matrix ModelView;
-
-      float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
-      MatrixLoadIdentity( &Ortho );
-      MatrixLoadIdentity( &ModelView );
-      MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
-      MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
-      if (w2h <= 1.0f) {
-         MatrixScale( &ModelView, scale, scale*w2h, 1.0f );
-      } else {
-         MatrixScale( &ModelView, scale/w2h, scale, 1.0f );
-      }
-      MatrixRotate( &ModelView, -ao, 0.0f, 0.0f, 1.0f);
-      MatrixMultiply( &hueRingMVP, &ModelView, &Ortho );
-
-      hueRingPrevState.ao = ao;
-      hueRingPrevState.dx = gx;
-      hueRingPrevState.dy = gy;
-      hueRingPrevState.sx = scale;
-      hueRingPrevState.sy = scale;
-      hueRingPrevState.w2h = w2h;
-   }
-
-   // Pass Transformation Matrix to shader
-   glUniformMatrix4fv( 0, 1, GL_FALSE, &hueRingMVP.mat[0][0] );
-
-   // Set active VBO
-   glBindBuffer(GL_ARRAY_BUFFER, hueRingVBO);
-
-   // Define how the Vertex coordinate data is layed out in the buffer
-   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
-   // Define how the Vertex color data is layed out in the buffer
-   glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*hueRingVerts));
-   //glEnableVertexAttribArray(0);
-   //glEnableVertexAttribArray(1);
-   glDrawArrays(GL_TRIANGLE_STRIP, 0, hueRingVerts);
-
-   // Unbind Buffer Object
-   glBindBuffer(GL_ARRAY_BUFFER, 0);
+   hueRingButton.updateMVP(gx, gy, scale, scale, ao, w2h);
+   hueRingButton.draw();
 
    return py_list;
 }
