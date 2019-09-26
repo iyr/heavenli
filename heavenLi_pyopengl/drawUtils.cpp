@@ -41,7 +41,7 @@ float offScreen = 100.0;            // Used for moving geometry offscreen, will 
 #include "buttonUtils/drawClock.cpp"         // Draws the master switch (clock in center of display)
 #include "buttonUtils/drawArrow.cpp"         // Draws a generic arrow that can be oriented in different directions
 #include "buttonUtils/drawBulbButtons.cpp"   // Draws the Color-setting bottons that encircle/straddle the master switch
-#include "buttonUtils/drawGranRocker.cpp"    // Draws the Granularity Rocker on the color picker screen
+#include "buttonUtils/drawGranChanger.cpp"   // Draws the Granularity Rocker on the color picker screen
 #include "buttonUtils/drawHueRing.cpp"       // Draws the ring of colored dots on the color picker
 #include "buttonUtils/drawColrTri.cpp"       // Draws the triangle of colored dots for the color picker
 #include "buttonUtils/drawConfirm.cpp"       // Draws a checkmark button
@@ -78,7 +78,7 @@ PyObject* drawIconLinear_drawUtils(PyObject *self, PyObject *args);
 PyObject* drawClock_drawUtils     (PyObject *self, PyObject *args);
 PyObject* drawArrow_drawUtils     (PyObject *self, PyObject *args);
 PyObject* drawBulbButton_drawUtils(PyObject *self, PyObject *args);
-PyObject* drawGranRocker_drawUtils(PyObject *self, PyObject *args);
+PyObject* drawGranChanger_drawUtils(PyObject *self, PyObject *args);
 PyObject* drawHueRing_drawUtils   (PyObject *self, PyObject *args);
 PyObject* drawColrTri_drawUtils   (PyObject *self, PyObject *args);
 PyObject* drawConfirm_drawUtils   (PyObject *self, PyObject *args);
@@ -103,7 +103,7 @@ static PyMethodDef drawUtils_methods[] = {
    { "drawClock",       (PyCFunction)drawClock_drawUtils,       METH_VARARGS },
    { "drawArrow",       (PyCFunction)drawArrow_drawUtils,       METH_VARARGS },
    { "drawBulbButton",  (PyCFunction)drawBulbButton_drawUtils,  METH_VARARGS },
-   { "drawGranRocker",  (PyCFunction)drawGranRocker_drawUtils,  METH_VARARGS },
+   { "drawGranChanger", (PyCFunction)drawGranChanger_drawUtils,  METH_VARARGS },
    { "drawHueRing",     (PyCFunction)drawHueRing_drawUtils,     METH_VARARGS },
    { "drawColrTri",     (PyCFunction)drawColrTri_drawUtils,     METH_VARARGS },
    { "drawConfirm",     (PyCFunction)drawConfirm_drawUtils,     METH_VARARGS },
