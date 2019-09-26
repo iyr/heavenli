@@ -81,6 +81,32 @@ int defineEllipse(
    return verts.size()/2;
 }
 
+// Useful overload
+int defineEllipse(
+      float bx,                  /* X-Coordinate */
+      float by,                  /* Y-Coordinate */
+      float bs,                  /* Scale 2.0=spans display before MVP scaling */
+      char circleSegments,       /* Number of sides */
+      float *color,              /* Polygon Color */
+      std::vector<float> &verts, /* Input Vector of x,y coordinates */
+      std::vector<float> &colrs  /* Input Vector of r,g,b values */
+      ){
+   return defineEllipse(bx, by, bs, bs, circleSegments, color, verts, colrs);
+}
+
+// Useful pseudo-overload
+int defineCircle(
+      float bx,                  /* X-Coordinate */
+      float by,                  /* Y-Coordinate */
+      float bs,                  /* Scale 2.0=spans display before MVP scaling */
+      char circleSegments,       /* Number of sides */
+      float *color,              /* Polygon Color */
+      std::vector<float> &verts, /* Input Vector of x,y coordinates */
+      std::vector<float> &colrs  /* Input Vector of r,g,b values */
+      ){
+   return defineEllipse(bx, by, bs, bs, circleSegments, color, verts, colrs);
+}
+ 
 // Write to pre-allocated input array, updating vertices only 
 int updatePrimEllipseGeometry(
       float bx,               /* X-Coordinate */
