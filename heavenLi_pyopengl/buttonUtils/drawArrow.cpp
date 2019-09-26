@@ -1,6 +1,7 @@
 using namespace std;
 
 drawCall    arrowButton;
+GLuint      extraArrowVerts;
 
 PyObject* drawArrow_drawUtils(PyObject* self, PyObject *args) {
    PyObject *faceColorPyTup;
@@ -71,7 +72,7 @@ PyObject* drawArrow_drawUtils(PyObject* self, PyObject *args) {
             verts, colrs);
 
       px = -0.125f, py = -0.625f;
-      definePill(
+      extraArrowVerts = definePill(
             px, py, 
             qx, qy, 
             radius, 
@@ -105,12 +106,22 @@ PyObject* drawArrow_drawUtils(PyObject* self, PyObject *args) {
    }
 
    int index = 0;
-   index = updatePrimEllipseColor(circleSegments, faceColor, index, arrowButton.colorCache);
-   index = updatePillColor(circleSegments/2, detailColor, index, arrowButton.colorCache);
-   index = updatePillColor(circleSegments/2, detailColor, index, arrowButton.colorCache);
-   index = updatePillColor(circleSegments/2, extraColor, index, arrowButton.colorCache);
-   index = updatePillColor(circleSegments/2, extraColor, index, arrowButton.colorCache);
-   arrowButton.updateColorCache();
+   GLboolean updateCache = GL_FALSE;
+   // Update Color, if needed
+   for (int i = 0; i < 4; i++) {
+      if ( arrowButton.colorCache[extraArrowVerts*4+i] != extraColor[i] ) {
+         for (unsigned int k = extraArrowVerts; k < arrowButton.numVerts; k++) {
+            arrowButton.colorCache[k*4 + i] = extraColor[i];
+         }
+
+         updateCache = GL_TRUE;
+      }
+   }
+
+   // Update colors, if needed
+   if ( updateCache ){
+      arrowButton.updateColorCache();
+   }
 
    arrowButton.updateMVP(gx, gy, scale, scale, ao, w2h);
 
