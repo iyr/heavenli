@@ -281,7 +281,7 @@ def drawSettingColor():
         else:
             tmy = -0.91*acbic
 
-        drawGranRocker(
+        drawGranChanger(
                 0.0, tmy,
                 faceColor,
                 detailColor,
@@ -308,7 +308,7 @@ def drawSettingColor():
             tmy = -0.91*acbic*stateMach['w2h']
         else:
             tmy = -0.91*acbic
-        drawGranRocker(
+        drawGranChanger(
                 0.0, tmy,
                 faceColor,
                 detailColor,
