@@ -1,4 +1,4 @@
-from drawUtils import *
+from hliGLutils import *
 import freetype
 
 def makeFont(fontFile="fonts/Barlow-Regular.ttf", numChars=128, size=48):

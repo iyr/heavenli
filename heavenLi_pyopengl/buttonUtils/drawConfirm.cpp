@@ -3,7 +3,7 @@ using namespace std;
 drawCall    confirmButton;       // drawCall object
 GLuint      extraConfirmVerts;   // Used for determining where to write to update cache
 
-PyObject* drawConfirm_drawUtils(PyObject* self, PyObject *args) {
+PyObject* drawConfirm_hliGLutils(PyObject* self, PyObject *args) {
    PyObject*   faceColorPyTup;
    PyObject*   extraColorPyTup;
    PyObject*   detailColorPyTup;

@@ -6,7 +6,7 @@ GLfloat  prevClockMinute;  // Used for animated minute hand
 GLuint   clockVerts;       // Total number of vertices
 GLuint   faceVerts;        // Number of vertices of face (makes animating hands easier)
 
-PyObject* drawClock_drawUtils(PyObject *self, PyObject *args)
+PyObject* drawClock_hliGLutils(PyObject *self, PyObject *args)
 {
    PyObject* faceColorPyTup;
    PyObject* detailColorPyTup;
@@ -39,6 +39,7 @@ PyObject* drawClock_drawUtils(PyObject *self, PyObject *args)
    
    if (  clockButton.numVerts == 0  ){
 
+      printf("Initializing Geometry for Clock Button\n");
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
 

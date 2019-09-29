@@ -65,7 +65,7 @@ GLuint LoadShader(const GLchar *shadersrc, GLenum type) {
    return shader;
 }
 
-PyObject* initShaders_drawUtils(PyObject* self, PyObject *args) {
+PyObject* initShaders_hliGLutils(PyObject* self, PyObject *args) {
    const GLchar vertShaderSource[] = 
       "#version 100			               \n"
       "attribute  vec4 vertCoord;         \n"

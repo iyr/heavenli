@@ -5,13 +5,69 @@
 using namespace std;
 extern float offScreen;
 
+drawCall homeCircle;
+GLint    prevHomeCircleNumBulbs;
+
+PyObject* drawHomeCircle_hliGLutils(PyObject *self, PyObject *args) {
+   PyObject* py_list;
+   PyObject* py_tuple;
+   PyObject* py_float;
+   GLfloat *bulbColors;
+   GLfloat gx, gy, wx, wy, ao, w2h; 
+   GLfloat R, G, B;
+   GLint numBulbs;
+
+   if (!PyArg_ParseTuple(args,
+            "fffflffO",
+            &gx, &gy,      // background position (X, Y)
+            &wx, &wy,      // background scale (X, Y)
+            &numBulbs,     // number of elements
+            &ao,           // background rotation angle
+            &w2h,          // width to height ratio
+            &py_list       // colors of the background segments
+            ))
+   {
+      Py_RETURN_NONE;
+   }
+
+   // Parse array of tuples containing RGB Colors of bulbs
+   bulbColors = new float[numBulbs*3];
+   for (int i = 0; i < numBulbs; i++) {
+      py_tuple = PyList_GetItem(py_list, i);
+
+      for (int j = 0; j < 3; j++) {
+         py_float = PyTuple_GetItem(py_tuple, j);
+         bulbColors[i*3+j] = float(PyFloat_AsDouble(py_float));
+      }
+   }
+
+   unsigned int circleSegments = 60;
+
+   if (  homeCircle.numVerts     == 0        ||
+         prevHomeCircleNumBulbs  != numBulbs ){
+      printf("Initializing Geometry for Circular Background\n");
+      vector<GLfloat> verts;
+      vector<GLfloat> colrs;
+
+      defineColorWheel(0.0f, 0.0f, 10.0f, 60, 180.0f, numBulbs, 1.0f, bulbColors, verts, colrs);
+
+      prevHomeCircleNumBulbs = numBulbs;
+      homeCircle.buildCache(verts.size()/2, verts, colrs);
+   }
+
+   homeCircle.updateMVP(gx, gy, 1.0f, 1.0f, -ao, 1.0f);
+   homeCircle.draw();
+
+   Py_RETURN_NONE;
+}
+
+/*
 GLfloat     *homeCircleCoordBuffer  = NULL; // Stores (X, Y) (float) for each vertex
 GLfloat     *homeCircleColorBuffer  = NULL; // Stores (R, G, B) (float) for each vertex
 GLushort    *homeCircleIndices      = NULL; // Stores index corresponding to each vertex
 GLuint      homeCircleVerts;
 GLuint      homeCircleBuffer;
 GLuint      homeCircleIBO;
-GLint       prevHomeCircleNumBulbs;
 GLint       attribVertexPosition;
 GLint       attribVertexColor;
 Matrix      homeCircleMVP;                  // Transformation matrix passed to shader
@@ -19,7 +75,7 @@ Params      homeCirclePrevState;            // Stores transformations to avoid r
 GLuint      homeCircleVBO;                  // Vertex Buffer Object ID
 GLboolean   homeCircleFirstRun = GL_TRUE;   // Determines if function is running for the first time (for VBO initialization)
 
-PyObject* drawHomeCircle_drawUtils(PyObject *self, PyObject *args) {
+PyObject* drawHomeCircle_hliGLutils(PyObject *self, PyObject *args) {
    PyObject* py_list;
    PyObject* py_tuple;
    PyObject* py_float;
@@ -71,22 +127,21 @@ PyObject* drawHomeCircle_drawUtils(PyObject *self, PyObject *args) {
          R = float(bulbColors[j*3+0]);
          G = float(bulbColors[j*3+1]);
          B = float(bulbColors[j*3+2]);
-//#        pragma omp parallel for
          for (int i = 0; i < circleSegments/numBulbs; i++) {
-            /* X */ verts.push_back(float(0.0));
-            /* Y */ verts.push_back(float(0.0));
+            verts.push_back(float(0.0));
+            verts.push_back(float(0.0));
 
             tma = float(degToRad(i*float(degSegment) + j*angOffset - 90.0));
-            /* X */ verts.push_back(float(cos(tma)));
-            /* Y */ verts.push_back(float(sin(tma)));
+            verts.push_back(float(cos(tma)));
+            verts.push_back(float(sin(tma)));
 
             tma = float(degToRad((i+1)*float(degSegment) + j*angOffset - 90.0));
-            /* X */ verts.push_back(float(cos(tma)));
-            /* Y */ verts.push_back(float(sin(tma)));
+            verts.push_back(float(cos(tma)));
+            verts.push_back(float(sin(tma)));
 
-            /* R */ colrs.push_back(R);   /* G */ colrs.push_back(G);   /* B */ colrs.push_back(B);
-            /* R */ colrs.push_back(R);   /* G */ colrs.push_back(G);   /* B */ colrs.push_back(B);
-            /* R */ colrs.push_back(R);   /* G */ colrs.push_back(G);   /* B */ colrs.push_back(B);
+            colrs.push_back(R);   colrs.push_back(G);   colrs.push_back(B);
+            colrs.push_back(R);   colrs.push_back(G);   colrs.push_back(B);
+            colrs.push_back(R);   colrs.push_back(G);   colrs.push_back(B);
          }
       }
 
@@ -175,13 +230,12 @@ PyObject* drawHomeCircle_drawUtils(PyObject *self, PyObject *args) {
       // Enable the vertex attribute
       glEnableVertexAttribArray(vertAttribColor);
    } 
+
    // Geometry already calculated, update colors
-   /*
-    * Iterate through each color channel 
-    * 0 - RED
-    * 1 - GREEN
-    * 2 - BLUE
-    */
+   // Iterate through each color channel 
+   // 0 - RED
+   // 1 - GREEN
+   // 2 - BLUE
    for (int i = 0; i < 3; i++) {
          
       // Update color, if needed
@@ -241,6 +295,7 @@ PyObject* drawHomeCircle_drawUtils(PyObject *self, PyObject *args) {
 
    Py_RETURN_NONE;
 }
+*/
 
 /*
  * Explanation of features:
@@ -262,7 +317,7 @@ Params      iconCirclePrevState;            // Stores transformations to avoid r
 GLuint      iconCircleVBO;                  // Vertex Buffer Object ID
 GLboolean   iconCircleFirstRun = GL_TRUE;   // Determines if function is running for the first time (for VBO initialization)
 
-PyObject* drawIconCircle_drawUtils(PyObject *self, PyObject *args) {
+PyObject* drawIconCircle_hliGLutils(PyObject *self, PyObject *args) {
    PyObject*   detailColorPyTup;
    PyObject*   py_list;
    PyObject*   py_tuple;

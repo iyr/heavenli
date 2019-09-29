@@ -2,9 +2,9 @@
 
 print("Now Loading...")
 #import hliUtilImports
-from hliUtilImports import *
+from hliImports import *
 from lampClass import *
-print("Done!")
+print("All Imports Loaded...")
 
 #import profile
 
@@ -13,8 +13,8 @@ def init():
     stateMach['curBulb'] = 0
     makeFont()
 
-    glEnableClientState(GL_VERTEX_ARRAY)
-    glEnableClientState(GL_COLOR_ARRAY)
+    #glEnableClientState(GL_VERTEX_ARRAY)
+    #glEnableClientState(GL_COLOR_ARRAY)
     glEnable(GL_BLEND)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
@@ -116,6 +116,7 @@ def drawHome():
                 stateMach['faceColor'],                 # color of the clock face
                 stateMach['detailColor'])               # color of the clock hands
 
+
         if (len(stateMach['lamps']) > 0):
             buttons = drawBulbButton(
                     stateMach['lamps'][Light].getArn(),
@@ -131,7 +132,7 @@ def drawHome():
             tmc = ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100))
             drawIcon(0.75, 0.75, iconSize*0.85, tmc, stateMach['w2h'], stateMach['lamps'][Light])
 
-        drawText("Hello World!", 0.0, 0.0, 1.0, stateMach['w2h'], (1.0, 0.2, 1.0, 1.0))
+        #drawText("Hello World!", 0.0, 0.0, 1.0, stateMach['w2h'], (1.0, 0.2, 1.0, 1.0))
         #printText(
                 #-0.9, -0.6,
                 #0.05, 
@@ -146,11 +147,14 @@ def drawHome():
                 #'NnOoPpQqRrSsTtUuVvWwXxYyZz',
                 #( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100)))
 
-        #primTest(stateMach['someVar']/100-0.3333333333, 0.0, 
-                #0.75, stateMach['w2h'],
-                #(0.5, stateMach['someVar']/100, 1.0, 1.0),
-                #(1.0, 0.5, 0.0, 1.0),
-                #(0.0, 1.0, 0.5, 1.0))
+        drawPrim(
+                stateMach['someVar']/100-0.3333333333, 0.0, 
+                0.5, 
+                0.0,
+                stateMach['w2h'],
+                (0.5, stateMach['someVar']/100, 1.0, 1.0),
+                (1.0, 0.5, 0.0, 1.0),
+                (0.0, 1.0, 0.5, 1.0))
 
         # Watch Home Screen for input
         if (watchScreen()):

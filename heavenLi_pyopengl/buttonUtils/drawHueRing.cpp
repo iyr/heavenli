@@ -11,7 +11,7 @@ GLfloat     prevHueRingAni       = 0.0;   // Used to resolve edge-case bug for a
 GLfloat     prevHueRingSel       = 0.0;   // Used to resolve edge-case bug for animating selection ring
 GLfloat     *hueButtonData       = NULL;  /* X, Y, hue per button */
 
-PyObject* drawHueRing_drawUtils(PyObject *self, PyObject *args) {
+PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
    PyObject*      py_list;
    PyObject*      py_tuple;
    GLfloat        w2h, 

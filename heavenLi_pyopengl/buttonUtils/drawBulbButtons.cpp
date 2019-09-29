@@ -12,7 +12,7 @@ GLint    detailEnd;
 GLint    prevNumBulbs;
 GLint    prevArn;
 
-PyObject* drawBulbButton_drawUtils(PyObject *self, PyObject *args)
+PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
 {
    PyObject*   faceColorPyTup;
    PyObject*   detailColorPyTup;

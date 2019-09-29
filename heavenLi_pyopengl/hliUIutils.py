@@ -1,9 +1,10 @@
 # Classes and utilities for UI animation
 
 from lampClass import *
-from drawUtils import *
-from animUtils import *
 import pytweening
+print("Loading hliGLutils...")
+from hliGLutils import *
+print("Done!")
 
 # Abstracts Lamp icon drawing
 def drawIcon(ix, iy, scale, color, w2h, Lamp):

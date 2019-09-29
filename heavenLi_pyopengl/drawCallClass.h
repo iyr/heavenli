@@ -5,13 +5,12 @@ using namespace std;
 
 class drawCall {
    public:
-      GLfloat*    coordCache; // Array of Vertex coordinate data (X, Y). May also contain texture coordinates (X, Y, tX, tY)
-      GLfloat*    colorCache; // Array of Vertex color data (R, G, B, A)
-      GLushort*   indexCache; // Array of Vertex indices
+      GLfloat* coordCache; // Array of Vertex coordinate data (X, Y). May also contain texture coordinates (X, Y, tX, tY)
+      GLfloat* colorCache; // Array of Vertex color data (R, G, B, A)
 
-      GLuint   numVerts;      // number of Vertices (not length of cache arrays)
-      GLuint   VBO;           // Buffer Object for OpenGL to store data in graphics memory
-      Matrix   MVP;           // Model-View-Projection Matrix for storing transformations
+      GLuint   numVerts;   // number of Vertices (not length of cache arrays)
+      GLuint   VBO;        // Buffer Object for OpenGL to store data in graphics memory
+      Matrix   MVP;        // Model-View-Projection Matrix for storing transformations
 
       drawCall(void);
       ~drawCall(void);
@@ -35,7 +34,6 @@ drawCall::drawCall(void) {
    // Initialize Caches
    this->coordCache = NULL;
    this->colorCache = NULL;
-   this->indexCache = NULL;
 
    this->firstRun = GL_TRUE;   
    this->numVerts = 0;
@@ -48,7 +46,6 @@ drawCall::~drawCall(void){
    // Deallocate caches
    delete [] this->coordCache;
    delete [] this->colorCache;
-   delete [] this->indexCache;
    //glDeleteBuffers(1, &this->VBO);
    return;
 };
@@ -74,18 +71,11 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
       this->colorCache = new GLfloat[this->numVerts*4];
    }
 
-   if (this->indexCache == NULL) {
-      this->indexCache = new GLushort[this->numVerts];
-   } else {
-      delete [] this->indexCache;
-      this->indexCache = new GLushort[this->numVerts];
-   }
-
    // Copy contents of input vectors to cache arrays
    for (unsigned int i = 0; i < this->numVerts; i++) {
       this->coordCache[i*2]   = verts[i*2];
       this->coordCache[i*2+1] = verts[i*2+1];
-      this->indexCache[i]     = i;
+
       this->colorCache[i*4+0] = colrs[i*4+0];
       this->colorCache[i*4+1] = colrs[i*4+1];
       this->colorCache[i*4+2] = colrs[i*4+2];
@@ -94,7 +84,7 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
 
    // Create buffer object if one does not exist, otherwise, delete and make a new one
    // This cannot be done in the constructor for global object instances because OpenGL
-   // must be initialized before any GL functions are made. 
+   // must be initialized before any GL functions are called. 
    if (this->firstRun == GL_TRUE) {
       this->firstRun = GL_FALSE;
       glGenBuffers(1, &this->VBO);
@@ -107,6 +97,7 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
    glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
 
    // Allocate space to hold all vertex coordinate and color data
+   printf("Creating Buffer Object, size: %d bytes, %d Total Vertices.\n", 6*sizeof(GLfloat)*this->numVerts, this->numVerts);
    glBufferData(GL_ARRAY_BUFFER, 6*sizeof(GLfloat)*this->numVerts, NULL, GL_STATIC_DRAW);
 
    // Convenience variables
@@ -130,6 +121,9 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
    glVertexAttribPointer(vertAttribColor, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (GLintptr*)offset);
    // Enable the vertex attribute
    glEnableVertexAttribArray(vertAttribColor);
+
+   // Unbind Buffer Object
+   glBindBuffer(GL_ARRAY_BUFFER, 0);
    return;
 };
 
@@ -184,8 +178,10 @@ void drawCall::draw(void) {
    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
    // Define how the Vertex color data is layed out in the buffer
    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*this->numVerts));
+
    //glEnableVertexAttribArray(0);
    //glEnableVertexAttribArray(1);
+
    glDrawArrays(GL_TRIANGLE_STRIP, 0, this->numVerts);
 
    // Unbind Buffer Object
@@ -207,6 +203,8 @@ void drawCall::updateColorCache(void) {
    // Load Vertex coordinate data into VBO
    glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*4*this->numVerts, this->colorCache);
 
+   // Unbind Buffer Object
+   glBindBuffer(GL_ARRAY_BUFFER, 0);
    return;
 }
 
@@ -224,6 +222,8 @@ void drawCall::updateCoordCache(void) {
    // Load Vertex coordinate data into VBO
    glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*this->numVerts, this->coordCache);
 
+   // Unbind Buffer Object
+   glBindBuffer(GL_ARRAY_BUFFER, 0);
    return;
 }
 

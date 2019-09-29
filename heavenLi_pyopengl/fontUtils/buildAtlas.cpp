@@ -13,7 +13,7 @@
 
 using namespace std;
 
-PyObject* buildAtlas_drawUtils(PyObject* self, PyObject *args) {
+PyObject* buildAtlas_hliGLutils(PyObject* self, PyObject *args) {
 
    PyObject*   faceName;      // Name of the face we're building
    PyObject*   GlyphData;     // List of Character python objects that contain glyph metrics and bitmap

@@ -2,7 +2,7 @@ using namespace std;
 
 drawCall granChangerButton;
 
-PyObject* drawGranChanger_drawUtils(PyObject *self, PyObject *args) {
+PyObject* drawGranChanger_hliGLutils(PyObject *self, PyObject *args) {
    PyObject*   py_faceColor;
    PyObject*   py_detailColor;
    int         numHues;

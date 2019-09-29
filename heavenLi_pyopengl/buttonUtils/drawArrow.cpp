@@ -3,7 +3,7 @@ using namespace std;
 drawCall    arrowButton;
 GLuint      extraArrowVerts;
 
-PyObject* drawArrow_drawUtils(PyObject* self, PyObject *args) {
+PyObject* drawArrow_hliGLutils(PyObject* self, PyObject *args) {
    PyObject *faceColorPyTup;
    PyObject *extraColorPyTup;
    PyObject *detailColorPyTup;

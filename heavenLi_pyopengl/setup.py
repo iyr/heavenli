@@ -3,9 +3,9 @@ from platform import system, machine
 print("Building for", system(), machine())
 
 if (system() == 'Windows'):
-    drawUtils_sfc_module = Extension(
-            'drawUtils', 
-            sources         = ['drawUtils.cpp'],
+    hliGLutils_sfc_module = Extension(
+            'hliGLutils', 
+            sources         = ['hliGLutils.cpp'],
             extra_link_args = ['opengl32.lib', 'glext.lib'])
     #drawArn_sfc_module = Extension(
             #'drawArn', 
@@ -24,9 +24,9 @@ if (system() == 'Windows'):
             #sources         = ['shaderUtils.cpp'],
             #extra_link_args = ['opengl32.lib', 'glext.lib'])
 else:
-    drawUtils_sfc_module = Extension(
-            'drawUtils', 
-            sources             = ['drawUtils.cpp'],
+    hliGLutils_sfc_module = Extension(
+            'hliGLutils', 
+            sources             = ['hliGLutils.cpp'],
             extra_compile_args  = ['-fopenmp', '-O3', '-march=native'],
             extra_link_args     = ['-lGL', '-fopenmp'])
 
@@ -57,9 +57,9 @@ else:
 
 sfc_module = Extension('animUtils', sources = ['animUtils.c'])
 
-setup(name='drawUtils', version = '0.2',
+setup(name='hliGLutils', version = '0.2',
         description = 'HeavenLi OpenGL utility set',
-        ext_modules = [drawUtils_sfc_module]
+        ext_modules = [hliGLutils_sfc_module]
         )
 
 #setup(name='drawArn', version = '0.2',

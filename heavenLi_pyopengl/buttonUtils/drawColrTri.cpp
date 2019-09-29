@@ -15,7 +15,7 @@ GLfloat     prevTriValSel        = 0.0;   // Used to resolve edge-case bug for a
 GLint       prevColrTriNumLevels;         // Used for updating Granularity changes
 GLuint      colrTriDotsVerts;
 
-PyObject* drawColrTri_drawUtils(PyObject *self, PyObject *args) {
+PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
    PyObject*   py_list;
    PyObject*   py_tuple;
    float       w2h, 
