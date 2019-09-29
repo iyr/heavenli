@@ -13,8 +13,8 @@ PyObject* drawHomeCircle_hliGLutils(PyObject *self, PyObject *args) {
    PyObject* py_tuple;
    PyObject* py_float;
    GLfloat *bulbColors;
-   GLfloat gx, gy, wx, wy, ao, w2h; 
-   GLfloat R, G, B;
+   GLfloat gx, gy, wx, wy, ao, w2h, alpha=1.0f;
+   //GLfloat R, G, B;
    GLint numBulbs;
 
    if (!PyArg_ParseTuple(args,
@@ -41,18 +41,36 @@ PyObject* drawHomeCircle_hliGLutils(PyObject *self, PyObject *args) {
       }
    }
 
+   for (int i = 0; i < numBulbs; i++ ) {
+      GLfloat tmc[4];
+      tmc[0] = bulbColors[i*3+0];
+      tmc[1] = bulbColors[i*3+1];
+      tmc[2] = bulbColors[i*3+2];
+      tmc[3] = alpha;
+      homeCircle.setColorQuartet(i, tmc);
+   }
+
    unsigned int circleSegments = 60;
 
    if (  homeCircle.numVerts     == 0        ||
          prevHomeCircleNumBulbs  != numBulbs ){
+
+      homeCircle.setNumColors(numBulbs);
+
       printf("Initializing Geometry for Circular Background\n");
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
 
-      defineColorWheel(0.0f, 0.0f, 10.0f, 60, 180.0f, numBulbs, 1.0f, bulbColors, verts, colrs);
+      defineColorWheel(0.0f, 0.0f, 10.0f, circleSegments, 180.0f, numBulbs, 1.0f, bulbColors, verts, colrs);
 
       prevHomeCircleNumBulbs = numBulbs;
       homeCircle.buildCache(verts.size()/2, verts, colrs);
+   }
+
+   if (homeCircle.colorsChanged) {
+      unsigned int index = 0;
+      updateColorWheelColor(circleSegments, numBulbs, 1.0f, bulbColors, index, homeCircle.colorCache);
+      homeCircle.updateColorCache();
    }
 
    homeCircle.updateMVP(gx, gy, 1.0f, 1.0f, -ao, 1.0f);
