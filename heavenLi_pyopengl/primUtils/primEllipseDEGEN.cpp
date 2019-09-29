@@ -18,8 +18,8 @@ int defineEllipse(
       std::vector<float> &colrs     /* Input Vector of r,g,b values */
       ){
    float R, G, B, A;
-   float degSegment = 360.0 / float(circleSegments);
-   degSegment /= 2.0;
+   float degSegment = 360.0f / float(circleSegments);
+   degSegment /= 2.0f;
    R = color[0];
    G = color[1];
    B = color[2];
@@ -120,8 +120,8 @@ int updatePrimEllipseGeometry(
       float *verts                  /* Input Vector of x,y values */
       ){
    unsigned int vertIndex = index*2;   /* index (x, y) */
-   float degSegment = 360.0 / float(circleSegments);
-   degSegment /= 2;
+   float degSegment = 360.0f / float(circleSegments);
+   degSegment /= 2.0f;
 
    if (vertIndex == 0) {
       /* X */ verts[vertIndex++] = (float(bx + bsx*1.0f));
