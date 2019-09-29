@@ -44,7 +44,7 @@ unsigned int updateColorWheelColor(
       float          alpha,            // alpha transparency value
       float*         colors,           // colors of the wheel slices
       unsigned int   index,            // Index of where to start writing to input arrays
-      float*         colrs             // Input Vector of r,g,b values
+      float*         colrs             // Input array of r,g,b,a values to be updated
       ){
 
    float tmc[4];
@@ -56,7 +56,7 @@ unsigned int updateColorWheelColor(
       tmc[2] = float(colors[j*3+2]);
       tmc[3] = alpha;
 
-      updateArchColor(
+      subIndex = updateArchColor(
             circleSegments/numColors,
             tmc,
             subIndex,
