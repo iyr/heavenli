@@ -3,28 +3,36 @@
 
 using namespace std;
 
+/*
+ * Implements a helper class that wraps buffer object and transformation matrix functions
+ * necessary for each and every draw-call
+ */
 class drawCall {
    public:
-      GLfloat* coordCache; // Array of Vertex coordinate data (X, Y). May also contain texture coordinates (X, Y, tX, tY)
-      GLfloat* colorCache; // Array of Vertex color data (R, G, B, A)
+      GLfloat*    coordCache;    // Array of Vertex coordinate data (X, Y). May also contain texture coordinates (X, Y, tX, tY)
+      GLfloat*    colorCache;    // Array of Vertex color data (R, G, B, A)
 
-      GLuint   numVerts;   // number of Vertices (not length of cache arrays)
-      GLuint   VBO;        // Buffer Object for OpenGL to store data in graphics memory
-      Matrix   MVP;        // Model-View-Projection Matrix for storing transformations
+      GLuint      numVerts;      // number of Vertices (not length of cache arrays)
+      GLuint      VBO;           // Buffer Object for OpenGL to store data in graphics memory
+      Matrix      MVP;           // Model-View-Projection Matrix for storing transformations
+      GLboolean   colorsChanged; // Determines whether color-buffer should be updated
 
       drawCall(void);
+      drawCall(unsigned int numColors);
       ~drawCall(void);
       void buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vector<GLfloat> &colrs);
       void updateMVP(GLfloat gx, GLfloat gy, GLfloat sx, GLfloat sy, GLfloat rot, GLfloat w2h);
       void draw(void);
       void updateCoordCache(void);
       void updateColorCache(void);
+      void setNumColors(unsigned int numColors);
+      void setColorQuartet(unsigned int setIndex, GLfloat* quartet);
 
    private:
       Params      prevTransforms;   // Useful for know if MVP should be recomputed
 
-      GLubyte     numColors;        // Number of colorSet quartets (R, G, B, A) to manage (min: 1, typ: 2)
-      GLfloat*    colorSets;        // Continuous array to store colorSet quartets
+      GLuint      numColors;        // Number of colorSet quartets (R, G, B, A) to manage (min: 1, typ: 2)
+      GLfloat*    colorQuartets;    // Continuous array to store colorSet quartets
 
       GLboolean   firstRun;         // Determines if function is running for the first time (for VBO initialization)
 };
@@ -32,15 +40,35 @@ class drawCall {
 drawCall::drawCall(void) {
    printf("Building drawCall Object...\n");
    // Initialize Caches
-   this->coordCache = NULL;
-   this->colorCache = NULL;
+   this->coordCache     = NULL;
+   this->colorCache     = NULL;
 
-   this->firstRun = GL_TRUE;   
-   this->numVerts = 0;
-   this->numColors = 1;
+   this->firstRun       = GL_TRUE;   
+   this->numVerts       = 0;
+   this->numColors      = 1;
 
+   this->colorQuartets  = new GLfloat[this->numColors*4];
+
+   this->colorsChanged  = GL_FALSE;
    return;
 };
+
+drawCall::drawCall(unsigned int numColors) {
+   printf("Building drawCall Object...\n");
+   // Initialize Caches
+   this->coordCache     = NULL;
+   this->colorCache     = NULL;
+
+   this->firstRun       = GL_TRUE;   
+   this->numVerts       = 0;
+   this->numColors      = numColors;
+
+   this->colorQuartets  = new GLfloat[this->numColors*4];
+
+   this->colorsChanged  = GL_FALSE;
+   return;
+};
+
 
 drawCall::~drawCall(void){
    // Deallocate caches
@@ -49,6 +77,43 @@ drawCall::~drawCall(void){
    //glDeleteBuffers(1, &this->VBO);
    return;
 };
+
+void drawCall::setNumColors(unsigned int numColors) {
+   if (this->numColors != numColors) {
+      this->numColors = numColors;
+      
+      // Safely (re)allocate array that contains color quartets
+      if (  this->colorQuartets == NULL) {
+         this->colorQuartets = new GLfloat[this->numColors*4];
+      } else {
+         delete [] this->colorQuartets;
+         this->colorQuartets = new GLfloat[this->numColors*4];
+      }
+   }
+
+   return;
+}
+
+void drawCall::setColorQuartet(unsigned int setIndex, GLfloat* quartet) {
+
+   // Saftey check
+   if (  setIndex+3  >  this->numColors*4 ||
+         setIndex+1  >  this->numColors   ){
+      return;
+   } else {
+
+      // Check for change in color, only updating if so
+      // and setting flag
+      for (unsigned int i = 0; i < 4; i++) {
+         if ( this->colorQuartets[4*setIndex+i] != quartet[i] ){
+            this->colorQuartets[4*setIndex+i] = quartet[i];
+            this->colorsChanged = GL_TRUE;
+         }
+      }
+   }
+
+   return;
+}
 
 /*
  * Builds cache from input vectors and writes to buffer object
@@ -205,6 +270,8 @@ void drawCall::updateColorCache(void) {
 
    // Unbind Buffer Object
    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+   this->colorsChanged = GL_FALSE;
    return;
 }
 
