@@ -1,4 +1,4 @@
 cls
-del fontUtils*.pyd
+del hliGLutils*.pyd
 python setup.py build_ext -i -c msvc
 python heavenli.py
