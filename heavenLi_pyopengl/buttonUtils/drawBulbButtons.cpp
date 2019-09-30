@@ -83,6 +83,12 @@ PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
       // Set Number of edges on circles
       char degSegment = 360 / circleSegments;
 
+      // Setup Transformations
+      if (w2h <= 1.0)
+      {
+         buttonScale = w2h*buttonScale;
+      }
+
       if (buttonCoords == NULL) {
          buttonCoords = new float[2*numBulbs];
       } else {
