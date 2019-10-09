@@ -5,18 +5,18 @@
 using namespace std;
 
 // Append vertices to input vectors
-int defineArch(
-      float bx,                  // X-Coordinate                                          
-      float by,                  // Y-Coordinate                                          
-      float bsx,                 // x-Scale 2.0=spans display before GL scaling           
-      float bsy,                 // y-Scale 2.0=spans display before GL scaling           
-      float start,               // Where, in degrees on the unit circle, the arch begins 
-      float end,                 // Where, in degrees on the unit circle, the arch endgs  
-      float rs,                  // Halo thickness, expanding out from circle edge        
-      char  circleSegments,      // Number of sides                                       
-      float *color,              // Polygon Color                                         
-      std::vector<float> &verts, // Input Vector of x,y coordinates                       
-      std::vector<float> &colrs  // Input Vector of r,g,b values                          
+unsigned int defineArch(
+      float bx,                     // X-Coordinate                                          
+      float by,                     // Y-Coordinate                                          
+      float bsx,                    // x-Scale 2.0=spans display before GL scaling           
+      float bsy,                    // y-Scale 2.0=spans display before GL scaling           
+      float start,                  // Where, in degrees on the unit circle, the arch begins 
+      float end,                    // Where, in degrees on the unit circle, the arch endgs  
+      float rs,                     // Halo thickness, expanding out from circle edge        
+      unsigned int circleSegments,  // Number of sides                                       
+      float* color,                 // Polygon Color                                         
+      std::vector<float> &verts,    // Input Vector of x,y coordinates                       
+      std::vector<float> &colrs     // Input Vector of r,g,b values                          
       ){
    float tma, R, G, B, A;
    float degSegment;
@@ -43,7 +43,7 @@ int defineArch(
    colrs.push_back(B);
    colrs.push_back(A);
 
-   for (int i = 0; i < circleSegments+1; i ++ ) {
+   for (unsigned int i = 0; i < circleSegments+1; i ++ ) {
       tma = float(degToRad(begin+i*degSegment));
 
       verts.push_back(float(bx+cos(tma)*bsx));   // X
@@ -76,20 +76,20 @@ int defineArch(
 /*
  * Update Vertex position coordinates in pre-existing array passed via pointer starting 
  */
-int updateArchGeometry(
-      float bx,                  // X-Coordinate
-      float by,                  // Y-Coordinate
-      float bsx,                 // x-Scale 2.0=spans display before GL scaling
-      float bsy,                 // y-Scale 2.0=spans display before GL scaling
-      float start,               // Where, in degrees on the unit circle, the arch begins
-      float end,                 // Where, in degrees on the unit circle, the arch endgs
-      float rs,                  // Halo thickness
-      char  circleSegments,      // Number of sides
-      int   index,               // Index of where to start writing to input arrays
-      float *verts               // Input Array of x,y coordinates
+unsigned int updateArchGeometry(
+      float bx,                     // X-Coordinate
+      float by,                     // Y-Coordinate
+      float bsx,                    // x-Scale 2.0=spans display before GL scaling
+      float bsy,                    // y-Scale 2.0=spans display before GL scaling
+      float start,                  // Where, in degrees on the unit circle, the arch begins
+      float end,                    // Where, in degrees on the unit circle, the arch endgs
+      float rs,                     // Halo thickness
+      unsigned int circleSegments,  // Number of sides
+      unsigned int index,           // Index of where to start writing to input arrays
+      float *verts                  // Input Array of x,y coordinates
       ){
    float tma, degSegment, begin;
-   int vertIndex = index*2;
+   unsigned int vertIndex = index*2;
    if (start <= end) {
       degSegment = abs(end - start) / float(circleSegments);
       begin = start;
@@ -103,7 +103,7 @@ int updateArchGeometry(
    verts[vertIndex++] = (float)(bx+cos(tma)*bsx);  // X
    verts[vertIndex++] = (float)(by+sin(tma)*bsy);  // Y
 
-   for (int i = 0; i < circleSegments+1; i ++ ) {
+   for (unsigned int i = 0; i < circleSegments+1; i ++ ) {
       tma = float(degToRad(begin+i*degSegment));
       verts[vertIndex++] = (float)(bx+cos(tma)*bsx);  // X
       verts[vertIndex++] = (float)(by+sin(tma)*bsy);  // Y
@@ -118,13 +118,13 @@ int updateArchGeometry(
 }
 
 // Update vertices to allocated arrays
-int updateArchColor(
-      char  circleSegments,   // Number of sides 
-      float *color,           // Polygon Color 
-      int   index,            // Index of where to start writing to input arrays 
-      float *colrs            // Input Vector of r,g,b values 
+unsigned int updateArchColor(
+      unsigned int   circleSegments,   // Number of sides 
+      float*         color,            // Polygon Color 
+      unsigned int   index,            // Index of where to start writing to input arrays 
+      float*         colrs             // Input Vector of r,g,b values 
       ){
-   int colrIndex = index*4;
+   unsigned int colrIndex = index*4;
    float R, G, B, A;
    R = color[0];
    G = color[1];
@@ -137,7 +137,7 @@ int updateArchColor(
    colrs[colrIndex++] = B;
    colrs[colrIndex++] = A;
 
-   for (int i = 0; i < circleSegments+1; i ++ ) {
+   for (unsigned int i = 0; i < circleSegments+1; i ++ ) {
       colrs[colrIndex++] = R;   
       colrs[colrIndex++] = G;   
       colrs[colrIndex++] = B;
