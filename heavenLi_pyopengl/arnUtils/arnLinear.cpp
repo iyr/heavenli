@@ -21,24 +21,27 @@ float constrain(float value, float min, float max) {
       return value;
 }
 
+/*
 GLfloat     *homeLinearCoordBuffer  = NULL; // Stores (X, Y) (float) for each vertex
 GLfloat     *homeLinearColorBuffer  = NULL; // Stores (R, G, B) (float) for each vertex
 GLushort    *homeLinearIndices      = NULL; // Stores index corresponding to each vertex
-GLuint      homeLinearVerts;
-GLint       prevHomeLinearNumbulbs;
 Matrix      homeLinearMVP;                  // Transformation matrix passed to shader
 Params      homeLinearPrevState;            // Stores transformations to avoid redundant recalculation
 GLuint      homeLinearVBO;                  // Vertex Buffer Object ID
 GLboolean   homeLinearFirstRun = GL_TRUE;   // Determines if function is running for the first time (for VBO initialization)
+*/
+GLuint      prevHomeLinearNumbulbs;
+drawCall    homeLinear;
 
 PyObject* drawHomeLinear_hliGLutils(PyObject *self, PyObject *args) {
-   PyObject* py_list;
-   PyObject* py_tuple;
-   PyObject* py_float;
-   GLfloat *bulbColors;
-   GLfloat gx, gy, wx, wy, ao, w2h; 
-   GLfloat R, G, B;
-   GLint numBulbs;
+   PyObject*   py_list;
+   PyObject*   py_tuple;
+   PyObject*   py_float;
+   GLfloat*    bulbColors;
+   GLfloat     gx, gy, wx, wy, ao, w2h, alpha=1.0f;
+   GLfloat     R, G, B;
+   GLuint      numBulbs;
+   GLuint      homeLinearVerts;
    if (!PyArg_ParseTuple(args,
             "fffflffO",
             &gx, &gy,
@@ -54,28 +57,38 @@ PyObject* drawHomeLinear_hliGLutils(PyObject *self, PyObject *args) {
 
    // Parse array of tuples containing RGB Colors of bulbs
    bulbColors = new float[numBulbs*3];
-   for (int i = 0; i < numBulbs; i++) {
+   for (unsigned int i = 0; i < numBulbs; i++) {
       py_tuple = PyList_GetItem(py_list, i);
 
-      for (int j = 0; j < 3; j++) {
+      for (unsigned int j = 0; j < 3; j++) {
          py_float = PyTuple_GetItem(py_tuple, j);
          bulbColors[i*3+j] = float(PyFloat_AsDouble(py_float));
       }
    }
 
+   homeLinear.setNumColors(numBulbs);
+   for (unsigned int i = 0; i < numBulbs; i++ ) {
+      GLfloat tmc[4];
+      tmc[0] = bulbColors[i*numBulbs+0];
+      tmc[1] = bulbColors[i*numBulbs+1];
+      tmc[2] = bulbColors[i*numBulbs+2];
+      tmc[3] = alpha;
+      homeLinear.setColorQuartet(i, tmc);
+   }
+
    // Allocate and Define Geometry/Color buffers
-   if (homeLinearCoordBuffer    == NULL ||
-       homeLinearColorBuffer     == NULL ||
-       homeLinearIndices         == NULL ){
+   //if (  homeLinear.colorsChanged            ||
+         //prevHomeLinearNumbulbs  != numBulbs ){
+   if (  homeLinear.numVerts == 0 ){
 
       printf("Generating geometry for homeLinear\n");
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
       float TLx, TRx, BLx, BRx, TLy, TRy, BLy, BRy;
       float offset = float(4.0/60.0);
-      R = 0.0;
-      G = 0.0;
-      B = 0.0;
+      //R = 0.0;
+      //G = 0.0;
+      //B = 0.0;
       for (int i = 0; i < 60; i++) {
          if (i == 0) {
             TLx = -4.0;
@@ -105,107 +118,47 @@ PyObject* drawHomeLinear_hliGLutils(PyObject *self, PyObject *args) {
             BRy = -4.0;
          }
 
-         /* X */ verts.push_back(TLx);   /* Y */ verts.push_back(TLy);
-         /* X */ verts.push_back(BLx);   /* Y */ verts.push_back(BLy);
-         /* X */ verts.push_back(TRx);   /* Y */ verts.push_back(TRy);
+         float tmc[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+         defineQuad4pt(
+               TLx, TLy,
+               BLx, BLy,
+               TRx, TRy,
+               BRx, BRy,
+               tmc,
+               verts, colrs);
 
-         /* X */ verts.push_back(TRx);   /* Y */ verts.push_back(TRy);
-         /* X */ verts.push_back(BLx);   /* Y */ verts.push_back(BLy);
-         /* X */ verts.push_back(BRx);   /* Y */ verts.push_back(BRy);
+         /*
+         verts.push_back(TLx); // X
+         verts.push_back(TLy); // Y
+         verts.push_back(BLx); // X
+         verts.push_back(BLy); // Y
+         verts.push_back(TRx); // X
+         verts.push_back(TRy); // Y
+
+         verts.push_back(TRx); // X
+         verts.push_back(TRy); // Y
+         verts.push_back(BLx); // X
+         verts.push_back(BLy); // Y
+         verts.push_back(BRx); // X
+         verts.push_back(BRy); // Y
 
          for (int j = 0; j < 6; j++) {
-            /* R */ colrs.push_back(R);
-            /* G */ colrs.push_back(G);
-            /* B */ colrs.push_back(B);
+            colrs.push_back(R);  // R
+            colrs.push_back(G);  // G
+            colrs.push_back(B);  // B
          }
+         */
       }
 
       homeLinearVerts = verts.size()/2;
       printf("homeLinear vertexBuffer length: %.i, Number of vertices: %.i, tris: %.i\n", homeLinearVerts*2, homeLinearVerts, homeLinearVerts/3);
-
-      if (homeLinearCoordBuffer == NULL) {
-         homeLinearCoordBuffer = new GLfloat[homeLinearVerts*2];
-      } else {
-         delete [] homeLinearCoordBuffer;
-         homeLinearCoordBuffer = new GLfloat[homeLinearVerts*2];
-      }
-
-      if (homeLinearColorBuffer == NULL) {
-         homeLinearColorBuffer = new GLfloat[homeLinearVerts*3];
-      } else {
-         delete [] homeLinearColorBuffer;
-         homeLinearColorBuffer = new GLfloat[homeLinearVerts*3];
-      }
-
-      if (homeLinearIndices == NULL) {
-         homeLinearIndices = new GLushort[homeLinearVerts];
-      } else {
-         delete [] homeLinearIndices;
-         homeLinearIndices = new GLushort[homeLinearVerts];
-      }
-
-      for (unsigned int i = 0; i < homeLinearVerts; i++) {
-         homeLinearCoordBuffer[i*2+0] = verts[i*2+0];
-         homeLinearCoordBuffer[i*2+1] = verts[i*2+1];
-         homeLinearColorBuffer[i*3+0]  = colrs[i*3+0];
-         homeLinearColorBuffer[i*3+1]  = colrs[i*3+1];
-         homeLinearColorBuffer[i*3+2]  = colrs[i*3+2];
-         homeLinearIndices[i]          = i;
-      }
-
-      // Calculate initial transformation matrix
-      Matrix Ortho;
-      Matrix ModelView;
-      float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
-      MatrixLoadIdentity( &Ortho );
-      MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
-      MatrixLoadIdentity( &ModelView );
-      MatrixScale( &ModelView, 0.5f, 0.5f, 1.0f );
-      MatrixRotate( &ModelView, 180-ao, 0.0f, 0.0f, 1.0f);
-      MatrixMultiply( &homeLinearMVP, &ModelView, &Ortho );
-      homeLinearPrevState.ao = ao;
-
-      homeLinearPrevState.ao = ao;
       prevHomeLinearNumbulbs = numBulbs;
 
-      // Create buffer object if one does not exist, otherwise, delete and make a new one
-      if (homeLinearFirstRun == GL_TRUE) {
-         homeLinearFirstRun = GL_FALSE;
-         glGenBuffers(1, &homeLinearVBO);
-      } else {
-         glDeleteBuffers(1, &homeLinearVBO);
-         glGenBuffers(1, &homeLinearVBO);
-      }
-
-      // Set active VBO
-      glBindBuffer(GL_ARRAY_BUFFER, homeLinearVBO);
-
-      // Allocate space to hold all vertex coordinate and color data
-      glBufferData(GL_ARRAY_BUFFER, 5*sizeof(GLfloat)*homeLinearVerts, NULL, GL_STATIC_DRAW);
-
-      // Convenience variables
-      GLintptr bytesOffset = 0;
-      GLuint vertAttribCoord = glGetAttribLocation(3, "vertCoord");
-      GLuint vertAttribColor = glGetAttribLocation(3, "vertColor");
-
-      // Load Vertex coordinate data into VBO
-      glBufferSubData(GL_ARRAY_BUFFER, bytesOffset, sizeof(GLfloat)*2*homeLinearVerts, homeLinearCoordBuffer);
-      // Define how the Vertex coordinate data is layed out in the buffer
-      glVertexAttribPointer(vertAttribCoord, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLintptr*)bytesOffset);
-      // Enable the vertex attribute
-      glEnableVertexAttribArray(vertAttribCoord);
-
-      // Update offset to begin storing data in latter part of the buffer
-      bytesOffset += 2*sizeof(GLfloat)*homeLinearVerts;
-
-      // Load Vertex coordinate data into VBO
-      glBufferSubData(GL_ARRAY_BUFFER, bytesOffset, sizeof(GLfloat)*3*homeLinearVerts, homeLinearColorBuffer);
-      // Define how the Vertex color data is layed out in the buffer
-      glVertexAttribPointer(vertAttribColor, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLintptr*)bytesOffset);
-      // Enable the vertex attribute
-      glEnableVertexAttribArray(vertAttribColor);
+      homeLinear.buildCache(verts.size()/2, verts, colrs);
    } 
+
    // Geometry already calculated, check if any colors need to be updated.
+   /*
    for (int i = 0; i < 3; i++) {
       for (int j = 0; j < numBulbs; j++) {
          // 3*2*3:
@@ -229,10 +182,12 @@ PyObject* drawHomeLinear_hliGLutils(PyObject *self, PyObject *args) {
          }
       }
    }
+   */
 
    prevHomeLinearNumbulbs = numBulbs;
    delete [] bulbColors;
 
+   /*
    // Update Transfomation Matrix if any change in parameters
    if (  homeLinearPrevState.ao != ao                       ||
          homeLinearPrevState.ao != homeLinearPrevState.ao   ){
@@ -266,6 +221,12 @@ PyObject* drawHomeLinear_hliGLutils(PyObject *self, PyObject *args) {
 
    // Unbind Buffer Object
    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+   Py_RETURN_NONE;
+   */
+
+   homeLinear.updateMVP(gx, gy, 1.0f, 1.0f, -ao, 1.0f);
+   homeLinear.draw();
 
    Py_RETURN_NONE;
 }
