@@ -7,11 +7,12 @@ from hliGLutils import *
 print("Done!")
 
 # Abstracts Lamp icon drawing
-def drawIcon(ix, iy, scale, color, w2h, Lamp):
+def drawIcon(ix, iy, scale, color, w2h, Lamp, level):
     if (Lamp.getArn() == 0):
         drawIconCircle(ix, iy, 
                 scale, 
-                Lamp.metaLampLevel+2,
+                #Lamp.metaLampLevel+4,
+                level,
                 color,
                 Lamp.getNumBulbs(), 
                 Lamp.getAngle(), 
@@ -21,7 +22,8 @@ def drawIcon(ix, iy, scale, color, w2h, Lamp):
     if (Lamp.getArn() == 1):
         drawIconLinear(ix, iy, 
                 scale, 
-                Lamp.metaLampLevel+2,
+                #Lamp.metaLampLevel+2,
+                level,
                 color,
                 Lamp.getNumBulbs(), 
                 Lamp.getAngle(), 

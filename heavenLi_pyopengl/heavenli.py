@@ -129,8 +129,8 @@ def drawHome():
                     stateMach['lamps'][Light].getBulbsCurrentRGB(),
                     stateMach['w2h'])
 
-            tmc = ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100))
-            drawIcon(0.75, 0.75, iconSize*0.85, tmc, stateMach['w2h'], stateMach['lamps'][Light])
+            tmc = ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 1.0)
+            drawIcon(0.75, 0.75, iconSize*0.85, tmc, stateMach['w2h'], stateMach['lamps'][Light], stateMach['features'])
 
         #drawText("Hello World!", 0.0, 0.0, 1.0, stateMach['w2h'], (1.0, 0.2, 1.0, 1.0))
         #printText(
@@ -147,14 +147,14 @@ def drawHome():
                 #'NnOoPpQqRrSsTtUuVvWwXxYyZz',
                 #( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100)))
 
-        drawPrim(
-                stateMach['someVar']/100-0.3333333333, 0.0, 
-                0.5, 
-                0.0,
-                stateMach['w2h'],
-                (0.5, stateMach['someVar']/100, 1.0, 1.0),
-                (1.0, 0.5, 0.0, 1.0),
-                (0.0, 1.0, 0.5, 1.0))
+        #drawPrim(
+                #stateMach['someVar']/100-0.3333333333, 0.0, 
+                #0.5, 
+                #0.0,
+                #stateMach['w2h'],
+                #(0.5, stateMach['someVar']/100, 1.0, 1.0),
+                #(1.0, 0.5, 0.0, 1.0),
+                #(0.0, 1.0, 0.5, 1.0))
 
         # Watch Home Screen for input
         if (watchScreen()):
@@ -274,8 +274,8 @@ def drawSettingColor():
                 stateMach['lamps'][Light].getBulbsCurrentRGB(),
                 stateMach['w2h'])
 
-        tmc = ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100))
-        drawIcon(0.75, 0.75, iconSize*0.85*pow(acc, 4), tmc, stateMach['w2h'], stateMach['lamps'][Light])
+        tmc = ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 1.0)
+        drawIcon(0.75, 0.75, iconSize*0.85*pow(acc, 4), tmc, stateMach['w2h'], stateMach['lamps'][Light], stateMach['features'])
 
     # Draw Granularity Rocker Underneath Clock
     limit = 0.85
@@ -689,14 +689,14 @@ def key(ch, x, y):
         stateMach['targetScreen'] = 0
 
     if ch == as_8_bit(']'):
-        stateMach['numHues'] += 2
-        if stateMach['numHues'] > 14:
-            stateMach['numHues'] = 14
+        stateMach['features'] += 1
+        if stateMach['features'] > 4:
+            stateMach['features'] = 4
 
     if ch == as_8_bit('['):
-        stateMach['numHues'] -= 2
-        if stateMach['numHues'] < 10:
-            stateMach['numHues'] = 10
+        stateMach['features'] -= 1
+        if stateMach['features'] < 0:
+            stateMach['features'] = 0
 
     if ch == as_8_bit('m'):
         glutIconifyWindow()

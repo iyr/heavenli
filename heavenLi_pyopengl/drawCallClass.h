@@ -27,6 +27,7 @@ class drawCall {
       void updateColorCache(void);
       void setNumColors(unsigned int numColors);
       void setColorQuartet(unsigned int setIndex, GLfloat* quartet);
+      void setDrawType(GLenum type);
 
    private:
       Params      prevTransforms;   // Useful for know if MVP should be recomputed
@@ -35,6 +36,7 @@ class drawCall {
       GLfloat*    colorQuartets;    // Continuous array to store colorSet quartets
 
       GLboolean   firstRun;         // Determines if function is running for the first time (for VBO initialization)
+      GLenum      drawType;         // GL_TRIANGLE_STRIP / GL_LINE_STRIP
 };
 
 drawCall::drawCall(void) {
@@ -43,13 +45,19 @@ drawCall::drawCall(void) {
    this->coordCache     = NULL;
    this->colorCache     = NULL;
 
+   // Used to setup GL objects 
    this->firstRun       = GL_TRUE;   
+
+   // Caches are empty
    this->numVerts       = 0;
+
    this->numColors      = 1;
 
    this->colorQuartets  = new GLfloat[this->numColors*4];
 
    this->colorsChanged  = GL_FALSE;
+
+   this->drawType       = GL_TRIANGLE_STRIP;
    return;
 };
 
@@ -59,16 +67,21 @@ drawCall::drawCall(unsigned int numColors) {
    this->coordCache     = NULL;
    this->colorCache     = NULL;
 
+   // Used to setup GL objects 
    this->firstRun       = GL_TRUE;   
+
+   // Caches are empty
    this->numVerts       = 0;
+
    this->numColors      = numColors;
 
    this->colorQuartets  = new GLfloat[this->numColors*4];
 
    this->colorsChanged  = GL_FALSE;
+
+   this->drawType       = GL_TRIANGLE_STRIP;
    return;
 };
-
 
 drawCall::~drawCall(void){
    // Deallocate caches
@@ -77,6 +90,10 @@ drawCall::~drawCall(void){
    //glDeleteBuffers(1, &this->VBO);
    return;
 };
+
+void drawCall::setDrawType(GLenum type) {
+   this->drawType = type;
+}
 
 void drawCall::setNumColors(unsigned int numColors) {
    if (this->numColors != numColors) {
@@ -247,7 +264,7 @@ void drawCall::draw(void) {
    //glEnableVertexAttribArray(0);
    //glEnableVertexAttribArray(1);
 
-   glDrawArrays(GL_TRIANGLE_STRIP, 0, this->numVerts);
+   glDrawArrays(this->drawType, 0, this->numVerts);
 
    // Unbind Buffer Object
    glBindBuffer(GL_ARRAY_BUFFER, 0);

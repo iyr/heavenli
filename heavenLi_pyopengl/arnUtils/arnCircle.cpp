@@ -1,4 +1,4 @@
-#include "primArnCircle.cpp"
+#include "primIconCircle.cpp"
 
 /*
  * Heavenli opengl drawcode for circular arrangments (backgroun+iconography)
