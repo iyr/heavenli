@@ -1,7 +1,7 @@
 /*
  * defines a pizza-style color wheel
  */
-int defineColorWheel(
+unsigned int defineColorWheel(
       float          bx,               // X-Coordinate
       float          by,               // Y-Coordinate
       float          bs,               // Scale 2.0=spans display before GL scaling
@@ -14,7 +14,8 @@ int defineColorWheel(
       std::vector<float> &colrs        // Input Vector of r,g,b values
       ){
 
-   float degPerCol = float(360.0 / float(numColors));
+   float degPerCol = 360.0f / (float)circleSegments;
+   float colOffset = 360.0f / (float)numColors;
    float tmc[4];
       
    for (unsigned int j = 0; j < numColors; j++) {
@@ -23,16 +24,19 @@ int defineColorWheel(
       tmc[2] = float(colors[j*3+2]);
       tmc[3] = alpha;
 
-      defineArch(
-            bx, by,
-            0.0f, 0.0f,
-            (j+0)*degPerCol+90.0f+angOffset,
-            (j+1)*degPerCol+90.0f+angOffset,
-            bs,
-            circleSegments/numColors,
-            tmc,
-            verts,
-            colrs);
+      for (unsigned int i = 0; i < circleSegments/numColors; i++ ){
+
+         defineArch(
+               bx, by,
+               0.0f, 0.0f,
+               i*degPerCol + j*colOffset - 90.0f,
+               (i+1)*degPerCol + j*colOffset - 90.0f,
+               bs,
+               1,
+               tmc,
+               verts,
+               colrs);
+      }
    }
 
    return verts.size()/2;
@@ -56,45 +60,49 @@ unsigned int updateColorWheelColor(
       tmc[2] = float(colors[j*3+2]);
       tmc[3] = alpha;
 
-      subIndex = updateArchColor(
-            circleSegments/numColors,
-            tmc,
-            subIndex,
-            colrs);
+      for (unsigned int i = 0; i < circleSegments/numColors; i++ ){
+
+         subIndex = updateArchColor(
+               1,
+               tmc,
+               subIndex,            // Index of where to start writing to input arrays
+               colrs);
+      }
    }
 
    return subIndex;
 }
 
-/*
-int updateColorWheelGeometry(
-      float          bx,               // X-Coordinate                              
-      float          by,               // Y-Coordinate                              
-      float          bs,               // Scale 2.0=spans display before GL scaling 
-      unsigned int   circleSegments,   // Number of sides                           
-      float          angOffset,        // How much, in degrees, to rotate           
-      int            index,            // Index of where to start writing to array  
-      float*         verts             // Input Array of x,y coordinates            
+unsigned int updateColorWheelGeometry(
+      float          bx,               // X-Coordinate
+      float          by,               // Y-Coordinate
+      float          bs,               // Scale 2.0=spans display before GL scaling
+      unsigned int   circleSegments,   // Number of sides
+      float          angOffset,        // How much, in degrees, to rotate
+      unsigned char  numColors,        // number of color slices
+      unsigned int   index,            // Index of where to start writing to input arrays
+      float*         verts             // Input array of x,y values to be updated
       ){
 
-   //char degSegment = 360 / circleSegments;
-   float degPerCol = float(360.0 / float(numColors));
+   float degPerCol = 360.0f / (float)circleSegments;
+   float colOffset = 360.0f / (float)numColors;
+   unsigned int subIndex = index;
       
    for (unsigned int j = 0; j < numColors; j++) {
-      updateArchGeometry(
-            bx, by,
-            0.0f, 0.0f,
-            (j+0)*degPerCol+90.0f+angOffset,
-            (j+1)*degPerCol+90.0f+angOffset,
-            bs,
-            circleSegments/numColors,
-            tmc,
-            verts,
-            colrs);
+
+      for (unsigned int i = 0; i < circleSegments/numColors; i++ ){
+
+         subIndex = updateArchGeometry(
+               bx, by,
+               0.0f, 0.0f,
+               i*degPerCol + j*colOffset - 90.0f,
+               (i+1)*degPerCol + j*colOffset - 90.0f,
+               bs,
+               1,
+               subIndex,
+               verts);
+      }
    }
 
-   delete [] tmc;
-
-   return verts.size()/2;
+   return subIndex;
 }
-*/
