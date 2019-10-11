@@ -105,7 +105,7 @@ PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
             ang = float(degToRad(
                   (j*180)/(numBulbs-1 < 1 ? 1 : numBulbs-1) + 
                   angularOffset + 
-                  (numBulbs == 1 ? -90 : 0)
+                  (numBulbs == 1 ? +90 : 0)
                   ));
          } else {
             ang = float(0.0);
@@ -174,7 +174,7 @@ PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
             ang = float(degToRad(
                   (j*180)/(numBulbs-1 < 1 ? 1 : numBulbs-1) + 
                   angularOffset + 
-                  (numBulbs == 1 ? -90 : 0)
+                  (numBulbs == 1 ? +90 : 0)
                   ));
          } else {
             ang = float(0.0);
