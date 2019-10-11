@@ -110,7 +110,7 @@ int defineCircle(
 }
  
 // Write to pre-allocated input array, updating vertices only 
-int updatePrimEllipseGeometry(
+int updateEllipseGeometry(
       float bx,                     /* X-Coordinate */
       float by,                     /* Y-Coordinate */
       float bsx,                    /* x-Scale 2.0=spans display before GL scaling */
@@ -151,7 +151,7 @@ int updatePrimEllipseGeometry(
 }
 
 // Write to pre-allocated input array, updating color only 
-int updatePrimEllipseColor(
+int updateEllipseColor(
       unsigned int circleSegments,  /* Number of sides */
       float *color,                 /* Polygon Color */
       unsigned int   index,         /* Index of where to start writing to input arrays */
