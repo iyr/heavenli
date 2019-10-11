@@ -2,8 +2,8 @@
 //#include "primUtils/drawPill.cpp"
 //#include "primUtils/drawArch.cpp"
 //#include "primUtils/drawChar.cpp"
-#include "primUtils/drawEllipse.cpp"
-#include "primUtils/drawHalo.cpp"
+//#include "primUtils/drawEllipse.cpp"
+//#include "primUtils/drawHalo.cpp"
 
 #include "primUtils/primEllipseDEGEN.cpp"
 #include "primUtils/primArchDEGEN.cpp"
