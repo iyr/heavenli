@@ -221,7 +221,7 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
             tmy = float(prevTriY - (i*0.075f + j*0.145f));
 
             // Draw dot
-            index = updatePrimEllipseGeometry(
+            index = updateEllipseGeometry(
                   tmx, tmy, 
                   tmr, tmr,
                   circleSegments, 
@@ -367,7 +367,7 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
 
             // Convert HSV to RGB 
 	         hsv2rgb(currentTriHue, saturation, value, colors);
-            colrIndex = updatePrimEllipseColor(
+            colrIndex = updateEllipseColor(
                   circleSegments, 
                   colors,
                   colrIndex, 

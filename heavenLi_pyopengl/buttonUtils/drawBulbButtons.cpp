@@ -193,7 +193,7 @@ PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
          buttonCoords[j*2+0] = tmx;
          buttonCoords[j*2+1] = tmy;
 
-         index = updatePrimEllipseGeometry(tmx, tmy, 0.4f*buttonScale, 0.4f*buttonScale, circleSegments, index, bulbButton.coordCache);
+         index = updateEllipseGeometry(tmx, tmy, 0.4f*buttonScale, 0.4f*buttonScale, circleSegments, index, bulbButton.coordCache);
          index = updateBulbGeometry(tmx, tmy+0.09f*buttonScale, 0.15f*buttonScale, circleSegments, index, bulbButton.coordCache);
       }
 
@@ -211,7 +211,7 @@ PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
    // Check if colors need to be updated
    int index = 0;
    for (int j = 0; j < numBulbs; j++) {
-      index = updatePrimEllipseColor(circleSegments, faceColor, index, bulbButton.colorCache);
+      index = updateEllipseColor(circleSegments, faceColor, index, bulbButton.colorCache);
       float tmbc[4];
       tmbc[0] = bulbColors[j*3+0];
       tmbc[1] = bulbColors[j*3+1];

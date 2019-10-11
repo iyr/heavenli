@@ -169,7 +169,7 @@ unsigned int updateIconCircleGeometry(
       tmx = float(cos(degToRad(-90.0f - j*(angOffset) + tmo))*1.05f);
       tmy = float(sin(degToRad(-90.0f - j*(angOffset) + tmo))*1.05f);
 
-      subIndex = updatePrimEllipseGeometry(
+      subIndex = updateEllipseGeometry(
             tmx, tmy,               
             featScale, featScale,
             circleSegments/3, 
@@ -254,7 +254,7 @@ unsigned int updateIconCircleColor(
 
    // Draw Color Wheel + Outline + BulbMarkers if 'featureLevel' >= 2
    for (int j = 0; j < 6; j++) {
-      subIndex = updatePrimEllipseColor(
+      subIndex = updateEllipseColor(
             circleSegments/3, 
             detailColor, 
             subIndex,         // Index of where to start writing to input arrays

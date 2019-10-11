@@ -45,7 +45,7 @@ int updateBulbGeometry(
    int vertIndex = index*2;   /* index (X, Y)   */
    float thickness = 0.3f;
    circleSegments /= 2;
-   index = updatePrimEllipseGeometry(bx, by, bs*1.005f, bs*1.005f, circleSegments, index, verts);
+   index = updateEllipseGeometry(bx, by, bs*1.005f, bs*1.005f, circleSegments, index, verts);
    index = updateArchGeometry(bx, by, bs, bs, 310.0f, 270.0f, bs*thickness, circleSegments, index, verts);
    circleSegments /= 4;
    index = updateQuad2ptGeometry(bx-bs*thickness, by-bs*2.25f, bx+bs*thickness, by-bs*2.25f-bs*thickness, index, verts);
@@ -68,7 +68,7 @@ int updateBulbColor(
       ){
    int colrIndex = index*4;   /* index (r, g, b) */
    circleSegments /= 2;
-   index = updatePrimEllipseColor(circleSegments, color, index, colrs);
+   index = updateEllipseColor(circleSegments, color, index, colrs);
    index = updateArchColor(circleSegments, detailColor, index, colrs);
    circleSegments /= 4;
    index = updateQuadColor(detailColor, index, colrs);

@@ -226,7 +226,7 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
          tmy = float(sin(degToRad(ang))*prevHueDotDist);
 
          // Draw dot
-         index = updatePrimEllipseGeometry(
+         index = updateEllipseGeometry(
                tmx, tmy, 
                prevHueDotScale, 
                prevHueDotScale, 
