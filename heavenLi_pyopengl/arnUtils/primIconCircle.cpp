@@ -121,9 +121,8 @@ unsigned int updateIconCircleGeometry(
       float          bs,               // Scale 2.0=spans display before GL scaling
       unsigned int   featureLevel,     // level of featureLevel
       unsigned int   circleSegments,   // Number of sides
-      //float          angOffset,        // How much, in degrees, to rotate
       unsigned char  numBulbs,         // number of bulbs
-      unsigned int   index,
+      unsigned int   index,            // Index of where to start writing in input array
       float*         verts             // Input Vector of x,y coordinates
       ){
 
@@ -224,7 +223,6 @@ unsigned int updateIconCircleGeometry(
 unsigned int updateIconCircleColor(
       //unsigned int   featureLevel,     // level of featureLevel
       unsigned int   circleSegments,   // Number of sides
-      //float          angOffset,        // How much, in degrees, to rotate
       unsigned char  numBulbs,         // number of bulbs
       float          alpha,            // alpha transparency value
       float*         bulbColors,       // colors of the bulbs

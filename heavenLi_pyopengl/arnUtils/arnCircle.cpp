@@ -197,7 +197,7 @@ PyObject* drawIconCircle_hliGLutils(PyObject *self, PyObject *args) {
          index = 0;
       }
 
-      updateIconCircleGeometry(gx, gy, scale, features, circleSegments, numBulbs, index, iconCircle.coordCache);
+      updateIconCircleGeometry(0.0f, 0.0f, 1.0f, features, circleSegments, numBulbs, index, iconCircle.coordCache);
       iconCircle.updateCoordCache();
       prevIconCircleNumBulbs = numBulbs;
       prevIconCircleFeatures = features;
