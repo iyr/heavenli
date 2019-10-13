@@ -8,7 +8,7 @@ using namespace std;
 
 // Append vertices to input vectors
 // Draw Quad via four pairs of X-Y coordinates that define the corners of a rectangle
-int defineQuad4pt(
+unsigned int defineQuad4pt(
       float px,                  /* X-Coordinate of first point      */
       float py,                  /* Y-Coordinate of first point      */
       float qx,                  /* X-Coordinate of second point     */
@@ -89,7 +89,7 @@ int defineQuad4pt(
    return verts.size()/2;
 }
 // Draw Quad via Two pairs of X-Y coordinates that define the corners of a rectangle
-int defineQuad2pt(
+unsigned int defineQuad2pt(
       float px,                  /* X-Coordinate of first corner                          */
       float py,                  /* Y-Coordinate of first corner                          */
       float qx,                  /* X-Coordinate of second corner                         */
@@ -168,7 +168,7 @@ int defineQuad2pt(
 
 // Append vertices to input vectors
 // Draw Quad with its center at px, py, with radius rx, ry
-int defineQuadRad(
+unsigned int defineQuadRad(
       float gx,                  /* X-Coordinate of center of quad   */
       float gy,                  /* Y-Coordinate of center of quad   */
       float rx,                  /* X-radius of rectangle            */
@@ -250,9 +250,54 @@ int defineQuadRad(
    return verts.size()/2;
 }
 
+unsigned int updateQuad4ptGeometry(
+      float px,      /* X-Coordinate of first point      */
+      float py,      /* Y-Coordinate of first point      */
+      float qx,      /* X-Coordinate of second point     */
+      float qy,      /* Y-Coordinate of second point     */
+      float rx,      /* X-Coordinate of third point      */
+      float ry,      /* Y-Coordinate of third point      */
+      float sx,      /* X-Coordinate of fourth point     */
+      float sy,      /* Y-Coordinate of fourth point     */
+      int   index,   /* Index of where to start writing in input array  */
+      float *verts   /* Input Vector of x,y coordinates                 */
+      ){
+   unsigned int vertIndex = index*2;   /* index (X, Y)   */
+
+   // Prepend Degenerate Vertex
+   if (vertIndex == 0) {
+      /* X */ verts[vertIndex++] = px;
+      /* Y */ verts[vertIndex++] = py;
+   } else {
+      /* X */ verts[vertIndex++] = px;
+      /* Y */ verts[vertIndex++] = py;
+
+      /* X */ verts[vertIndex++] = px;
+      /* Y */ verts[vertIndex++] = py;
+   }
+   
+   /* X */ verts[vertIndex++] = px;
+   /* Y */ verts[vertIndex++] = py;
+
+   /* X */ verts[vertIndex++] = qx;
+   /* Y */ verts[vertIndex++] = qy;
+
+   /* X */ verts[vertIndex++] = rx;
+   /* Y */ verts[vertIndex++] = ry;
+
+   /* X */ verts[vertIndex++] = sx;
+   /* Y */ verts[vertIndex++] = sy;
+
+   // Append Degenerate Vertex
+   /* X */ verts[vertIndex++] = sx;
+   /* Y */ verts[vertIndex++] = sy;
+
+   return vertIndex/2;
+}
+
 // Update preallocated arrays starting at index
 // Draw Quad via Two pairs of X-Y coordinates that define the corners of a rectangle
-int updateQuad2ptGeometry(
+unsigned int updateQuad2ptGeometry(
       float px,      /* X-Coordinate of first corner                    */
       float py,      /* Y-Coordinate of first corner                    */
       float qx,      /* X-Coordinate of second corner                   */
@@ -260,7 +305,7 @@ int updateQuad2ptGeometry(
       int   index,   /* Index of where to start writing in input array  */
       float *verts   /* Input Vector of x,y coordinates                 */
       ){
-   int vertIndex = index*2;   /* index (X, Y)   */
+   unsigned int vertIndex = index*2;   /* index (X, Y)   */
 
    // Prepend Degenerate Vertex
    if (vertIndex == 0) {
@@ -288,12 +333,13 @@ int updateQuad2ptGeometry(
    // Append Degenerate Vertex
    /* X */ verts[vertIndex++] = qx;
    /* Y */ verts[vertIndex++] = qy;
+
    return vertIndex/2;
 }
 
 // Update preallocated arrays starting at index
 // Draw Quad with its center at px, py, with radius rx, ry
-int updateQuadRadGeometry(
+unsigned int updateQuadRadGeometry(
       float gx,      /* X-Coordinate of center of quad   */
       float gy,      /* Y-Coordinate of center of quad   */
       float rx,      /* X-radius of rectangle            */
@@ -301,7 +347,7 @@ int updateQuadRadGeometry(
       int   index,   /* Index of where to start writing in input array  */
       float *verts   /* Input Vector of x,y coordinates                 */
       ){
-   int vertIndex = index*2;   /* index (X, Y)   */
+   unsigned int vertIndex = index*2;   /* index (X, Y)   */
    float px, py, qx, qy;
    px = gx-rx;
    py = gy-ry;
@@ -339,12 +385,12 @@ int updateQuadRadGeometry(
 
 // Append vertices to input vectors
 // Draw Quad with its center at px, py, with radius rx, ry
-int updateQuadColor(
+unsigned int updateQuadColor(
       float *color,  /* Polygon Color                                   */
       int   index,   /* Index of where to start writing in input array  */
       float *colrs   /* Input Vector of r,g,b values                    */
       ){
-   int colrIndex = index*4;   /* index (r, g, b) */
+   unsigned int colrIndex = index*4;   /* index (r, g, b) */
    float R, G, B, A;
    R  = color[0];
    G  = color[1];
