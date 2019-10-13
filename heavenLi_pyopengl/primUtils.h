@@ -1,9 +1,14 @@
+
+// Convenience functions
 #define degToRad(angleindegrees) ((angleindegrees) * 3.1415926535 / 180.0)
-//#include "primUtils/drawPill.cpp"
-//#include "primUtils/drawArch.cpp"
-//#include "primUtils/drawChar.cpp"
-//#include "primUtils/drawEllipse.cpp"
-//#include "primUtils/drawHalo.cpp"
+float constrain(float value, float min, float max) {
+   if (value > max)
+      return max;
+   else if (value < min)
+      return min;
+   else
+      return value;
+}
 
 #include "primUtils/primEllipseDEGEN.cpp"
 #include "primUtils/primArchDEGEN.cpp"
