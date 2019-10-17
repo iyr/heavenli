@@ -29,10 +29,10 @@ class drawCall {
       void setColorQuartet(unsigned int setIndex, GLfloat* quartet);
       void setDrawType(GLenum type);
 
+      GLuint      numColors;        // Number of colorSet quartets (R, G, B, A) to manage (min: 1, typ: 2)
    private:
       Params      prevTransforms;   // Useful for know if MVP should be recomputed
 
-      GLuint      numColors;        // Number of colorSet quartets (R, G, B, A) to manage (min: 1, typ: 2)
       GLfloat*    colorQuartets;    // Continuous array to store colorSet quartets
 
       GLboolean   firstRun;         // Determines if function is running for the first time (for VBO initialization)
@@ -98,6 +98,7 @@ void drawCall::setDrawType(GLenum type) {
 void drawCall::setNumColors(unsigned int numColors) {
    if (this->numColors != numColors) {
       this->numColors = numColors;
+      printf("Updating number of colors: %d, array length: %d\n", numColors, numColors*4);
       
       // Safely (re)allocate array that contains color quartets
       if (  this->colorQuartets == NULL) {
@@ -179,7 +180,7 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
    glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
 
    // Allocate space to hold all vertex coordinate and color data
-   printf("Creating Buffer Object, size: %d bytes, %d Total Vertices.\n", 6*sizeof(GLfloat)*this->numVerts, this->numVerts);
+   //printf("Creating Buffer Object, size: %d bytes, %d Total Vertices.\n", 6*sizeof(GLfloat)*this->numVerts, this->numVerts);
    glBufferData(GL_ARRAY_BUFFER, 6*sizeof(GLfloat)*this->numVerts, NULL, GL_STATIC_DRAW);
 
    // Convenience variables
