@@ -15,7 +15,7 @@ PyObject* drawHomeCircle_hliGLutils(PyObject *self, PyObject *args) {
    PyObject* py_float;
    GLfloat *bulbColors;
    GLfloat gx, gy, wx, wy, ao, w2h, alpha=1.0f;
-   GLint numBulbs;
+   GLuint numBulbs;
 
    if (!PyArg_ParseTuple(args,
             "fffflffO",
@@ -42,11 +42,11 @@ PyObject* drawHomeCircle_hliGLutils(PyObject *self, PyObject *args) {
    }
 
    homeCircle.setNumColors(numBulbs);
-   for (int i = 0; i < numBulbs; i++ ) {
+   for (unsigned int i = 0; i < numBulbs; i++ ) {
       GLfloat tmc[4];
-      tmc[0] = bulbColors[i*numBulbs+0];
-      tmc[1] = bulbColors[i*numBulbs+1];
-      tmc[2] = bulbColors[i*numBulbs+2];
+      tmc[0] = bulbColors[i*3+0];
+      tmc[1] = bulbColors[i*3+1];
+      tmc[2] = bulbColors[i*3+2];
       tmc[3] = alpha;
       homeCircle.setColorQuartet(i, tmc);
    }
@@ -59,6 +59,7 @@ PyObject* drawHomeCircle_hliGLutils(PyObject *self, PyObject *args) {
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
 
+      homeCircle.setNumColors(numBulbs);
       defineColorWheel(0.0f, 0.0f, 10.0f, circleSegments, 180.0f, numBulbs, 1.0f, bulbColors, verts, colrs);
 
       prevHomeCircleNumBulbs = numBulbs;
@@ -71,15 +72,32 @@ PyObject* drawHomeCircle_hliGLutils(PyObject *self, PyObject *args) {
 
       unsigned int index = 0;
 
+      // Changes in bulb quantity necessitate color update
+      if (  prevHomeCircleNumBulbs  != numBulbs ){
+         homeCircle.setNumColors(numBulbs);
+         float tmc[4];
+         for (unsigned int i = 0; i < numBulbs; i++) {
+            tmc[0] = bulbColors[i*3+0];
+            tmc[1] = bulbColors[i*3+1];
+            tmc[2] = bulbColors[i*3+2];
+            tmc[3] = alpha;
+            homeCircle.setColorQuartet(i, tmc);
+         }
+
+         updateColorWheelColor(circleSegments, numBulbs, 1.0f, bulbColors, index, homeCircle.colorCache);
+         homeCircle.updateColorCache();
+         index = 0;
+         prevHomeCircleNumBulbs = numBulbs;
+      }
+
       updateColorWheelColor(circleSegments, numBulbs, 1.0f, bulbColors, index, homeCircle.colorCache);
       homeCircle.updateColorCache();
-
-      prevHomeCircleNumBulbs = numBulbs;
    }
 
    homeCircle.updateMVP(gx, gy, 1.0f, 1.0f, -ao, 1.0f);
    homeCircle.draw();
 
+   delete [] bulbColors;
    Py_RETURN_NONE;
 }
 
@@ -213,6 +231,7 @@ PyObject* drawIconCircle_hliGLutils(PyObject *self, PyObject *args) {
    iconCircle.updateMVP(gx, gy, scale, scale, -ao, w2h);
    iconCircle.draw();
 
+   delete [] bulbColors;
    Py_RETURN_NONE;
 }
 
