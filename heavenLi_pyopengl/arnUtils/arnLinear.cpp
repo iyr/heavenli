@@ -51,17 +51,16 @@ PyObject* drawHomeLinear_hliGLutils(PyObject *self, PyObject *args) {
 
    homeLinear.setNumColors(numBulbs);
    for (unsigned int i = 0; i < numBulbs; i++ ) {
-      tmc[0] = bulbColors[i*numBulbs+0];
-      tmc[1] = bulbColors[i*numBulbs+1];
-      tmc[2] = bulbColors[i*numBulbs+2];
+      tmc[0] = bulbColors[i*3+0];
+      tmc[1] = bulbColors[i*3+1];
+      tmc[2] = bulbColors[i*3+2];
       tmc[3] = alpha;
       homeLinear.setColorQuartet(i, tmc);
    }
 
    GLuint segments = 60;
    // Allocate and Define Geometry/Color buffers
-   if (  homeLinear.numVerts == 0   ||
-         prevHomeLinearNumBulbs != numBulbs ){
+   if (  homeLinear.numVerts == 0   ){
 
       printf("Generating geometry for homeLinear\n");
       vector<GLfloat> verts;
@@ -183,9 +182,7 @@ PyObject* drawIconLinear_hliGLutils(PyObject *self, PyObject *args) {
    GLfloat*    bulbColors;
    GLfloat     detailColor[4];
    GLfloat     gx, gy, scale, ao, w2h, alpha=1.0f;
-   GLfloat     R, G, B;
-   GLuint      numBulbs, features, iconLinearVerts;
-   GLuint      vertIndex = 0;
+   GLuint      numBulbs, features, iconLinearVerts, vertIndex = 0;
    if (!PyArg_ParseTuple(args,
             "ffflOlffO",
             &gx, &gy,
