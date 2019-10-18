@@ -32,7 +32,7 @@ PyObject* drawHomeCircle_hliGLutils(PyObject *self, PyObject *args) {
 
    // Parse array of tuples containing RGB Colors of bulbs
    bulbColors = new float[numBulbs*3];
-   for (int i = 0; i < numBulbs; i++) {
+   for (unsigned int i = 0; i < numBulbs; i++) {
       py_tuple = PyList_GetItem(py_list, i);
 
       for (int j = 0; j < 3; j++) {
