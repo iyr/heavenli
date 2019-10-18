@@ -26,6 +26,8 @@
 /*
  * Sets up shaders for OpenGL
  */
+GLuint   whiteTex;
+//GLubyte* blankTexture;
 #include "initShaders.cpp"    // Code that builds a shaderProgram (vert+frag) from source
 
 /*
@@ -51,10 +53,12 @@ float offScreen = 100.0;            // Used for moving geometry offscreen, will 
 /*
  * Text draw code + helper functions
  */
+
 #include "fontUtils/characterStruct.h"    // Provides a simple struct for caching character glyph data
 #include "fontUtils/atlasClass.h"         // Provides a class for building a Text Atlas + OpenGL texture mapping, etc.
 
 //std::vector<textAtlas> fontAtlases;            // Used to store all generated fonts
+textAtlas* quack;
 
 #include "fontUtils/loadChar.cpp"         // Will likely get depricated
 #include "fontUtils/drawText.cpp"         // Draws an input string with a given font
