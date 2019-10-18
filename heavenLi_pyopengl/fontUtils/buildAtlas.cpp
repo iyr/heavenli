@@ -12,6 +12,7 @@
 #include <map>
 
 using namespace std;
+extern textAtlas* quack;
 
 PyObject* buildAtlas_hliGLutils(PyObject* self, PyObject *args) {
 
@@ -50,85 +51,51 @@ PyObject* buildAtlas_hliGLutils(PyObject* self, PyObject *args) {
       PyChar = PyList_GetItem(GlyphData, c);
 
       PyAttr = PyObject_GetAttrString(PyChar, "advanceX");
-      glyphData[c].advanceX = float(PyFloat_AsDouble(PyAttr));
+      glyphData[c].advanceX      = (GLfloat)PyFloat_AsDouble(PyAttr);
 
       PyAttr = PyObject_GetAttrString(PyChar, "advanceY");
-      glyphData[c].advanceY = float(PyFloat_AsDouble(PyAttr));
+      glyphData[c].advanceY      = (GLfloat)PyFloat_AsDouble(PyAttr);
 
       PyAttr = PyObject_GetAttrString(PyChar, "bearingX");
-      glyphData[c].bearingX = float(PyFloat_AsDouble(PyAttr));
+      glyphData[c].bearingX      = (GLfloat)PyFloat_AsDouble(PyAttr);
 
       PyAttr = PyObject_GetAttrString(PyChar, "bearingY");
-      glyphData[c].bearingY = float(PyFloat_AsDouble(PyAttr));
+      glyphData[c].bearingY      = (GLfloat)PyFloat_AsDouble(PyAttr);
 
       PyAttr = PyObject_GetAttrString(PyChar, "bearingTop");
-      glyphData[c].bearingTop = float(PyFloat_AsDouble(PyAttr));
+      glyphData[c].bearingTop    = (GLfloat)PyFloat_AsDouble(PyAttr);
 
       PyAttr = PyObject_GetAttrString(PyChar, "bearingLeft");
-      glyphData[c].bearingLeft = float(PyFloat_AsDouble(PyAttr));
+      glyphData[c].bearingLeft   = (GLfloat)PyFloat_AsDouble(PyAttr);
 
       PyBitmap = PyObject_GetAttrString(PyChar, "bitmap");
       unsigned int bufferLength;
       bufferLength = PyList_Size(PyBitmap);
       GLubyte* tmb = new GLubyte[bufferLength];
+
       for (unsigned int i = 0; i < bufferLength; i++) {
          PyAttr = PyList_GetItem(PyBitmap, i);
          tmb[i] = GLubyte(PyLong_AsLong(PyAttr));
+
+         //printf("%.3d", tmb[i]);
+         //if ((i+1) % glyphData[c].bearingX == 0 )
+            //printf("\n");
       }
+      //printf("\n");
+
+      /*
+      printf("%c: bufferLength: %.4d, width: %.3d, rows: %.3d\n",
+            c+32, 
+            bufferLength,
+            glyphData[c].bearingX,
+            glyphData[c].bearingY
+            );
+            */
       
       glyphData[c].bitmap = tmb;      
-      glyphData[c].binChar = c;
-
-      // Cleanup
-      delete [] tmb;
    }
 
-
-   /*
-   int w = 0;
-   int h = 0;
-
-   for (int c = 0; c < numChars; c++) {
-      w += Characters[c].sizeX;
-      h = std::max(h, Characters[c].sizeY);
-   }
-
-   int atlas_width = w;
-
-   GLuint tex;
-   glActiveTexture(GL_TEXTURE0);
-   glGenTextures(1, &tex);
-   glBindTexture(GL_TEXTURE_2D, tex);
-   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-   glTexImage2D(
-         GL_TEXTURE_2D,    // Target, should just remain 'GL_TEXTURE_2D'
-         0,                // Mipmap, should remain 0 for now
-         GL_ALPHA,         // Internal Format, should remain just ALPHA for now
-         w,                // Texture Width
-         h,                // Texture Height
-         0,                // Border, must remain 0 for ES 2.0 compliance
-         GL_ALPHA,         // Must be the same as 'Internal Format' for ES 2.0 compliance
-         GL_UNSIGNED_BYTE, // Texture Type
-         0                 // Buffer containing texture data
-         );
-
-   int x = 0;
-   for (int c = 0; c < numChars; c++) {
-      glTexSubImage2D(
-            GL_TEXTURE_2D,       // Target, should just remain 'GL_TEXTURE_2D'
-            0,                   // Mipmap, should remain 0 for now
-            x,                   // x offset, x index of the texel to start writing to
-            0,                   // y offset, y index of the texel to start writing to
-            Characters[c].sizeX, // width of subregion to update
-            Characters[c].sizeY, // height of subregion to update
-            GL_ALPHA,            // Internal Format, should remain just ALPHA for now
-            GL_UNSIGNED_BYTE,    // Texture Type
-            Characters[c].bitmap // buffer of pixels
-            );
-
-      x += Characters[c].sizeX;
-   }
-   */
+   quack = new textAtlas("Barlow-Regular", numChars, glyphData);
 
    Py_RETURN_NONE;
 }

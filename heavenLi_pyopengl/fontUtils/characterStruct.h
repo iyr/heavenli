@@ -13,95 +13,19 @@
 
 using namespace std;
 struct character {
-   float advanceX;
-   float advanceY;
+   GLfloat  advanceX;      // ax ~ linearHoriAdvance
+   GLfloat  advanceY;      // ay ~ linearVertAdvance
 
-   float bearingX;
-   float bearingY;
+   GLfloat  bearingX;      // bw ~ bitmap Width
+   GLfloat  bearingY;      // bh ~ bitmap Height
 
-   float bearingTop;
-   float bearingLeft;
+   GLfloat  bearingTop;    // bt ~ bitmap_top
+   GLfloat  bearingLeft;   // bl ~ bitmap_left
 
-   float textureOffsetX;
-   float textureOffsetY;
+   GLfloat  textureOffsetX;// tx
+   GLfloat  textureOffsetY;// ty
+
    GLubyte* bitmap = NULL;
-   GLuint   binChar;
 };
 
-/*
-class Character {
-   public: 
-      GLfloat  TextureID;  // Texture ID of glyph
-      GLfloat  sizeX;      // Size of glyph (width)
-      GLfloat  sizeY;      // Size of glyph (rows)
-      GLfloat  bearingX;   // Offset from baseline to left of glyph
-      GLfloat  bearingY;   // Offset form baseline to top of glyph
-      GLfloat  advanceX;   // Spatial offset for next glyph
-      GLfloat  advanceY;   // Spatial offset for next glyph
-      GLfloat  texOffset;  // Horizontal offset in texture coords
-      GLubyte* bitmap;
-      Character(void);
-      ~Character(void);
-      void setSizeX(GLfloat size);
-      void setSizeY(GLfloat size);
-      void setBearingX(GLfloat bearing);
-      void setBearingY(GLfloat bearing);
-      void setAdvanceX(GLfloat advance);
-      void setAdvanceY(GLfloat advance);
-      void setBitmap(GLubyte* bitmap, GLuint bufferLength);
-      void setOffset(GLfloat offset);
-};
-
-Character::Character(void) {
-   //printf("Creating Character...\n");
-}
-
-Character::~Character(void) {
-   delete [] bitmap;
-}
-
-void Character::setSizeX(GLfloat size) {
-   this->sizeX = size;
-   return;
-}
-
-void Character::setSizeY(GLfloat size) {
-   this->sizeY = size;
-   return;
-}
-
-void Character::setBearingX(GLfloat bearing) {
-   this->bearingX = bearing;
-   return;
-}
-
-void Character::setBearingY(GLfloat bearing) {
-   this->bearingY = bearing;
-   return;
-}
-
-void Character::setAdvanceX(GLfloat advance) {
-   this->advanceX = advance;
-   return;
-}
-
-void Character::setAdvanceY(GLfloat advance) {
-   this->advanceY = advance;
-   return;
-}
-
-void Character::setOffset(GLfloat offset) {
-   this->texOffset = offset;
-   return;
-}
-
-void Character::setBitmap(GLubyte* bitmap, GLuint bufferLength) {
-   this->bitmap = new GLubyte[bufferLength];
-   for (unsigned int i = 0; i < bufferLength; i++) {
-      this->bitmap[i] = bitmap[i];
-   }
-   return;
-}
-
-*/
 #endif
