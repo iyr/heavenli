@@ -2,6 +2,8 @@
 #define drawCallClass
 
 using namespace std;
+extern GLuint shaderProgram;
+extern GLuint whiteTex;
 
 /*
  * Implements a helper class that wraps buffer object and transformation matrix functions
@@ -9,9 +11,11 @@ using namespace std;
  */
 class drawCall {
    public:
-      GLfloat*    coordCache;    // Array of Vertex coordinate data (X, Y). May also contain texture coordinates (X, Y, tX, tY)
+      GLfloat*    coordCache;    // Array of Vertex coordinate data (X, Y).
+      GLfloat*    texuvCache;    // Array of Vertex Texture coordinates data (U, V).
       GLfloat*    colorCache;    // Array of Vertex color data (R, G, B, A)
 
+      GLuint      texID;         // OpenGL texture ID, defaults to plain white texture for drawing solid objects
       GLuint      numVerts;      // number of Vertices (not length of cache arrays)
       GLuint      VBO;           // Buffer Object for OpenGL to store data in graphics memory
       Matrix      MVP;           // Model-View-Projection Matrix for storing transformations
@@ -21,6 +25,7 @@ class drawCall {
       drawCall(unsigned int numColors);
       ~drawCall(void);
       void buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vector<GLfloat> &colrs);
+      void buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vector<GLfloat> &texuv, std::vector<GLfloat> &colrs);
       void updateMVP(GLfloat gx, GLfloat gy, GLfloat sx, GLfloat sy, GLfloat rot, GLfloat w2h);
       void draw(void);
       void updateCoordCache(void);
@@ -29,20 +34,22 @@ class drawCall {
       void setColorQuartet(unsigned int setIndex, GLfloat* quartet);
       void setDrawType(GLenum type);
 
-      GLuint      numColors;        // Number of colorSet quartets (R, G, B, A) to manage (min: 1, typ: 2)
    private:
       Params      prevTransforms;   // Useful for know if MVP should be recomputed
 
       GLfloat*    colorQuartets;    // Continuous array to store colorSet quartets
 
       GLboolean   firstRun;         // Determines if function is running for the first time (for VBO initialization)
+      GLboolean   usesTex;          // Determines whether or not geometry uses a texture
       GLenum      drawType;         // GL_TRIANGLE_STRIP / GL_LINE_STRIP
+      GLuint      numColors;        // Number of colorSet quartets (R, G, B, A) to manage (min: 1, typ: 2)
 };
 
 drawCall::drawCall(void) {
    printf("Building drawCall Object...\n");
    // Initialize Caches
    this->coordCache     = NULL;
+   this->texuvCache     = NULL;
    this->colorCache     = NULL;
 
    // Used to setup GL objects 
@@ -58,6 +65,8 @@ drawCall::drawCall(void) {
    this->colorsChanged  = GL_FALSE;
 
    this->drawType       = GL_TRIANGLE_STRIP;
+
+   this->texID          = whiteTex;
    return;
 };
 
@@ -65,6 +74,7 @@ drawCall::drawCall(unsigned int numColors) {
    printf("Building drawCall Object...\n");
    // Initialize Caches
    this->coordCache     = NULL;
+   this->texuvCache     = NULL;
    this->colorCache     = NULL;
 
    // Used to setup GL objects 
@@ -80,12 +90,15 @@ drawCall::drawCall(unsigned int numColors) {
    this->colorsChanged  = GL_FALSE;
 
    this->drawType       = GL_TRIANGLE_STRIP;
+
+   this->texID          = whiteTex;
    return;
 };
 
 drawCall::~drawCall(void){
    // Deallocate caches
    delete [] this->coordCache;
+   delete [] this->texuvCache;
    delete [] this->colorCache;
    //glDeleteBuffers(1, &this->VBO);
    return;
@@ -136,7 +149,8 @@ void drawCall::setColorQuartet(unsigned int setIndex, GLfloat* quartet) {
 /*
  * Builds cache from input vectors and writes to buffer object
  */
-void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vector<GLfloat> &colrs) {
+void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vector<GLfloat> &texuv, std::vector<GLfloat> &colrs) {
+   this->usesTex  = true;
    this->numVerts = numVerts;
 
    // Safely allocate cache arrays
@@ -145,6 +159,13 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
    } else {
       delete [] this->coordCache;
       this->coordCache = new GLfloat[this->numVerts*2];
+   }
+
+   if (this->texuvCache == NULL) {
+      this->texuvCache = new GLfloat[this->numVerts*2];
+   } else {
+      delete [] this->texuvCache;
+      this->texuvCache = new GLfloat[this->numVerts*2];
    }
 
    if (this->colorCache == NULL) {
@@ -158,6 +179,8 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
    for (unsigned int i = 0; i < this->numVerts; i++) {
       this->coordCache[i*2]   = verts[i*2];
       this->coordCache[i*2+1] = verts[i*2+1];
+      this->texuvCache[i*2]   = texuv[i*2];
+      this->texuvCache[i*2+1] = texuv[i*2+1];
 
       this->colorCache[i*4+0] = colrs[i*4+0];
       this->colorCache[i*4+1] = colrs[i*4+1];
@@ -181,12 +204,13 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
 
    // Allocate space to hold all vertex coordinate and color data
    //printf("Creating Buffer Object, size: %d bytes, %d Total Vertices.\n", 6*sizeof(GLfloat)*this->numVerts, this->numVerts);
-   glBufferData(GL_ARRAY_BUFFER, 6*sizeof(GLfloat)*this->numVerts, NULL, GL_STATIC_DRAW);
+   glBufferData(GL_ARRAY_BUFFER, 8*sizeof(GLfloat)*this->numVerts, NULL, GL_STATIC_DRAW);
 
    // Convenience variables
    GLintptr offset = 0;
-   GLuint vertAttribCoord = glGetAttribLocation(3, "vertCoord");
-   GLuint vertAttribColor = glGetAttribLocation(3, "vertColor");
+   GLuint vertAttribCoord = glGetAttribLocation(shaderProgram, "vertCoord");
+   GLuint vertAttribTexUV = glGetAttribLocation(shaderProgram, "vertTexUV");
+   GLuint vertAttribColor = glGetAttribLocation(shaderProgram, "vertColor");
 
    // Load Vertex coordinate data into VBO
    glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*this->numVerts, this->coordCache);
@@ -194,6 +218,113 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
    glVertexAttribPointer(vertAttribCoord, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLintptr*)offset);
    // Enable the vertex attribute
    glEnableVertexAttribArray(vertAttribCoord);
+
+   // Update offset to begin storing data in latter part of the buffer
+   offset += 2*sizeof(GLfloat)*this->numVerts;
+
+   // Load Vertex Texture UV coordinate data into VBO
+   glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*this->numVerts, this->texuvCache);
+   // Define how the data is layed out in the buffer
+   glVertexAttribPointer(vertAttribTexUV, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLintptr*)offset);
+   // Enable the vertex attribute
+   glEnableVertexAttribArray(vertAttribTexUV);
+
+   // Update offset to begin storing data in latter part of the buffer
+   offset += 2*sizeof(GLfloat)*this->numVerts;
+
+   // Load Vertex Color data into VBO
+   glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*4*this->numVerts, this->colorCache);
+   // Define how the Vertex color data is layed out in the buffer
+   glVertexAttribPointer(vertAttribColor, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (GLintptr*)offset);
+   // Enable the vertex attribute
+   glEnableVertexAttribArray(vertAttribColor);
+
+   // Unbind Buffer Object
+   glBindBuffer(GL_ARRAY_BUFFER, 0);
+   return;
+};
+/*
+ * Builds cache from input vectors and writes to buffer object
+ */
+void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vector<GLfloat> &colrs) {
+   this->usesTex  = false;
+   this->numVerts = numVerts;
+
+   // Safely allocate cache arrays
+   if (this->coordCache == NULL) {
+      this->coordCache = new GLfloat[this->numVerts*2];
+   } else {
+      delete [] this->coordCache;
+      this->coordCache = new GLfloat[this->numVerts*2];
+   }
+
+   if (this->texuvCache == NULL) {
+      this->texuvCache = new GLfloat[this->numVerts*2];
+   } else {
+      delete [] this->texuvCache;
+      this->texuvCache = new GLfloat[this->numVerts*2];
+   }
+
+   if (this->colorCache == NULL) {
+      this->colorCache = new GLfloat[this->numVerts*4];
+   } else {
+      delete [] this->colorCache;
+      this->colorCache = new GLfloat[this->numVerts*4];
+   }
+
+   // Copy contents of input vectors to cache arrays
+   for (unsigned int i = 0; i < this->numVerts; i++) {
+      this->coordCache[i*2]   = verts[i*2];
+      this->coordCache[i*2+1] = verts[i*2+1];
+      this->texuvCache[i*2]   = 0.0f;
+      this->texuvCache[i*2+1] = 0.0f;
+
+      this->colorCache[i*4+0] = colrs[i*4+0];
+      this->colorCache[i*4+1] = colrs[i*4+1];
+      this->colorCache[i*4+2] = colrs[i*4+2];
+      this->colorCache[i*4+3] = colrs[i*4+3];
+   }
+
+   // Create buffer object if one does not exist, otherwise, delete and make a new one
+   // This cannot be done in the constructor for global object instances because OpenGL
+   // must be initialized before any GL functions are called. 
+   if (this->firstRun == GL_TRUE) {
+      this->firstRun = GL_FALSE;
+      glGenBuffers(1, &this->VBO);
+   } else {
+      glDeleteBuffers(1, &this->VBO);
+      glGenBuffers(1, &this->VBO);
+   }
+
+   // Set active VBO
+   glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
+
+   // Allocate space to hold all vertex coordinate and color data
+   //printf("Creating Buffer Object, size: %d bytes, %d Total Vertices.\n", 6*sizeof(GLfloat)*this->numVerts, this->numVerts);
+   glBufferData(GL_ARRAY_BUFFER, 8*sizeof(GLfloat)*this->numVerts, NULL, GL_STATIC_DRAW);
+
+   // Convenience variables
+   GLintptr offset = 0;
+   GLuint vertAttribCoord = glGetAttribLocation(shaderProgram, "vertCoord");
+   GLuint vertAttribTexUV = glGetAttribLocation(shaderProgram, "vertTexUV");
+   GLuint vertAttribColor = glGetAttribLocation(shaderProgram, "vertColor");
+
+   // Load Vertex coordinate data into VBO
+   glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*this->numVerts, this->coordCache);
+   // Define how the Vertex coordinate data is layed out in the buffer
+   glVertexAttribPointer(vertAttribCoord, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLintptr*)offset);
+   // Enable the vertex attribute
+   glEnableVertexAttribArray(vertAttribCoord);
+
+   // Update offset to begin storing data in latter part of the buffer
+   offset += 2*sizeof(GLfloat)*this->numVerts;
+
+   // Load Vertex coordinate data into VBO
+   glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*this->numVerts, this->texuvCache);
+   // Define how the Vertex coordinate data is layed out in the buffer
+   glVertexAttribPointer(vertAttribTexUV, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLintptr*)offset);
+   // Enable the vertex attribute
+   glEnableVertexAttribArray(vertAttribTexUV);
 
    // Update offset to begin storing data in latter part of the buffer
    offset += 2*sizeof(GLfloat)*this->numVerts;
@@ -257,10 +388,14 @@ void drawCall::draw(void) {
    // Set active VBO
    glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
 
+   glBindTexture(GL_TEXTURE_2D, this->texID);
+
    // Define how the Vertex coordinate data is layed out in the buffer
    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
+   // Define how the Vertex Texture UV data is layed out in the buffer
+   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*this->numVerts));
    // Define how the Vertex color data is layed out in the buffer
-   glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*this->numVerts));
+   glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (void*)(4*sizeof(GLfloat)*this->numVerts));
 
    //glEnableVertexAttribArray(0);
    //glEnableVertexAttribArray(1);
@@ -281,7 +416,7 @@ void drawCall::updateColorCache(void) {
    glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
 
    // Initialize offset to begin storing data in latter part of the buffer
-   GLuint offset = 2*sizeof(GLfloat)*this->numVerts;
+   GLuint offset = 4*sizeof(GLfloat)*this->numVerts;
 
    // Load Vertex coordinate data into VBO
    glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*4*this->numVerts, this->colorCache);
