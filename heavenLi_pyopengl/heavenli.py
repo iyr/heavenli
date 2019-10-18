@@ -81,6 +81,7 @@ def drawBackground():
         Light = 0
 
         if (stateMach['lamps'][Light].getArn() == 0):
+            pass
             drawHomeCircle(0.0, 0.0, 
                     stateMach['wx'], stateMach['wy'], 
                     stateMach['lamps'][Light].getNumBulbs(), 
@@ -130,29 +131,7 @@ def drawHome():
             tmc = ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 1.0)
             drawIcon(0.75, 0.75, iconSize*0.85, tmc, stateMach['w2h'], stateMach['lamps'][Light], stateMach['features'])
 
-        #drawText("Hello World!", 0.0, 0.0, 1.0, stateMach['w2h'], (1.0, 0.2, 1.0, 1.0))
-        #printText(
-                #-0.9, -0.6,
-                #0.05, 
-                #stateMach['w2h'], 
-                #'AaBbCcDdEeFfGgHhIiJjKkLlMm',
-                #( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100)))
-
-        #printText(
-                #-0.9, -0.875,
-                #0.05, 
-                #stateMach['w2h'], 
-                #'NnOoPpQqRrSsTtUuVvWwXxYyZz',
-                #( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100)))
-
-        #drawPrim(
-                #stateMach['someVar']/100-0.3333333333, 0.0, 
-                #0.5, 
-                #0.0,
-                #stateMach['w2h'],
-                #(0.5, stateMach['someVar']/100, 1.0, 1.0),
-                #(1.0, 0.5, 0.0, 1.0),
-                #(0.0, 1.0, 0.5, 1.0))
+        drawText("The Quick Brown Fox Jumps Over The Lazy Dog.", -0.9, -0.0, 0.5, 0.5, stateMach['w2h'], (1.0, 1.0, 1.0, 1.0))
 
         # Watch Home Screen for input
         if (watchScreen()):
