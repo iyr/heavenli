@@ -6,7 +6,10 @@
 #include <GL/gl.h>
 #include <GL/glext.h>
 
-GLuint shaderProgram;
+GLuint   shaderProgram;
+GLint    uniform_tex;
+extern GLuint     whiteTex;
+//extern GLubyte*   blankTexture;
 
 /*
 typedef struct {
@@ -66,17 +69,43 @@ GLuint LoadShader(const GLchar *shadersrc, GLenum type) {
 }
 
 PyObject* initShaders_hliGLutils(PyObject* self, PyObject *args) {
+
+   //Generate plain white texture for drawing solid color objects
+   //OpenGL ES 2.0 requires a minimum texture size of 64*64, apparently
+   GLubyte* blankTexture;
+   blankTexture = new GLubyte[64*64*4];
+   memset(blankTexture, 255, 64*64*4);
+
+   glActiveTexture(GL_TEXTURE0);
+   glGenTextures(1, &whiteTex);
+   printf("blank texture id: %x\n", whiteTex);
+   glBindTexture(GL_TEXTURE_2D, whiteTex);
+   glUniform1i(uniform_tex, 0);
+
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, blankTexture);
+
+   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+   delete [] blankTexture;
+
    const GLchar vertShaderSource[] = 
       "#version 100			               \n"
-      "attribute  vec4 vertCoord;         \n"
+      "attribute  vec2 vertCoord;         \n"
+      "attribute  vec2 vertTexUV;         \n"
       "attribute  vec4 vertColor;         \n"
       "uniform    mat4 MVP;               \n"
+
       "varying    vec4 color;             \n"
       "varying    vec2 texCoord;          \n"
       "void main() {                      \n"
          "color = vertColor;              \n"
-         "gl_Position = MVP * vertCoord;  \n"
-         "texCoord = vertCoord.zw;        \n"
+         "gl_Position = MVP * vec4(vertCoord, 1, 1);  \n"
+         "texCoord = vertTexUV;           \n"
       "}                                  \n";
 
    const GLchar fragShaderSource[] = 
@@ -86,8 +115,9 @@ PyObject* initShaders_hliGLutils(PyObject* self, PyObject *args) {
       "varying    vec4 color;             \n"
       "uniform    sampler2D tex;          \n"
       "void main() {                      \n"
-         //"gl_FragColor = vec4(1, 1, 1, texture2D(tex, texCoord).r)*color;           \n"
-         "gl_FragColor = color;           \n"
+         //"gl_FragColor = vec4(color.r, color.g, color.b*texture2D(tex, texCoord).a, color.a);           \n"
+         "gl_FragColor = vec4(color.r, color.g, color.b, color.a*texture2D(tex, texCoord).a);           \n"
+         //"gl_FragColor = color;           \n"
       "}                                  \n";
 
    GLint linked;
@@ -106,7 +136,8 @@ PyObject* initShaders_hliGLutils(PyObject* self, PyObject *args) {
    glAttachShader(shaderProgram, fragShader);
 
    glBindAttribLocation(shaderProgram, 0, "vertCoord");
-   glBindAttribLocation(shaderProgram, 1, "vertColor");
+   glBindAttribLocation(shaderProgram, 1, "vertTexUV");
+   glBindAttribLocation(shaderProgram, 2, "vertColor");
 
    glLinkProgram(shaderProgram);
 
@@ -135,6 +166,7 @@ PyObject* initShaders_hliGLutils(PyObject* self, PyObject *args) {
    glUseProgram(shaderProgram);
    glEnableVertexAttribArray(0);
    glEnableVertexAttribArray(1);
+   glEnableVertexAttribArray(2);
 
    Py_RETURN_NONE;
 }
