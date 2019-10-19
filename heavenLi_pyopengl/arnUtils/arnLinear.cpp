@@ -234,12 +234,9 @@ PyObject* drawIconLinear_hliGLutils(PyObject *self, PyObject *args) {
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
       iconLinear.setNumColors(numBulbs+1);
-      float offset = float(2.0/60.0);
       float degSegment = float(360.0/float(circleSegments));
-      float delta = float(degSegment/4.0);
 
       // Define Square of Stripes with Rounded Corners
-      int tmb = 0;
       defineIconLinear(
             0.0f, 0.0f,       // pos (X, Y)
             1.0f,             // size
@@ -277,6 +274,7 @@ PyObject* drawIconLinear_hliGLutils(PyObject *self, PyObject *args) {
             tmc[1] = bulbColors[i*3+1];
             tmc[2] = bulbColors[i*3+2];
             tmc[3] = detailColor[3];
+	    iconLinear.setColorQuartet(i, tmc);
          }
 
          //updateIconLinearColor();

@@ -276,7 +276,6 @@ int updatePillColor(
       colrIndex += 8;
    }
 
-   char i = 0;
    for (char i = 1; i < circleSegments/2; i++ ) {
       /* pR */ colrs[colrIndex+0] = pR;
       /* pG */ colrs[colrIndex+1] = pG;

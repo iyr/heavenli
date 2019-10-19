@@ -835,7 +835,6 @@ unsigned int updateIconLinearColor(
             BHverts, BHcolrs); // Input Vectors
 
       for (int i = 0; i < 6; i++) {
-         unsigned int bulbStart = subIndex/4;
 
          // Copy Pre-calculated Geometry + colors
          for (unsigned int j = 0; j < BHverts.size()/2; j++) {
