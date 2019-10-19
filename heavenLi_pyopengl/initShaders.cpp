@@ -75,6 +75,9 @@ PyObject* initShaders_hliGLutils(PyObject* self, PyObject *args) {
    GLubyte* blankTexture;
    blankTexture = new GLubyte[64*64*4];
    memset(blankTexture, 255, 64*64*4);
+   GLint maxTexSize;
+   glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTexSize);
+   printf("Platform Maximum supported texture size: %d\n", maxTexSize);
 
    glActiveTexture(GL_TEXTURE0);
    glGenTextures(1, &whiteTex);
