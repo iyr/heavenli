@@ -60,7 +60,7 @@ float offScreen = 100.0;            // Used for moving geometry offscreen, will 
 //std::vector<textAtlas> fontAtlases;            // Used to store all generated fonts
 textAtlas* quack;
 
-#include "fontUtils/loadChar.cpp"         // Will likely get depricated
+//#include "fontUtils/loadChar.cpp"         // Will likely get depricated
 #include "fontUtils/drawText.cpp"         // Draws an input string with a given font
 #include "fontUtils/buildAtlas.cpp"       // Builds a text Atlas with data ferried from Python, stores in global vector
 
@@ -72,7 +72,7 @@ textAtlas* quack;
 PyObject* initShaders_hliGLutils(PyObject *self, PyObject *args);
 
 PyObject* drawText_hliGLutils        (PyObject *self, PyObject *args);
-PyObject* loadChar_hliGLutils        (PyObject *self, PyObject *args);
+//PyObject* loadChar_hliGLutils        (PyObject *self, PyObject *args);
 PyObject* buildAtlas_hliGLutils      (PyObject *self, PyObject *args);
 
 PyObject* drawHomeCircle_hliGLutils  (PyObject *self, PyObject *args);
@@ -98,7 +98,7 @@ static PyMethodDef hliGLutils_methods[] = {
    { "initShaders", (PyCFunction)initShaders_hliGLutils, METH_NOARGS },
 
    { "drawText",        (PyCFunction)drawText_hliGLutils,       METH_VARARGS },
-   { "loadChar",        (PyCFunction)loadChar_hliGLutils,       METH_VARARGS },
+   //{ "loadChar",        (PyCFunction)loadChar_hliGLutils,       METH_VARARGS },
    { "buildAtlas",      (PyCFunction)buildAtlas_hliGLutils,     METH_VARARGS },
 
    { "drawHomeCircle",  (PyCFunction)drawHomeCircle_hliGLutils, METH_VARARGS },
