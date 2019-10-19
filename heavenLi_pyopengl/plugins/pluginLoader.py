@@ -11,10 +11,12 @@ plugins = []
 def initPlugins():
     global plugins
     print("Initializing plugins...")
-    tmd = [x[0] for x in os.walk('./plugins')][1:-1]
+    tmd = [x[0] for x in os.walk('./plugins')][1:]
+    print(tmd)
     dirs = []
     for i in range(len(tmd)):
         if '__pycache__' not in tmd[i]:
+            #print("Searching..." + str(tmd[i]))
             dirs.append(tmd[i][10:] + '.plugin')
     
     if (len(dirs) == 1):
