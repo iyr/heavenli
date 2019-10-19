@@ -64,7 +64,8 @@ def framerate():
             stateMach['hour'] -= 12
 
         if (machine() == "armv6l" or machine() == "armv7l"):
-            glutSetCursor(GLUT_CURSOR_NONE)
+            pass
+            #glutSetCursor(GLUT_CURSOR_NONE)
 
     if stateMach['frameLimit'] and (stateMach['fps'] > 60):
         pass
