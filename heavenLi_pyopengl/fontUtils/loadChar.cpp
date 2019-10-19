@@ -51,7 +51,7 @@ PyObject* loadChar_hliGLutils(PyObject* self, PyObject *args) {
    PyObject* Pylong;
    for (unsigned int i = 0; i < bufferLength; i++){
       Pylong      = PyList_GetItem(Pylist, i);
-      buffer[i]   = byte(PyLong_AsLong(Pylong));
+      buffer[i]   = GLbyte(PyLong_AsLong(Pylong));
    }
 
    // Create Character Object
