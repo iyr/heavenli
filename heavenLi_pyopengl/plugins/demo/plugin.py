@@ -3,6 +3,7 @@ from lampClass import *
 class Plugin:
 
     def __init__(self):
+        print("Hello from demo class")
         self.quack = []
         self.quack.append(Lamp())
         self.quack[0].setAlias('quack')
