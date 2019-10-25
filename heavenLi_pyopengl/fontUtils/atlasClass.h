@@ -14,18 +14,21 @@ class textAtlas {
       std::string faceName;
       GLuint tex;
 
-      unsigned int textureWidth;
-      unsigned int textureHeight;
+      GLuint textureWidth;
+      GLuint textureHeight;
+
+      GLuint faceSize;
       
       character* glyphData = NULL;
 
-      textAtlas(std::string faceName, GLuint numChars, character* glyphData);
+      textAtlas(std::string faceName, GLuint numChars, GLuint size, character* glyphData);
       ~textAtlas(void);
 };
 
-textAtlas::textAtlas(std::string faceName, GLuint numChars, character* glyphData) {
+textAtlas::textAtlas(std::string faceName, GLuint numChars, GLuint size, character* glyphData) {
    this->faceName       = faceName;
    this->glyphData      = glyphData;
+   this->faceSize       = size;
 
    unsigned int roww    = 0;
    unsigned int rowh    = 0;
@@ -35,7 +38,6 @@ textAtlas::textAtlas(std::string faceName, GLuint numChars, character* glyphData
 
    printf("Determining Atlas dimensions...\n");
    for (unsigned int i = 0; i < numChars; i++) {
-      //printf("%c: roww: %d, rowh: %d\n", i+32, roww, rowh);
       if (roww + this->glyphData[i].bearingX + 1 >= MAXWIDTH) {
          this->textureWidth   = roww > this->textureWidth ? roww : this->textureWidth;
          this->textureHeight += rowh;
@@ -83,7 +85,7 @@ textAtlas::textAtlas(std::string faceName, GLuint numChars, character* glyphData
       }
 
       /*
-      printf("%c:\n", i+32);
+      printf("%c:\n", i);
       for (unsigned int j = 0; j < (unsigned int)(this->glyphData[i].bearingX*this->glyphData[i].bearingY); j++) {
          printf("%.3d", this->glyphData[i].bitmap[j]);
          if ((j+1) % this->glyphData[i].bearingX == 0 )
@@ -108,18 +110,9 @@ textAtlas::textAtlas(std::string faceName, GLuint numChars, character* glyphData
 
       ox    += (GLint)this->glyphData[i].bearingX + 1;
       rowh   = rowh >= (GLuint)this->glyphData[i].bearingY 
-         ? rowh 
-         : (GLint)this->glyphData[i].bearingY;
+                     ? rowh 
+                     : (GLint)this->glyphData[i].bearingY;
 
-
-      /*
-      printf("Loading Glyph for %c: ox: %4d, texOSX: %1.5f, width: %4d, height: %4d\n", 
-            i+32, 
-            ox,
-            this->glyphData[i].textureOffsetX, 
-            (GLsizei)this->glyphData[i].bearingX,
-            (GLsizei)this->glyphData[i].bearingY);
-            */
    }
 
    fprintf(stderr, "Generated a %d x %d (%d kb) texture atlas\n", this->textureWidth, this->textureHeight, (this->textureWidth * this->textureHeight) /1024);

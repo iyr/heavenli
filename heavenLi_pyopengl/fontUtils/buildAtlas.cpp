@@ -17,17 +17,21 @@ extern textAtlas* quack;
 PyObject* buildAtlas_hliGLutils(PyObject* self, PyObject *args) {
 
    PyObject*   faceName;      // Name of the face we're building
-   PyObject*   GlyphData;     // List of Character python objects that contain glyph metrics and bitmap
    PyObject*   numCharacters; // Number of Characters to map to atlas
+   PyObject*   faceSize;      // pt font size
+   PyObject*   GlyphData;     // List of Character python objects that contain glyph metrics and bitmap
    character*  glyphData;     // Array of Character structs that contain glyph metrics and bitmap
-   GLuint      numChars;      // Number of characters in arrays
+   GLuint      numChars,      // Number of characters in arrays
+               size;
 
    // Parse Inputs with error-checking
    if ( !PyArg_ParseTuple(args,
-            "OOO",
+            "OOOO",
             &faceName,
-            &GlyphData,
-            &numCharacters) )
+            &numCharacters,
+            &faceSize,
+            &GlyphData
+            ))
    {
       printf("ERROR::loadChar: failed to parse arguments\n");
       Py_RETURN_NONE;
@@ -42,6 +46,9 @@ PyObject* buildAtlas_hliGLutils(PyObject* self, PyObject *args) {
 
    // Initialize character glyph array
    glyphData = new character[numChars];
+
+   // Parse font point size
+   size = PyLong_AsLong(faceSize);
 
    // Fill-in character array
    PyObject* PyChar;
@@ -95,7 +102,7 @@ PyObject* buildAtlas_hliGLutils(PyObject* self, PyObject *args) {
       glyphData[c].bitmap = tmb;      
    }
 
-   quack = new textAtlas("Barlow-Regular", numChars, glyphData);
+   quack = new textAtlas("Barlow-Regular", numChars, size, glyphData);
 
    Py_RETURN_NONE;
 }

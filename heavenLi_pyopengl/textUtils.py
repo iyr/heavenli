@@ -24,8 +24,8 @@ def makeFont(fontFile="fonts/Barlow-Regular.ttf", numChars=128, size=48):
 
             self.bitmap = []
 
-    for c in range(numChars-32):
-        face.load_char(chr(c+32), FT_LOAD_RENDER)
+    for c in range(numChars):
+        face.load_char(chr(c), FT_LOAD_RENDER)
         fglyph = face.glyph
         cglyph = Character()
         cglyph.advanceX = fglyph.advance.x
@@ -35,18 +35,20 @@ def makeFont(fontFile="fonts/Barlow-Regular.ttf", numChars=128, size=48):
         cglyph.bearingTop = fglyph.bitmap_top
         cglyph.bearingLeft = fglyph.bitmap_left
 
-        #print(
-                #"Wrapping Glyph Data for Character " + str(chr(c+32)) + 
-                #", AdvanceX: " + str(cglyph.advanceX) + 
-                #", AdvanceY: " + str(cglyph.advanceY) + 
-                #", bearingX: " + str(cglyph.bearingX) + 
-                #", bearingY: " + str(cglyph.bearingY) + 
-                #", bearingTop: " + str(cglyph.bearingTop) + 
-                #", bearingLeft: " + str(cglyph.bearingLeft)
-                #)
         cglyph.bitmap = fglyph.bitmap.buffer
-        cglyph.binChar = c+32
+        cglyph.binChar = c
 
         Characters.append(cglyph)
+        print(
+        "Wrapping Glyph Data for Character " + str(chr(c)) + 
+        " (" + str(c) + ")" +
+        ", AdvanceX: " + str(cglyph.advanceX) + 
+        ", AdvanceY: " + str(cglyph.advanceY) + 
+        ", bearingX: " + str(cglyph.bearingX) + 
+        ", bearingY: " + str(cglyph.bearingY) + 
+        ", bearingTop: " + str(cglyph.bearingTop) + 
+        ", bearingLeft: " + str(cglyph.bearingLeft)
+        )
 
-    buildAtlas(faceName, Characters, numChars-32)
+    print("faceSize: " + str(size))
+    buildAtlas(faceName, numChars, size, Characters)
