@@ -42,7 +42,6 @@ int updateBulbGeometry(
       int   index,            /* Index of where to start writing to input arrays */
       float *verts            /* Input Array of x,y coordinates                  */
       ){
-   int vertIndex = index*2;   /* index (X, Y)   */
    float thickness = 0.3f;
    circleSegments /= 2;
    index = updateEllipseGeometry(bx, by, bs*1.005f, bs*1.005f, circleSegments, index, verts);
@@ -66,7 +65,6 @@ int updateBulbColor(
       int   index,            /* Index of where to start writing to input arrays */
       float *colrs            /* Input Vector of r,g,b values                    */
       ){
-   int colrIndex = index*4;   /* index (r, g, b) */
    circleSegments /= 2;
    index = updateEllipseColor(circleSegments, color, index, colrs);
    index = updateArchColor(circleSegments, detailColor, index, colrs);

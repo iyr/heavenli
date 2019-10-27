@@ -80,8 +80,6 @@ PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
 
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
-      // Set Number of edges on circles
-      char degSegment = 360 / circleSegments;
 
       // Setup Transformations
       if (w2h <= 1.0)
@@ -155,8 +153,6 @@ PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
             prevArn              != arn            ||
             prevAngOffset        != angularOffset  ||
             prevBulbButtonScale  != buttonScale    ){
-      // Set Number of edges on circles
-      char degSegment = 360 / circleSegments;
 
       // Setup Transformations
       if (w2h <= 1.0)

@@ -231,7 +231,6 @@ unsigned int updateIconCircleColor(
       float*         colrs             // Input Vector of r,g,b values
       ){
 
-   float angOffset = 360.0f / float(numBulbs);
    unsigned int subIndex = index;
 
    // Draw Only the color wheel if 'featureLevel' <= 0

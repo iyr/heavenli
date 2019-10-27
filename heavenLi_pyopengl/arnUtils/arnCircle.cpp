@@ -7,7 +7,7 @@ using namespace std;
 extern float offScreen;
 
 drawCall homeCircle;
-GLint    prevHomeCircleNumBulbs;
+GLuint    prevHomeCircleNumBulbs;
 
 PyObject* drawHomeCircle_hliGLutils(PyObject *self, PyObject *args) {
    PyObject* py_list;

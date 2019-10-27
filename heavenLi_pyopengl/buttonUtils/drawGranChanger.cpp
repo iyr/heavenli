@@ -49,14 +49,9 @@ PyObject* drawGranChanger_hliGLutils(PyObject *self, PyObject *args) {
    if (  granChangerButton.numVerts == 0 ) {
       printf("Initializing Geometry for Granularity Rocker\n");
       float unit = float(1.0/36.0);
-      float R, G, B, A, buttonSize = 0.8f;
+      float buttonSize = 0.8f;
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
-
-      R = black[0];
-      G = black[1];
-      B = black[2];
-      A = black[3];
 
       // Upper Background Mask (quad)
       defineQuad4pt(
