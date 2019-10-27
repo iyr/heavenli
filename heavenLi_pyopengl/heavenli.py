@@ -131,7 +131,9 @@ def drawHome():
             tmc = ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 1.0)
             drawIcon(0.75, 0.75, iconSize*0.85, tmc, stateMach['w2h'], stateMach['lamps'][Light], stateMach['features'])
 
-        drawText("The Quick Brown Fox Jumps Over The Lazy Dog.", -0.9, -0.0, 0.5, 0.5, stateMach['w2h'], (1.0, 1.0, 1.0, 1.0))
+        #drawText("The\nQuick\nBrown\nFox\nJumps\nOver\nThe\nLazy\nDog.", -0.9, -0.0, 0.5, 0.5, stateMach['w2h'], (1.0, 1.0, 1.0, 1.0))
+        #drawText("The Quick Brown Fox Jumps Over The Lazy Dog.", -0.9, -0.0, 0.5, 0.5, stateMach['w2h'], (1.0, 1.0, 1.0, 1.0))
+        drawText("FPS: " + str(int(stateMach['fps'])), -1.0, 0.9, 0.25, 0.25, stateMach['w2h'], stateMach['detailColor'])
 
         # Watch Home Screen for input
         if (watchScreen()):
