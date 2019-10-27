@@ -2,7 +2,7 @@ from hliGLutils import *
 #import freetype
 from freetype import *
 
-def makeFont(fontFile="fonts/Barlow-Regular.ttf", numChars=128, size=48):
+def makeFont(fontFile="fonts/Barlow-Regular.ttf", numChars=128, size=32):
 #def makeFont(fontFile="fonts/copperplatedecolightpdf.ttf", numChars=128, size=48):
     face = freetype.Face(fontFile)
     face.set_char_size(size*64)
@@ -39,16 +39,16 @@ def makeFont(fontFile="fonts/Barlow-Regular.ttf", numChars=128, size=48):
         cglyph.binChar = c
 
         Characters.append(cglyph)
-        print(
-        "Wrapping Glyph Data for Character " + str(chr(c)) + 
-        " (" + str(c) + ")" +
-        ", AdvanceX: " + str(cglyph.advanceX) + 
-        ", AdvanceY: " + str(cglyph.advanceY) + 
-        ", bearingX: " + str(cglyph.bearingX) + 
-        ", bearingY: " + str(cglyph.bearingY) + 
-        ", bearingTop: " + str(cglyph.bearingTop) + 
-        ", bearingLeft: " + str(cglyph.bearingLeft)
-        )
+        #print(
+        #"Wrapping Glyph Data for Character " + str(chr(c)) + 
+        #" (" + str(c) + ")" +
+        #", AdvanceX: " + str(cglyph.advanceX) + 
+        #", AdvanceY: " + str(cglyph.advanceY) + 
+        #", bearingX: " + str(cglyph.bearingX) + 
+        #", bearingY: " + str(cglyph.bearingY) + 
+        #", bearingTop: " + str(cglyph.bearingTop) + 
+        #", bearingLeft: " + str(cglyph.bearingLeft)
+        #)
 
     print("faceSize: " + str(size))
     buildAtlas(faceName, numChars, size, Characters)
