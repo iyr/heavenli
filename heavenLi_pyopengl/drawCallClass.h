@@ -29,6 +29,7 @@ class drawCall {
       void updateMVP(GLfloat gx, GLfloat gy, GLfloat sx, GLfloat sy, GLfloat rot, GLfloat w2h);
       void draw(void);
       void updateCoordCache(void);
+      void updateTexUVCache(void);
       void updateColorCache(void);
       void setNumColors(unsigned int numColors);
       void setColorQuartet(unsigned int setIndex, GLfloat* quartet);
@@ -203,8 +204,10 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
    glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
 
    // Allocate space to hold all vertex coordinate and color data
-   //printf("Creating Buffer Object, size: %d bytes, %d Total Vertices.\n", 6*sizeof(GLfloat)*this->numVerts, this->numVerts);
+   printf("Allocating Buffer, size: %d bytes, %d Total Vertices.\n", 8*sizeof(GLfloat)*this->numVerts, this->numVerts);
    glBufferData(GL_ARRAY_BUFFER, 8*sizeof(GLfloat)*this->numVerts, NULL, GL_STATIC_DRAW);
+   //glBufferData(GL_ARRAY_BUFFER, 8*sizeof(GLfloat)*this->numVerts, NULL, GL_DYNAMIC_DRAW);
+   //glBufferData(GL_ARRAY_BUFFER, 8*sizeof(GLfloat)*this->numVerts, NULL, GL_STREAM_DRAW);
 
    // Convenience variables
    GLintptr offset = 0;
@@ -416,7 +419,7 @@ void drawCall::updateColorCache(void) {
    glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
 
    // Initialize offset to begin storing data in latter part of the buffer
-   GLuint offset = 4*sizeof(GLfloat)*this->numVerts;
+   GLintptr offset = 4*sizeof(GLfloat)*this->numVerts;
 
    // Load Vertex coordinate data into VBO
    glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*4*this->numVerts, this->colorCache);
@@ -447,4 +450,23 @@ void drawCall::updateCoordCache(void) {
    return;
 }
 
+/*
+ * Updates Buffer object with cache
+ */
+void drawCall::updateTexUVCache(void) {
+
+   // Set active VBO
+   glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
+
+   // Initialize offset to begin storing data in latter part of the buffer
+   GLintptr offset = 2*sizeof(GLfloat)*this->numVerts;
+
+   // Load Vertex coordinate data into VBO
+   glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*this->numVerts, this->texuvCache);
+
+   // Unbind Buffer Object
+   glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+   return;
+}
 #endif
