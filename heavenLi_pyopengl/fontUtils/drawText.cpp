@@ -2,12 +2,11 @@
 
 using namespace std;
 extern textAtlas* quack;
-extern GLint uniform_tex;
 
-GLuint      vbo;
 bool        firstRun = true;
 std::string prevString;
 drawCall    textLine;
+GLuint      prevStringLen;
 
 PyObject* drawText_hliGLutils(PyObject* self, PyObject *args) {
    PyObject *colourPyTup;
@@ -31,8 +30,7 @@ PyObject* drawText_hliGLutils(PyObject* self, PyObject *args) {
    const char* inputChars = PyUnicode_AsUTF8(Pystring);
    std::string inputString = inputChars;
 
-   //printf(inputChars);
-   //printf("\n");
+   GLuint stringLen = inputString.size();
 
    textColor[0]   = float(PyFloat_AsDouble(PyTuple_GetItem(colourPyTup, 0)));
    textColor[1]   = float(PyFloat_AsDouble(PyTuple_GetItem(colourPyTup, 1)));
@@ -40,14 +38,13 @@ PyObject* drawText_hliGLutils(PyObject* self, PyObject *args) {
    textColor[3]   = float(PyFloat_AsDouble(PyTuple_GetItem(colourPyTup, 3)));
 
    if (firstRun) {
-      glGenBuffers(1, &vbo);
       firstRun = false;
       textLine.setDrawType(GL_TRIANGLES);
       /*
-      for (unsigned int i = 0; i < 128-32; i++)
+      for (unsigned int i = 0; i < 128; i++)
          //printf("glyph %c: width (bearingX): %12.0f, rows (bearingY): %12.0f, bearingLeft: %12.0f, bearingTop: %12.0f\n", 
          printf("glyph %c: width (bearingX): %12d, rows (bearingY): %12d, bearingLeft: %12d, bearingTop: %12d, texOffsetX: %0.5f, texOffsetY: %0.5f\n", 
-               i+32, 
+               i, 
                (GLint)quack->glyphData[i].bearingX,
                (GLint)quack->glyphData[i].bearingY,
                (GLint)quack->glyphData[i].bearingLeft,
@@ -59,98 +56,96 @@ PyObject* drawText_hliGLutils(PyObject* self, PyObject *args) {
       */
    }
 
-   glBindTexture(GL_TEXTURE_2D, quack->tex);
-   glUniform1i(uniform_tex, 0);
+   if (  textLine.numVerts == 0              ||
+         stringLen > prevStringLen           ){//||
+         //prevString.compare(inputChars) != 0 ){
+      std::vector <GLfloat> verts;
+      std::vector <GLfloat> colrs;
+      std::vector <GLfloat> texuv;
 
-   //glEnableVertexAttribArray(0);
-   glBindBuffer(GL_ARRAY_BUFFER, vbo);
+      int c = 0;
+      character* tmg;
+      float x = 0.0f,
+            y = 0.0f,
+            ax;
 
-   std::vector <GLfloat> verts;
-   std::vector <GLfloat> colrs;
-   std::vector <GLfloat> texuv;
+      for (unsigned int i = 0; i < stringLen; i++) {
+         c = inputChars[i];
 
-   int c = 0;
-   character tmg;
-   float x = 0.0f,
-         y = 0.0f,
-         x2,
-         y2,
-         w,
-         h;
+         tmg = &quack->glyphData[c];
 
-   for (unsigned int i = 0; i < inputString.size(); i++) {
-      c = inputChars[i]-32;
+         // Only update non-control characters
+         if (c >= 32) {
+            ax =  (float)tmg->advanceX*0.015625f; // divide by 64
+            x +=  ax;
+         }
 
-      tmg = quack->glyphData[c];
+         // Shift downward and reset x position for line breaks
+         if (c == (int)'\n') {
+            y -= (float)quack->faceSize;
+            x = 0.0f;
+         }
 
-      x2 =   x + tmg.bearingLeft;
-      y2 =  -y - tmg.bearingTop;
-      w  =  tmg.bearingX;
-      h  =  tmg.bearingY;
-      x +=  tmg.advanceX*0.015625f;
-
-      //x += ((float)tmg.advanceX / 64.0f);
-      //y += ((float)tmg].advanceY / 64.0f);
-
-      // Skip glyphs with no pixels
-      if (!w || !h) {
-         continue;
+         defineChar(
+               x-ax, y, 
+               c,
+               quack,
+               textColor, 
+               verts, texuv, colrs);
       }
 
-      verts.push_back( x2);
-      verts.push_back(-y2);
+      prevString     = inputString;
+      prevStringLen  = stringLen;
+      textLine.texID = quack->tex;
+      textLine.buildCache(verts.size()/2, verts, texuv, colrs);
+   }
 
-      verts.push_back( x2 + w);
-      verts.push_back(-y2);
+   if (  prevString.compare(inputString) != 0 ){
+      int c = 0;
+      character* tmg;
+      float x = 0.0f,
+            y = 0.0f,
+            ax;
 
-      verts.push_back( x2);
-      verts.push_back(-y2 - h);
+      for (unsigned int i = stringLen*6; i < prevStringLen*6; i++){
+         textLine.coordCache[i*2+0] = 0.0f;
+         textLine.coordCache[i*2+1] = 0.0f;
+         textLine.texuvCache[i*2+0] = 0.0f;
+         textLine.texuvCache[i*2+1] = 0.0f;
+      }
+      GLuint index = 0;
+      for (unsigned int i = 0; i < prevStringLen; i++) {
 
-      verts.push_back( x2 + w);
-      verts.push_back(-y2);
+         if (i < stringLen){
+            c = inputChars[i];
 
-      verts.push_back( x2);
-      verts.push_back(-y2 - h);
+            tmg = &quack->glyphData[c];
 
-      verts.push_back( x2 + w);
-      verts.push_back(-y2 - h);
+            // Only update non-control characters
+            if (c >= 32) {
+               ax =  (float)tmg->advanceX*0.015625f; // divide by 64
+               x +=  ax;
+            }
 
-      texuv.push_back(tmg.textureOffsetX);
-      texuv.push_back(tmg.textureOffsetY);
+            // Shift downward and reset x position for line breaks
+            if (c == (int)'\n') {
+               y -= (float)quack->faceSize;
+               x = 0.0f;
+            }
 
-      texuv.push_back(tmg.textureOffsetX + tmg.bearingX / quack->textureWidth);
-      texuv.push_back(tmg.textureOffsetY);
+            index = updateChar(
+                  x-ax, y, 
+                  c,
+                  quack,
+                  index,
+                  textLine.coordCache, 
+                  textLine.texuvCache);
+         }
+      }
 
-      texuv.push_back(tmg.textureOffsetX);
-      texuv.push_back(tmg.textureOffsetY + tmg.bearingY / quack->textureHeight);
-
-      texuv.push_back(tmg.textureOffsetX + tmg.bearingX / quack->textureWidth);
-      texuv.push_back(tmg.textureOffsetY);
-
-      texuv.push_back(tmg.textureOffsetX);
-      texuv.push_back(tmg.textureOffsetY + tmg.bearingY / quack->textureHeight);
-
-      texuv.push_back(tmg.textureOffsetX + tmg.bearingX / quack->textureWidth);
-      texuv.push_back(tmg.textureOffsetY + tmg.bearingY / quack->textureHeight);
-
-      colrs.push_back(textColor[0]);   colrs.push_back(textColor[1]);   colrs.push_back(textColor[2]);   colrs.push_back(textColor[3]);
-      colrs.push_back(textColor[0]);   colrs.push_back(textColor[1]);   colrs.push_back(textColor[2]);   colrs.push_back(textColor[3]);
-      colrs.push_back(textColor[0]);   colrs.push_back(textColor[1]);   colrs.push_back(textColor[2]);   colrs.push_back(textColor[3]);
-      colrs.push_back(textColor[0]);   colrs.push_back(textColor[1]);   colrs.push_back(textColor[2]);   colrs.push_back(textColor[3]);
-      colrs.push_back(textColor[0]);   colrs.push_back(textColor[1]);   colrs.push_back(textColor[2]);   colrs.push_back(textColor[3]);
-      colrs.push_back(textColor[0]);   colrs.push_back(textColor[1]);   colrs.push_back(textColor[2]);   colrs.push_back(textColor[3]);
-      /*
-      printf("glyph %c: width (bearingX): %4.0f, rows (bearingY): %4.0f, bearingLeft: %4.0f, bearingTop: %4.0f, texOffsetX: %1.5f, texOffsetY: %1.5f\n", 
-            c, 
-            (float)tmg.bearingX,
-            (float)tmg.bearingY,
-            (float)tmg.bearingLeft,
-            (float)tmg.bearingTop,
-            (float)tmg.textureOffsetX,
-            (float)tmg.textureOffsetY
-            );
-            */
-
+      textLine.updateTexUVCache();
+      textLine.updateCoordCache();
+      prevString = inputString;
    }
 
    // Draw whole texture atlas
@@ -180,9 +175,10 @@ PyObject* drawText_hliGLutils(PyObject* self, PyObject *args) {
    colrs.push_back(textColor[0]);   colrs.push_back(textColor[1]);   colrs.push_back(textColor[2]);   colrs.push_back(textColor[3]);
    */
 
-   textLine.texID = quack->tex;
-   textLine.buildCache(verts.size()/2, verts, texuv, colrs);
-   textLine.updateMVP(gx, gy, sx*0.01f, sy*0.01f, 0.0f, w2h);
+   if (w2h <= 1.0)
+      textLine.updateMVP(gx, gy, sx*0.01f*w2h, sy*0.01f*w2h, 0.0f, w2h);
+   else
+      textLine.updateMVP(gx, gy, sx*0.01f, sy*0.01f, 0.0f, w2h);
    textLine.draw();
 
    Py_RETURN_NONE;
