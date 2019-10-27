@@ -56,6 +56,7 @@ float offScreen = 100.0;            // Used for moving geometry offscreen, will 
 
 #include "fontUtils/characterStruct.h"    // Provides a simple struct for caching character glyph data
 #include "fontUtils/atlasClass.h"         // Provides a class for building a Text Atlas + OpenGL texture mapping, etc.
+#include "fontUtils/primCharTrig.cpp"     // Provides a primitive for drawing characters
 
 //std::vector<textAtlas> fontAtlases;            // Used to store all generated fonts
 textAtlas* quack;
