@@ -65,6 +65,7 @@ drawCall::drawCall(void) {
 
    this->colorsChanged  = GL_FALSE;
 
+   //this->drawType       = GL_LINE_STRIP;
    this->drawType       = GL_TRIANGLE_STRIP;
 
    this->texID          = whiteTex;
@@ -154,6 +155,8 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
    this->usesTex  = true;
    this->numVerts = numVerts;
 
+   GLuint congruentVertices = 0;
+
    // Safely allocate cache arrays
    if (this->coordCache == NULL) {
       this->coordCache = new GLfloat[this->numVerts*2];
@@ -180,6 +183,7 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
    for (unsigned int i = 0; i < this->numVerts; i++) {
       this->coordCache[i*2]   = verts[i*2];
       this->coordCache[i*2+1] = verts[i*2+1];
+
       this->texuvCache[i*2]   = texuv[i*2];
       this->texuvCache[i*2+1] = texuv[i*2+1];
 
@@ -187,6 +191,12 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
       this->colorCache[i*4+1] = colrs[i*4+1];
       this->colorCache[i*4+2] = colrs[i*4+2];
       this->colorCache[i*4+3] = colrs[i*4+3];
+
+      // Count congruent vertices
+      if ( i < this->numVerts-2)
+         if (  verts[i*2+0] == verts[(i+1)*2+0]  ||
+               verts[i*2+1] == verts[(i+1)*2+1]  )
+            congruentVertices++;
    }
 
    // Create buffer object if one does not exist, otherwise, delete and make a new one
@@ -204,7 +214,7 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
    glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
 
    // Allocate space to hold all vertex coordinate and color data
-   printf("Allocating Buffer, size: %d bytes, %d Total Vertices.\n", 8*sizeof(GLfloat)*this->numVerts, this->numVerts);
+   printf("Allocating Buffer, size: %d bytes, %d Total Vertices, %d Congruent Vertices.\n", 8*sizeof(GLfloat)*this->numVerts, this->numVerts, congruentVertices);
    glBufferData(GL_ARRAY_BUFFER, 8*sizeof(GLfloat)*this->numVerts, NULL, GL_STATIC_DRAW);
    //glBufferData(GL_ARRAY_BUFFER, 8*sizeof(GLfloat)*this->numVerts, NULL, GL_DYNAMIC_DRAW);
    //glBufferData(GL_ARRAY_BUFFER, 8*sizeof(GLfloat)*this->numVerts, NULL, GL_STREAM_DRAW);
@@ -252,6 +262,7 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
 void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vector<GLfloat> &colrs) {
    this->usesTex  = false;
    this->numVerts = numVerts;
+   GLuint congruentVertices = 0;
 
    // Safely allocate cache arrays
    if (this->coordCache == NULL) {
@@ -286,6 +297,12 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
       this->colorCache[i*4+1] = colrs[i*4+1];
       this->colorCache[i*4+2] = colrs[i*4+2];
       this->colorCache[i*4+3] = colrs[i*4+3];
+
+      // Count congruent vertices
+      if ( i < this->numVerts-2)
+         if (  verts[i*2+0] == verts[(i+1)*2+0]  ||
+               verts[i*2+1] == verts[(i+1)*2+1]  )
+            congruentVertices++;
    }
 
    // Create buffer object if one does not exist, otherwise, delete and make a new one
@@ -303,6 +320,7 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
    glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
 
    // Allocate space to hold all vertex coordinate and color data
+   printf("Allocating Buffer, size: %d bytes, %d Total Vertices, %d Congruent Vertices.\n", 8*sizeof(GLfloat)*this->numVerts, this->numVerts, congruentVertices);
    //printf("Creating Buffer Object, size: %d bytes, %d Total Vertices.\n", 6*sizeof(GLfloat)*this->numVerts, this->numVerts);
    glBufferData(GL_ARRAY_BUFFER, 8*sizeof(GLfloat)*this->numVerts, NULL, GL_STATIC_DRAW);
 
