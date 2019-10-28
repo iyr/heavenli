@@ -59,28 +59,29 @@ PyObject* drawPrim_hliGLutils(PyObject* self, PyObject *args) {
          0.0f, 1.0f, 0.0f,
          0.0f, 0.0f, 1.0f};
       
-      //defineColorWheel(0.0f, 0.0f, 1.0f, 60, 3, 1.0f, colors, verts, colrs);
-      /*
-      definePill(
-            -0.5f, 0.5f,
-            0.5f, -0.5f,
-            0.25f,
-            30,
+      defineQuad2pt(
+            -0.25f, -0.25f,
+            -0.5f, -0.5f,
             faceColor,
-            detailColor,
-            verts,
-            colrs);
-            */
+            verts, colrs);
 
-      defineArch(
-            0.0f, 0.0f,
-            0.0f, 0.0f,
-            0.0f, 45.0f,
-            0.5f,
-            1,
-            extraColor,
-            verts,
-            colrs);
+      defineQuad2pt(
+            0.25f, -0.25f,
+            0.5f, -0.5f,
+            faceColor,
+            verts, colrs);
+
+      defineQuad2pt(
+            -0.25f, 0.25f,
+            -0.5f, 0.5f,
+            faceColor,
+            verts, colrs);
+
+      defineQuad2pt(
+            0.25f, 0.25f,
+            0.5f, 0.5f,
+            faceColor,
+            verts, colrs);
 
       primVerts = verts.size()/2;
 
