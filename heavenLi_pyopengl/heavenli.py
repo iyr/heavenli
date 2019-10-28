@@ -91,7 +91,8 @@ def drawBackground():
                     stateMach['w2h'],
                     stateMach['lamps'][Light].getBulbsCurrentRGB());
 
-        elif (stateMach['lamps'][Light].getArn() == 1):
+        if (stateMach['lamps'][Light].getArn() == 1):
+            pass
             drawHomeLinear(0.0, 0.0, 
                     stateMach['wx'], stateMach['wy'],
                     stateMach['lamps'][Light].getNumBulbs(), 
@@ -587,6 +588,7 @@ def display():
     for i in range(len(stateMach['lamps'])):
         stateMach['lamps'][i].updateBulbs(stateMach['tDiff']/2)
 
+    #drawPrim(0.0, 0.0, 1.0, 0.0, stateMach['w2h'], stateMach['faceColor'], stateMach['detailColor'], (1.0, 1.0, 1.0, 1.0))
     drawText("FPS: " + str(int(stateMach['fps'])), -1.0, 0.9, 0.25, 0.25, stateMach['w2h'], stateMach['detailColor'])
 
     stateMach['MasterSwitch'].updateParams()
