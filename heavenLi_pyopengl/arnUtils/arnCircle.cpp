@@ -7,24 +7,31 @@ using namespace std;
 extern float offScreen;
 
 drawCall homeCircle;
-GLuint    prevHomeCircleNumBulbs;
+GLuint   prevHomeCircleNumBulbs;
 
 PyObject* drawHomeCircle_hliGLutils(PyObject *self, PyObject *args) {
-   PyObject* py_list;
-   PyObject* py_tuple;
-   PyObject* py_float;
-   GLfloat *bulbColors;
-   GLfloat gx, gy, wx, wy, ao, w2h, alpha=1.0f;
-   GLuint numBulbs;
+   PyObject*   py_list;
+   PyObject*   py_tuple;
+   PyObject*   py_float;
+   GLfloat*    bulbColors;
+   GLfloat     gx, 
+               gy, 
+               wx, 
+               wy, 
+               ao, 
+               w2h, 
+               alpha=1.0f;
+   GLfloat     tmc[4];
+   GLuint      numBulbs;
 
    if (!PyArg_ParseTuple(args,
             "fffflffO",
-            &gx, &gy,      // background position (X, Y)
-            &wx, &wy,      // background scale (X, Y)
-            &numBulbs,     // number of elements
-            &ao,           // background rotation angle
-            &w2h,          // width to height ratio
-            &py_list       // colors of the background segments
+            &gx, &gy,   // background position (X, Y)
+            &wx, &wy,   // background scale (X, Y)
+            &numBulbs,  // number of elements
+            &ao,        // background rotation angle
+            &w2h,       // width to height ratio
+            &py_list    // colors of the background segments
             ))
    {
       Py_RETURN_NONE;
@@ -35,7 +42,7 @@ PyObject* drawHomeCircle_hliGLutils(PyObject *self, PyObject *args) {
    for (unsigned int i = 0; i < numBulbs; i++) {
       py_tuple = PyList_GetItem(py_list, i);
 
-      for (int j = 0; j < 3; j++) {
+      for (unsigned int j = 0; j < 3; j++) {
          py_float = PyTuple_GetItem(py_tuple, j);
          bulbColors[i*3+j] = float(PyFloat_AsDouble(py_float));
       }
@@ -43,7 +50,6 @@ PyObject* drawHomeCircle_hliGLutils(PyObject *self, PyObject *args) {
 
    homeCircle.setNumColors(numBulbs);
    for (unsigned int i = 0; i < numBulbs; i++ ) {
-      GLfloat tmc[4];
       tmc[0] = bulbColors[i*3+0];
       tmc[1] = bulbColors[i*3+1];
       tmc[2] = bulbColors[i*3+2];
@@ -51,16 +57,17 @@ PyObject* drawHomeCircle_hliGLutils(PyObject *self, PyObject *args) {
       homeCircle.setColorQuartet(i, tmc);
    }
 
-   unsigned int circleSegments = 60;
 
    if (  homeCircle.numVerts     == 0        ){
 
       printf("Initializing Geometry for Circular Background\n");
+      GLuint circleSegments = 60;
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
 
       homeCircle.setNumColors(numBulbs);
       defineColorWheel(0.0f, 0.0f, 10.0f, circleSegments, 180.0f, numBulbs, 1.0f, bulbColors, verts, colrs);
+      printf("homeCircle vertexBuffer length: %d, Number of vertices: %d, tris: %d\n", verts.size()*8, verts.size(), verts.size()/6);
 
       prevHomeCircleNumBulbs = numBulbs;
       homeCircle.buildCache(verts.size()/2, verts, colrs);
@@ -71,6 +78,7 @@ PyObject* drawHomeCircle_hliGLutils(PyObject *self, PyObject *args) {
          prevHomeCircleNumBulbs     != numBulbs ){
 
       unsigned int index = 0;
+      GLuint circleSegments = 60;
 
       // Changes in bulb quantity necessitate color update
       if (  prevHomeCircleNumBulbs  != numBulbs ){
