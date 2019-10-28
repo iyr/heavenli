@@ -7,7 +7,7 @@
 using namespace std;
 
 // Append to input vectors
-int defineEllipse(
+unsigned int defineEllipse(
       float bx,                     /* X-Coordinate */
       float by,                     /* Y-Coordinate */
       float bsx,                    /* x-Scale 2.0=spans display before  scaling */
@@ -84,7 +84,7 @@ int defineEllipse(
 }
 
 // Useful overload
-int defineEllipse(
+unsigned int defineEllipse(
       float bx,                     /* X-Coordinate */
       float by,                     /* Y-Coordinate */
       float bs,                     /* Scale 2.0=spans display before MVP scaling */
@@ -97,7 +97,7 @@ int defineEllipse(
 }
 
 // Useful pseudo-overload
-int defineCircle(
+unsigned int defineCircle(
       float bx,                     /* X-Coordinate */
       float by,                     /* Y-Coordinate */
       float bs,                     /* Scale 2.0=spans display before MVP scaling */
@@ -110,7 +110,7 @@ int defineCircle(
 }
  
 // Write to pre-allocated input array, updating vertices only 
-int updateEllipseGeometry(
+unsigned int updateEllipseGeometry(
       float bx,                     /* X-Coordinate */
       float by,                     /* Y-Coordinate */
       float bsx,                    /* x-Scale 2.0=spans display before GL scaling */
@@ -151,7 +151,7 @@ int updateEllipseGeometry(
 }
 
 // Write to pre-allocated input array, updating color only 
-int updateEllipseColor(
+unsigned int updateEllipseColor(
       unsigned int circleSegments,  /* Number of sides */
       float *color,                 /* Polygon Color */
       unsigned int   index,         /* Index of where to start writing to input arrays */
