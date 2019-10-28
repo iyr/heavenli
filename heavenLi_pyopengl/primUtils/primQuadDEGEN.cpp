@@ -28,28 +28,28 @@ unsigned int defineQuad4pt(
    A = color[3];
 
    // Prepend Degenerate Vertex
-   if (verts.size() == 0) {
+   //if (verts.size() == 0) {
       /* X */ verts.push_back(px);
       /* Y */ verts.push_back(py);
       /* R */ colrs.push_back(R);
       /* G */ colrs.push_back(G);
       /* B */ colrs.push_back(B);
       /* A */ colrs.push_back(A);
-   } else {
-      /* X */ verts.push_back(px);
-      /* Y */ verts.push_back(py);
-      /* R */ colrs.push_back(R);
-      /* G */ colrs.push_back(G);
-      /* B */ colrs.push_back(B);
-      /* A */ colrs.push_back(A);
+   //} else {
+      ///* X */ verts.push_back(px);
+      ///* Y */ verts.push_back(py);
+      ///* R */ colrs.push_back(R);
+      ///* G */ colrs.push_back(G);
+      ///* B */ colrs.push_back(B);
+      ///* A */ colrs.push_back(A);
 
-      /* X */ verts.push_back(px);
-      /* Y */ verts.push_back(py);
-      /* R */ colrs.push_back(R);
-      /* G */ colrs.push_back(G);
-      /* B */ colrs.push_back(B);
-      /* A */ colrs.push_back(A);
-   }
+      ///* X */ verts.push_back(px);
+      ///* Y */ verts.push_back(py);
+      ///* R */ colrs.push_back(R);
+      ///* G */ colrs.push_back(G);
+      ///* B */ colrs.push_back(B);
+      ///* A */ colrs.push_back(A);
+   //}
    
    /* X */ verts.push_back(px);
    /* Y */ verts.push_back(py);
@@ -105,28 +105,28 @@ unsigned int defineQuad2pt(
    A = color[3];
 
    // Prepend Degenerate Vertex
-   if (verts.size() == 0) {
+   //if (verts.size() == 0) {
       /* X */ verts.push_back(px);
       /* Y */ verts.push_back(py);
       /* R */ colrs.push_back(R);
       /* G */ colrs.push_back(G);
       /* B */ colrs.push_back(B);
       /* A */ colrs.push_back(A);
-   } else {
-      /* X */ verts.push_back(px);
-      /* Y */ verts.push_back(py);
-      /* R */ colrs.push_back(R);
-      /* G */ colrs.push_back(G);
-      /* B */ colrs.push_back(B);
-      /* A */ colrs.push_back(A);
+   //} else {
+      ///* X */ verts.push_back(px);
+      ///* Y */ verts.push_back(py);
+      ///* R */ colrs.push_back(R);
+      ///* G */ colrs.push_back(G);
+      ///* B */ colrs.push_back(B);
+      ///* A */ colrs.push_back(A);
 
-      /* X */ verts.push_back(px);
-      /* Y */ verts.push_back(py);
-      /* R */ colrs.push_back(R);
-      /* G */ colrs.push_back(G);
-      /* B */ colrs.push_back(B);
-      /* A */ colrs.push_back(A);
-   }
+      ///* X */ verts.push_back(px);
+      ///* Y */ verts.push_back(py);
+      ///* R */ colrs.push_back(R);
+      ///* G */ colrs.push_back(G);
+      ///* B */ colrs.push_back(B);
+      ///* A */ colrs.push_back(A);
+   //}
    
    /* X */ verts.push_back(px);
    /* Y */ verts.push_back(py);
@@ -189,28 +189,28 @@ unsigned int defineQuadRad(
    qy = gy+ry;
 
    // Prepend Degenerate Vertex
-   if (verts.size() == 0) {
+   //if (verts.size() == 0) {
       /* X */ verts.push_back(px);
       /* Y */ verts.push_back(py);
       /* R */ colrs.push_back(R);
       /* G */ colrs.push_back(G);
       /* B */ colrs.push_back(B);
       /* A */ colrs.push_back(A);
-   } else {
-      /* X */ verts.push_back(px);
-      /* Y */ verts.push_back(py);
-      /* R */ colrs.push_back(R);
-      /* G */ colrs.push_back(G);
-      /* B */ colrs.push_back(B);
-      /* A */ colrs.push_back(A);
+   //} else {
+      ///* X */ verts.push_back(px);
+      ///* Y */ verts.push_back(py);
+      ///* R */ colrs.push_back(R);
+      ///* G */ colrs.push_back(G);
+      ///* B */ colrs.push_back(B);
+      ///* A */ colrs.push_back(A);
 
-      /* X */ verts.push_back(px);
-      /* Y */ verts.push_back(py);
-      /* R */ colrs.push_back(R);
-      /* G */ colrs.push_back(G);
-      /* B */ colrs.push_back(B);
-      /* A */ colrs.push_back(A);
-   }
+      ///* X */ verts.push_back(px);
+      ///* Y */ verts.push_back(py);
+      ///* R */ colrs.push_back(R);
+      ///* G */ colrs.push_back(G);
+      ///* B */ colrs.push_back(B);
+      ///* A */ colrs.push_back(A);
+   //}
    
    /* X */ verts.push_back(px);
    /* Y */ verts.push_back(py);
@@ -265,16 +265,16 @@ unsigned int updateQuad4ptGeometry(
    unsigned int vertIndex = index*2;   /* index (X, Y)   */
 
    // Prepend Degenerate Vertex
-   if (vertIndex == 0) {
+   //if (vertIndex == 0) {
       /* X */ verts[vertIndex++] = px;
       /* Y */ verts[vertIndex++] = py;
-   } else {
-      /* X */ verts[vertIndex++] = px;
-      /* Y */ verts[vertIndex++] = py;
+   //} else {
+      ///* X */ verts[vertIndex++] = px;
+      ///* Y */ verts[vertIndex++] = py;
 
-      /* X */ verts[vertIndex++] = px;
-      /* Y */ verts[vertIndex++] = py;
-   }
+      ///* X */ verts[vertIndex++] = px;
+      ///* Y */ verts[vertIndex++] = py;
+   //}
    
    /* X */ verts[vertIndex++] = px;
    /* Y */ verts[vertIndex++] = py;
@@ -308,15 +308,15 @@ unsigned int updateQuad2ptGeometry(
    unsigned int vertIndex = index*2;   /* index (X, Y)   */
 
    // Prepend Degenerate Vertex
-   if (vertIndex == 0) {
+   //if (vertIndex == 0) {
       /* X */ verts[vertIndex++] = px;
       /* Y */ verts[vertIndex++] = py;
-   } else {
-      /* X */ verts[vertIndex++] = px;
-      /* Y */ verts[vertIndex++] = py;
-      /* X */ verts[vertIndex++] = px;
-      /* Y */ verts[vertIndex++] = py;
-   }
+   //} else {
+      ///* X */ verts[vertIndex++] = px;
+      ///* Y */ verts[vertIndex++] = py;
+      ///* X */ verts[vertIndex++] = px;
+      ///* Y */ verts[vertIndex++] = py;
+   //}
    
    /* X */ verts[vertIndex++] = px;
    /* Y */ verts[vertIndex++] = py;
@@ -355,15 +355,15 @@ unsigned int updateQuadRadGeometry(
    qy = gy+ry;
 
    // Prepend Degenerate Vertex
-   if (vertIndex == 0) {
+   //if (vertIndex == 0) {
       /* X */ verts[vertIndex++] = px;
       /* Y */ verts[vertIndex++] = py;
-   } else {
-      /* X */ verts[vertIndex++] = px;
-      /* Y */ verts[vertIndex++] = py;
-      /* X */ verts[vertIndex++] = px;
-      /* Y */ verts[vertIndex++] = py;
-   }
+   //} else {
+      ///* X */ verts[vertIndex++] = px;
+      ///* Y */ verts[vertIndex++] = py;
+      ///* X */ verts[vertIndex++] = px;
+      ///* Y */ verts[vertIndex++] = py;
+   //}
    
    /* X */ verts[vertIndex++] = px;
    /* Y */ verts[vertIndex++] = py;
@@ -398,22 +398,22 @@ unsigned int updateQuadColor(
    A  = color[3];
 
    // Prepend Degenerate Vertex
-   if (colrIndex == 0) {
+   //if (colrIndex == 0) {
       /* R */ colrs[colrIndex++] = R;
       /* G */ colrs[colrIndex++] = G;
       /* B */ colrs[colrIndex++] = B;
       /* A */ colrs[colrIndex++] = A;
-   } else {
-      /* R */ colrs[colrIndex++] = R;
-      /* G */ colrs[colrIndex++] = G;
-      /* B */ colrs[colrIndex++] = B;
-      /* A */ colrs[colrIndex++] = A;
+   //} else {
+      ///* R */ colrs[colrIndex++] = R;
+      ///* G */ colrs[colrIndex++] = G;
+      ///* B */ colrs[colrIndex++] = B;
+      ///* A */ colrs[colrIndex++] = A;
 
-      /* R */ colrs[colrIndex++] = R;
-      /* G */ colrs[colrIndex++] = G;
-      /* B */ colrs[colrIndex++] = B;
-      /* A */ colrs[colrIndex++] = A;
-   }
+      ///* R */ colrs[colrIndex++] = R;
+      ///* G */ colrs[colrIndex++] = G;
+      ///* B */ colrs[colrIndex++] = B;
+      ///* A */ colrs[colrIndex++] = A;
+   //}
    
    /* R */ colrs[colrIndex++] = R;
    /* G */ colrs[colrIndex++] = G;
