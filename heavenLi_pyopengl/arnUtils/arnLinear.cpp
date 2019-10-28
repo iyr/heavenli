@@ -1,38 +1,39 @@
-#include <Python.h>
-#define GL_GLEXT_PROTOTYPES
-#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
-   #include <windows.h>
-   // These undefs necessary because microsoft
-   #undef near
-   #undef far
-#endif
-#include <GL/gl.h>
-#include <vector>
-#include <math.h>
 #include "primIconLinear.cpp"
+
+/*
+ * Heavenli opengl drawcode for linear arrangments (backgroun+iconography)
+ */
 using namespace std;
 extern float offScreen;
 
-GLuint      prevHomeLinearNumBulbs;
-drawCall    homeLinear;
+drawCall homeLinear;
+GLuint   prevHomeLinearNumBulbs;
+GLfloat  prevHomeLinearAO,
+         sxCorrected;
 
 PyObject* drawHomeLinear_hliGLutils(PyObject *self, PyObject *args) {
    PyObject*   py_list;
    PyObject*   py_tuple;
    PyObject*   py_float;
    GLfloat*    bulbColors;
-   GLfloat     gx, gy, wx, wy, ao, w2h, alpha=1.0f;
+   GLfloat     gx, 
+               gy, 
+               wx, 
+               wy, 
+               ao, 
+               w2h, 
+               alpha=1.0f;
    GLfloat     tmc[4];
    GLuint      numBulbs;
-   GLuint      homeLinearVerts;
+
    if (!PyArg_ParseTuple(args,
             "fffflffO",
-            &gx, &gy,
-            &wx, &wy,
-            &numBulbs,
-            &ao,
-            &w2h,
-            &py_list
+            &gx, &gy,   // background position (X, Y)
+            &wx, &wy,   // background scale (X, Y)
+            &numBulbs,  // number of elements
+            &ao,        // background rotation angle
+            &w2h,       // width to height ratio
+            &py_list    // colors of the background segments
             ))
    {
       Py_RETURN_NONE;
@@ -58,79 +59,66 @@ PyObject* drawHomeLinear_hliGLutils(PyObject *self, PyObject *args) {
       homeLinear.setColorQuartet(i, tmc);
    }
 
-   GLuint segments = 60;
    // Allocate and Define Geometry/Color buffers
-   if (  homeLinear.numVerts == 0   ){
+   if (  homeLinear.numVerts     == 0        ||
+         prevHomeLinearNumBulbs  != numBulbs ){
 
-      printf("Generating geometry for homeLinear\n");
+      //printf("Generating geometry for homeLinear\n");
+      GLuint segments = 60;
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
+
       float TLx, TRx, BLx, BRx, TLy, TRy, BLy, BRy;
       float offset = 4.0f / 60.0f;
       unsigned int limit = segments/numBulbs;
 
+      homeLinear.setNumColors(numBulbs);
       for (unsigned int j = 0; j < numBulbs; j++) {
          tmc[0] = float(bulbColors[j*3+0]);
          tmc[1] = float(bulbColors[j*3+1]);
          tmc[2] = float(bulbColors[j*3+2]);
          tmc[3] = alpha;
 
-         for (unsigned int i = 0; i < limit; i++) {
+         // Avoid integer division
+         GLfloat i0 = (float)j / (float)numBulbs;
+         GLfloat i1 = (float)(j+1) / (float)numBulbs;
 
-            if (  i == 0   &&
-                  j == 0   ){
-               TLx = -4.0f;
-               TLy =  4.0f;
+         TLx = -2.0f + 4.0f*i0;
+         TLy = +3.0f;
 
-               BLx = -4.0f;
-               BLy = -4.0f;
-            } else {
-               TLx = float(-2.0f + i*offset + j*offset*limit);
-               TLy =  4.0f;
+         TRx = -2.0f + 4.0f*i1;
+         TRy = +3.0f;
 
-               BLx = float(-2.0f + i*offset + j*offset*limit);
-               BLy = -4.0f;
-            }
+         BLx = -2.0f + 4.0f*i0;
+         BLy = -3.0f;
 
-            if (  i == numBulbs-1   &&
-                  j == limit-1      ){
-               TRx =  4.0f;
-               TRy =  4.0f;
+         BRx = -2.0f + 4.0f*i1;
+         BRy = -3.0f;
 
-               BRx =  4.0f;
-               BRy = -4.0f;
-            } else {
-               TRx = float(-2.0f + (i+1)*offset + (j+1)*offset*limit);
-               TRy =  4.0f;
+         if (j == 0)
+            TLx *= 2.0f, BLx *=2.0f;
 
-               BRx = float(-2.0f + (i+1)*offset + (j+1)*offset*limit);
-               BRy = -4.0f;
-            }
+         if (j == numBulbs-1)
+            TRx *= 2.0f, BRx *=2.0f;
 
-            defineQuad4pt(
-                  TLx, TLy,
-                  BLx, BLy,
-                  TRx, TRy,
-                  BRx, BRy,
-                  tmc,
-                  verts, colrs);
-
-         }
+         defineQuad4pt(
+               TLx, TLy,
+               BLx, BLy,
+               TRx, TRy,
+               BRx, BRy,
+               tmc,
+               verts, colrs);
       }
 
-      homeLinearVerts = verts.size()/2;
-      printf("homeLinear vertexBuffer length: %.i, Number of vertices: %.i, tris: %.i\n", homeLinearVerts*2, homeLinearVerts, homeLinearVerts/3);
+      //printf("homeLinear vertexBuffer length: %d, Number of vertices: %d, tris: %d\n", verts.size()*8, verts.size(), verts.size()/6);
       prevHomeLinearNumBulbs = numBulbs;
-
       homeLinear.buildCache(verts.size()/2, verts, colrs);
    } 
 
    // Geometry already calculated, check if any colors need to be updated.
-   if (  homeLinear.colorsChanged               ||
-         prevHomeLinearNumBulbs     != numBulbs ){
+   if (  homeLinear.colorsChanged               ){
 
       unsigned int index = 0;
-      unsigned int limit = segments/numBulbs;
 
       for (unsigned int j = 0; j < numBulbs; j++) {
          tmc[0] = float(bulbColors[j*3+0]);
@@ -138,26 +126,25 @@ PyObject* drawHomeLinear_hliGLutils(PyObject *self, PyObject *args) {
          tmc[2] = float(bulbColors[j*3+2]);
          tmc[3] = alpha;
 
-         for (unsigned int i = 0; i < limit; i++) {
-            index = updateQuadColor(
-                  tmc,
-                  index,
-                  homeLinear.colorCache
-                  );
+         index = updateQuadColor(
+               tmc,
+               index,
+               homeLinear.colorCache
+               );
          }
-      }
 
       homeLinear.updateColorCache();
-
-      prevHomeLinearNumBulbs = numBulbs;
    }
 
-   prevHomeLinearNumBulbs = numBulbs;
-   delete [] bulbColors;
+   if (prevHomeLinearAO != ao) {
+      sxCorrected = -0.50f-pow(sin((float)degToRad(ao)), 2.0f);
+      prevHomeLinearAO = ao;
+   }
 
-   homeLinear.updateMVP(gx, gy, -0.50f-pow(sin((float)degToRad(ao)), 2.0f), 0.50f, ao, 1.0f);
+   homeLinear.updateMVP(gx, gy, sxCorrected, 0.50f, ao, 1.0f);
    homeLinear.draw();
 
+   delete [] bulbColors;
    Py_RETURN_NONE;
 }
 
