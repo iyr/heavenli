@@ -8,7 +8,7 @@ class Plugin:
         self.quack.append(Lamp())
         self.quack[0].setAlias('quack')
         self.quack[0].setNumBulbs(3)
-        self.quack[0].setArn(0)
+        self.quack[0].setArn(1)
         self.quack[0].setAngle(0)
         self.quack[0].setID([ord('q'), ord('1')])
         pass
