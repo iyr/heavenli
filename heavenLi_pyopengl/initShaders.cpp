@@ -71,10 +71,9 @@ GLuint LoadShader(const GLchar *shadersrc, GLenum type) {
 PyObject* initShaders_hliGLutils(PyObject* self, PyObject *args) {
 
    //Generate plain white texture for drawing solid color objects
-   //OpenGL ES 2.0 requires a minimum texture size of 64*64, apparently
    GLubyte* blankTexture;
-   blankTexture = new GLubyte[64*64*4];
-   memset(blankTexture, 255, 64*64*4);
+   blankTexture = new GLubyte[4];
+   memset(blankTexture, 255, 4);
    GLint maxTexSize;
    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTexSize);
    printf("Platform Maximum supported texture size: %d\n", maxTexSize);
@@ -85,7 +84,7 @@ PyObject* initShaders_hliGLutils(PyObject* self, PyObject *args) {
    glBindTexture(GL_TEXTURE_2D, whiteTex);
    glUniform1i(uniform_tex, 0);
 
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, blankTexture);
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, blankTexture);
 
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
@@ -94,6 +93,7 @@ PyObject* initShaders_hliGLutils(PyObject* self, PyObject *args) {
 
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
    delete [] blankTexture;
 
    const GLchar vertShaderSource[] = 
