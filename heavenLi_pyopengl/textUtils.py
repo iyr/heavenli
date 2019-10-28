@@ -2,7 +2,7 @@ from hliGLutils import *
 #import freetype
 from freetype import *
 
-def makeFont(fontFile="fonts/Barlow-Regular.ttf", numChars=128, size=32):
+def makeFont(fontFile="fonts/expressway_regular.ttf", numChars=128, size=32):
 #def makeFont(fontFile="fonts/copperplatedecolightpdf.ttf", numChars=128, size=48):
     face = freetype.Face(fontFile)
     face.set_char_size(size*64)
