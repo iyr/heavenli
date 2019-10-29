@@ -141,7 +141,9 @@ def drawHome():
             if (watchDot(
                 stateMach['wx'],                            # Middle of Screen
                 stateMach['wy'],                            # Middle of Screen
-                min(stateMach['wx'], stateMach['wy'])/2)):  # Clock Radius
+                min(stateMach['wx'], stateMach['wy'])/2)    # Clock Radius
+                and
+                stateMach['mousePressed']):                 # Button Must be clicked
                 stateMach['masterSwitch'] = not stateMach['masterSwitch']
                 for i in range(len(stateMach['lamps'])):
                     stateMach['lamps'][i].setMainLight(stateMach['masterSwitch'])
@@ -154,7 +156,9 @@ def drawHome():
                         mapRanges(buttons[i][1],      1.0,    -1.0, 0, stateMach['wy']*2),                  # Y coord of button
                         min(stateMach['wx'], stateMach['wy'])*0.5*0.3)                                      # Button Radius
                         and
-                        len(stateMach['lamps']) > 0):
+                        len(stateMach['lamps']) > 0
+                        and
+                        stateMach['mousePressed']): # Button Must be clicked
 
                         # Set Color Picker as target Screen selecting bulb i
                         stateMach['targetScreen'] = 1
@@ -172,7 +176,9 @@ def drawHome():
                     mapRanges(0.75,  1.0, -1.0, 0, stateMach['wy']*2),  # Y coord of button
                     min(stateMach['wx'], stateMach['wy'])*0.2)          # Button Radius
                     and
-                    len(stateMach['lamps']) > 0):
+                    len(stateMach['lamps']) > 0
+                    and
+                    stateMach['mousePressed']): # Button Must be clicked
 
                     # Set Color Picker as target Screen selecting bulb all bulbs
                     stateMach['targetScreen'] = 1
@@ -379,7 +385,9 @@ def drawSettingColor():
         if (watchDot(
             mapRanges(tmx, -tmux, tmux, 0, stateMach['wx']*2),
             mapRanges(tmy, tmuy, -tmuy, 0, stateMach['wy']*2),
-            tmr)):
+            tmr)
+            and
+            stateMach['mousePressed']):
                 stateMach['numHues'] += 2
                 if stateMach['numHues'] > 14:
                     stateMach['numHues'] = 14
@@ -388,7 +396,9 @@ def drawSettingColor():
         if (watchDot(
             mapRanges(-tmx, -tmux, tmux, 0, stateMach['wx']*2),
             mapRanges(tmy, tmuy, -tmuy, 0, stateMach['wy']*2),
-            tmr)):
+            tmr)
+            and
+            stateMach['mousePressed']):
                 stateMach['numHues'] -= 2
                 if stateMach['numHues'] < 10:
                     stateMach['numHues'] = 10
@@ -406,7 +416,9 @@ def drawSettingColor():
             if (watchDot(
                 mapRanges(hueButtons[i][0], -1.0*stateMach['w2h'], 1.0*stateMach['w2h'], 0, stateMach['wx']*2),
                 mapRanges(hueButtons[i][1], 1.0, -1.0, 0, stateMach['wy']*2),
-                min(stateMach['wx'], stateMach['wy'])*0.15*(12.0/float(stateMach['numHues'])))):
+                min(stateMach['wx'], stateMach['wy'])*0.15*(12.0/float(stateMach['numHues'])))
+                and
+                stateMach['mousePressed']):
 
                 stateMach['wereColorsTouched'] = True
                 stateMach['currentHue'] = hueButtons[i][2]
@@ -456,7 +468,9 @@ def drawSettingColor():
         if (watchDot(
         mapRanges( 0.75, -1.0,  1.0, 0, stateMach['wx']*2),
         mapRanges(-0.75,  1.0, -1.0, 0, stateMach['wy']*2),
-        min(stateMach['wx'], stateMach['wy'])*0.2)):
+        min(stateMach['wx'], stateMach['wy'])*0.2)
+        and
+        stateMach['mousePressed']):
             stateMach['wereColorsTouched'] = False
             if (len(stateMach['lamps']) > 0):
                 if (stateMach['targetBulb'] == stateMach['lamps'][Light].getNumBulbs()):
@@ -491,7 +505,9 @@ def drawSettingColor():
         if (watchDot(
         mapRanges(-0.75, -1.0,  1.0, 0, stateMach['wx']*2),
         mapRanges(-0.75,  1.0, -1.0, 0, stateMach['wy']*2),
-        min(stateMach['wx'], stateMach['wy'])*0.2)):
+        min(stateMach['wx'], stateMach['wy'])*0.2)
+        and
+        stateMach['mousePressed']):
             stateMach['wereColorsTouched'] = False
             if (len(stateMach['lamps']) > 0):
                 if (stateMach['targetBulb'] == stateMach['lamps'][Light].getNumBulbs()):
@@ -519,35 +535,40 @@ def watchDot(px, py, pr):
 # Used to process user input
 def watchScreen():
     global stateMach
-    if stateMach['prvState'] == 0:
-        stateMach['prvState'] = stateMach['touchState']
+    if (stateMach['currentState'] == 0):
         return True
     else:
-        stateMach['prvState'] = stateMach['touchState']
         return False
+
+def mouseActive(mouseX, mouseY):
+    global stateMach
+    stateMach['cursorX'] = mouseX
+    stateMach['cursorY'] = mouseY
 
 def mousePassive(mouseX, mouseY):
     global stateMach
-    if (stateMach['touchState'] == 0):
-        stateMach['cursorX'] = mouseX
-        stateMach['cursorY'] = mouseY
+    stateMach['cursorX'] = mouseX
+    stateMach['cursorY'] = mouseY
         
 def mouseInteraction(button, state, mouseX, mouseY):
     global stateMach
     # State = 0: button is depressed, low
     # State = 1: button is released, high
-    stateMach['currentState'] = state
-    if (state == 0):
-        stateMach['cursorX'] = mouseX
-        stateMach['cursorY'] = mouseY
+    if (stateMach['currentState'] == 1 and state == 0):
+        stateMach['mousePressed'] = True
+    else:
+        stateMach['mousePressed'] = False
 
-    if (stateMach['touchState'] == 1) and (state != 1) and (stateMach['prvState'] == 1):
-        stateMach['prvState'] = not stateMach['touchState']
-        return
-    elif (stateMach['touchState'] == 0) and (state != 0) and (stateMach['prvState'] == 0):
-        stateMach['touchState'] = not stateMach['touchState']
-        stateMach['prvState'] = not stateMach['touchState']
-        return
+    stateMach['currentState'] = state
+    stateMach['cursorX'] = mouseX
+    stateMach['cursorY'] = mouseY
+    if (state == 0):
+        stateMach['mouseButton'] = button
+    elif (button > 2):
+        stateMach['mouseButton'] = button
+    else:
+        stateMach['mouseButton'] = "None"
+    return
 
 # Main screen drawing routine
 # Passed to glutDisplayFunc()
@@ -565,7 +586,7 @@ def display():
     #stateMach['tDiff'] = 6.28318/stateMach['fps']
 
     # Constrain Animation Cursor
-    if (stateMach['currentState'] == 0 or stateMach['prvState'] == 0):
+    if (stateMach['currentState'] == 1):# or stateMach['prvState'] == 0):
         stateMach['interactionCursor'] = 1.0
     else:
         stateMach['interactionCursor'] = constrain(stateMach['interactionCursor'] - stateMach['tDiff'], 0.0, 1.0)
@@ -589,7 +610,14 @@ def display():
         stateMach['lamps'][i].updateBulbs(stateMach['tDiff']/2)
 
     #drawPrim(0.0, 0.0, 1.0, 0.0, stateMach['w2h'], stateMach['faceColor'], stateMach['detailColor'], (1.0, 1.0, 1.0, 1.0))
-    drawText("FPS: " + str(int(stateMach['fps'])), -1.0, 0.9, 0.25, 0.25, stateMach['w2h'], stateMach['detailColor'])
+    infoStr = "FPS: " + str(int(stateMach['fps']))
+    infoStr += "\nCursor: " + str(stateMach['cursorX']) + ', ' + str(stateMach['cursorY'])
+    infoStr += "\nInput State: " + str(stateMach['currentState'])
+    infoStr += "\nMouse Button: " + str(stateMach['mouseButton'])
+    infoStr += "\nmasterSwitch: " + str(stateMach['masterSwitch'])
+    drawText(infoStr, -1.0, 0.85, 0.25, 0.25, stateMach['w2h'], stateMach['detailColor'])
+
+    stateMach['mousePressed'] = False
 
     stateMach['MasterSwitch'].updateParams()
 
@@ -754,6 +782,8 @@ if __name__ == '__main__':
     stateMach['wereColorsTouched']  = False
     stateMach['colrSettingCursor']  = 0.0
     stateMach['interactionCursor']  = 0.0
+    stateMach['mousePressed']       = False
+    stateMach['mouseButton']        = "None"
 
     stateMach['AllSetButton']       = UIelement()
     stateMach['BackButton']         = UIelement()
@@ -788,6 +818,7 @@ if __name__ == '__main__':
 
     glutCreateWindow("HeavenLi")
     glutMouseFunc(mouseInteraction)
+    glutMotionFunc(mouseActive)
     glutPassiveMotionFunc(mousePassive)
     glEnable(GL_LINE_SMOOTH)
 
