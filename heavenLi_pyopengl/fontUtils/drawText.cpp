@@ -57,8 +57,7 @@ PyObject* drawText_hliGLutils(PyObject* self, PyObject *args) {
    }
 
    if (  textLine.numVerts == 0              ||
-         stringLen > prevStringLen           ){//||
-         //prevString.compare(inputChars) != 0 ){
+         stringLen > prevStringLen           ){
       std::vector <GLfloat> verts;
       std::vector <GLfloat> colrs;
       std::vector <GLfloat> texuv;
@@ -176,9 +175,10 @@ PyObject* drawText_hliGLutils(PyObject* self, PyObject *args) {
    */
 
    if (w2h <= 1.0)
-      textLine.updateMVP(gx, gy, sx*0.01f*w2h, sy*0.01f*w2h, 0.0f, w2h);
+      textLine.updateMVP(gx, gy, sx*0.007f/w2h, sy*0.007f/w2h, 0.0f, w2h);
    else
-      textLine.updateMVP(gx, gy, sx*0.01f, sy*0.01f, 0.0f, w2h);
+      textLine.updateMVP(gx, gy, sx*0.007f*w2h, sy*0.007f*w2h, 0.0f, w2h);
+
    textLine.draw();
 
    Py_RETURN_NONE;
