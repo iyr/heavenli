@@ -535,7 +535,7 @@ def watchDot(px, py, pr):
 # Used to process user input
 def watchScreen():
     global stateMach
-    if (stateMach['currentState'] == 0):
+    if (stateMach['currentState'] == 0 or stateMach['mousePressed']):
         return True
     else:
         return False
@@ -556,18 +556,21 @@ def mouseInteraction(button, state, mouseX, mouseY):
     # State = 1: button is released, high
     if (stateMach['currentState'] == 1 and state == 0):
         stateMach['mousePressed'] = True
-    else:
-        stateMach['mousePressed'] = False
+    #else:
+        #stateMach['mousePressed'] = False
 
     stateMach['currentState'] = state
     stateMach['cursorX'] = mouseX
     stateMach['cursorY'] = mouseY
+
     if (state == 0):
         stateMach['mouseButton'] = button
     elif (button > 2):
         stateMach['mouseButton'] = button
     else:
         stateMach['mouseButton'] = "None"
+
+    #print("state: " + str(state) + ", currentState: " + str(stateMach['currentState']))
     return
 
 # Main screen drawing routine
