@@ -68,30 +68,12 @@ PyObject* drawText_hliGLutils(PyObject* self, PyObject *args) {
             y = 0.0f,
             ax;
 
-      for (unsigned int i = 0; i < stringLen; i++) {
-         c = inputChars[i];
-
-         tmg = &quack->glyphData[c];
-
-         // Only update non-control characters
-         if (c >= 32) {
-            ax =  (float)tmg->advanceX*0.015625f; // divide by 64
-            x +=  ax;
-         }
-
-         // Shift downward and reset x position for line breaks
-         if (c == (int)'\n') {
-            y -= (float)quack->faceSize;
-            x = 0.0f;
-         }
-
-         defineChar(
-               x-ax, y, 
-               c,
-               quack,
-               textColor, 
-               verts, texuv, colrs);
-      }
+      defineString(
+            x, y,
+            inputString,
+            quack,
+            textColor,
+            verts, texuv, colrs);
 
       prevString     = inputString;
       prevStringLen  = stringLen;
@@ -100,47 +82,26 @@ PyObject* drawText_hliGLutils(PyObject* self, PyObject *args) {
    }
 
    if (  prevString.compare(inputString) != 0 ){
-      int c = 0;
-      character* tmg;
-      float x = 0.0f,
-            y = 0.0f,
-            ax;
-
       for (unsigned int i = stringLen*6; i < prevStringLen*6; i++){
          textLine.coordCache[i*2+0] = 0.0f;
          textLine.coordCache[i*2+1] = 0.0f;
          textLine.texuvCache[i*2+0] = 0.0f;
          textLine.texuvCache[i*2+1] = 0.0f;
       }
+
+      float x = 0.0f,
+            y = 0.0f,
+            ax;
+
       GLuint index = 0;
-      for (unsigned int i = 0; i < prevStringLen; i++) {
 
-         if (i < stringLen){
-            c = inputChars[i];
-
-            tmg = &quack->glyphData[c];
-
-            // Only update non-control characters
-            if (c >= 32) {
-               ax =  (float)tmg->advanceX*0.015625f; // divide by 64
-               x +=  ax;
-            }
-
-            // Shift downward and reset x position for line breaks
-            if (c == (int)'\n') {
-               y -= (float)quack->faceSize;
-               x = 0.0f;
-            }
-
-            index = updateChar(
-                  x-ax, y, 
-                  c,
-                  quack,
-                  index,
-                  textLine.coordCache, 
-                  textLine.texuvCache);
-         }
-      }
+      index = updateString(
+            x, y,
+            inputString,
+            quack,
+            index,
+            textLine.coordCache,
+            textLine.texuvCache);
 
       textLine.updateTexUVCache();
       textLine.updateCoordCache();
