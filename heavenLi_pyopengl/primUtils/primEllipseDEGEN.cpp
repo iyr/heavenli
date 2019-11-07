@@ -25,31 +25,15 @@ unsigned int defineEllipse(
    B = color[2];
    A = color[3];
 
-   // Prepend degenerate vertex iff not the first primitive in the vector
-   if (verts.size() == 0) {
-      verts.push_back(float(bx + bsx*1.0f)); // X
-      verts.push_back(float(by + bsy*0.0f)); // Y
-      colrs.push_back(R);                    // R
-      colrs.push_back(G);                    // G
-      colrs.push_back(B);                    // B
-      colrs.push_back(A);                    // A
-   } else {
-      verts.push_back(float(bx + bsx*1.0f)); // X
-      verts.push_back(float(by + bsy*0.0f)); // Y
-      colrs.push_back(R);                    // R
-      colrs.push_back(G);                    // G
-      colrs.push_back(B);                    // B
-      colrs.push_back(A);                    // A
+   // Prepend degenerate vertex
+   verts.push_back(float(bx + bsx*1.0f)); // X
+   verts.push_back(float(by + bsy*0.0f)); // Y
+   colrs.push_back(R);                    // R
+   colrs.push_back(G);                    // G
+   colrs.push_back(B);                    // B
+   colrs.push_back(A);                    // A
 
-      verts.push_back(float(bx + bsx*1.0f)); // X
-      verts.push_back(float(by + bsy*0.0f)); // Y
-      colrs.push_back(R);                    // R
-      colrs.push_back(G);                    // G
-      colrs.push_back(B);                    // B
-      colrs.push_back(A);                    // A
-   }
-
-   for (unsigned int i = 0; i < circleSegments; i++ ) {
+   for (unsigned int i = 0; i < circleSegments+1; i++ ) {
       tma = (float)degToRad((float)i*degSegment);
 
       verts.push_back(float(bx + bsx*cos(tma)));   // X
@@ -66,21 +50,16 @@ unsigned int defineEllipse(
       colrs.push_back(B);                          // B
       colrs.push_back(A);                          // A
    }
-   verts.push_back(float(bx - bsx*1.0f)); // X
-   verts.push_back(float(by + bsy*0.0f)); // Y
-   colrs.push_back(R);                    // R
-   colrs.push_back(G);                    // G
-   colrs.push_back(B);                    // B
-   colrs.push_back(A);                    // A
 
-   verts.push_back(float(bx - bsx*1.0f)); // X
-   verts.push_back(float(by + bsy*0.0f)); // Y
-   colrs.push_back(R);                    // R
-   colrs.push_back(G);                    // G
-   colrs.push_back(B);                    // B
-   colrs.push_back(A);                    // A
+   // Append degenerate vertex
+   tma = (float)degToRad((float)circleSegments*degSegment);
+   verts.push_back(float(bx + bsx*cos(tma)));   // X
+   verts.push_back(float(by + bsy*sin(tma)));   // Y
+   colrs.push_back(R);                          // R
+   colrs.push_back(G);                          // G
+   colrs.push_back(B);                          // B
+   colrs.push_back(A);                          // A
 
-   //printf("verts size before return: %d\n", verts.size());
    return verts.size()/2;
 }
 
@@ -124,18 +103,11 @@ unsigned int updateEllipseGeometry(
    float tma, degSegment = 360.0f / float(circleSegments);
    degSegment /= 2.0f;
 
-   if (vertIndex == 0) {
-      verts[vertIndex++] = (float(bx + bsx*1.0f)); // X
-      verts[vertIndex++] = (float(by + bsy*0.0f)); // Y
-   } else {
-      verts[vertIndex++] = (float(bx + bsx*1.0f)); // X
-      verts[vertIndex++] = (float(by + bsy*0.0f)); // Y
+   // Prepend degenerate vertex
+   verts[vertIndex++] = (float(bx + bsx*1.0f)); // X
+   verts[vertIndex++] = (float(by + bsy*0.0f)); // Y
 
-      verts[vertIndex++] = (float(bx + bsx*1.0f)); // X
-      verts[vertIndex++] = (float(by + bsy*0.0f)); // Y
-   }
-
-   for (unsigned int i = 0; i < circleSegments; i++ ) {
+   for (unsigned int i = 0; i < circleSegments+1; i++ ) {
       tma = (float)degToRad((float)i*degSegment);
 
       verts[vertIndex++] = (float(bx + bsx*cos(tma)));   // X
@@ -144,11 +116,11 @@ unsigned int updateEllipseGeometry(
       verts[vertIndex++] = (float(bx + bsx*cos(tma)));   // X
       verts[vertIndex++] = (float(by - bsy*sin(tma)));   // Y
    }
-   verts[vertIndex++] = (float(bx - bsx*1.0f)); // X
-   verts[vertIndex++] = (float(by + bsy*0.0f)); // Y
 
-   verts[vertIndex++] = (float(bx - bsx*1.0f)); // X
-   verts[vertIndex++] = (float(by + bsy*0.0f)); // Y
+   // Append degenerate vertex
+   tma = (float)degToRad((float)circleSegments*degSegment);
+   verts[vertIndex++] = (float(bx + bsx*cos(tma)));   // X
+   verts[vertIndex++] = (float(by + bsy*sin(tma)));   // Y
 
    return vertIndex/2;
 }
@@ -167,12 +139,13 @@ unsigned int updateEllipseColor(
    B = color[2];
    A = color[3];
 
-   if (colrIndex == 0) {
-      colrs[colrIndex++] = R; // R
-      colrs[colrIndex++] = G; // G
-      colrs[colrIndex++] = B; // B
-      colrs[colrIndex++] = A; // A
-   } else {
+   // Prepend degenerate vertex
+   colrs[colrIndex++] = R; // R
+   colrs[colrIndex++] = G; // G
+   colrs[colrIndex++] = B; // B
+   colrs[colrIndex++] = A; // A
+
+   for (unsigned int i = 0; i < circleSegments+1; i++ ) {
       colrs[colrIndex++] = R; // R
       colrs[colrIndex++] = G; // G
       colrs[colrIndex++] = B; // B
@@ -184,26 +157,11 @@ unsigned int updateEllipseColor(
       colrs[colrIndex++] = A; // A
    }
 
-   for (unsigned int i = 0; i < circleSegments; i++ ) {
-      colrs[colrIndex++] = R; // R
-      colrs[colrIndex++] = G; // G
-      colrs[colrIndex++] = B; // B
-      colrs[colrIndex++] = A; // A
-      
-      colrs[colrIndex++] = R; // R
-      colrs[colrIndex++] = G; // G
-      colrs[colrIndex++] = B; // B
-      colrs[colrIndex++] = A; // A
-   }
+   // Append degenerate vertex
    colrs[colrIndex++] = R; // R
    colrs[colrIndex++] = G; // G
    colrs[colrIndex++] = B; // B
    colrs[colrIndex++] = A; // A
    
-   colrs[colrIndex++] = R; // R
-   colrs[colrIndex++] = G; // G
-   colrs[colrIndex++] = B; // B
-   colrs[colrIndex++] = A; // A
-
    return colrIndex/4;
 }
