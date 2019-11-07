@@ -17,7 +17,7 @@ unsigned int defineEllipse(
       std::vector<float> &verts,    /* Input Vector of x,y coordinates */
       std::vector<float> &colrs     /* Input Vector of r,g,b values */
       ){
-   float R, G, B, A;
+   float R, G, B, A, tma;
    float degSegment = 360.0f / float(circleSegments);
    degSegment /= 2.0f;
    R = color[0];
@@ -27,57 +27,58 @@ unsigned int defineEllipse(
 
    // Prepend degenerate vertex iff not the first primitive in the vector
    if (verts.size() == 0) {
-      /* X */ verts.push_back(float(bx + bsx*1.0f));
-      /* Y */ verts.push_back(float(by + bsy*0.0f));
-      /* R */ colrs.push_back(R);  
-      /* G */ colrs.push_back(G);  
-      /* B */ colrs.push_back(B);
-      /* A */ colrs.push_back(A);
+      verts.push_back(float(bx + bsx*1.0f)); // X
+      verts.push_back(float(by + bsy*0.0f)); // Y
+      colrs.push_back(R);                    // R
+      colrs.push_back(G);                    // G
+      colrs.push_back(B);                    // B
+      colrs.push_back(A);                    // A
    } else {
-      /* X */ verts.push_back(float(bx + bsx*1.0f));
-      /* Y */ verts.push_back(float(by + bsy*0.0f));
-      /* R */ colrs.push_back(R);  
-      /* G */ colrs.push_back(G);  
-      /* B */ colrs.push_back(B);
-      /* A */ colrs.push_back(A);
+      verts.push_back(float(bx + bsx*1.0f)); // X
+      verts.push_back(float(by + bsy*0.0f)); // Y
+      colrs.push_back(R);                    // R
+      colrs.push_back(G);                    // G
+      colrs.push_back(B);                    // B
+      colrs.push_back(A);                    // A
 
-      /* X */ verts.push_back(float(bx + bsx*1.0f));
-      /* Y */ verts.push_back(float(by + bsy*0.0f));
-      /* R */ colrs.push_back(R);  
-      /* G */ colrs.push_back(G);  
-      /* B */ colrs.push_back(B);
-      /* A */ colrs.push_back(A);
+      verts.push_back(float(bx + bsx*1.0f)); // X
+      verts.push_back(float(by + bsy*0.0f)); // Y
+      colrs.push_back(R);                    // R
+      colrs.push_back(G);                    // G
+      colrs.push_back(B);                    // B
+      colrs.push_back(A);                    // A
    }
 
    for (unsigned int i = 0; i < circleSegments; i++ ) {
-      //printf("circleSegments: %d, i: %d, verts size: %d\n", circleSegments, i, verts.size());
-      /* X */ verts.push_back(float(bx + bsx*cos(degToRad((float)i*degSegment))));
-      /* Y */ verts.push_back(float(by + bsy*sin(degToRad((float)i*degSegment))));
-      /* R */ colrs.push_back(R);  
-      /* G */ colrs.push_back(G);  
-      /* B */ colrs.push_back(B);
-      /* A */ colrs.push_back(A);
+      tma = (float)degToRad((float)i*degSegment);
 
-      /* X */ verts.push_back(float(bx + bsx*cos(degToRad((float)i*degSegment))));
-      /* Y */ verts.push_back(float(by - bsy*sin(degToRad((float)i*degSegment))));
-      /* R */ colrs.push_back(R);  
-      /* G */ colrs.push_back(G);  
-      /* B */ colrs.push_back(B);
-      /* A */ colrs.push_back(A);
+      verts.push_back(float(bx + bsx*cos(tma)));   // X
+      verts.push_back(float(by + bsy*sin(tma)));   // Y
+      colrs.push_back(R);                          // R
+      colrs.push_back(G);                          // G
+      colrs.push_back(B);                          // B
+      colrs.push_back(A);                          // A
+
+      verts.push_back(float(bx + bsx*cos(tma)));   // X
+      verts.push_back(float(by - bsy*sin(tma)));   // Y
+      colrs.push_back(R);                          // R
+      colrs.push_back(G);                          // G
+      colrs.push_back(B);                          // B
+      colrs.push_back(A);                          // A
    }
-   /* X */ verts.push_back(float(bx - bsx*1.0f));
-   /* Y */ verts.push_back(float(by + bsy*0.0f));
-   /* R */ colrs.push_back(R);  
-   /* G */ colrs.push_back(G);  
-   /* B */ colrs.push_back(B);
-   /* A */ colrs.push_back(A);
+   verts.push_back(float(bx - bsx*1.0f)); // X
+   verts.push_back(float(by + bsy*0.0f)); // Y
+   colrs.push_back(R);                    // R
+   colrs.push_back(G);                    // G
+   colrs.push_back(B);                    // B
+   colrs.push_back(A);                    // A
 
-   /* X */ verts.push_back(float(bx - bsx*1.0f));
-   /* Y */ verts.push_back(float(by + bsy*0.0f));
-   /* R */ colrs.push_back(R);  
-   /* G */ colrs.push_back(G);  
-   /* B */ colrs.push_back(B);
-   /* A */ colrs.push_back(A);
+   verts.push_back(float(bx - bsx*1.0f)); // X
+   verts.push_back(float(by + bsy*0.0f)); // Y
+   colrs.push_back(R);                    // R
+   colrs.push_back(G);                    // G
+   colrs.push_back(B);                    // B
+   colrs.push_back(A);                    // A
 
    //printf("verts size before return: %d\n", verts.size());
    return verts.size()/2;
@@ -120,32 +121,34 @@ unsigned int updateEllipseGeometry(
       float *verts                  /* Input Vector of x,y values */
       ){
    unsigned int vertIndex = index*2;   /* index (x, y) */
-   float degSegment = 360.0f / float(circleSegments);
+   float tma, degSegment = 360.0f / float(circleSegments);
    degSegment /= 2.0f;
 
    if (vertIndex == 0) {
-      /* X */ verts[vertIndex++] = (float(bx + bsx*1.0f));
-      /* Y */ verts[vertIndex++] = (float(by + bsy*0.0f));
+      verts[vertIndex++] = (float(bx + bsx*1.0f)); // X
+      verts[vertIndex++] = (float(by + bsy*0.0f)); // Y
    } else {
-      /* X */ verts[vertIndex++] = (float(bx + bsx*1.0f));
-      /* Y */ verts[vertIndex++] = (float(by + bsy*0.0f));
+      verts[vertIndex++] = (float(bx + bsx*1.0f)); // X
+      verts[vertIndex++] = (float(by + bsy*0.0f)); // Y
 
-      /* X */ verts[vertIndex++] = (float(bx + bsx*1.0f));
-      /* Y */ verts[vertIndex++] = (float(by + bsy*0.0f));
+      verts[vertIndex++] = (float(bx + bsx*1.0f)); // X
+      verts[vertIndex++] = (float(by + bsy*0.0f)); // Y
    }
 
    for (unsigned int i = 0; i < circleSegments; i++ ) {
-      /* X */ verts[vertIndex++] = (float(bx + bsx*cos(degToRad(i*degSegment))));
-      /* Y */ verts[vertIndex++] = (float(by + bsy*sin(degToRad(i*degSegment))));
+      tma = (float)degToRad((float)i*degSegment);
 
-      /* X */ verts[vertIndex++] = (float(bx + bsx*cos(degToRad(i*degSegment))));
-      /* Y */ verts[vertIndex++] = (float(by - bsy*sin(degToRad(i*degSegment))));
+      verts[vertIndex++] = (float(bx + bsx*cos(tma)));   // X
+      verts[vertIndex++] = (float(by + bsy*sin(tma)));   // Y
+
+      verts[vertIndex++] = (float(bx + bsx*cos(tma)));   // X
+      verts[vertIndex++] = (float(by - bsy*sin(tma)));   // Y
    }
-   /* X */ verts[vertIndex++] = (float(bx - bsx*1.0f));
-   /* Y */ verts[vertIndex++] = (float(by + bsy*0.0f));
+   verts[vertIndex++] = (float(bx - bsx*1.0f)); // X
+   verts[vertIndex++] = (float(by + bsy*0.0f)); // Y
 
-   /* X */ verts[vertIndex++] = (float(bx - bsx*1.0f));
-   /* Y */ verts[vertIndex++] = (float(by + bsy*0.0f));
+   verts[vertIndex++] = (float(bx - bsx*1.0f)); // X
+   verts[vertIndex++] = (float(by + bsy*0.0f)); // Y
 
    return vertIndex/2;
 }
@@ -165,42 +168,42 @@ unsigned int updateEllipseColor(
    A = color[3];
 
    if (colrIndex == 0) {
-      /* R */ colrs[colrIndex++] = R;  
-      /* G */ colrs[colrIndex++] = G;  
-      /* B */ colrs[colrIndex++] = B;
-      /* A */ colrs[colrIndex++] = A;
+      colrs[colrIndex++] = R; // R
+      colrs[colrIndex++] = G; // G
+      colrs[colrIndex++] = B; // B
+      colrs[colrIndex++] = A; // A
    } else {
-      /* R */ colrs[colrIndex++] = R;  
-      /* G */ colrs[colrIndex++] = G;  
-      /* B */ colrs[colrIndex++] = B;
-      /* A */ colrs[colrIndex++] = A;
+      colrs[colrIndex++] = R; // R
+      colrs[colrIndex++] = G; // G
+      colrs[colrIndex++] = B; // B
+      colrs[colrIndex++] = A; // A
       
-      /* R */ colrs[colrIndex++] = R;  
-      /* G */ colrs[colrIndex++] = G;  
-      /* B */ colrs[colrIndex++] = B;
-      /* A */ colrs[colrIndex++] = A;
+      colrs[colrIndex++] = R; // R
+      colrs[colrIndex++] = G; // G
+      colrs[colrIndex++] = B; // B
+      colrs[colrIndex++] = A; // A
    }
 
    for (unsigned int i = 0; i < circleSegments; i++ ) {
-      /* R */ colrs[colrIndex++] = R;  
-      /* G */ colrs[colrIndex++] = G;  
-      /* B */ colrs[colrIndex++] = B;
-      /* A */ colrs[colrIndex++] = A;
+      colrs[colrIndex++] = R; // R
+      colrs[colrIndex++] = G; // G
+      colrs[colrIndex++] = B; // B
+      colrs[colrIndex++] = A; // A
       
-      /* R */ colrs[colrIndex++] = R;  
-      /* G */ colrs[colrIndex++] = G;  
-      /* B */ colrs[colrIndex++] = B;
-      /* A */ colrs[colrIndex++] = A;
+      colrs[colrIndex++] = R; // R
+      colrs[colrIndex++] = G; // G
+      colrs[colrIndex++] = B; // B
+      colrs[colrIndex++] = A; // A
    }
-   /* R */ colrs[colrIndex++] = R;  
-   /* G */ colrs[colrIndex++] = G;  
-   /* B */ colrs[colrIndex++] = B;
-   /* A */ colrs[colrIndex++] = A;
+   colrs[colrIndex++] = R; // R
+   colrs[colrIndex++] = G; // G
+   colrs[colrIndex++] = B; // B
+   colrs[colrIndex++] = A; // A
    
-   /* R */ colrs[colrIndex++] = R;  
-   /* G */ colrs[colrIndex++] = G;  
-   /* B */ colrs[colrIndex++] = B;
-   /* A */ colrs[colrIndex++] = A;
+   colrs[colrIndex++] = R; // R
+   colrs[colrIndex++] = G; // G
+   colrs[colrIndex++] = B; // B
+   colrs[colrIndex++] = A; // A
 
    return colrIndex/4;
 }
