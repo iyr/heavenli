@@ -2,16 +2,16 @@ using namespace std;
 
 drawCall    colrTriButton;
 GLfloat     *triButtonData       = NULL;  // Stores data (X, Y, sat, val) for each button dot
-GLfloat     prevTriX             = 0.0;   // Used for animating granularity changes
-GLfloat     prevTriY             = 0.0;   // Used for animating granularity changes
-GLfloat     prevTriDotScale      = 1.0;   // Used for animating granularity changes
-GLfloat     prevRingX            = 0.0;   // Used for animating selection ring
-GLfloat     prevRingY            = 0.0;   // Used for animating selection ring
+GLfloat     prevTriX             = 0.0f;  // Used for animating granularity changes
+GLfloat     prevTriY             = 0.0f;  // Used for animating granularity changes
+GLfloat     prevTriDotScale      = 1.0f;  // Used for animating granularity changes
+GLfloat     prevRingX            = 0.0f;  // Used for animating selection ring
+GLfloat     prevRingY            = 0.0f;  // Used for animating selection ring
 GLfloat     prevTriHue;                   // Used for animating selection ring
 GLfloat     prevTriSat;                   // Used for animating selection ring
 GLfloat     prevTriVal;                   // Used for animating selection ring
-GLfloat     prevTriSatSel        = 0.0;   // Used to resolve edge-case bug for animating selection ring
-GLfloat     prevTriValSel        = 0.0;   // Used to resolve edge-case bug for animating selection ring
+GLfloat     prevTriSatSel        = 0.0f;  // Used to resolve edge-case bug for animating selection ring
+GLfloat     prevTriValSel        = 0.0f;  // Used to resolve edge-case bug for animating selection ring
 GLint       prevColrTriNumLevels;         // Used for updating Granularity changes
 GLuint      colrTriDotsVerts;
 
@@ -34,14 +34,15 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
 
    // Parse Inputs
    if (!PyArg_ParseTuple(args,
-            "ffflOfff",
+            "fffffflOff",
+            &gx, &gy,
+            &scale,
             &currentTriHue,
             &currentTriSat,
             &currentTriVal,
             &numLevels,
             &py_tuple,
             &w2h,
-            &scale,
             &tDiff))
    {
       Py_RETURN_NONE;
@@ -85,16 +86,16 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
       }
 
       // Resolve edge-case bug
-      if (  prevTriX == 0.0   )
-         prevTriX = float(-0.0383*numLevels);
+      //if (  prevTriX == 0.0   )
+         //prevTriX = float(-0.0383*numLevels);
 
-      if (  prevTriY == 0.0   )
-         prevTriY = float(+0.0616*numLevels);
+      //if (  prevTriY == 0.0   )
+         //prevTriY = float(+0.0616*numLevels);
 
       // Actual meat of drawing saturation/value triangle
       int index = 0;
       float tmx, tmy, tmr, saturation, value, ringX = 0.0f, ringY = 0.0f;
-      float colors[4] = {0.0, 0.0, 0.0, 1.0};
+      float colors[4] = {0.0f, 0.0f, 0.0f, 1.0f};
       tmr = 0.05f*prevTriDotScale;
       for (int i = 0; i < numLevels; i++) {        /* Columns */
          for (int j = 0; j < numLevels-i; j++) {   /* Rows */
@@ -104,9 +105,9 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
             saturation  =  float(i) / float(numLevels - 1 - j);
 
             // Resolve issues that occur when saturation or value are less than zero or NULL
-            if (saturation != saturation || saturation <= 0.0)
+            if (saturation != saturation || saturation <= 0.0f)
                saturation = 0.000001f;
-            if (value != value || value <= 0.0)
+            if (value != value || value <= 0.0f)
                value = 0.000001f;
 
             // Convert HSV to RGB
@@ -120,10 +121,10 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
             defineEllipse(tmx, tmy, tmr, tmr, circleSegments, colors, verts, colrs);
 
             // Store position and related data of button dot
-            triButtonData[index*4 + 0] = float(-0.0383*numLevels + (i*0.13f));
-            triButtonData[index*4 + 1] = float(+0.0616*numLevels - (i*0.075f + j*0.145f));
-            triButtonData[index*4 + 2] = saturation;
-            triButtonData[index*4 + 3] = value;
+            triButtonData[index*4 + 0] = float(-0.0383f*numLevels + (i*0.13f));               // X-position
+            triButtonData[index*4 + 1] = float(+0.0616f*numLevels - (i*0.075f + j*0.145f));   // Y-position
+            triButtonData[index*4 + 2] = saturation;                                         // sat
+            triButtonData[index*4 + 3] = value;                                              // val
             index++;
 
             // Determine which button dot represents the currently selected saturation and value
@@ -140,8 +141,8 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
       // Draw a circle around the button dot corresponding to the selected saturation/value
       defineArch(
             ringX, ringY,
-            float(1.06*tmr), 
-            float(1.06*tmr),
+            float(1.06f*tmr), 
+            float(1.06f*tmr),
             0.0f,
             360.0f,
             0.03f,
@@ -173,25 +174,25 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
    deltaX = triX - prevTriX;
    deltaY = triY - prevTriY;
 
-   if (  abs(deltaX) > tDiff*0.01   ||
-         abs(deltaY) > tDiff*0.01   ){
-      if (deltaX < -0.0) {
-         prevTriX -= float(3.0*tDiff*abs(deltaX));
+   if (  abs(deltaX) > tDiff*0.000001f   ||
+         abs(deltaY) > tDiff*0.000001f   ){
+      if (deltaX < -0.0f) {
+         prevTriX -= float(3.0f*tDiff*abs(deltaX));
       }
-      if (deltaX > -0.0) {
-         prevTriX += float(3.0*tDiff*abs(deltaX));
+      if (deltaX > -0.0f) {
+         prevTriX += float(3.0f*tDiff*abs(deltaX));
       }
-      if (deltaY < -0.0) {
-         prevTriY -= float(3.0*tDiff*abs(deltaY));
+      if (deltaY < -0.0f) {
+         prevTriY -= float(3.0f*tDiff*abs(deltaY));
       }
-      if (deltaY > -0.0) {
-         prevTriY += float(3.0*tDiff*abs(deltaY));
+      if (deltaY > -0.0f) {
+         prevTriY += float(3.0f*tDiff*abs(deltaY));
       }
 
       // Actual meat of drawing saturation/value triangle
       GLint index = 0;
       GLfloat tmx, tmy, tmr, saturation, value, ringX=0.0f, ringY=0.0f;
-      GLfloat colors[4] = {0.0, 0.0, 0.0, 0.0};
+      GLfloat colors[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
       // Bogus comparison to get rid of compiler warnings (-_-)
       if (ringX != ringX)
@@ -208,9 +209,9 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
             saturation  =  float(i) / float(numLevels - 1 - j);
 
             // Resolve issues that occur when saturation or value are less than zero or NULL
-            if (saturation != saturation || saturation <= 0.0)
+            if (saturation != saturation || saturation <= 0.0f)
                saturation = 0.000001f;
-            if (value != value || value <= 0.0)
+            if (value != value || value <= 0.0f)
                value = 0.000001f;
 
             // Convert HSV to RGB
@@ -240,8 +241,8 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
       // Draw a circle around the button dot corresponding to the selected saturation/value
       index = updateArchGeometry(
             ringX, ringY,
-            float(1.06*tmr), 
-            float(1.06*tmr),
+            float(1.06f*tmr), 
+            float(1.06f*tmr),
             0.0f,
             360.0f,
             0.03f,
@@ -257,12 +258,12 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
    }
 
    // Resolves edge case bug animating selection ring
-   if (  prevTriSatSel  != currentTriSat  ){
-      prevTriSat = prevTriSatSel;
-   } 
-   if (  prevTriValSel  != currentTriVal  ){
-      prevTriVal = prevTriValSel;
-   } 
+   //if (  prevTriSatSel  != currentTriSat  ){
+      //prevTriSat = prevTriSatSel;
+   //} 
+   //if (  prevTriValSel  != currentTriVal  ){
+      //prevTriVal = prevTriValSel;
+   //} 
 
    // Determine distance of selection ring from 
    // current location (prevTri) to target location (ring)
@@ -276,16 +277,16 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
          saturation  =  float(i) / float(numLevels - 1 - j);
 
          // Resolve issues that occur when saturation or value are less than zero or NULL
-         if (saturation != saturation || saturation <= 0.0)
+         if (saturation != saturation || saturation <= 0.0f)
             saturation = 0.000001f;
-         if (value != value || value <= 0.0)
+         if (value != value || value <= 0.0f)
             value = 0.000001f;
 
          // Define relative positions of sat/val button dots
          if (  abs(currentTriSat - saturation) <= 1.0f / float(numLevels*2) &&
                abs(currentTriVal - value     ) <= 1.0f / float(numLevels*2) ){
-            ringX = float(-0.0383*numLevels + (i*0.13f));
-            ringY = float(+0.0616*numLevels - (i*0.075f + j*0.145f));
+            ringX = float(-0.0383f*numLevels + (i*0.13f));
+            ringY = float(+0.0616f*numLevels - (i*0.075f + j*0.145f));
          }
       }
    }
@@ -294,24 +295,24 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
    deltaY = ringY-prevRingY;
 
    // Update x-position of selection ring if needed
-   if (abs(deltaX) > tDiff*0.01) {
-      if (deltaX < -0.0) {
-         prevRingX -= float(3.0*tDiff*abs(deltaX));
+   if (abs(deltaX) > tDiff*0.000001f) {
+      if (deltaX < -0.0f) {
+         prevRingX -= float(3.0f*tDiff*abs(deltaX));
       }
-      if (deltaX > -0.0) {
-         prevRingX += float(3.0*tDiff*abs(deltaX));
+      if (deltaX > -0.0f) {
+         prevRingX += float(3.0f*tDiff*abs(deltaX));
       }
    } else {
       prevRingX = ringX;
    }
 
    // Update y-position of selection ring if needed
-   if (abs(deltaY) > tDiff*0.01) {
-      if (deltaY < -0.0) {
-         prevRingY -= float(3.0*tDiff*abs(deltaY));
+   if (abs(deltaY) > tDiff*0.000001f) {
+      if (deltaY < -0.0f) {
+         prevRingY -= float(3.0f*tDiff*abs(deltaY));
       }
-      if (deltaY > -0.0) {
-         prevRingY += float(3.0*tDiff*abs(deltaY));
+      if (deltaY > -0.0f) {
+         prevRingY += float(3.0f*tDiff*abs(deltaY));
       }
    } else {
       prevRingY = ringY;
@@ -323,8 +324,8 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
 
       updateArchGeometry(
             prevRingX, prevRingY,
-            float(1.06*tmr), 
-            float(1.06*tmr),
+            float(1.06f*tmr), 
+            float(1.06f*tmr),
             0.0f,
             360.0f,
             0.03f,
@@ -336,8 +337,8 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
    }
 
    // Selection Ring in place, stop updating position
-   if (  abs(deltaX) <= tDiff*0.01 &&
-         abs(deltaY) <= tDiff*0.01 ){
+   if (  abs(deltaX) <= tDiff*0.000001f &&
+         abs(deltaY) <= tDiff*0.000001f ){
       prevTriSat = currentTriSat;
       prevTriVal = currentTriVal;
    }
@@ -350,19 +351,19 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
    if ( (prevTriHue != currentTriHue)        &&
         (prevColrTriNumLevels == numLevels)  ){
       GLfloat saturation, value;
-      GLfloat colors[4] = {0.0, 0.0, 0.0, 1.0};
+      GLfloat colors[4] = {0.0f, 0.0f, 0.0f, 1.0f};
       GLint colrIndex = 0;
-      for (GLint i = 0; i < prevColrTriNumLevels; i++) {        /* Columns */
-         for (GLint j = 0; j < prevColrTriNumLevels-i; j++) {   /* Rows */
+      for (GLint i = 0; i < prevColrTriNumLevels; i++) {       // Columns
+         for (GLint j = 0; j < prevColrTriNumLevels-i; j++) {  // Rows
 
             // Calculate Discrete Saturation and Value
             value = 1.0f - float(j) / float(prevColrTriNumLevels - 1);
             saturation  =  float(i) / float(prevColrTriNumLevels - 1 - j);
 
             // Resolve issues that occur when saturation or value are less than zero or NULL
-            if (saturation != saturation || saturation <= 0.0 )
+            if (saturation != saturation || saturation <= 0.0f )
                saturation = 0.000001f;
-            if (value != value || value <= 0.0 )
+            if (value != value || value <= 0.0f )
                value = 0.000001f;
 
             // Convert HSV to RGB 
