@@ -1,4 +1,4 @@
-#include <math.h>
+//#include <math.h>
 
 using namespace std;
 extern textAtlas* quack;
@@ -6,107 +6,67 @@ extern textAtlas* quack;
 bool        firstRun = true;
 std::string prevString;
 drawCall    textLine;
+drawCall    textBackdrop;
 GLuint      prevStringLen;
 
-PyObject* drawText_hliGLutils(PyObject* self, PyObject *args) {
-   PyObject *colourPyTup;
-   PyObject *Pystring;
+// C/C++ function for drawing text
+// forward declaration
+void drawText(
+      std::string inputString,   // string of text draw
+      GLfloat     gx,            // X position
+      GLfloat     gy,            // Y position
+      GLfloat     sx,            // X scale
+      GLfloat     sy,            // Y scale
+      GLfloat     w2h,           // width to height ration
+      GLfloat*    textColor,     // color of text
+      GLfloat*    faceColor      // color of backdrop
+      );
+
+// Python 3 function for drawing text
+PyObject* drawText_hliGLutils(PyObject* self, PyObject* args) {
+   PyObject* textColorPyTup;
+   PyObject* faceColorPyTup;
+   PyObject* PyString;
 
    GLfloat gx, gy, sx, sy, w2h, ao=0.0f;
    GLfloat textColor[4];
+   GLfloat faceColor[4];
 
    // Parse Inputs
    if ( !PyArg_ParseTuple(args,
-            "OfffffO",
-            &Pystring,
+            "OfffffOO",
+            &PyString,
             &gx, &gy,
             &sx, &sy,
             &w2h,
-            &colourPyTup) )
+            &textColorPyTup,
+            &faceColorPyTup) )
    {
       Py_RETURN_NONE;
    }
 
-   const char* inputChars = PyUnicode_AsUTF8(Pystring);
+   const char* inputChars  = PyUnicode_AsUTF8(PyString);
    std::string inputString = inputChars;
+   textColor[0]   = float(PyFloat_AsDouble(PyTuple_GetItem(textColorPyTup, 0)));
+   textColor[1]   = float(PyFloat_AsDouble(PyTuple_GetItem(textColorPyTup, 1)));
+   textColor[2]   = float(PyFloat_AsDouble(PyTuple_GetItem(textColorPyTup, 2)));
+   textColor[3]   = float(PyFloat_AsDouble(PyTuple_GetItem(textColorPyTup, 3)));
 
-   GLuint stringLen = inputString.size();
+   faceColor[0]   = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 0)));
+   faceColor[1]   = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 1)));
+   faceColor[2]   = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 2)));
+   faceColor[3]   = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 3)));
 
-   textColor[0]   = float(PyFloat_AsDouble(PyTuple_GetItem(colourPyTup, 0)));
-   textColor[1]   = float(PyFloat_AsDouble(PyTuple_GetItem(colourPyTup, 1)));
-   textColor[2]   = float(PyFloat_AsDouble(PyTuple_GetItem(colourPyTup, 2)));
-   textColor[3]   = float(PyFloat_AsDouble(PyTuple_GetItem(colourPyTup, 3)));
+   drawText(
+         inputString,
+         gx, gy,
+         sx, sy,
+         w2h,
+         textColor,
+         faceColor);
 
-   if (firstRun) {
-      firstRun = false;
-      textLine.setDrawType(GL_TRIANGLES);
-      /*
-      for (unsigned int i = 0; i < 128; i++)
-         //printf("glyph %c: width (bearingX): %12.0f, rows (bearingY): %12.0f, bearingLeft: %12.0f, bearingTop: %12.0f\n", 
-         printf("glyph %c: width (bearingX): %12d, rows (bearingY): %12d, bearingLeft: %12d, bearingTop: %12d, texOffsetX: %0.5f, texOffsetY: %0.5f\n", 
-               i, 
-               (GLint)quack->glyphData[i].bearingX,
-               (GLint)quack->glyphData[i].bearingY,
-               (GLint)quack->glyphData[i].bearingLeft,
-               (GLint)quack->glyphData[i].bearingTop,
-               quack->glyphData[i].textureOffsetX,
-               quack->glyphData[i].textureOffsetY
-               );
-      printf("DRAWTEXT FIRST RUN\n");
-      */
-   }
-
-   if (  textLine.numVerts == 0              ||
-         stringLen > prevStringLen           ){
-      std::vector <GLfloat> verts;
-      std::vector <GLfloat> colrs;
-      std::vector <GLfloat> texuv;
-
-      int c = 0;
-      character* tmg;
-      float x = 0.0f,
-            y = 0.0f,
-            ax;
-
-      defineString(
-            x, y,
-            inputString,
-            quack,
-            textColor,
-            verts, texuv, colrs);
-
-      prevString     = inputString;
-      prevStringLen  = stringLen;
-      textLine.texID = quack->tex;
-      textLine.buildCache(verts.size()/2, verts, texuv, colrs);
-   }
-
-   if (  prevString.compare(inputString) != 0 ){
-      for (unsigned int i = stringLen*6; i < prevStringLen*6; i++){
-         textLine.coordCache[i*2+0] = 0.0f;
-         textLine.coordCache[i*2+1] = 0.0f;
-         textLine.texuvCache[i*2+0] = 0.0f;
-         textLine.texuvCache[i*2+1] = 0.0f;
-      }
-
-      float x = 0.0f,
-            y = 0.0f,
-            ax;
-
-      GLuint index = 0;
-
-      index = updateString(
-            x, y,
-            inputString,
-            quack,
-            index,
-            textLine.coordCache,
-            textLine.texuvCache);
-
-      textLine.updateTexUVCache();
-      textLine.updateCoordCache();
-      prevString = inputString;
-   }
+   Py_RETURN_NONE;
+}
 
    // Draw whole texture atlas
    /*
@@ -135,12 +95,159 @@ PyObject* drawText_hliGLutils(PyObject* self, PyObject *args) {
    colrs.push_back(textColor[0]);   colrs.push_back(textColor[1]);   colrs.push_back(textColor[2]);   colrs.push_back(textColor[3]);
    */
 
-   if (w2h <= 1.0)
+void drawText(
+      std::string inputString,   // string of text draw
+      GLfloat     gx,            // X position
+      GLfloat     gy,            // Y position
+      GLfloat     sx,            // X scale
+      GLfloat     sy,            // Y scale
+      GLfloat     w2h,           // width to height ration
+      GLfloat*    textColor,     // color of text
+      GLfloat*    faceColor      // color of backdrop
+      ){
+
+   if (firstRun) {
+      firstRun = false;
+      textLine.setDrawType(GL_TRIANGLES);
+      textLine.setNumColors(1);
+      textBackdrop.setNumColors(1);
+      /*
+      for (unsigned int i = 0; i < 128; i++)
+         //printf("glyph %c: width (bearingX): %12.0f, rows (bearingY): %12.0f, bearingLeft: %12.0f, bearingTop: %12.0f\n", 
+         printf("glyph %c: width (bearingX): %12d, rows (bearingY): %12d, bearingLeft: %12d, bearingTop: %12d, texOffsetX: %0.5f, texOffsetY: %0.5f\n", 
+               i, 
+               (GLint)quack->glyphData[i].bearingX,
+               (GLint)quack->glyphData[i].bearingY,
+               (GLint)quack->glyphData[i].bearingLeft,
+               (GLint)quack->glyphData[i].bearingTop,
+               quack->glyphData[i].textureOffsetX,
+               quack->glyphData[i].textureOffsetY
+               );
+      printf("DRAWTEXT FIRST RUN\n");
+      */
+   }
+
+   GLuint stringLen = inputString.size();
+
+   textLine.setColorQuartet(0, textColor);
+   textBackdrop.setColorQuartet(0, faceColor);
+
+   if (  textLine.numVerts       == 0        ||
+         textBackdrop.numVerts   == 0        ||
+         prevStringLen           < stringLen ){
+      std::vector <GLfloat> verts;
+      std::vector <GLfloat> colrs;
+      std::vector <GLfloat> texuv;
+
+      std::vector <GLfloat> bgverts;
+      std::vector <GLfloat> bgcolrs;
+
+      defineString(
+            0.0f, 0.0f,
+            inputString,
+            quack,
+            textColor,
+            verts, texuv, colrs);
+
+      static GLfloat minX = NULL, minY = NULL, maxX = NULL, maxY = NULL;
+
+      for (unsigned int i = 0; i < verts.size()/2; i += 2){
+         if (verts[i*2] < minX)
+            minX = verts[i*2];
+         if (verts[i*2] > maxX)
+            maxX = verts[i*2];
+         if (verts[i*2+1] < minY)
+            minY = verts[i*2+1];
+         if (verts[i*2+1] > maxY)
+            maxY = verts[i*2+1];
+      }
+
+      defineRoundRect(
+            minX*1.05f, maxY*1.05f,
+            maxX*1.05f, minY*1.05f,
+            10.5f,
+            15,
+            faceColor,
+            bgverts,
+            bgcolrs);
+
+      prevString     = inputString;
+      prevStringLen  = stringLen;
+      textLine.texID = quack->tex;
+      textLine.buildCache(verts.size()/2, verts, texuv, colrs);
+      textBackdrop.buildCache(bgverts.size()/2, bgverts, bgcolrs);
+   }
+
+   if (  prevString.compare(inputString) != 0 ){
+
+      static GLfloat minX = NULL, minY = NULL, maxX = NULL, maxY = NULL;
+
+      for (unsigned int i = stringLen*6; i < prevStringLen*6; i++){
+         textLine.coordCache[i*2+0] = 0.0f;
+         textLine.coordCache[i*2+1] = 0.0f;
+         textLine.texuvCache[i*2+0] = 0.0f;
+         textLine.texuvCache[i*2+1] = 0.0f;
+      }
+
+      GLuint index = 0;
+
+      index = updateString(
+            0.0f, 0.0f,
+            inputString,
+            quack,
+            index,
+            textLine.coordCache,
+            textLine.texuvCache);
+
+      index = 0;
+
+      for (unsigned int i = 0; i < textLine.numVerts; i++){
+         if (textLine.coordCache[i*2] < minX)
+            minX = textLine.coordCache[i*2];
+         if (textLine.coordCache[i*2] > maxX)
+            maxX = textLine.coordCache[i*2];
+         if (textLine.coordCache[i*2+1] < minY)
+            minY = textLine.coordCache[i*2+1];
+         if (textLine.coordCache[i*2+1] > maxY)
+            maxY = textLine.coordCache[i*2+1];
+      }
+
+      index = updateRoundRect(
+            minX*1.05f, maxY*1.05f,
+            maxX*1.05f, minY*1.05f,
+            10.5f,
+            15,
+            index,
+            textBackdrop.coordCache);
+
+      textLine.updateTexUVCache();
+      textLine.updateCoordCache();
+      textBackdrop.updateCoordCache();
+      prevString = inputString;
+   }
+
+   if (  textLine.colorsChanged     ||
+         textBackdrop.colorsChanged ){
+
+      GLuint index = 0;
+      for (unsigned int i = 0; i < prevStringLen; i++)
+         index = updateQuadColor(textColor, index, textLine.colorCache);
+
+      index = 0;
+      index = updateRoundRect(15, faceColor, index, textBackdrop.colorCache);
+
+      textLine.updateColorCache();
+      textBackdrop.updateColorCache();
+   }
+
+   if (w2h <= 1.0) {
       textLine.updateMVP(gx, gy, sx*0.007f/w2h, sy*0.007f/w2h, 0.0f, w2h);
-   else
+      textBackdrop.updateMVP(gx, gy, sx*0.007f/w2h, sy*0.007f/w2h, 0.0f, w2h);
+   } else {
       textLine.updateMVP(gx, gy, sx*0.007f*w2h, sy*0.007f*w2h, 0.0f, w2h);
+      textBackdrop.updateMVP(gx, gy, sx*0.007f*w2h, sy*0.007f*w2h, 0.0f, w2h);
+   }
 
+   textBackdrop.draw();
    textLine.draw();
-
-   Py_RETURN_NONE;
 }
