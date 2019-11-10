@@ -9,33 +9,21 @@ drawCall    textLine;
 drawCall    textBackdrop;
 GLuint      prevStringLen;
 
-// C/C++ function for drawing text
-// forward declaration
-void drawText(
-      std::string inputString,   // string of text draw
-      GLfloat     gx,            // X position
-      GLfloat     gy,            // Y position
-      GLfloat     sx,            // X scale
-      GLfloat     sy,            // Y scale
-      GLfloat     w2h,           // width to height ration
-      GLfloat*    textColor,     // color of text
-      GLfloat*    faceColor      // color of backdrop
-      );
-
 // Python 3 function for drawing text
 PyObject* drawText_hliGLutils(PyObject* self, PyObject* args) {
    PyObject* textColorPyTup;
    PyObject* faceColorPyTup;
    PyObject* PyString;
 
-   GLfloat gx, gy, sx, sy, w2h, ao=0.0f;
+   GLfloat gx, gy, sx, sy, w2h, alignment, ao=0.0f;
    GLfloat textColor[4];
    GLfloat faceColor[4];
 
    // Parse Inputs
    if ( !PyArg_ParseTuple(args,
-            "OfffffOO",
+            "OffffffOO",
             &PyString,
+            &alignment,
             &gx, &gy,
             &sx, &sy,
             &w2h,
@@ -59,9 +47,11 @@ PyObject* drawText_hliGLutils(PyObject* self, PyObject* args) {
 
    drawText(
          inputString,
+         alignment,
          gx, gy,
          sx, sy,
          w2h,
+         quack,
          textColor,
          faceColor);
 
@@ -97,11 +87,13 @@ PyObject* drawText_hliGLutils(PyObject* self, PyObject* args) {
 
 void drawText(
       std::string inputString,   // string of text draw
+      GLfloat     alignment,     // 0.0=left, 0.5=center, 1.0=right
       GLfloat     gx,            // X position
       GLfloat     gy,            // Y position
       GLfloat     sx,            // X scale
       GLfloat     sy,            // Y scale
       GLfloat     w2h,           // width to height ration
+      textAtlas*  atlas,         // texture atlas to draw characters from
       GLfloat*    textColor,     // color of text
       GLfloat*    faceColor      // color of backdrop
       ){
@@ -111,20 +103,7 @@ void drawText(
       textLine.setDrawType(GL_TRIANGLES);
       textLine.setNumColors(1);
       textBackdrop.setNumColors(1);
-      /*
-      for (unsigned int i = 0; i < 128; i++)
-         //printf("glyph %c: width (bearingX): %12.0f, rows (bearingY): %12.0f, bearingLeft: %12.0f, bearingTop: %12.0f\n", 
-         printf("glyph %c: width (bearingX): %12d, rows (bearingY): %12d, bearingLeft: %12d, bearingTop: %12d, texOffsetX: %0.5f, texOffsetY: %0.5f\n", 
-               i, 
-               (GLint)quack->glyphData[i].bearingX,
-               (GLint)quack->glyphData[i].bearingY,
-               (GLint)quack->glyphData[i].bearingLeft,
-               (GLint)quack->glyphData[i].bearingTop,
-               quack->glyphData[i].textureOffsetX,
-               quack->glyphData[i].textureOffsetY
-               );
       printf("DRAWTEXT FIRST RUN\n");
-      */
    }
 
    GLuint stringLen = inputString.size();
@@ -145,11 +124,13 @@ void drawText(
       defineString(
             0.0f, 0.0f,
             inputString,
+            alignment,
             quack,
             textColor,
             verts, texuv, colrs);
 
-      static GLfloat minX = NULL, minY = NULL, maxX = NULL, maxY = NULL;
+      //static GLfloat minX = NULL, minY = NULL, maxX = NULL, maxY = NULL;
+      GLfloat minX = NULL, minY = NULL, maxX = NULL, maxY = NULL;
 
       for (unsigned int i = 0; i < verts.size()/2; i += 2){
          if (verts[i*2] < minX)
@@ -180,7 +161,9 @@ void drawText(
 
    if (  prevString.compare(inputString) != 0 ){
 
-      static GLfloat minX = NULL, minY = NULL, maxX = NULL, maxY = NULL;
+      //static GLfloat minX = NULL, minY = NULL, maxX = NULL, maxY = NULL;
+      GLfloat minX = NULL, minY = NULL, maxX = NULL, maxY = NULL;
+      const char* inputChars = inputString.c_str();
 
       for (unsigned int i = stringLen*6; i < prevStringLen*6; i++){
          textLine.coordCache[i*2+0] = 0.0f;
@@ -194,22 +177,27 @@ void drawText(
       index = updateString(
             0.0f, 0.0f,
             inputString,
-            quack,
+            alignment,
+            atlas,
             index,
             textLine.coordCache,
             textLine.texuvCache);
 
       index = 0;
 
-      for (unsigned int i = 0; i < textLine.numVerts; i++){
-         if (textLine.coordCache[i*2] < minX)
-            minX = textLine.coordCache[i*2];
-         if (textLine.coordCache[i*2] > maxX)
-            maxX = textLine.coordCache[i*2];
-         if (textLine.coordCache[i*2+1] < minY)
-            minY = textLine.coordCache[i*2+1];
-         if (textLine.coordCache[i*2+1] > maxY)
-            maxY = textLine.coordCache[i*2+1];
+      for (unsigned int i = 0; i < stringLen*6; i++){
+
+         // only update extrema for characters with metrics
+         if (inputChars[i/6] > 32) {
+            if (textLine.coordCache[i*2] < minX)
+               minX = textLine.coordCache[i*2];
+            if (textLine.coordCache[i*2] > maxX)
+               maxX = textLine.coordCache[i*2];
+            if (textLine.coordCache[i*2+1] < minY)
+               minY = textLine.coordCache[i*2+1];
+            if (textLine.coordCache[i*2+1] > maxY)
+               maxY = textLine.coordCache[i*2+1];
+         }
       }
 
       index = updateRoundRect(
@@ -240,13 +228,15 @@ void drawText(
       textBackdrop.updateColorCache();
    }
 
-   if (w2h <= 1.0) {
-      textLine.updateMVP(gx, gy, sx*0.007f/w2h, sy*0.007f/w2h, 0.0f, w2h);
-      textBackdrop.updateMVP(gx, gy, sx*0.007f/w2h, sy*0.007f/w2h, 0.0f, w2h);
-   } else {
-      textLine.updateMVP(gx, gy, sx*0.007f*w2h, sy*0.007f*w2h, 0.0f, w2h);
-      textBackdrop.updateMVP(gx, gy, sx*0.007f*w2h, sy*0.007f*w2h, 0.0f, w2h);
-   }
+   //if (w2h <= 1.0) {
+      //textLine.updateMVP(gx, gy, sx*0.007f/w2h, sy*0.007f/w2h, 0.0f, w2h);
+      //textBackdrop.updateMVP(gx, gy, sx*0.007f/w2h, sy*0.007f/w2h, 0.0f, w2h);
+   //} else {
+      //textLine.updateMVP(gx, gy, sx*0.007f*w2h, sy*0.007f*w2h, 0.0f, w2h);
+      //textBackdrop.updateMVP(gx, gy, sx*0.007f*w2h, sy*0.007f*w2h, 0.0f, w2h);
+   //}
+   textLine.updateMVP(gx, gy, sx*0.007f, sy*0.007f, 0.0f, w2h);
+   textBackdrop.updateMVP(gx, gy, sx*0.007f, sy*0.007f, 0.0f, w2h);
 
    textBackdrop.draw();
    textLine.draw();
