@@ -30,12 +30,13 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
 
    // Parse Inputs
    if (!PyArg_ParseTuple(args,
-            "flOffff",
+            "fffflOfff",
+            &gx, &gy,
+            &scale,
             &currentHue,
             &numHues,
             &py_tuple,
             &w2h,
-            &scale,
             &tDiff,
             &interactionCursor))
    {
@@ -55,7 +56,7 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
       float ang, tmx, tmy, azi;
-      float colors[4] = {0.0, 0.0, 0.0, 1.0};
+      float colors[4] = {0.0f, 0.0f, 0.0f, 1.0f};
       float tmr = float(0.15f);
 
       // Allocate buffer for storing relative positions of each button
@@ -68,23 +69,23 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
       }
 
       // Actual meat of drawing hue ring
-      float ringX = 100.0, ringY = 100.0;
+      float ringX = 100.0f, ringY = 100.0f;
       for (int i = 0; i < numHues; i++) {
 
-         if (  prevHueDotScale   == 0.0   )
-            prevHueDotScale = float(tmr*(12.0/numHues));
+         if (  prevHueDotScale   == 0.0f   )
+            prevHueDotScale = float(tmr*(12.0f/numHues));
 
-         if (  prevHueDotDist    == 0.0   )
-            prevHueDotDist = float(0.67*pow(numHues/12.0f, 1.0f/4.0f));
+         if (  prevHueDotDist    == 0.0f   )
+            prevHueDotDist = float(0.67f*pow(numHues/12.0f, 1.0f/4.0f));
 
          // Calculate distance between dots about the center
          azi = 1.0f / float(numHues);
 
          // Convert HSV to RGB
-         hsv2rgb(float(azi*i), 1.0, 1.0, colors);
+         hsv2rgb(float(azi*i), 1.0f, 1.0f, colors);
 
          // Calculate angle (from screen center) of dot
-         ang = float(360.0*float(azi*i) + 90.0);
+         ang = float(360.0f*float(azi*i) + 90.0f);
 
          // Define relative positions of hue button dots
          tmx = float(cos(degToRad(ang))*prevHueDotDist);
@@ -110,8 +111,8 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
       // Draw a circle around the button dot corresponding to the currently selected hue
       defineArch(
             ringX, ringY,
-            float(1.06*tmr*(12.0/numHues)), 
-            float(1.06*tmr*(12.0/numHues)),
+            float(1.06f*tmr*(12.0f/numHues)), 
+            float(1.06f*tmr*(12.0f/numHues)),
             0.0f,
             360.0f,
             0.03f,
@@ -127,7 +128,7 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
       prevHueRingAni = currentHue;
       prevHueRingSel = currentHue;
       prevHueRingNumHues = numHues;
-      prevHueRingAng = float(prevHueRingAni*360.0 + 90.0);
+      prevHueRingAng = float(prevHueRingAni*360.0f + 90.0f);
 
       hueRingButton.buildCache(hueRingVerts, verts, colrs);
 
@@ -139,26 +140,26 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
    }
 
    // Update selection cursor circle if hue selection has changed
-   float curAng, deltaAng, ringX = 100.0, ringY = 100.0;
+   float curAng, deltaAng, ringX = 100.0f, ringY = 100.0f;
    float tmr = float(0.15f);
-   curAng = float(currentHue*360.0 + 90.0);
+   curAng = float(currentHue*360.0f + 90.0f);
    deltaAng = curAng - prevHueRingAng;
 
    // choose shortest path to new target, avoid looping around 0/360 threshold
-   if (deltaAng < -180.0)
-      deltaAng += 360.0;
-   if (deltaAng > 180.0)
-      deltaAng -= 360.0;
+   if (deltaAng < -180.0f)
+      deltaAng += 360.0f;
+   if (deltaAng > 180.0f)
+      deltaAng -= 360.0f;
 
-   tDiff *= float(2.71828);
+   tDiff *= float(2.71828f);
 
    // Determine angle of selection ring from
    // current location (prevHueRingAng) and target location (curAng)
    if (abs(deltaAng) > tDiff) {
-      if ( deltaAng < -0.0) {
+      if ( deltaAng < -0.0f) {
          prevHueRingAng -= float(tDiff*abs(deltaAng));
       }
-      if ( deltaAng >  0.0) {
+      if ( deltaAng >  0.0f) {
          prevHueRingAng += float(tDiff*abs(deltaAng));
       }
    } else {
@@ -168,12 +169,12 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
 
    // Update position of the selection ring if needed
    if (prevHueRingAni != currentHue){
-      ringX = float(cos(degToRad(prevHueRingAng))*0.67*pow(numHues/12.0f, 1.0f/4.0f));
-      ringY = float(sin(degToRad(prevHueRingAng))*0.67*pow(numHues/12.0f, 1.0f/4.0f));
+      ringX = float(cos(degToRad(prevHueRingAng))*0.67f*pow(numHues/12.0f, 1.0f/4.0f));
+      ringY = float(sin(degToRad(prevHueRingAng))*0.67f*pow(numHues/12.0f, 1.0f/4.0f));
       updateArchGeometry(
             ringX, ringY,
-            float(1.06*tmr*(12.0/numHues)), 
-            float(1.06*tmr*(12.0/numHues)),
+            float(1.06f*tmr*(12.0f/numHues)), 
+            float(1.06f*tmr*(12.0f/numHues)),
             0.0f,
             360.0f,
             0.03f,
@@ -188,38 +189,38 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
 
    // Animate Granularity changes
    float hueDotScale, hueDotDist, deltaScale, deltaDist;
-   hueDotScale = float(tmr*(12.0/numHues));
-   hueDotDist  = float(0.67*pow(numHues/12.0f, 1.0f/4.0f));
+   hueDotScale = float(tmr*(12.0f/numHues));
+   hueDotDist  = float(0.67f*pow(numHues/12.0f, 1.0f/4.0f));
    deltaScale  = hueDotScale - prevHueDotScale;
    deltaDist   = hueDotDist - prevHueDotDist;
 
-   if (  abs(deltaScale) > tDiff*0.01   ||
-         abs(deltaDist)  > tDiff*0.01   ){
-      if (deltaScale < -0.0) {
-         prevHueDotScale -= float(0.8*tDiff*abs(deltaScale));
+   if (  abs(deltaScale) > tDiff*0.01f ||
+         abs(deltaDist)  > tDiff*0.01f ){
+      if (deltaScale < -0.0f) {
+         prevHueDotScale -= float(0.8f*tDiff*abs(deltaScale));
       }
-      if (deltaScale > -0.0) {
-         prevHueDotScale += float(0.8*tDiff*abs(deltaScale));
+      if (deltaScale > -0.0f) {
+         prevHueDotScale += float(0.8f*tDiff*abs(deltaScale));
       }
-      if (deltaDist < -0.0) {
-         prevHueDotDist -= float(0.8*tDiff*abs(deltaDist));
+      if (deltaDist < -0.0f) {
+         prevHueDotDist -= float(0.8f*tDiff*abs(deltaDist));
       }
-      if (deltaDist > -0.0) {
-         prevHueDotDist += float(0.8*tDiff*abs(deltaDist));
+      if (deltaDist > -0.0f) {
+         prevHueDotDist += float(0.8f*tDiff*abs(deltaDist));
       }
 
       // Actual meat of drawing hue ring
       float ang, tmx, tmy, azi;
       float tmr = float(0.15f);
       int index = 0;
-      float ringX = 100.0, ringY = 100.0;
+      float ringX = 100.0f, ringY = 100.0f;
       for (int i = 0; i < numHues; i++) {
 
          // Calculate distance between dots about the center
          azi   = 1.0f / float(numHues);
 
          // Calculate angle (from screen center) of dot
-         ang = float(360.0*float(azi*i) + 90.0);
+         ang = float(360.0f*float(azi*i) + 90.0f);
 
          // Define relative positions of hue button dots
          tmx = float(cos(degToRad(ang))*prevHueDotDist);
@@ -244,8 +245,8 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
       // Draw a circle around the button dot corresponding to the currently selected hue
       index = updateArchGeometry(
             ringX, ringY,
-            float(1.06*tmr*(12.0/numHues)), 
-            float(1.06*tmr*(12.0/numHues)),
+            float(1.06f*tmr*(12.0f/numHues)), 
+            float(1.06f*tmr*(12.0f/numHues)),
             0.0f,
             360.0f,
             0.03f,
