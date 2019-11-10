@@ -128,7 +128,7 @@ PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
          tmbc[1] = bulbColors[j*3+1];
          tmbc[2] = bulbColors[j*3+2];
          tmbc[3] = 1.0;
-         defineBulb(tmx, tmy+0.09f*buttonScale, 0.15f*buttonScale, circleSegments, tmbc, detailColor, verts, colrs);
+         defineBulb(tmx, tmy+0.115f*buttonScale, 0.175f*buttonScale, circleSegments, tmbc, detailColor, verts, colrs);
 
          if (j == 0) {
             vertsPerBulb = verts.size()/2;
@@ -190,7 +190,7 @@ PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
          buttonCoords[j*2+1] = tmy;
 
          index = updateEllipseGeometry(tmx, tmy, 0.4f*buttonScale, 0.4f*buttonScale, circleSegments, index, bulbButton.coordCache);
-         index = updateBulbGeometry(tmx, tmy+0.09f*buttonScale, 0.15f*buttonScale, circleSegments, index, bulbButton.coordCache);
+         index = updateBulbGeometry(tmx, tmy+0.115f*buttonScale, 0.175f*buttonScale, circleSegments, index, bulbButton.coordCache);
       }
 
       // Update Statemachine Variables
