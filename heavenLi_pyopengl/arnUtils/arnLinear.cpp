@@ -11,6 +11,18 @@ GLuint   prevHomeLinearNumBulbs;
 GLfloat  prevHomeLinearAO,
          sxCorrected;
 
+void drawIconLinear(
+      GLfloat  gx,            // icon position X
+      GLfloat  gy,            // icon position Y
+      GLfloat  scale,         // icon size
+      GLuint   features,      // iconography features
+      GLfloat* detailColor,   // feature colors
+      GLuint   numBulbs,      // number of elements
+      GLfloat  ao,            // icon rotation angle
+      GLfloat  w2h,           // width to hight ration
+      GLfloat* bulbColors     // colors of the elements (bulbs)
+      );
+
 PyObject* drawHomeLinear_hliGLutils(PyObject *self, PyObject *args) {
    PyObject*   py_list;
    PyObject*   py_tuple;
@@ -169,7 +181,7 @@ PyObject* drawIconLinear_hliGLutils(PyObject *self, PyObject *args) {
    GLfloat*    bulbColors;
    GLfloat     detailColor[4];
    GLfloat     gx, gy, scale, ao, w2h, alpha=1.0f;
-   GLuint      numBulbs, features, iconLinearVerts, vertIndex = 0;
+   GLuint      numBulbs, features, vertIndex = 0;
    if (!PyArg_ParseTuple(args,
             "ffflOlffO",
             &gx, &gy,
@@ -184,8 +196,6 @@ PyObject* drawIconLinear_hliGLutils(PyObject *self, PyObject *args) {
    {
       Py_RETURN_NONE;
    }
-
-   unsigned int circleSegments = 20;
 
    // Parse array of tuples containing RGB Colors of bulbs
    bulbColors = new float[numBulbs*3];
@@ -203,6 +213,36 @@ PyObject* drawIconLinear_hliGLutils(PyObject *self, PyObject *args) {
    detailColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 1)));
    detailColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2)));
    detailColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 3)));
+
+   drawIconLinear(
+         gx,
+         gy,
+         scale,
+         features,
+         detailColor,
+         numBulbs,
+         ao,
+         w2h,
+         bulbColors);
+
+   delete [] bulbColors;
+
+   Py_RETURN_NONE;
+}
+
+void drawIconLinear(
+      GLfloat  gx,            // icon position X
+      GLfloat  gy,            // icon position Y
+      GLfloat  scale,         // icon size
+      GLuint   features,      // iconography features
+      GLfloat* detailColor,   // feature colors
+      GLuint   numBulbs,      // number of elements
+      GLfloat  ao,            // icon rotation angle
+      GLfloat  w2h,           // width to hight ration
+      GLfloat* bulbColors     // colors of the elements (bulbs)
+      ){
+
+   GLuint iconLinearVerts, circleSegments = 20;
 
    float tmc[4];
    for (unsigned int i = 0; i < numBulbs; i++) {
@@ -283,10 +323,9 @@ PyObject* drawIconLinear_hliGLutils(PyObject *self, PyObject *args) {
       iconLinear.updateColorCache();
    }
 
-   delete [] bulbColors;
-
    iconLinear.updateMVP(gx, gy, -scale, scale, ao, w2h);
    iconLinear.draw();
 
-   Py_RETURN_NONE;
+   return;
 }
+

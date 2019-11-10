@@ -9,6 +9,18 @@ extern float offScreen;
 drawCall homeCircle;
 GLuint   prevHomeCircleNumBulbs;
 
+void drawIconCircle(
+      GLfloat  gx,            // icon position X
+      GLfloat  gy,            // icon position Y
+      GLfloat  scale,         // icon size
+      GLuint   features,      // iconography features
+      GLfloat* detailColor,   // feature colors
+      GLuint   numBulbs,      // number of elements
+      GLfloat  ao,            // icon rotation angle
+      GLfloat  w2h,           // width to hight ration
+      GLfloat* bulbColors     // colors of the elements (bulbs)
+      );
+
 PyObject* drawHomeCircle_hliGLutils(PyObject *self, PyObject *args) {
    PyObject*   py_list;
    PyObject*   py_tuple;
@@ -132,6 +144,7 @@ PyObject* drawIconCircle_hliGLutils(PyObject *self, PyObject *args) {
    GLfloat     gx, gy, scale, ao, w2h;
    GLuint      numBulbs, features;
    GLint       vertIndex = 0;
+
    if (!PyArg_ParseTuple(args,
             "ffflOlffO",
             &gx, &gy,            // icon positon (X, Y)
@@ -146,8 +159,6 @@ PyObject* drawIconCircle_hliGLutils(PyObject *self, PyObject *args) {
    {
       Py_RETURN_NONE;
    }
-
-   unsigned int circleSegments = 60;
 
    // Parse array of tuples containing RGB Colors of bulbs
    bulbColors = new float[numBulbs*3];
@@ -165,6 +176,38 @@ PyObject* drawIconCircle_hliGLutils(PyObject *self, PyObject *args) {
    detailColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 1)));
    detailColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2)));
    detailColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 3)));
+
+   drawIconCircle(
+         gx,
+         gy,
+         scale,
+         features,
+         detailColor,
+         numBulbs,
+         ao,
+         w2h,
+         bulbColors);
+
+   delete [] bulbColors;
+
+   Py_RETURN_NONE;
+}
+
+void drawIconCircle(
+      GLfloat  gx,            // icon position X
+      GLfloat  gy,            // icon position Y
+      GLfloat  scale,         // icon size
+      GLuint   features,      // iconography features
+      GLfloat* detailColor,   // feature colors
+      GLuint   numBulbs,      // number of elements
+      GLfloat  ao,            // icon rotation angle
+      GLfloat  w2h,           // width to hight ration
+      GLfloat* bulbColors     // colors of the elements (bulbs)
+      ){
+
+   unsigned int circleSegments = 60;
+
+   iconCircle.setNumColors(numBulbs+1);
 
    float tmc[4];
    for (unsigned int i = 0; i < numBulbs; i++) {
@@ -238,8 +281,5 @@ PyObject* drawIconCircle_hliGLutils(PyObject *self, PyObject *args) {
 
    iconCircle.updateMVP(gx, gy, scale, scale, -ao, w2h);
    iconCircle.draw();
-
-   delete [] bulbColors;
-   Py_RETURN_NONE;
+   return;
 }
-
