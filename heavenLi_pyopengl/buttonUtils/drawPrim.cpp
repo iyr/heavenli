@@ -59,6 +59,8 @@ PyObject* drawPrim_hliGLutils(PyObject* self, PyObject *args) {
          0.0f, 1.0f, 0.0f,
          0.0f, 0.0f, 1.0f};
       
+      defineRoundRect(-0.25f, 0.25f, 0.55f, -0.05f, 0.02f, 15, detailColor, verts, colrs);
+      /*
       defineQuad2pt(
             -0.25f, -0.25f,
             -0.5f, -0.5f,
@@ -82,6 +84,7 @@ PyObject* drawPrim_hliGLutils(PyObject* self, PyObject *args) {
             0.5f, 0.5f,
             faceColor,
             verts, colrs);
+            */
 
       primVerts = verts.size()/2;
 
