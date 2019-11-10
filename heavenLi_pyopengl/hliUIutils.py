@@ -7,29 +7,88 @@ from hliGLutils import *
 print("Done!")
 
 # Abstracts Lamp icon drawing
-def drawIcon(ix, iy, scale, color, w2h, Lamp, level):
-    if (Lamp.getArn() == 0):
-        drawIconCircle(ix, iy, 
-                scale, 
-                #Lamp.metaLampLevel+4,
-                level,
-                color,
-                Lamp.getNumBulbs(), 
-                Lamp.getAngle(), 
-                w2h, 
-                Lamp.getBulbsCurrentRGB())
+#def drawIcon(ix, iy, scale, color, w2h, Lamp, level):
+    #if (Lamp.getArn() == 0):
+        #drawIconCircle(ix, iy, 
+                #scale, 
+                ##Lamp.metaLampLevel+4,
+                #level,
+                #color,
+                #Lamp.getNumBulbs(), 
+                #Lamp.getAngle(), 
+                #w2h, 
+                #Lamp.getBulbsCurrentRGB())
 
-    if (Lamp.getArn() == 1):
-        drawIconLinear(ix, iy, 
-                scale, 
-                #Lamp.metaLampLevel+2,
-                level,
-                color,
-                Lamp.getNumBulbs(), 
-                Lamp.getAngle(), 
-                w2h, 
-                Lamp.getBulbsCurrentRGB())
-    return
+    #if (Lamp.getArn() == 1):
+        #drawIconLinear(ix, iy, 
+                #scale, 
+                ##Lamp.metaLampLevel+2,
+                #level,
+                #color,
+                #Lamp.getNumBulbs(), 
+                #Lamp.getAngle(), 
+                #w2h, 
+                #Lamp.getBulbsCurrentRGB())
+    #return
+
+# This class helps the management and animation of colors
+class UIcolor:
+    def __init__(self):
+        self.params = {}
+        self.params["R"] = UIparam()
+        self.params["G"] = UIparam()
+        self.params["B"] = UIparam()
+        self.params["A"] = UIparam()
+        self.tDiff = 1.0
+        
+    def setAccel(self, value):
+        for i in self.params:
+            self.params[i].setAccel(value)
+        return
+
+    # Set color to fade to
+    def setTargetColor(self, color):
+        self.params["R"].setTargetVal(color[0])
+        self.params["G"].setTargetVal(color[1])
+        self.params["B"].setTargetVal(color[2])
+        self.params["A"].setTargetVal(color[3])
+        return
+
+    # Return 4-tuple of RGBA
+    def getColor(self):
+        return (self.params["R"].getVal(), self.params["G"].getVal(), self.params["B"].getVal(), self.params["A"].getVal())
+
+    # Set time-slice for animation speed
+    def setTimeSlice(self, tDiff):
+        self.tDiff = tDiff
+        for i in self.params:
+            self.params[i].setTimeSlice(self.tDiff)
+        return
+
+    # Update all parameters
+    def updateParams(self):
+        for i in self.params:
+            self.params[i].updateVal()
+        return
+
+    # General-purpose setter
+    def setTarget(self, key, val):
+        self.params[key].setTargetVal(val)
+        return
+
+    # General-purpose getter
+    def getTarget(self, key):
+        return self.params[key].getTar()
+
+    # General-purpose setter
+    def setValue(self, key, val):
+        self.params[key].setValue(val)
+        return
+
+    # General-purpose getter
+    def getValue(self, key):
+        return self.params[key].getVal()
+
 
 # This class helps UI elements (buttons) 
 # manage their own animation with needing to be 
@@ -62,8 +121,23 @@ class UIelement:
         return
 
     # General-purpose getter
+    def getTarget(self, key):
+        return self.params[key].getTar()
+
+    # General-purpose setter
+    def setValue(self, key, val):
+        self.params[key].setValue(val)
+        return
+
+    # General-purpose getter
     def getValue(self, key):
         return self.params[key].getVal()
+
+    # Manually set size, use sparringly
+    def setSize(self, val):
+        self.params["scaleX"].setValue(val)
+        self.params["scaleY"].setValue(val)
+        return
 
     # Update all parameters
     def updateParams(self):
@@ -80,9 +154,9 @@ class UIelement:
 
     # Used to determine if UI element should invoke OpenGL draw-call
     def isVisible(self):
-        if (abs(self.params["scaleX"]) <= 0.0001):
+        if (self.params["scaleX"] == 0.0):
             return False
-        elif (abs(self.params["scaleY"]) <= 0.0001):
+        elif (self.params["scaleY"] == 0.0):
             return False
         else:
             return True
@@ -126,6 +200,12 @@ class UIelement:
 
     def getPosY(self):
         return self.params["coordY"].getVal()
+
+    def getTarPosX(self):
+        return self.params["coordX"].getTar()
+
+    def getTarPosY(self):
+        return self.params["coordY"].getTar()
 
     def getSizeX(self):
         return self.params["scaleX"].getVal()
@@ -174,13 +254,17 @@ class UIparam:
         self.prevDeltaSign = deltaSign
         return
 
+    # Target Value Getter
+    def getTar(self):
+        return self.targetVal
+
     # True Value of the parameter
     def getVal(self):
         return self.currentVal
 
     # Used for making real-time changes, corrections.
     # Use sparringly
-    def setVal(self, value):
+    def setValue(self, value):
         self.currentVal = value
         return
 
