@@ -14,6 +14,7 @@ float constrain(float value, float min, float max) {
 #include "primUtils/primArchDEGEN.cpp"
 #include "primUtils/primPillDEGEN.cpp"
 #include "primUtils/primQuadDEGEN.cpp"
+#include "primUtils/primRoundRectDEGEN.cpp"
 
 #include "primUtils/primColorWheelDEGEN.cpp"
 #include "primUtils/primBulbDEGEN.cpp"
