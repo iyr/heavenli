@@ -19,8 +19,8 @@
 
 #include "matrixUtils.c"      // Minimal Matrix math library for basic 2D graphics
 #include "Params.h"           // Caches Matrix Transformation Calculations
-#include "primUtils.h"        // Library of Geometric Primitives for drawing shapes
 #include "drawCallClass.h"    // Helper class that abstracts VBO, Matrix Ops, etc.
+#include "primUtils.h"        // Library of Geometric Primitives for drawing shapes
 #include "fontUtils.h"        // Helper utilities for loading fonts and drawing text
 
 /*
