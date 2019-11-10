@@ -1,4 +1,8 @@
 /*
+ * Forward Declarations
+ */
+
+/*
  * Text draw code + helper functions
  */
 #include "fontUtils/characterStruct.h"    // Provides a simple struct for caching character glyph data
@@ -9,7 +13,20 @@
 //std::vector<textAtlas> fontAtlases;            // Used to store all generated fonts
 textAtlas* quack;
 
-//#include "fontUtils/loadChar.cpp"         // Will likely get depricated
+// C/C++ function for drawing text
+void drawText(
+      std::string inputString,   // string of text draw
+      GLfloat     alignment,     // 0.0=left, 0.5=center, 1.0=right
+      GLfloat     gx,            // X position
+      GLfloat     gy,            // Y position
+      GLfloat     sx,            // X scale
+      GLfloat     sy,            // Y scale
+      GLfloat     w2h,           // width to height ration
+      textAtlas*  atlas,         // texture atlas to draw characters from
+      GLfloat*    textColor,     // color of text
+      GLfloat*    faceColor      // color of backdrop
+      );
 #include "fontUtils/drawText.cpp"         // Draws an input string with a given font
+
 #include "fontUtils/buildAtlas.cpp"       // Builds a text Atlas with data ferried from Python, stores in global vector
 
