@@ -238,14 +238,14 @@ def drawHome():
                     stateMach['BulbButtons'].setTarSize(0.0)
 
                     stateMach['ColorTriangle'].setTarSize(1.0)
-                    stateMach['ColorTriangle'].setValue("coordX", stateMach['AllSetButton'].getPosX()/stateMach['w2h'])
+                    stateMach['ColorTriangle'].setValue("coordX", stateMach['AllSetButton'].getPosX())
                     stateMach['ColorTriangle'].setValue("coordY", stateMach['AllSetButton'].getPosY())
                     stateMach['ColorTriangle'].setTarPosX(0.0)
                     stateMach['ColorTriangle'].setTarPosY(0.0)
 
                     stateMach['HueRing'].setSize(0.0)
                     stateMach['HueRing'].setTarSize(1.0)
-                    stateMach['HueRing'].setValue("coordX", stateMach['AllSetButton'].getPosX()/stateMach['w2h'])
+                    stateMach['HueRing'].setValue("coordX", stateMach['AllSetButton'].getPosX())
                     stateMach['HueRing'].setValue("coordY", stateMach['AllSetButton'].getPosY())
                     stateMach['HueRing'].setValue("scaleX", 0.0)
                     stateMach['HueRing'].setTarPosX(0.0)
