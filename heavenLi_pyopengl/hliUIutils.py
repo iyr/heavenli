@@ -6,30 +6,16 @@ print("Loading hliGLutils...")
 from hliGLutils import *
 print("Done!")
 
-# Abstracts Lamp icon drawing
-#def drawIcon(ix, iy, scale, color, w2h, Lamp, level):
-    #if (Lamp.getArn() == 0):
-        #drawIconCircle(ix, iy, 
-                #scale, 
-                ##Lamp.metaLampLevel+4,
-                #level,
-                #color,
-                #Lamp.getNumBulbs(), 
-                #Lamp.getAngle(), 
-                #w2h, 
-                #Lamp.getBulbsCurrentRGB())
-
-    #if (Lamp.getArn() == 1):
-        #drawIconLinear(ix, iy, 
-                #scale, 
-                ##Lamp.metaLampLevel+2,
-                #level,
-                #color,
-                #Lamp.getNumBulbs(), 
-                #Lamp.getAngle(), 
-                #w2h, 
-                #Lamp.getBulbsCurrentRGB())
-    #return
+def drawInfo(stateMach):
+    infoStr = "FPS: " + str(int(stateMach['fps']))
+    infoStr += "\nCursor: " + str(stateMach['cursorX']) + ', ' + str(stateMach['cursorY'])
+    infoStr += "\nInput State: " + str(stateMach['currentState'])
+    infoStr += "\nMouse Button: " + str(stateMach['mouseButton'])
+    tmc = ( stateMach['faceColor'][0], 
+            stateMach['faceColor'][1], 
+            stateMach['faceColor'][2], 
+            stateMach['faceColor'][3]/2)
+    drawText(infoStr, 0.0, -1.0, 0.85, 0.25, 0.25, stateMach['w2h'], stateMach['detailColor'], tmc)
 
 # This class helps the management and animation of colors
 class UIcolor:
