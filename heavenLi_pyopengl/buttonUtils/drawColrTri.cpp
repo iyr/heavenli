@@ -86,11 +86,11 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
       }
 
       // Resolve edge-case bug
-      //if (  prevTriX == 0.0   )
-         //prevTriX = float(-0.0383*numLevels);
+      if (  prevTriX == 0.0   )
+         prevTriX = float(-0.0383*numLevels);
 
-      //if (  prevTriY == 0.0   )
-         //prevTriY = float(+0.0616*numLevels);
+      if (  prevTriY == 0.0   )
+         prevTriY = float(+0.0616*numLevels);
 
       // Actual meat of drawing saturation/value triangle
       int index = 0;
@@ -258,12 +258,12 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
    }
 
    // Resolves edge case bug animating selection ring
-   //if (  prevTriSatSel  != currentTriSat  ){
-      //prevTriSat = prevTriSatSel;
-   //} 
-   //if (  prevTriValSel  != currentTriVal  ){
-      //prevTriVal = prevTriValSel;
-   //} 
+   if (  prevTriSatSel  != currentTriSat  ){
+      prevTriSat = prevTriSatSel;
+   } 
+   if (  prevTriValSel  != currentTriVal  ){
+      prevTriVal = prevTriValSel;
+   } 
 
    // Determine distance of selection ring from 
    // current location (prevTri) to target location (ring)
@@ -318,6 +318,12 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
       prevRingY = ringY;
    }
 
+   // Selection Ring in place, stop updating position
+   if (  abs(deltaX) <= tDiff*0.000001f &&
+         abs(deltaY) <= tDiff*0.000001f ){
+      prevTriSat = currentTriSat;
+      prevTriVal = currentTriVal;
+   }
    // Update position of the selection ring if needed
    if ( (prevTriSat  != currentTriSat  ||
          prevTriVal  != currentTriVal) ){
@@ -336,14 +342,8 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
       colrTriButton.updateCoordCache();
    }
 
-   // Selection Ring in place, stop updating position
-   if (  abs(deltaX) <= tDiff*0.000001f &&
-         abs(deltaY) <= tDiff*0.000001f ){
-      prevTriSat = currentTriSat;
-      prevTriVal = currentTriVal;
-   }
-   //prevTriSatSel = currentTriSat;
-   //prevTriValSel = currentTriVal;
+   prevTriSatSel = currentTriSat;
+   prevTriValSel = currentTriVal;
 
    GLboolean updateCache = GL_FALSE;
 
