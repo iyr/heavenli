@@ -72,8 +72,8 @@ PyObject* initShaders_hliGLutils(PyObject* self, PyObject *args) {
 
    //Generate plain white texture for drawing solid color objects
    GLubyte* blankTexture;
-   blankTexture = new GLubyte[4];
-   memset(blankTexture, 255, 4);
+   blankTexture = new GLubyte[16];
+   memset(blankTexture, 255, 16);
    GLint maxTexSize;
    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTexSize);
    printf("Platform Maximum supported texture size: %d\n", maxTexSize);
@@ -84,7 +84,7 @@ PyObject* initShaders_hliGLutils(PyObject* self, PyObject *args) {
    glBindTexture(GL_TEXTURE_2D, whiteTex);
    glUniform1i(uniform_tex, 0);
 
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, blankTexture);
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, blankTexture);
 
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
@@ -118,9 +118,7 @@ PyObject* initShaders_hliGLutils(PyObject* self, PyObject *args) {
       "varying    vec4 color;             \n"
       "uniform    sampler2D tex;          \n"
       "void main() {                      \n"
-         //"gl_FragColor = vec4(color.r, color.g, color.b*texture2D(tex, texCoord).a, color.a);           \n"
-         "gl_FragColor = vec4(color.r, color.g, color.b, color.a*texture2D(tex, texCoord).a);           \n"
-         //"gl_FragColor = color;           \n"
+         "gl_FragColor = texture2D(tex, texCoord)*color;           \n"
       "}                                  \n";
 
    GLint linked;
