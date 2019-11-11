@@ -61,7 +61,8 @@ textAtlas::textAtlas(std::string faceName, GLuint numChars, GLuint size, charact
    glBindTexture(GL_TEXTURE_2D, this->tex);
    glUniform1i(uniform_tex, 0);
 
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, this->textureWidth, this->textureHeight, 0, GL_ALPHA, GL_UNSIGNED_BYTE, NULL);
+   //glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, this->textureWidth, this->textureHeight, 0, GL_ALPHA, GL_UNSIGNED_BYTE, NULL);
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, this->textureWidth, this->textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
@@ -100,7 +101,7 @@ textAtlas::textAtlas(std::string faceName, GLuint numChars, GLuint size, charact
             oy, 
             (GLsizei)this->glyphData[i].bearingX, 
             (GLsizei)this->glyphData[i].bearingY, 
-            GL_ALPHA, 
+            GL_RGBA, 
             GL_UNSIGNED_BYTE, 
             this->glyphData[i].bitmap);
 

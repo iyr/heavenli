@@ -78,31 +78,20 @@ PyObject* buildAtlas_hliGLutils(PyObject* self, PyObject *args) {
       PyBitmap = PyObject_GetAttrString(PyChar, "bitmap");
       unsigned int bufferLength;
       bufferLength = PyList_Size(PyBitmap);
-      GLubyte* tmb = new GLubyte[bufferLength];
+      GLubyte* tmb = new GLubyte[bufferLength*4];
 
       for (unsigned int i = 0; i < bufferLength; i++) {
+         tmb[i*4+0] = 255;
+         tmb[i*4+1] = 255;
+         tmb[i*4+2] = 255;
          PyAttr = PyList_GetItem(PyBitmap, i);
-         tmb[i] = GLubyte(PyLong_AsLong(PyAttr));
-
-         //printf("%.3d", tmb[i]);
-         //if ((i+1) % glyphData[c].bearingX == 0 )
-            //printf("\n");
+         tmb[i*4+3] = GLubyte(PyLong_AsLong(PyAttr));
       }
-      //printf("\n");
-
-      /*
-      printf("%c: bufferLength: %.4d, width: %.3d, rows: %.3d\n",
-            c+32, 
-            bufferLength,
-            glyphData[c].bearingX,
-            glyphData[c].bearingY
-            );
-            */
       
       glyphData[c].bitmap = tmb;      
    }
 
-   quack = new textAtlas("Barlow-Regular", numChars, size, glyphData);
+   quack = new textAtlas(inputString, numChars, size, glyphData);
 
    Py_RETURN_NONE;
 }
