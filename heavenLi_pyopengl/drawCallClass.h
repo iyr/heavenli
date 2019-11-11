@@ -34,6 +34,7 @@ class drawCall {
       void setNumColors(unsigned int numColors);
       void setColorQuartet(unsigned int setIndex, GLfloat* quartet);
       void setDrawType(GLenum type);
+      void setTex(GLuint TexID);
 
    private:
       Params      prevTransforms;   // Useful for know if MVP should be recomputed
@@ -68,7 +69,7 @@ drawCall::drawCall(void) {
    //this->drawType       = GL_LINE_STRIP;
    this->drawType       = GL_TRIANGLE_STRIP;
 
-   this->texID          = whiteTex;
+   this->texID          = NULL;
    return;
 };
 
@@ -93,7 +94,7 @@ drawCall::drawCall(unsigned int numColors) {
 
    this->drawType       = GL_TRIANGLE_STRIP;
 
-   this->texID          = whiteTex;
+   this->texID          = NULL;
    return;
 };
 
@@ -204,6 +205,8 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
    // must be initialized before any GL functions are called. 
    if (this->firstRun == GL_TRUE) {
       this->firstRun = GL_FALSE;
+      if (this->texID == NULL)
+         this->texID = whiteTex;
       glGenBuffers(1, &this->VBO);
    } else {
       glDeleteBuffers(1, &this->VBO);
@@ -310,6 +313,8 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
    // must be initialized before any GL functions are called. 
    if (this->firstRun == GL_TRUE) {
       this->firstRun = GL_FALSE;
+      if (this->texID == NULL)
+         this->texID = whiteTex;
       glGenBuffers(1, &this->VBO);
    } else {
       glDeleteBuffers(1, &this->VBO);
@@ -409,6 +414,7 @@ void drawCall::draw(void) {
    // Set active VBO
    glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
 
+   // Bind Object texture
    glBindTexture(GL_TEXTURE_2D, this->texID);
 
    // Define how the Vertex coordinate data is layed out in the buffer
@@ -485,6 +491,11 @@ void drawCall::updateTexUVCache(void) {
    // Unbind Buffer Object
    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+   return;
+}
+
+void drawCall::setTex(GLuint TexID){
+   this->texID = TexID;
    return;
 }
 #endif
