@@ -740,15 +740,9 @@ def display():
         stateMach['lamps'][i].updateBulbs(stateMach['tDiff']/2)
 
     #drawPrim(0.0, 0.0, 1.0, 0.0, stateMach['w2h'], stateMach['faceColor'], stateMach['detailColor'], (1.0, 1.0, 1.0, 1.0))
-    infoStr = "FPS: " + str(int(stateMach['fps']))
-    infoStr += "\nCursor: " + str(stateMach['cursorX']) + ', ' + str(stateMach['cursorY'])
-    infoStr += "\nInput State: " + str(stateMach['currentState'])
-    infoStr += "\nMouse Button: " + str(stateMach['mouseButton'])
-    tmc = ( stateMach['faceColor'][0], 
-            stateMach['faceColor'][1], 
-            stateMach['faceColor'][2], 
-            stateMach['faceColor'][3]/2)
-    drawText(infoStr, 0.0, -1.0, 0.85, 0.25, 0.25, stateMach['w2h'], stateMach['detailColor'], tmc)
+
+    if (stateMach['drawInfo']):
+        drawInfo(stateMach)
 
     stateMach['mousePressed'] = False
 
@@ -781,15 +775,29 @@ def special(k, x, y):
     if k == GLUT_KEY_LEFT:
         if (len(stateMach['lamps']) > 0):
             stateMach['lamps'][Light].setAngle(stateMach['lamps'][Light].getAngle() + 5)
+
     elif k == GLUT_KEY_RIGHT:
         if (len(stateMach['lamps']) > 0):
             stateMach['lamps'][Light].setAngle(stateMach['lamps'][Light].getAngle() - 5)
+
     elif k == GLUT_KEY_UP:
         if (len(stateMach['lamps']) > 0):
             stateMach['lamps'][Light].setNumBulbs(stateMach['lamps'][Light].getNumBulbs()+1)
+
     elif k == GLUT_KEY_DOWN:
         if (len(stateMach['lamps']) > 0):
             stateMach['lamps'][Light].setNumBulbs(stateMach['lamps'][Light].getNumBulbs()-1)
+
+    elif k == GLUT_KEY_F1:
+        if stateMach['targetScreen'] == 0:
+            stateMach['targetScreen'] = 1
+            stateMach['targetBulb'] = 0
+        elif stateMach['targetScreen'] == 1:
+            stateMach['targetScreen'] = 0
+
+    elif k == GLUT_KEY_F3:
+        stateMach['drawInfo'] = not stateMach['drawInfo']
+
     elif k == GLUT_KEY_F11:
         if stateMach['isFullScreen'] == False:
             stateMach['windowPosX'] = glutGet(GLUT_WINDOW_X)
@@ -802,12 +810,6 @@ def special(k, x, y):
             glutPositionWindow(stateMach['windowPosX'], stateMach['windowPosY'])
             glutReshapeWindow(stateMach['windowDimW'], stateMach['windowDimH'])
             stateMach['isFullScreen'] = False
-    elif k == GLUT_KEY_F1:
-        if stateMach['targetScreen'] == 0:
-            stateMach['targetScreen'] = 1
-            stateMach['targetBulb'] = 0
-        elif stateMach['targetScreen'] == 1:
-            stateMach['targetScreen'] = 0
     
     if k == GLUT_KEY_F12:
         stateMach['frameLimit'] = not stateMach['frameLimit']
@@ -923,6 +925,7 @@ if __name__ == '__main__':
     stateMach['interactionCursor']  = 0.0
     stateMach['mousePressed']       = False
     stateMach['mouseButton']        = "None"
+    stateMach['drawInfo']           = False
 
     stateMach['AllSetButton']       = UIelement()
     stateMach['BackButton']         = UIelement()
