@@ -35,23 +35,12 @@ unsigned int defineString(
          x +=  ax;
       }
 
-      // Shift downward and reset x position for line breaks
-      if (c == (int)'\n') {
-         y -= (float)atlas->faceSize;
-         x = 0.0f;
-         lineLength = 0.0f;
-      }
-
       defineChar(
             x-ax, y, 
             c,
             atlas,
             textColor, 
             verts, texuv, colrs);
-   }
-
-   for (unsigned int i = 0; i < stringLen; i++) {
-      c = inputChars[i];
 
       // Shift downward and reset x position for line breaks
       if (  c == (int)'\n'    || 
@@ -63,7 +52,7 @@ unsigned int defineString(
          }
 
          // Get the length of the line (furthest quad vert on left to furthest on right)
-         for (unsigned int j = lastLineVert; j < i*6; j++)
+         for (unsigned int j = lastLineVert; j < (i+1)*6; j++)
             if(verts[j*2] > lineLength)
                lineLength = verts[j*2];
 
@@ -107,7 +96,7 @@ unsigned int updateString(
       tmg = &atlas->glyphData[c];
 
       // Only update non-control characters
-      if (c >= 32 && c != (int)'\n') {
+      if (c >= 32) {
          ax =  (float)tmg->advanceX*0.015625f; // divide by 64
          x +=  ax;
       }

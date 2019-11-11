@@ -129,18 +129,21 @@ void drawText(
             textColor,
             verts, texuv, colrs);
 
-      //static GLfloat minX = NULL, minY = NULL, maxX = NULL, maxY = NULL;
       GLfloat minX = NULL, minY = NULL, maxX = NULL, maxY = NULL;
 
-      for (unsigned int i = 0; i < verts.size()/2; i += 2){
-         if (verts[i*2] < minX)
-            minX = verts[i*2];
-         if (verts[i*2] > maxX)
-            maxX = verts[i*2];
-         if (verts[i*2+1] < minY)
-            minY = verts[i*2+1];
-         if (verts[i*2+1] > maxY)
-            maxY = verts[i*2+1];
+      for (unsigned int i = 0; i < stringLen*6; i++){
+
+         // only update extrema for characters with metrics
+         if (inputString[i/6] > 32) {
+            if (verts[i*2] < minX)
+               minX = verts[i*2];
+            if (verts[i*2] > maxX)
+               maxX = verts[i*2];
+            if (verts[i*2+1] < minY)
+               minY = verts[i*2+1];
+            if (verts[i*2+1] > maxY)
+               maxY = verts[i*2+1];
+         }
       }
 
       defineRoundRect(
