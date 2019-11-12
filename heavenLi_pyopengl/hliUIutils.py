@@ -6,6 +6,7 @@ print("Loading hliGLutils...")
 from hliGLutils import *
 print("Done!")
 
+# function for printing statemachine information
 def drawInfo(stateMach):
     infoStr = "FPS: " + str(int(stateMach['fps']))
     infoStr += "\nCursor: " + str(stateMach['cursorX']) + ', ' + str(stateMach['cursorY'])
@@ -177,6 +178,9 @@ class UIelement:
         self.params["scaleX"].setTargetVal(val)
         self.params["scaleY"].setTargetVal(val)
         return
+
+    def getTarSize(self):
+        return self.params["scaleX"].getTar()
 
     def getSize(self):
         return self.params["scaleX"].getVal()
