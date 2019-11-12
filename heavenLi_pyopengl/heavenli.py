@@ -215,6 +215,9 @@ def drawHome():
                         stateMach['ConfirmButton'].setTarPosX( 0.75)
                         stateMach['ConfirmButton'].setTarPosY(-0.75)
 
+                        stateMach['GranChanger'].setTarSize(0.3)
+                        stateMach['GranChanger'].setTarPosY(-0.91)
+
                         # Record previous color(s)
                         stateMach['prevHue'] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[0]
                         stateMach['prevSat'] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[1]
@@ -262,6 +265,9 @@ def drawHome():
                     stateMach['ConfirmButton'].setValue("coordY", stateMach['AllSetButton'].getPosY())
                     stateMach['ConfirmButton'].setTarPosX( 0.75)
                     stateMach['ConfirmButton'].setTarPosY(-0.75)
+
+                    stateMach['GranChanger'].setTarSize(0.3)
+                    stateMach['GranChanger'].setTarPosY(-0.91)
 
                     # Record previous color(s)
                     stateMach['prevHue'] = stateMach['lamps'][Light].getBulbCurrentHSV(0)[0]
@@ -352,31 +358,25 @@ def drawSettingColor():
                 stateMach['w2h'],
                 stateMach['lamps'][Light].getBulbsCurrentRGB())
 
-        #drawIcon(
-                #stateMach['AllSetButton'].getPosX(), 
-                #stateMach['AllSetButton'].getPosX(), 
-                #stateMach['AllSetButton'].getSize(), 
-                #tmc, 
-                #stateMach['w2h'], 
-                #stateMach['lamps'][Light], 
-                #stateMach['features'])
-
     # Draw Granularity Rocker Underneath Clock
-    limit = 0.85
-    if (stateMach['colrSettingCursor'] < limit):
-        if (stateMach['w2h'] <= 1.0):
-            tmy = -0.91*acbic*stateMach['w2h']
-        else:
-            tmy = -0.91*acbic
+    limit = -0.90
+    if (stateMach['w2h'] <= 1.0):
+        gctmy = stateMach['GranChanger'].getPosY()*stateMach['w2h']
+    else:
+        gctmy = stateMach['GranChanger'].getPosY()
+
+    if (stateMach['GranChanger'].getPosY() >= limit):
 
         drawGranChanger(
-                0.0, tmy,
+                stateMach['GranChanger'].getPosX(),
+                gctmy,
                 faceColor,
                 detailColor,
                 stateMach['numHues'],
                 0.0,
                 stateMach['w2h'],
-                0.30*acic,
+                #0.30*acic,
+                stateMach['GranChanger'].getSize(),
                 stateMach['tDiff'])
     
     # Draw Clock
@@ -391,19 +391,16 @@ def drawSettingColor():
             tuple([acc*x for x in detailColor]))    # color of the clock hands
 
     # Draw Granularity Rocker on top of Clock
-    if (stateMach['colrSettingCursor'] >= limit):
-        if (stateMach['w2h'] <= 1.0):
-            tmy = -0.91*acbic*stateMach['w2h']
-        else:
-            tmy = -0.91*acbic
+    if (stateMach['GranChanger'].getPosY() < limit):
         drawGranChanger(
-                0.0, tmy,
+                stateMach['GranChanger'].getPosX(),
+                gctmy,
                 faceColor,
                 detailColor,
                 stateMach['numHues'],
                 0.0,
                 stateMach['w2h'],
-                0.30*acic,
+                stateMach['GranChanger'].getSize(),
                 stateMach['tDiff'])
 
     # Draw Ring of Dots with different hues
@@ -475,23 +472,17 @@ def drawSettingColor():
     # Watch Color Picker Screen for input
     if (watchScreen()):
 
+        gctmx = stateMach['GranChanger'].getTarSize()*(24.0/36.0)
+        tmr = min(stateMach['wx'], stateMach['wy']*(12.0/36.0)*0.3)
+
         if (stateMach['w2h'] <= 1.0):
-            tmx = (0.3*24.0/36.0)*stateMach['w2h']
-            tmy = -0.91*acbic*stateMach['w2h']
-            tmux = 1.0*stateMach['w2h']
-            tmuy = 1.0
-            tmr = min(stateMach['wx'],stateMach['wy']*(12.0/36.0)*0.3)*stateMach['w2h']
-        else:
-            tmx = (0.3*24.0/36.0)
-            tmy = -0.91*acbic
-            tmux = stateMach['w2h']
-            tmuy = 1.0
-            tmr = min(stateMach['wx'],stateMach['wy']*(12.0/36.0)*0.3)
+            gctmx *= stateMach['w2h']
+            tmr *= stateMach['w2h']
 
         # Watch Granularity Rocker for Input
         if (watchDot(
-            mapRanges(tmx, -tmux, tmux, 0, stateMach['wx']*2),
-            mapRanges(tmy, tmuy, -tmuy, 0, stateMach['wy']*2),
+            mapRanges(gctmx, -stateMach['w2h'], stateMach['w2h'], 0, stateMach['wx']*2),
+            mapRanges(gctmy, 1.0, -1.0, 0, stateMach['wy']*2),
             tmr)
             and
             stateMach['mousePressed']):
@@ -501,8 +492,8 @@ def drawSettingColor():
 
         # Watch Granularity Rocker for Input
         if (watchDot(
-            mapRanges(-tmx, -tmux, tmux, 0, stateMach['wx']*2),
-            mapRanges(tmy, tmuy, -tmuy, 0, stateMach['wy']*2),
+            mapRanges(-gctmx, -stateMach['w2h'], stateMach['w2h'], 0, stateMach['wx']*2),
+            mapRanges(gctmy, 1.0, -1.0, 0, stateMach['wy']*2),
             tmr)
             and
             stateMach['mousePressed']):
@@ -598,6 +589,9 @@ def drawSettingColor():
             stateMach['AllSetButton'].setTarSize(0.1275)
             stateMach['BackButton'].setTarSize(0.0)
             stateMach['ConfirmButton'].setTarSize(0.0)
+            stateMach['GranChanger'].setTarSize(0.0)
+            stateMach['GranChanger'].setTarPosY(0.0)
+            stateMach['GranChanger'].setAccel(0.25)
             stateMach['targetScreen'] = 0
 
         if ( stateMach['wereColorsTouched'] and len(stateMach['lamps']) > 0):
@@ -644,6 +638,9 @@ def drawSettingColor():
             stateMach['AllSetButton'].setTarSize(0.1275)
             stateMach['BackButton'].setTarSize(0.0)
             stateMach['ConfirmButton'].setTarSize(0.0)
+            stateMach['GranChanger'].setTarSize(0.0)
+            stateMach['GranChanger'].setTarPosY(0.0)
+            stateMach['GranChanger'].setAccel(0.25)
 
 # Check if user is clicking in circle
 def watchDot(px, py, pr):
@@ -734,6 +731,7 @@ def display():
     stateMach['HueRing'].setTimeSlice(stateMach['tDiff']*2)
     stateMach['BulbButtons'].setTimeSlice(stateMach['tDiff']*2)
     stateMach['MasterSwitch'].setTimeSlice(stateMach['tDiff']*2)
+    stateMach['GranChanger'].setTimeSlice(stateMach['tDiff']*2)
 
     # Update Colors of Lamps
     for i in range(len(stateMach['lamps'])):
@@ -753,6 +751,7 @@ def display():
     stateMach['HueRing'].updateParams()
     stateMach['BulbButtons'].updateParams()
     stateMach['MasterSwitch'].updateParams()
+    stateMach['GranChanger'].updateParams()
 
     glutSwapBuffers()
     plugins.pluginLoader.updatePlugins()
@@ -927,38 +926,46 @@ if __name__ == '__main__':
     stateMach['mouseButton']        = "None"
     stateMach['drawInfo']           = False
 
-    stateMach['AllSetButton']       = UIelement()
-    stateMach['BackButton']         = UIelement()
-    stateMach['ConfirmButton']      = UIelement()
-    stateMach['ColorTriangle']      = UIelement()
-    stateMach['HueRing']            = UIelement()
-    stateMach['BulbButtons']        = UIelement()
-    stateMach['MasterSwitch']       = UIelement()
+    # Setup UI animation objects, initial parameters
+    stateMach['HueRing'] = UIelement()
+    stateMach['HueRing'].params["coordX"].setCurve("easeOutSine")
+    stateMach['HueRing'].params["coordY"].setCurve("easeOutSine")
+    stateMach['HueRing'].params["scaleX"].setCurve("easeInOutQuint")
 
+    stateMach['BackButton'] = UIelement()
+    stateMach['BackButton'].params["coordX"].setCurve("easeOutCubic")
+    stateMach['BackButton'].params["coordY"].setCurve("easeInOutCubic")
+
+    stateMach['BulbButtons'] = UIelement()
+    stateMach['BulbButtons'].setTarSize(0.4)
+    stateMach['BulbButtons'].setAccel(0.125)
+
+    stateMach['GranChanger'] = UIelement()
+    stateMach['GranChanger'].setTarSize(0.0)
+    stateMach['GranChanger'].setTarPosX(0.0)
+    stateMach['GranChanger'].setTarPosY(0.0)
+    stateMach['GranChanger'].params["coordY"].setCurve("easeOutBack")
+
+    stateMach['MasterSwitch'] = UIelement()
+    stateMach['MasterSwitch'].setTarSize(1.0)
+    stateMach['MasterSwitch'].setAccel(0.125)
+    stateMach['MasterSwitch'].setTarPosX(0.0)
+    stateMach['MasterSwitch'].setTarPosY(0.0)
+
+    stateMach['AllSetButton'] = UIelement()
     stateMach['AllSetButton'].setTarSize(0.1275)
     stateMach['AllSetButton'].setAccel(0.125)
     stateMach['AllSetButton'].setTarPosX(-0.775)
     stateMach['AllSetButton'].setTarPosY(0.775)
 
-    stateMach['BulbButtons'].setTarSize(0.4)
-    stateMach['BulbButtons'].setAccel(0.125)
-
-    stateMach['ColorTriangle'].params["coordX"].setCurve("easeInOutCirc")
-    stateMach['ColorTriangle'].params["coordY"].setCurve("easeInOutCirc")
-    stateMach['ColorTriangle'].params["scaleX"].setCurve("easeOutCirc")
-    stateMach['HueRing'].params["coordX"].setCurve("easeOutSine")
-    stateMach['HueRing'].params["coordY"].setCurve("easeOutSine")
-    stateMach['HueRing'].params["scaleX"].setCurve("easeInOutQuint")
-
-    stateMach['BackButton'].params["coordX"].setCurve("easeOutCubic")
-    stateMach['BackButton'].params["coordY"].setCurve("easeInOutCubic")
+    stateMach['ConfirmButton'] = UIelement()
     stateMach['ConfirmButton'].params["coordX"].setCurve("easeOutCubic")
     stateMach['ConfirmButton'].params["coordY"].setCurve("easeInOutCubic")
 
-    stateMach['MasterSwitch'].setTarSize(1.0)
-    stateMach['MasterSwitch'].setAccel(0.125)
-    stateMach['MasterSwitch'].setTarPosX(0.0)
-    stateMach['MasterSwitch'].setTarPosY(0.0)
+    stateMach['ColorTriangle'] = UIelement()
+    stateMach['ColorTriangle'].params["coordX"].setCurve("easeInOutCirc")
+    stateMach['ColorTriangle'].params["coordY"].setCurve("easeInOutCirc")
+    stateMach['ColorTriangle'].params["scaleX"].setCurve("easeOutCirc")
 
     #stateMach['lamps'].append(getAllLamps()[0])
 
