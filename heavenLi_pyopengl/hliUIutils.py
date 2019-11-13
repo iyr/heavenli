@@ -43,7 +43,11 @@ class UIcolor:
 
     # Return 4-tuple of RGBA
     def getColor(self):
-        return (self.params["R"].getVal(), self.params["G"].getVal(), self.params["B"].getVal(), self.params["A"].getVal())
+        return tuple([
+            self.params["R"].getVal(), 
+            self.params["G"].getVal(), 
+            self.params["B"].getVal(), 
+            self.params["A"].getVal()])
 
     # Set time-slice for animation speed
     def setTimeSlice(self, tDiff):
@@ -54,6 +58,12 @@ class UIcolor:
 
     # Update all parameters
     def updateParams(self):
+        for i in self.params:
+            self.params[i].updateVal()
+        return
+
+    # Update all parameters
+    def updateVal(self):
         for i in self.params:
             self.params[i].updateVal()
         return
@@ -93,6 +103,8 @@ class UIelement:
         self.params["scaleX"] = UIparam()
         self.params["scaleY"] = UIparam()
         self.params["rotAng"] = UIparam()
+        self.params["facCol"] = UIcolor()
+        self.params["detCol"] = UIcolor()
         self.tDiff = 1.0
 
     # Set time-slice for animation speed
@@ -147,6 +159,22 @@ class UIelement:
             return False
         else:
             return True
+
+    def setTargetFaceColor(self, targetColor):
+        self.params['facCol'].setTargetColor(targetColor)
+        return
+
+    def setTargetDetailColor(self, targetColor):
+        self.params['detCol'].setTargetColor(targetColor)
+        return
+
+    # Get element face color
+    def getFaceColor(self):
+        return self.params['facCol'].getColor()
+
+    # Get element accent color
+    def getDetailColor(self):
+        return self.params['detCol'].getColor()
 
     # Useful overloads for base parameters
     def setTarPosX(self, val):
