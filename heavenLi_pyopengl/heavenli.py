@@ -194,8 +194,8 @@ def drawElements():
                     stateMach['numHues'], 
                     selectRingColor, 
                     stateMach['w2h'], 
-                    stateMach['tDiff'],
-                    stateMach['interactionCursor'])
+                    stateMach['tDiff']
+                    )
 
         # Draw Triangle of Dots with different brightness/saturation
         if (stateMach['ColorTriangle'].isVisible()):
@@ -291,7 +291,7 @@ def watchHomeInput():
                     stateMach['targetScreen'] = 1
                     stateMach['targetBulb'] = i
                     stateMach['MasterSwitch'].setTarSize(1.75)
-                    stateMach['MasterSwitch'].setTargetFaceColor((0.0, 0.0, 0.0, 0.75))
+                    stateMach['MasterSwitch'].setTargetFaceColor((0.0, 0.0, 0.0, 1.0))
                     stateMach['MasterSwitch'].setTargetDetailColor((0.0, 0.0, 0.0, 0.0))
                     stateMach['AllSetButton'].setTarSize(0.0)
                     stateMach['BulbButtons'].setTarSize(0.0)
@@ -343,7 +343,7 @@ def watchHomeInput():
                 stateMach['targetScreen'] = 1
                 stateMach['targetBulb'] = stateMach["lamps"][Light].getNumBulbs()
                 stateMach['MasterSwitch'].setTarSize(1.75)
-                stateMach['MasterSwitch'].setTargetFaceColor((0.0, 0.0, 0.0, 0.75))
+                stateMach['MasterSwitch'].setTargetFaceColor((0.0, 0.0, 0.0, 1.0))
                 stateMach['MasterSwitch'].setTargetDetailColor((0.0, 0.0, 0.0, 0.0))
                 stateMach['AllSetButton'].setTarSize(0.0)
                 stateMach['BulbButtons'].setTarSize(0.0)

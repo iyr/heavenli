@@ -18,7 +18,6 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
                   scale, 
                   tmo, 
                   currentHue, 
-                  interactionCursor, 
                   tDiff, 
                   gx=0.0f, 
                   gy=0.0f, 
@@ -30,15 +29,15 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
 
    // Parse Inputs
    if (!PyArg_ParseTuple(args,
-            "fffflOfff",
+            "fffflOff",
             &gx, &gy,
             &scale,
             &currentHue,
             &numHues,
             &py_tuple,
             &w2h,
-            &tDiff,
-            &interactionCursor))
+            &tDiff
+            ))
    {
       Py_RETURN_NONE;
    }
