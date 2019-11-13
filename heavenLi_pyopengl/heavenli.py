@@ -64,205 +64,260 @@ def framerate():
         if (stateMach['hour'] > 11):
             stateMach['hour'] -= 12
 
-        if (machine() == "armv6l" or machine() == "armv7l"):
-            pass
+        #if (machine() == "armv6l" or machine() == "armv7l"):
+            #pass
             #glutSetCursor(GLUT_CURSOR_NONE)
 
     if stateMach['frameLimit'] and (stateMach['fps'] > 66):
         pass
-        #time.sleep(2*float(stateMach['fps'])/10000.0)
         time.sleep(0.015)
 
     return
 
-def drawBackground():
-    global stateMach
-    if (len(stateMach['lamps']) > 0):
-
-        # NEEDS IMPLEMENTATION FOR SELECTING LAMP, SPACE, ZONE, ETC
-        Light = 0
-
-        if (stateMach['lamps'][Light].getArn() == 0):
-            pass
-            drawHomeCircle(0.0, 0.0, 
-                    stateMach['wx'], stateMach['wy'], 
-                    stateMach['lamps'][Light].getNumBulbs(), 
-                    stateMach['lamps'][Light].getAngle(), 
-                    stateMach['w2h'],
-                    stateMach['lamps'][Light].getBulbsCurrentRGB());
-
-        if (stateMach['lamps'][Light].getArn() == 1):
-            pass
-            drawHomeLinear(0.0, 0.0, 
-                    stateMach['wx'], stateMach['wy'],
-                    stateMach['lamps'][Light].getNumBulbs(), 
-                    stateMach['lamps'][Light].getAngle(), 
-                    stateMach['w2h'],
-                    stateMach['lamps'][Light].getBulbsCurrentRGB());
-
-def drawHome():
+def drawElements():
     global stateMach
 
-    # NEEDS IMPLEMENTATION FOR SELECTING LAMP, SPACE, ZONE, ETC
+    # Placeholder variable
     Light = 0
 
     iconSize = 0.15
-    try:
-        drawClock(
-                stateMach['MasterSwitch'].getPosX(),    # X-Coordinate of position
-                stateMach['MasterSwitch'].getPosY(),    # Y-Coordinate of position
-                stateMach['hour'],                      # Hour to be displayed
-                stateMach['minute'],                    # Minute to be displayed
-                stateMach['MasterSwitch'].getSize(),    # Size of Clock
-                stateMach['w2h'],                       # w2h for proper aspect ratio scaling
-                stateMach['faceColor'],                 # color of the clock face
-                stateMach['detailColor'])               # color of the clock hands
 
+    fcc = stateMach['faceColor']
+    dtc = stateMach['detailColor']
+
+    try:
+        # Draw Background
+        if (len(stateMach['lamps']) > 0):
+
+            if (stateMach['lamps'][Light].getArn() == 0):
+                pass
+                drawHomeCircle(0.0, 0.0, 
+                        stateMach['wx'], stateMach['wy'], 
+                        stateMach['lamps'][Light].getNumBulbs(), 
+                        stateMach['lamps'][Light].getAngle(), 
+                        stateMach['w2h'],
+                        stateMach['lamps'][Light].getBulbsCurrentRGB());
+
+            if (stateMach['lamps'][Light].getArn() == 1):
+                pass
+                drawHomeLinear(0.0, 0.0, 
+                        stateMach['wx'], stateMach['wy'],
+                        stateMach['lamps'][Light].getNumBulbs(), 
+                        stateMach['lamps'][Light].getAngle(), 
+                        stateMach['w2h'],
+                        stateMach['lamps'][Light].getBulbsCurrentRGB());
+
+        # Draw Granularity Rocker Underneath Clock
+        if (stateMach['w2h'] <= 1.0):
+            gctmy = stateMach['GranChanger'].getPosY()*stateMach['w2h']
+        else:
+            gctmy = stateMach['GranChanger'].getPosY()
+
+        limit = -0.90
+        if (stateMach['GranChanger'].getPosY() >= limit):
+            drawGranChanger(
+                    stateMach['GranChanger'].getPosX(),
+                    gctmy,
+                    stateMach['GranChanger'].getFaceColor(),
+                    stateMach['GranChanger'].getDetailColor(),
+                    stateMach['numHues'],
+                    0.0,
+                    stateMach['w2h'],
+                    stateMach['GranChanger'].getSize(),
+                    stateMach['tDiff'])
+    
+        # Draw Clock
+        drawClock(
+            stateMach['MasterSwitch'].getPosX(),            # X-Coordinate of position
+                stateMach['MasterSwitch'].getPosY(),        # Y-Coordinate of position
+                stateMach['hour'],                          # Hour to be displayed
+                stateMach['minute'],                        # Minute to be displayed
+                stateMach['MasterSwitch'].getSize(),        # Size of Clock
+                stateMach['w2h'],                           # w2h for proper aspect ratio scaling
+                stateMach['MasterSwitch'].getFaceColor(),   # color of the clock face
+                stateMach['MasterSwitch'].getDetailColor()  # color of the clock hands
+                )
+
+        # Draw Granularity Rocker on top of Clock
+        if (stateMach['GranChanger'].getPosY() < limit):
+            drawGranChanger(
+                    stateMach['GranChanger'].getPosX(),
+                    gctmy,
+                    stateMach['GranChanger'].getFaceColor(),
+                    stateMach['GranChanger'].getDetailColor(),
+                    stateMach['numHues'],
+                    0.0,
+                    stateMach['w2h'],
+                    stateMach['GranChanger'].getSize(),
+                    stateMach['tDiff'])
 
         if (len(stateMach['lamps']) > 0):
-            buttons = drawBulbButton(
-                    stateMach['lamps'][Light].getArn(),
-                    stateMach['lamps'][Light].getNumBulbs(),
-                    60,
-                    stateMach['lamps'][Light].getAngle(),
-                    stateMach['BulbButtons'].getSize(),
-                    stateMach['faceColor'],
-                    stateMach['detailColor'],
-                    stateMach['lamps'][Light].getBulbsCurrentRGB(),
-                    stateMach['w2h'])
+            if (stateMach['BulbButtons'].isVisible()):
+                stateMach['bulbButtons'] = drawBulbButton(
+                        stateMach['lamps'][Light].getArn(),
+                        stateMach['lamps'][Light].getNumBulbs(),
+                        60,
+                        stateMach['lamps'][Light].getAngle(),
+                        stateMach['BulbButtons'].getSize(),
+                        stateMach['BulbButtons'].getFaceColor(),
+                        stateMach['BulbButtons'].getDetailColor(),
+                        stateMach['lamps'][Light].getBulbsCurrentRGB(),
+                        stateMach['w2h'])
 
-            tmc = ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 1.0)
-            drawIcon(
-                    stateMach['AllSetButton'].getPosX(), 
-                    stateMach['AllSetButton'].getPosY(), 
-                    stateMach['AllSetButton'].getSize(), 
-                    stateMach['lamps'][Light].getArn(),
-                    stateMach['lamps'][Light].getAlias(),
-                    stateMach['features'],
-                    stateMach['faceColor'],
-                    stateMach['detailColor'],
-                    stateMach['lamps'][Light].getNumBulbs(),
-                    stateMach['lamps'][Light].getAngle(),
-                    stateMach['w2h'],
-                    stateMach['lamps'][Light].getBulbsCurrentRGB())
-            #drawIcon(
-                    #stateMach['AllSetButton'].getPosX(), 
-                    #stateMach['AllSetButton'].getPosY(), 
-                    #stateMach['AllSetButton'].getSize(), 
-                    #tmc, 
-                    #stateMach['w2h'], 
-                    #stateMach['lamps'][Light], 
-                    #stateMach['features'])
+            if (stateMach['AllSetButton'].isVisible()):
+                drawIcon(
+                        stateMach['AllSetButton'].getPosX(), 
+                        stateMach['AllSetButton'].getPosY(), 
+                        stateMach['AllSetButton'].getSize(), 
+                        stateMach['lamps'][Light].getArn(),
+                        stateMach['lamps'][Light].getAlias(),
+                        stateMach['features'],
+                        stateMach['AllSetButton'].getFaceColor(),
+                        stateMach['AllSetButton'].getDetailColor(),
+                        stateMach['lamps'][Light].getNumBulbs(),
+                        stateMach['lamps'][Light].getAngle(),
+                        stateMach['w2h'],
+                        stateMach['lamps'][Light].getBulbsCurrentRGB())
 
-        # Watch Home Screen for input
-        if (watchScreen()):
+        if (stateMach['wereColorsTouched']):
+            selectRingColor = dtc
+        else:
+            selectRingColor = fcc
+
+        # Draw Ring of Dots with different hues
+        if (stateMach['HueRing'].isVisible()):
+            stateMach['hueButtons'] = drawHueRing(
+                    stateMach['HueRing'].getPosX(),
+                    stateMach['HueRing'].getPosY(),
+                    stateMach['HueRing'].getSize(), 
+                    stateMach['currentHue'], 
+                    stateMach['numHues'], 
+                    selectRingColor, 
+                    stateMach['w2h'], 
+                    stateMach['tDiff'],
+                    stateMach['interactionCursor'])
+
+        # Draw Triangle of Dots with different brightness/saturation
+        if (stateMach['ColorTriangle'].isVisible()):
+            stateMach['satValButtons'] = drawColrTri(
+                    stateMach['ColorTriangle'].getPosX(),
+                    stateMach['ColorTriangle'].getPosY(),
+                    stateMach['ColorTriangle'].getSize(), 
+                    stateMach['currentHue'], 
+                    stateMach['currentSat'], 
+                    stateMach['currentVal'],
+                    int(stateMach['numHues']/2), 
+                    selectRingColor,
+                    stateMach['w2h'], 
+                    stateMach['tDiff'])
+
+        # Draw Confirm Button
+        if (stateMach['ConfirmButton'].isVisible()):
+            extraColor = colorsys.hsv_to_rgb(
+                    stateMach['currentHue'], 
+                    stateMach['currentSat'], 
+                    stateMach['currentVal'])
+            extraColor = (extraColor[0], extraColor[1], extraColor[2], 1.0)
+
+            drawConfirm(
+                    stateMach['ConfirmButton'].getPosX(), 
+                    stateMach['ConfirmButton'].getPosY(), 
+                    stateMach['ConfirmButton'].getSize(), 
+                    stateMach['w2h'], 
+                    fcc, 
+                    extraColor, 
+                    dtc)
+
+        if (stateMach['BackButton'].isVisible()):
+            extraColor = colorsys.hsv_to_rgb(
+                    stateMach['prevHue'], 
+                    stateMach['prevSat'], 
+                    stateMach['prevVal'])
+            extraColor = (extraColor[0], extraColor[1], extraColor[2], 1.0)
+
+            # Draw Back Button
+            drawArrow(
+                    stateMach['BackButton'].getPosX(), 
+                    stateMach['BackButton'].getPosY(), 
+                    180.0,
+                    stateMach['BackButton'].getSize(), 
+                    stateMach['w2h'], 
+                    fcc, 
+                    extraColor, 
+                    dtc)
+
+        #tmc = ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 1.0)
+    except Exception as OOF:
+        print(traceback.format_exc())
+        print("Error:", OOF)
+    return
+
+def watchHomeInput():
+    global stateMach
+
+    # Placeholder variable
+    Light = 0
+
+    # Watch Home Screen for input
+    if (watchScreen()):
     
-            # Watch Clock for input
-            if (watchDot(
-                stateMach['wx'],                            # Middle of Screen
-                stateMach['wy'],                            # Middle of Screen
-                min(stateMach['wx'], stateMach['wy'])/2)    # Clock Radius
-                and
-                stateMach['mousePressed']):                 # Button Must be clicked
-                stateMach['masterSwitch'] = not stateMach['masterSwitch']
-                for i in range(len(stateMach['lamps'])):
-                    stateMach['lamps'][i].setMainLight(stateMach['masterSwitch'])
+        # Watch Clock for input
+        if (watchDot(
+            stateMach['wx'],                            # Middle of Screen
+            stateMach['wy'],                            # Middle of Screen
+            min(stateMach['wx'], stateMach['wy'])/2)    # Clock Radius
+            and
+            stateMach['mousePressed']):                 # Button Must be clicked
+            stateMach['masterSwitch'] = not stateMach['masterSwitch']
+            for i in range(len(stateMach['lamps'])):
+                stateMach['lamps'][i].setMainLight(stateMach['masterSwitch'])
 
-            # Watch bulb buttons for input
-            elif (len(stateMach['lamps']) > 0):
-                for i in range(len(buttons)):
+        # Watch bulb buttons for input
+        if (len(stateMach['lamps']) > 0):
+            for i in range(len(stateMach['bulbButtons'])):
 
-                    posX = mapRanges(buttons[i][0], -stateMach['w2h'], stateMach['w2h'], 0, stateMach['wx']*2)# X coord of button
-                    posY = mapRanges(buttons[i][1],               1.0,             -1.0, 0, stateMach['wy']*2)# Y coord of button
+                posX = mapRanges(stateMach['bulbButtons'][i][0], -stateMach['w2h'], stateMach['w2h'], 0, stateMach['wx']*2)# X coord of button
+                posY = mapRanges(stateMach['bulbButtons'][i][1],               1.0,             -1.0, 0, stateMach['wy']*2)# Y coord of button
 
-                    if (watchDot(
-                        posX, posY,
-                        min(stateMach['wx'], stateMach['wy'])*0.5*0.3)                                      # Button Radius
-                        and
-                        len(stateMach['lamps']) > 0
-                        and
-                        stateMach['mousePressed']): # Button Must be clicked
-
-                        # Set Color Picker as target Screen selecting bulb i
-                        stateMach['targetScreen'] = 1
-                        stateMach['targetBulb'] = i
-                        stateMach['MasterSwitch'].setTarSize(1.75)
-                        stateMach['AllSetButton'].setTarSize(0.0)
-                        stateMach['BulbButtons'].setTarSize(0.0)
-
-                        stateMach['ColorTriangle'].setTarSize(1.0)
-                        stateMach['ColorTriangle'].setValue("coordX", buttons[i][0]/stateMach['w2h'])
-                        stateMach['ColorTriangle'].setValue("coordY", buttons[i][1])
-                        stateMach['ColorTriangle'].setTarPosX(0.0)
-                        stateMach['ColorTriangle'].setTarPosY(0.0)
-
-                        stateMach['HueRing'].setSize(0.0)
-                        stateMach['HueRing'].setTarSize(1.0)
-                        stateMach['HueRing'].setValue("coordX", buttons[i][0]/stateMach['w2h'])
-                        stateMach['HueRing'].setValue("coordY", buttons[i][1])
-                        stateMach['HueRing'].setTarPosX(0.0)
-                        stateMach['HueRing'].setTarPosY(0.0)
-
-                        stateMach['BackButton'].setTarSize(0.2)
-                        stateMach['BackButton'].setValue("coordX", buttons[i][0]/stateMach['w2h'])
-                        stateMach['BackButton'].setValue("coordY", buttons[i][1])
-                        stateMach['BackButton'].setTarPosX(-0.75)
-                        stateMach['BackButton'].setTarPosY(-0.75)
-
-                        stateMach['ConfirmButton'].setTarSize( 0.2)
-                        stateMach['ConfirmButton'].setValue("coordX", buttons[i][0]/stateMach['w2h'])
-                        stateMach['ConfirmButton'].setValue("coordY", buttons[i][1])
-                        stateMach['ConfirmButton'].setTarPosX( 0.75)
-                        stateMach['ConfirmButton'].setTarPosY(-0.75)
-
-                        stateMach['GranChanger'].setTarSize(0.3)
-                        stateMach['GranChanger'].setTarPosY(-0.91)
-
-                        # Record previous color(s)
-                        stateMach['prevHue'] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[0]
-                        stateMach['prevSat'] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[1]
-                        stateMach['prevVal'] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[2]
-
-            # Watch all-set for input
                 if (watchDot(
-                    mapRanges(stateMach['AllSetButton'].getTarPosX(), -1.0,  1.0, 0, stateMach['wx']*2),  # X coord of button
-                    mapRanges(stateMach['AllSetButton'].getTarPosY(),  1.0, -1.0, 0, stateMach['wy']*2),  # Y coord of button
-                    min(stateMach['wx'], stateMach['wy'])*0.2)          # Button Radius
+                    posX, posY,
+                    min(stateMach['wx'], stateMach['wy'])*0.5*0.3)                                      # Button Radius
                     and
                     len(stateMach['lamps']) > 0
                     and
                     stateMach['mousePressed']): # Button Must be clicked
 
-                    # Set Color Picker as target Screen selecting bulb all bulbs
+                    # Set Color Picker as target Screen selecting bulb i
                     stateMach['targetScreen'] = 1
-                    stateMach['targetBulb'] = stateMach["lamps"][Light].getNumBulbs()
+                    stateMach['targetBulb'] = i
                     stateMach['MasterSwitch'].setTarSize(1.75)
+                    stateMach['MasterSwitch'].setTargetFaceColor((0.0, 0.0, 0.0, 0.75))
+                    stateMach['MasterSwitch'].setTargetDetailColor((0.0, 0.0, 0.0, 0.0))
                     stateMach['AllSetButton'].setTarSize(0.0)
                     stateMach['BulbButtons'].setTarSize(0.0)
 
                     stateMach['ColorTriangle'].setTarSize(1.0)
-                    stateMach['ColorTriangle'].setValue("coordX", stateMach['AllSetButton'].getPosX())
-                    stateMach['ColorTriangle'].setValue("coordY", stateMach['AllSetButton'].getPosY())
+                    stateMach['ColorTriangle'].setValue("coordX", stateMach['bulbButtons'][i][0]/stateMach['w2h'])
+                    stateMach['ColorTriangle'].setValue("coordY", stateMach['bulbButtons'][i][1])
                     stateMach['ColorTriangle'].setTarPosX(0.0)
                     stateMach['ColorTriangle'].setTarPosY(0.0)
 
                     stateMach['HueRing'].setSize(0.0)
                     stateMach['HueRing'].setTarSize(1.0)
-                    stateMach['HueRing'].setValue("coordX", stateMach['AllSetButton'].getPosX())
-                    stateMach['HueRing'].setValue("coordY", stateMach['AllSetButton'].getPosY())
-                    stateMach['HueRing'].setValue("scaleX", 0.0)
+                    stateMach['HueRing'].setValue("coordX", stateMach['bulbButtons'][i][0]/stateMach['w2h'])
+                    stateMach['HueRing'].setValue("coordY", stateMach['bulbButtons'][i][1])
                     stateMach['HueRing'].setTarPosX(0.0)
                     stateMach['HueRing'].setTarPosY(0.0)
 
                     stateMach['BackButton'].setTarSize(0.2)
-                    stateMach['BackButton'].setValue("coordX", stateMach['AllSetButton'].getPosX()/stateMach['w2h'])
-                    stateMach['BackButton'].setValue("coordY", stateMach['AllSetButton'].getPosY())
+                    stateMach['BackButton'].setValue("coordX", stateMach['bulbButtons'][i][0]/stateMach['w2h'])
+                    stateMach['BackButton'].setValue("coordY", stateMach['bulbButtons'][i][1])
                     stateMach['BackButton'].setTarPosX(-0.75)
                     stateMach['BackButton'].setTarPosY(-0.75)
 
                     stateMach['ConfirmButton'].setTarSize( 0.2)
-                    stateMach['ConfirmButton'].setValue("coordX", stateMach['AllSetButton'].getPosX()/stateMach['w2h'])
-                    stateMach['ConfirmButton'].setValue("coordY", stateMach['AllSetButton'].getPosY())
+                    stateMach['ConfirmButton'].setValue("coordX", stateMach['bulbButtons'][i][0]/stateMach['w2h'])
+                    stateMach['ConfirmButton'].setValue("coordY", stateMach['bulbButtons'][i][1])
                     stateMach['ConfirmButton'].setTarPosX( 0.75)
                     stateMach['ConfirmButton'].setTarPosY(-0.75)
 
@@ -270,210 +325,81 @@ def drawHome():
                     stateMach['GranChanger'].setTarPosY(-0.91)
 
                     # Record previous color(s)
-                    stateMach['prevHue'] = stateMach['lamps'][Light].getBulbCurrentHSV(0)[0]
-                    stateMach['prevSat'] = stateMach['lamps'][Light].getBulbCurrentHSV(0)[1]
-                    stateMach['prevVal'] = stateMach['lamps'][Light].getBulbCurrentHSV(0)[2]
-                    for i in range(stateMach['targetBulb']):
-                        stateMach['prevHues'][i] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[0]
-                        stateMach['prevSats'][i] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[1]
-                        stateMach['prevVals'][i] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[2]
+                    stateMach['prevHue'] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[0]
+                    stateMach['prevSat'] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[1]
+                    stateMach['prevVal'] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[2]
 
-    except Exception as OOF:
-        print(traceback.format_exc())
-        print("Error:", OOF)
-    return
+            # Watch all-set for input
+            if (watchDot(
+                mapRanges(stateMach['AllSetButton'].getTarPosX(), -1.0,  1.0, 0, stateMach['wx']*2),  # X coord of button
+                mapRanges(stateMach['AllSetButton'].getTarPosY(),  1.0, -1.0, 0, stateMach['wy']*2),  # Y coord of button
+                min(stateMach['wx'], stateMach['wy'])*0.2)          # Button Radius
+                and
+                len(stateMach['lamps']) > 0
+                and
+                stateMach['mousePressed']): # Button Must be clicked
 
-#def drawSettingColor(cursor, targetLamp, targetBulb):
-def drawSettingColor():
+                # Set Color Picker as target Screen selecting bulb all bulbs
+                stateMach['targetScreen'] = 1
+                stateMach['targetBulb'] = stateMach["lamps"][Light].getNumBulbs()
+                stateMach['MasterSwitch'].setTarSize(1.75)
+                stateMach['MasterSwitch'].setTargetFaceColor((0.0, 0.0, 0.0, 0.75))
+                stateMach['MasterSwitch'].setTargetDetailColor((0.0, 0.0, 0.0, 0.0))
+                stateMach['AllSetButton'].setTarSize(0.0)
+                stateMach['BulbButtons'].setTarSize(0.0)
+
+                stateMach['ColorTriangle'].setTarSize(1.0)
+                stateMach['ColorTriangle'].setValue("coordX", stateMach['AllSetButton'].getPosX())
+                stateMach['ColorTriangle'].setValue("coordY", stateMach['AllSetButton'].getPosY())
+                stateMach['ColorTriangle'].setTarPosX(0.0)
+                stateMach['ColorTriangle'].setTarPosY(0.0)
+
+                stateMach['HueRing'].setSize(0.0)
+                stateMach['HueRing'].setTarSize(1.0)
+                stateMach['HueRing'].setValue("coordX", stateMach['AllSetButton'].getPosX())
+                stateMach['HueRing'].setValue("coordY", stateMach['AllSetButton'].getPosY())
+                stateMach['HueRing'].setValue("scaleX", 0.0)
+                stateMach['HueRing'].setTarPosX(0.0)
+                stateMach['HueRing'].setTarPosY(0.0)
+
+                stateMach['BackButton'].setTarSize(0.2)
+                stateMach['BackButton'].setValue("coordX", stateMach['AllSetButton'].getPosX()/stateMach['w2h'])
+                stateMach['BackButton'].setValue("coordY", stateMach['AllSetButton'].getPosY())
+                stateMach['BackButton'].setTarPosX(-0.75)
+                stateMach['BackButton'].setTarPosY(-0.75)
+
+                stateMach['ConfirmButton'].setTarSize( 0.2)
+                stateMach['ConfirmButton'].setValue("coordX", stateMach['AllSetButton'].getPosX()/stateMach['w2h'])
+                stateMach['ConfirmButton'].setValue("coordY", stateMach['AllSetButton'].getPosY())
+                stateMach['ConfirmButton'].setTarPosX( 0.75)
+                stateMach['ConfirmButton'].setTarPosY(-0.75)
+
+                stateMach['GranChanger'].setTarSize(0.3)
+                stateMach['GranChanger'].setTarPosY(-0.91)
+
+                # Record previous color(s)
+                stateMach['prevHue'] = stateMach['lamps'][Light].getBulbCurrentHSV(0)[0]
+                stateMach['prevSat'] = stateMach['lamps'][Light].getBulbCurrentHSV(0)[1]
+                stateMach['prevVal'] = stateMach['lamps'][Light].getBulbCurrentHSV(0)[2]
+                for i in range(stateMach['targetBulb']):
+                    stateMach['prevHues'][i] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[0]
+                    stateMach['prevSats'][i] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[1]
+                    stateMach['prevVals'][i] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[2]
+
+def watchColrSettingInput():
     global stateMach
 
-    # NEEDS IMPLEMENTATION FOR SELECTING LAMP, SPACE, ZONE, ETC
     Light = 0
-
-    if (len(stateMach['lamps']) > 0):
-        if (stateMach['targetBulb'] == stateMach['lamps'][Light].getNumBulbs()):
-            # Set All Lamp Elements
-            tmcHSV = stateMach['lamps'][Light].getBulbTargetHSV(0)
-            if (stateMach['currentHue'] == None):
-                stateMach['currentHue'] = stateMach['lamps'][Light].getBulbHSV(0)[0]
-            if (stateMach['currentSat'] == None):
-                stateMach['currentSat'] = stateMach['lamps'][Light].getBulbHSV(0)[1]
-            if (stateMach['currentVal'] == None):
-                stateMach['currentVal'] = stateMach['lamps'][Light].getBulbHSV(0)[2]
-        else:
-            # Set selected Lamp Element (targetBulb)
-            tmcHSV = stateMach['lamps'][Light].getBulbTargetHSV(stateMach['targetBulb'])
-            if (stateMach['currentHue'] == None):
-                stateMach['currentHue'] = stateMach['lamps'][Light].getBulbHSV(targetBulb)[0]
-            if (stateMach['currentSat'] == None):
-                stateMach['currentSat'] = stateMach['lamps'][Light].getBulbHSV(targetBulb)[1]
-            if (stateMach['currentVal'] == None):
-                stateMach['currentVal'] = stateMach['lamps'][Light].getBulbHSV(targetBulb)[2]
-
-    acbic = animCurveBounce(1.0-stateMach['colrSettingCursor'])
-    acic = animCurve(1.0-stateMach['colrSettingCursor'])
-    acbc = animCurveBounce(stateMach['colrSettingCursor'])
-    acc = animCurve(stateMach['colrSettingCursor'])
-    faceColor = (stateMach['faceColor'][0]*acc, 
-            stateMach['faceColor'][1]*acc,
-            stateMach['faceColor'][2]*acc,
-            1.0)
-    detailColor = (stateMach['detailColor'][0]*acc, 
-            stateMach['detailColor'][1]*acc,
-            stateMach['detailColor'][2]*acc,
-            stateMach['detailColor'][3]*acc)
-    cmx = 0.15
-        
-    if (stateMach['wereColorsTouched']):
-        selectRingColor = stateMach['detailColor']
-    else:
-        selectRingColor = stateMach['faceColor']
-
-    iconSize = 0.15
-    if (len(stateMach['lamps']) > 0):
-        drawBulbButton(
-                stateMach['lamps'][Light].getArn(),
-                stateMach['lamps'][Light].getNumBulbs(),
-                60,
-                stateMach['lamps'][Light].getAngle(),
-                stateMach['BulbButtons'].getSize(),
-                faceColor,
-                detailColor,
-                stateMach['lamps'][Light].getBulbsCurrentRGB(),
-                stateMach['w2h'])
-
-        tmc = ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 1.0)
-        drawIcon(
-                stateMach['AllSetButton'].getPosX(), 
-                stateMach['AllSetButton'].getPosY(), 
-                stateMach['AllSetButton'].getSize(), 
-                stateMach['lamps'][Light].getArn(),
-                stateMach['lamps'][Light].getAlias(),
-                stateMach['features'],
-                stateMach['faceColor'],
-                stateMach['detailColor'],
-                #tmc,
-                stateMach['lamps'][Light].getNumBulbs(),
-                stateMach['lamps'][Light].getAngle(),
-                stateMach['w2h'],
-                stateMach['lamps'][Light].getBulbsCurrentRGB())
-
-    # Draw Granularity Rocker Underneath Clock
-    limit = -0.90
-    if (stateMach['w2h'] <= 1.0):
-        gctmy = stateMach['GranChanger'].getPosY()*stateMach['w2h']
-    else:
-        gctmy = stateMach['GranChanger'].getPosY()
-
-    if (stateMach['GranChanger'].getPosY() >= limit):
-
-        drawGranChanger(
-                stateMach['GranChanger'].getPosX(),
-                gctmy,
-                faceColor,
-                detailColor,
-                stateMach['numHues'],
-                0.0,
-                stateMach['w2h'],
-                #0.30*acic,
-                stateMach['GranChanger'].getSize(),
-                stateMach['tDiff'])
-    
-    # Draw Clock
-    drawClock(
-            stateMach['MasterSwitch'].getPosX(),    # X-Coordinate of position
-            stateMach['MasterSwitch'].getPosY(),    # Y-Coordinate of position
-            stateMach['hour'],                      # Hour to be displayed
-            stateMach['minute'],                    # Minute to be displayed
-            stateMach['MasterSwitch'].getSize(),    # Size of Clock
-            stateMach['w2h'],                       # w2h for proper aspect ratio scaling
-            faceColor,                              # color of the clock face
-            tuple([acc*x for x in detailColor]))    # color of the clock hands
-
-    # Draw Granularity Rocker on top of Clock
-    if (stateMach['GranChanger'].getPosY() < limit):
-        drawGranChanger(
-                stateMach['GranChanger'].getPosX(),
-                gctmy,
-                faceColor,
-                detailColor,
-                stateMach['numHues'],
-                0.0,
-                stateMach['w2h'],
-                stateMach['GranChanger'].getSize(),
-                stateMach['tDiff'])
-
-    # Draw Ring of Dots with different hues
-    hueButtons = drawHueRing(
-            stateMach['HueRing'].getPosX(),
-            stateMach['HueRing'].getPosY(),
-            stateMach['HueRing'].getSize(), 
-            stateMach['currentHue'], 
-            stateMach['numHues'], 
-            selectRingColor, 
-            stateMach['w2h'], 
-            stateMach['tDiff'],
-            stateMach['interactionCursor'])
-
-    # Draw Triangle of Dots with different brightness/saturation
-    satValButtons = drawColrTri(
-            stateMach['ColorTriangle'].getPosX(),
-            stateMach['ColorTriangle'].getPosY(),
-            stateMach['ColorTriangle'].getSize(), 
-            stateMach['currentHue'], 
-            stateMach['currentSat'], 
-            stateMach['currentVal'],
-            int(stateMach['numHues']/2), 
-            selectRingColor,
-            stateMach['w2h'], 
-            stateMach['tDiff'])
-
-    #if ( stateMach['wereColorsTouched'] ):
-    if ( True ):
-        extraColor = colorsys.hsv_to_rgb(
-                stateMach['currentHue'], 
-                stateMach['currentSat'], 
-                stateMach['currentVal'])
-        extraColor = (extraColor[0], extraColor[1], extraColor[2], 1.0)
-    #else:
-        #extraColor = stateMach['detailColor']
-
-    # Draw Confirm Button
-    drawConfirm(
-            stateMach['ConfirmButton'].getPosX(), 
-            stateMach['ConfirmButton'].getPosY(), 
-            stateMach['ConfirmButton'].getSize(), 
-            stateMach['w2h'], 
-            stateMach['faceColor'], 
-            extraColor, 
-            stateMach['detailColor']);
-
-    #if ( stateMach['wereColorsTouched'] ):
-    if ( True ):
-        extraColor = colorsys.hsv_to_rgb(
-                stateMach['prevHue'], 
-                stateMach['prevSat'], 
-                stateMach['prevVal'])
-        extraColor = (extraColor[0], extraColor[1], extraColor[2], 1.0)
-    #else:
-        #extraColor = stateMach['detailColor']
-
-    # Draw Back Button
-    drawArrow(
-            stateMach['BackButton'].getPosX(), 
-            stateMach['BackButton'].getPosY(), 
-            180.0,
-            stateMach['BackButton'].getSize(), 
-            stateMach['w2h'], 
-            stateMach['faceColor'], 
-            extraColor, 
-            stateMach['detailColor']);
 
     # Watch Color Picker Screen for input
     if (watchScreen()):
 
         gctmx = stateMach['GranChanger'].getTarSize()*(24.0/36.0)
         tmr = min(stateMach['wx'], stateMach['wy']*(12.0/36.0)*0.3)
+        if (stateMach['w2h'] <= 1.0):
+            gctmy = stateMach['GranChanger'].getPosY()*stateMach['w2h']
+        else:
+            gctmy = stateMach['GranChanger'].getPosY()
 
         if (stateMach['w2h'] <= 1.0):
             gctmx *= stateMach['w2h']
@@ -502,24 +428,24 @@ def drawSettingColor():
                     stateMach['numHues'] = 10
 
         # Watch Hue Ring for Input
-        for i in range(len(hueButtons)):
+        for i in range(len(stateMach['hueButtons'])):
             tmr = 1.0
             if (stateMach['w2h'] <= 1.0):
-                hueButtons[i] = (
-                        hueButtons[i][0]*stateMach['w2h'], 
-                        hueButtons[i][1]*stateMach['w2h'], 
-                        hueButtons[i][2])
+                stateMach['hueButtons'][i] = (
+                        stateMach['hueButtons'][i][0]*stateMach['w2h'], 
+                        stateMach['hueButtons'][i][1]*stateMach['w2h'], 
+                        stateMach['hueButtons'][i][2])
                 tmr = stateMach['w2h']
 
             if (watchDot(
-                mapRanges(hueButtons[i][0], -1.0*stateMach['w2h'], 1.0*stateMach['w2h'], 0, stateMach['wx']*2),
-                mapRanges(hueButtons[i][1], 1.0, -1.0, 0, stateMach['wy']*2),
+                mapRanges(stateMach['hueButtons'][i][0], -1.0*stateMach['w2h'], 1.0*stateMach['w2h'], 0, stateMach['wx']*2),
+                mapRanges(stateMach['hueButtons'][i][1], 1.0, -1.0, 0, stateMach['wy']*2),
                 min(stateMach['wx'], stateMach['wy'])*0.15*(12.0/float(stateMach['numHues'])))
                 and
                 stateMach['mousePressed']):
 
                 stateMach['wereColorsTouched'] = True
-                stateMach['currentHue'] = hueButtons[i][2]
+                stateMach['currentHue'] = stateMach['hueButtons'][i][2]
                 tmcHSV = (
                         stateMach['currentHue'], 
                         stateMach['currentSat'], 
@@ -533,25 +459,25 @@ def drawSettingColor():
 
 
         # Watch Sat / Val Triangle for input
-        for i in range(len(satValButtons)):
+        for i in range(len(stateMach['satValButtons'])):
             tmr = 1.0
             if (stateMach['w2h'] <= 1.0):
-                satValButtons[i] = (
-                        satValButtons[i][0]*stateMach['w2h'],     # X-Coord of Button
-                        satValButtons[i][1]*stateMach['w2h'],     # Y-Coord of Button
-                        satValButtons[i][2],                    # Saturation of Button
-                        satValButtons[i][3])                    # Value of Button
+                stateMach['satValButtons'][i] = (
+                        stateMach['satValButtons'][i][0]*stateMach['w2h'],     # X-Coord of Button
+                        stateMach['satValButtons'][i][1]*stateMach['w2h'],     # Y-Coord of Button
+                        stateMach['satValButtons'][i][2],                    # Saturation of Button
+                        stateMach['satValButtons'][i][3])                    # Value of Button
                 tmr = stateMach['w2h']
 
             # Map relative x-Coord to screen x-Coord
             if (watchDot(
-                mapRanges(satValButtons[i][0], -1.0*stateMach['w2h'], 1.0*stateMach['w2h'], 0, stateMach['wx']*2),
-                mapRanges(satValButtons[i][1], 1.0, -1.0, 0, stateMach['wy']*2),
+                mapRanges(stateMach['satValButtons'][i][0], -1.0*stateMach['w2h'], 1.0*stateMach['w2h'], 0, stateMach['wx']*2),
+                mapRanges(stateMach['satValButtons'][i][1], 1.0, -1.0, 0, stateMach['wy']*2),
                 min(stateMach['wx'], stateMach['wy'])*0.073)):
 
                 stateMach['wereColorsTouched'] = True
-                stateMach['currentSat'] = satValButtons[i][2]
-                stateMach['currentVal'] = satValButtons[i][3]
+                stateMach['currentSat'] = stateMach['satValButtons'][i][2]
+                stateMach['currentVal'] = stateMach['satValButtons'][i][3]
                 tmcHSV = (
                         stateMach['currentHue'], 
                         stateMach['currentSat'], 
@@ -583,6 +509,8 @@ def drawSettingColor():
                         stateMach['currentVal'] ) )
 
             stateMach['MasterSwitch'].setTarSize(1.0)
+            stateMach['MasterSwitch'].setTargetFaceColor(stateMach['faceColor'])
+            stateMach['MasterSwitch'].setTargetDetailColor(stateMach['detailColor'])
             stateMach['ColorTriangle'].setTarSize(0.0)
             stateMach['HueRing'].setTarSize(10.0)
             stateMach['BulbButtons'].setTarSize(0.4)
@@ -591,7 +519,7 @@ def drawSettingColor():
             stateMach['ConfirmButton'].setTarSize(0.0)
             stateMach['GranChanger'].setTarSize(0.0)
             stateMach['GranChanger'].setTarPosY(0.0)
-            stateMach['GranChanger'].setAccel(0.25)
+            stateMach['GranChanger'].setAccel(0.33)
             stateMach['targetScreen'] = 0
 
         if ( stateMach['wereColorsTouched'] and len(stateMach['lamps']) > 0):
@@ -600,11 +528,13 @@ def drawSettingColor():
                         stateMach['prevHues'][0], 
                         stateMach['prevSats'][0], 
                         stateMach['prevVals'][0])
+                extraColor = (extraColor[0], extraColor[1], extraColor[2], 1.0)
             else:
                 extraColor = colorsys.hsv_to_rgb(
                         stateMach['prevHue'], 
                         stateMach['prevSat'], 
                         stateMach['prevVal'])
+                extraColor = (extraColor[0], extraColor[1], extraColor[2], 1.0)
         else:
             extraColor = stateMach['detailColor']
 
@@ -631,6 +561,8 @@ def drawSettingColor():
                         stateMach['prevVal'] ) )
 
             stateMach['MasterSwitch'].setTarSize(1.0)
+            stateMach['MasterSwitch'].setTargetFaceColor(stateMach['faceColor'])
+            stateMach['MasterSwitch'].setTargetDetailColor(stateMach['detailColor'])
             stateMach['ColorTriangle'].setTarSize(0.0)
             stateMach['HueRing'].setTarSize(10.0)
             stateMach['targetScreen'] = 0
@@ -640,7 +572,8 @@ def drawSettingColor():
             stateMach['ConfirmButton'].setTarSize(0.0)
             stateMach['GranChanger'].setTarSize(0.0)
             stateMach['GranChanger'].setTarPosY(0.0)
-            stateMach['GranChanger'].setAccel(0.25)
+            stateMach['GranChanger'].setAccel(0.33)
+
 
 # Check if user is clicking in circle
 def watchDot(px, py, pr):
@@ -698,7 +631,7 @@ def display():
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-    drawBackground()
+    #drawBackground()
 
     #stateMach['tDiff'] = 0.70568/stateMach['fps']
     #stateMach['tDiff'] = 1.30568/stateMach['fps']
@@ -706,23 +639,30 @@ def display():
     #stateMach['tDiff'] = 3.14159/stateMach['fps']
     #stateMach['tDiff'] = 6.28318/stateMach['fps']
 
-    # Constrain Animation Cursor
-    if (stateMach['currentState'] == 1):# or stateMach['prvState'] == 0):
-        stateMach['interactionCursor'] = 1.0
-    else:
-        stateMach['interactionCursor'] = constrain(stateMach['interactionCursor'] - stateMach['tDiff'], 0.0, 1.0)
-
+    drawElements()
+    
     if (stateMach['targetScreen'] == 0):
-        if (stateMach['colrSettingCursor'] > 0):
-            stateMach['colrSettingCursor'] = constrain(stateMach['colrSettingCursor']-stateMach['tDiff'], 0, 1)
-            drawSettingColor()
-        if (stateMach['targetScreen'] == 0) and (stateMach['colrSettingCursor'] == 0):
-            drawHome()
-
+        watchHomeInput()
     elif (stateMach['targetScreen'] == 1):
-        if (stateMach['colrSettingCursor'] < 1):
-            stateMach['colrSettingCursor'] = constrain(stateMach['colrSettingCursor']+stateMach['tDiff'], 0, 1)
-        drawSettingColor()
+        watchColrSettingInput()
+
+    # Constrain Animation Cursor
+    #if (stateMach['currentState'] == 1):# or stateMach['prvState'] == 0):
+        #stateMach['interactionCursor'] = 1.0
+    #else:
+        #stateMach['interactionCursor'] = constrain(stateMach['interactionCursor'] - stateMach['tDiff'], 0.0, 1.0)
+
+    #if (stateMach['targetScreen'] == 0):
+        #if (stateMach['colrSettingCursor'] > 0):
+            #stateMach['colrSettingCursor'] = constrain(stateMach['colrSettingCursor']-stateMach['tDiff'], 0, 1)
+            #drawSettingColor()
+        #if (stateMach['targetScreen'] == 0) and (stateMach['colrSettingCursor'] == 0):
+            #drawHome()
+
+    #elif (stateMach['targetScreen'] == 1):
+        #if (stateMach['colrSettingCursor'] < 1):
+            #stateMach['colrSettingCursor'] = constrain(stateMach['colrSettingCursor']+stateMach['tDiff'], 0, 1)
+        #drawSettingColor()
 
     stateMach['AllSetButton'].setTimeSlice(stateMach['tDiff']*2)
     stateMach['BackButton'].setTimeSlice(stateMach['tDiff']*2)
@@ -927,45 +867,67 @@ if __name__ == '__main__':
     stateMach['drawInfo']           = False
 
     # Setup UI animation objects, initial parameters
+    #stateMach['faceColor'] = UIcolor()
+    #stateMach['faceColor'].setTargetColor((0.3, 0.3, 0.3, 1.0))
+    #stateMach['detailColor'] = UIcolor()
+    #stateMach['detailColor'].setTargetColor((0.9, 0.9, 0.9, 1.0))
+
     stateMach['HueRing'] = UIelement()
+    #stateMach['HueRing'].setTargetFaceColor(stateMach["faceColor"])
+    #stateMach['HueRing'].setTargetDetailColor(stateMach["detailColor"])
     stateMach['HueRing'].params["coordX"].setCurve("easeOutSine")
     stateMach['HueRing'].params["coordY"].setCurve("easeOutSine")
     stateMach['HueRing'].params["scaleX"].setCurve("easeInOutQuint")
 
     stateMach['BackButton'] = UIelement()
+    stateMach['BackButton'].setTargetFaceColor(stateMach["faceColor"])
+    stateMach['BackButton'].setTargetDetailColor(stateMach["detailColor"])
     stateMach['BackButton'].params["coordX"].setCurve("easeOutCubic")
     stateMach['BackButton'].params["coordY"].setCurve("easeInOutCubic")
 
     stateMach['BulbButtons'] = UIelement()
+    stateMach['BulbButtons'].setTargetFaceColor(stateMach["faceColor"])
+    stateMach['BulbButtons'].setTargetDetailColor(stateMach["detailColor"])
     stateMach['BulbButtons'].setTarSize(0.4)
     stateMach['BulbButtons'].setAccel(0.125)
 
     stateMach['GranChanger'] = UIelement()
+    stateMach['GranChanger'].setTargetFaceColor(stateMach["faceColor"])
+    stateMach['GranChanger'].setTargetDetailColor(stateMach["detailColor"])
     stateMach['GranChanger'].setTarSize(0.0)
     stateMach['GranChanger'].setTarPosX(0.0)
     stateMach['GranChanger'].setTarPosY(0.0)
     stateMach['GranChanger'].params["coordY"].setCurve("easeOutBack")
 
     stateMach['MasterSwitch'] = UIelement()
+    stateMach['MasterSwitch'].setTargetFaceColor(stateMach["faceColor"])
+    stateMach['MasterSwitch'].setTargetDetailColor(stateMach["detailColor"])
     stateMach['MasterSwitch'].setTarSize(1.0)
     stateMach['MasterSwitch'].setAccel(0.125)
     stateMach['MasterSwitch'].setTarPosX(0.0)
     stateMach['MasterSwitch'].setTarPosY(0.0)
 
     stateMach['AllSetButton'] = UIelement()
+    stateMach['AllSetButton'].setTargetFaceColor(stateMach["faceColor"])
+    stateMach['AllSetButton'].setTargetDetailColor(stateMach["detailColor"])
     stateMach['AllSetButton'].setTarSize(0.1275)
     stateMach['AllSetButton'].setAccel(0.125)
     stateMach['AllSetButton'].setTarPosX(-0.775)
     stateMach['AllSetButton'].setTarPosY(0.775)
 
     stateMach['ConfirmButton'] = UIelement()
+    stateMach['ConfirmButton'].setTargetFaceColor(stateMach["faceColor"])
+    stateMach['ConfirmButton'].setTargetDetailColor(stateMach["detailColor"])
     stateMach['ConfirmButton'].params["coordX"].setCurve("easeOutCubic")
     stateMach['ConfirmButton'].params["coordY"].setCurve("easeInOutCubic")
 
     stateMach['ColorTriangle'] = UIelement()
+    #stateMach[''].setTargetFaceColor(stateMach["faceColor"])
+    #stateMach[''].setTargetDetailColor(stateMach["detailColor"])
     stateMach['ColorTriangle'].params["coordX"].setCurve("easeInOutCirc")
     stateMach['ColorTriangle'].params["coordY"].setCurve("easeInOutCirc")
     stateMach['ColorTriangle'].params["scaleX"].setCurve("easeOutCirc")
+
 
     #stateMach['lamps'].append(getAllLamps()[0])
 
