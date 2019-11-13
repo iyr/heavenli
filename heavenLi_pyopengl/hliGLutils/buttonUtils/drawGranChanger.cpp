@@ -45,6 +45,10 @@ PyObject* drawGranChanger_hliGLutils(PyObject *self, PyObject *args) {
    detailColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(py_detailColor, 2)));
    detailColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(py_detailColor, 3)));
 
+   granChangerButton.setNumColors(2);
+   granChangerButton.setColorQuartet(0, faceColor);
+   granChangerButton.setColorQuartet(1, detailColor);
+
    // Allocate and Define Geometry/Color
    if (  granChangerButton.numVerts == 0 ) {
       printf("Initializing Geometry for Granularity Rocker\n");
@@ -54,14 +58,14 @@ PyObject* drawGranChanger_hliGLutils(PyObject *self, PyObject *args) {
       vector<GLfloat> colrs;
 
       // Upper Background Mask (quad)
-      defineQuad4pt(
-            -1.0, 1.0,
-            -1.0, 0.0,
-            +1.0, 1.0,
-            +1.0, 0.0,
-            black,
-            verts, 
-            colrs);
+      //defineQuad4pt(
+            //-1.0, 1.0,
+            //-1.0, 0.0,
+            //+1.0, 1.0,
+            //+1.0, 0.0,
+            //black,
+            //verts, 
+            //colrs);
 
       // Lower Background Mask (Pill)
       definePill(
@@ -127,6 +131,63 @@ PyObject* drawGranChanger_hliGLutils(PyObject *self, PyObject *args) {
 
       granChangerVerts = verts.size()/2;
       granChangerButton.buildCache(granChangerVerts, verts, colrs);
+   }
+
+   if (granChangerButton.colorsChanged) {
+      unsigned int index = 0;
+
+      // Upper Background Mask (quad)
+      //index = updateQuadColor(
+            //black,
+            //index, 
+            //granChangerButton.colorCache);
+
+      // Lower Background Mask (Pill)
+      index = updatePillColor(
+             circleSegments,
+             black,              // Color 
+             index, 
+             granChangerButton.colorCache);
+
+      // Left (Minus) Button
+      index = updateCircleColor(
+             circleSegments,        // Number of Circle Triangles 
+             faceColor,             // Colors 
+             index,
+             granChangerButton.colorCache);
+
+      // Right (Plus) Button
+      index = updateCircleColor(
+             circleSegments,        // Number of Circle Triangles 
+             faceColor,             // Colors 
+             index,
+             granChangerButton.colorCache);
+
+      // Iconography
+      index = updateCircleColor( circleSegments, white, index, granChangerButton.colorCache);
+      index = updateCircleColor( circleSegments, white, index, granChangerButton.colorCache);
+      index = updateCircleColor( circleSegments, white, index, granChangerButton.colorCache);
+
+      // Minus Symbol
+      index = updatePillColor(
+            circleSegments,
+            detailColor,                              // Color 
+            index,
+            granChangerButton.colorCache);
+
+      // Plus Symbol
+      index = updatePillColor(
+            circleSegments,
+            detailColor,                              // Color 
+            index,
+            granChangerButton.colorCache);
+      index = updatePillColor(
+            circleSegments,
+            detailColor,                        // Color 
+            index,
+            granChangerButton.colorCache);
+
+      granChangerButton.updateColorCache();
    }
 
    granChangerButton.updateMVP(gx, gy, scale, scale, ao, w2h);
