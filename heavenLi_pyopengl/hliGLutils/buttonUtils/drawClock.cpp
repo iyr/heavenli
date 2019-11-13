@@ -33,10 +33,14 @@ PyObject* drawClock_hliGLutils(PyObject *self, PyObject *args)
    }
 
    // Parse RGB color tuples of face and detail colors
-   for (int i = 0; i < 4; i++){
-      faceColor[i] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, i)));
-      detailColor[i] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, i)));
+   for (unsigned int i = 0; i < 4; i++){
+      faceColor[i] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, i));
+      detailColor[i] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, i));
    }
+
+   clockButton.setNumColors(2);
+   clockButton.setColorQuartet(0, faceColor);
+   clockButton.setColorQuartet(1, detailColor);
    
    if (  clockButton.numVerts == 0  ){
       printf("Initializing Geometry for Clock Button\n");
@@ -105,30 +109,22 @@ PyObject* drawClock_hliGLutils(PyObject *self, PyObject *args)
       clockButton.updateCoordCache();
    }
 
-   GLboolean updateCache = GL_FALSE;
-   // Geometry up to date, check if colors need to be updated
-   for (int i = 0; i < 4; i++) {
-      // Update Clock Face Color
-      if (faceColor[i] != clockButton.colorCache[i]) {
-         for (unsigned int k = 0; k < faceVerts; k++) {
-            clockButton.colorCache[i + k*4] = faceColor[i];
-         }
-         updateCache = GL_TRUE;
-      }
+   if (clockButton.colorsChanged) {
+      unsigned int index = 0;
 
-      // Update Hand Colors
-      if (detailColor[i] != clockButton.colorCache[i + faceVerts]) {
-         for (unsigned int k = faceVerts; k < clockVerts; k++) {
-            clockButton.colorCache[i + k*4] = detailColor[i];
-         }
-         updateCache = GL_TRUE;
-      }
-   }
+      index = updateEllipseColor(
+            circleSegments,
+            faceColor,
+            index,
+            clockButton.colorCache);
 
-   if ( updateCache ){
+      index = updatePillColor(circleSegments/4, detailColor, index, clockButton.colorCache);
+
+      index = updatePillColor(circleSegments/4, detailColor, index, clockButton.colorCache);
+
       clockButton.updateColorCache();
    }
-   
+
    clockButton.updateMVP(gx, gy, scale, scale, ao, w2h);
    clockButton.draw();
 
