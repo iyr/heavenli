@@ -61,7 +61,6 @@ textAtlas::textAtlas(std::string faceName, GLuint numChars, GLuint size, charact
    glBindTexture(GL_TEXTURE_2D, this->tex);
    glUniform1i(uniform_tex, 0);
 
-   //glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, this->textureWidth, this->textureHeight, 0, GL_ALPHA, GL_UNSIGNED_BYTE, NULL);
    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, this->textureWidth, this->textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -115,6 +114,7 @@ textAtlas::textAtlas(std::string faceName, GLuint numChars, GLuint size, charact
 
    }
 
+      /*
    for (unsigned int i = 0; i < numChars; i++)
       printf("glyph %c (%4d): advanceX: %12.5f -+- width (bearingX): %3d -+- rows (bearingY): %3d -+- bearingLeft: %3d -+- bearingTop: %3d -+- texOffsetX: %0.5f -+- texOffsetY: %0.5f\n", 
             i,
@@ -127,6 +127,7 @@ textAtlas::textAtlas(std::string faceName, GLuint numChars, GLuint size, charact
             this->glyphData[i].textureOffsetX,
             this->glyphData[i].textureOffsetY
             );
+            */
 
    fprintf(stderr, "Generated a %d x %d (%d kb) texture atlas\n", this->textureWidth, this->textureHeight, (this->textureWidth * this->textureHeight) /1024);
 
