@@ -42,6 +42,11 @@ PyObject* drawArrow_hliGLutils(PyObject* self, PyObject *args) {
    detailColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2)));
    detailColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 3)));
 
+   arrowButton.setNumColors(3);
+   arrowButton.setColorQuartet(0, faceColor);
+   arrowButton.setColorQuartet(1, extraColor);
+   arrowButton.setColorQuartet(2, detailColor);
+
    int circleSegments = 60;
    if (arrowButton.numVerts == 0){
 
@@ -105,26 +110,45 @@ PyObject* drawArrow_hliGLutils(PyObject* self, PyObject *args) {
       arrowButton.buildCache(arrowVerts, verts, colrs);
    }
 
-   int index = 0;
-   GLboolean updateCache = GL_FALSE;
-   // Update Color, if needed
-   for (int i = 0; i < 4; i++) {
-      if ( arrowButton.colorCache[extraArrowVerts*4+i] != extraColor[i] ) {
-         for (unsigned int k = extraArrowVerts; k < arrowButton.numVerts; k++) {
-            arrowButton.colorCache[k*4 + i] = extraColor[i];
-         }
+   if (arrowButton.colorsChanged) {
+      unsigned int index = 0;
+      // Draw button face
+      index = updateEllipseColor(
+            circleSegments,
+            faceColor,
+            index, 
+            arrowButton.colorCache);
 
-         updateCache = GL_TRUE;
-      }
-   }
+      // Draw check-mark base
+      index = updatePillColor(
+            circleSegments/2,
+            detailColor,
+            index, 
+            arrowButton.colorCache);
 
-   // Update colors, if needed
-   if ( updateCache ){
+      index = updatePillColor(
+            circleSegments/2,
+            detailColor, 
+            index, 
+            arrowButton.colorCache);
+
+      // Draw check-mark infill
+      index = updatePillColor(
+            circleSegments/2,
+            extraColor,
+            index, 
+            arrowButton.colorCache);
+
+      index = updatePillColor(
+            circleSegments/2,
+            extraColor,
+            index, 
+            arrowButton.colorCache);
+
       arrowButton.updateColorCache();
    }
 
    arrowButton.updateMVP(gx, gy, scale, scale, ao, w2h);
-
    arrowButton.draw();
 
    Py_RETURN_NONE;
