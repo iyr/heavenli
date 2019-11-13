@@ -7,13 +7,13 @@
 using namespace std;
 
 // Append to input vectors
-int definePill(
+GLuint definePill(
       float px,                  /* x-coordinate of Point P */
       float py,                  /* y-coordinate of Point P */
       float qx,                  /* x-coordinate of Point Q */
       float qy,                  /* y-coordinate of Point Q */
       float radius,              /* Radius/Thickness of pill */
-      char circleSegments,       /* Number of sides */
+      GLuint circleSegments,       /* Number of sides */
       float *pColor,             /* RGB values of P */
       float *qColor,             /* RGB values of Q */
       std::vector<float> &verts, /* Input Vector of x,y coordinates */
@@ -29,17 +29,17 @@ int definePill(
       ang = float(atan(slope));
    }
 
-   pR = float(pColor[0]);
-   pG = float(pColor[1]);
-   pB = float(pColor[2]);
-   pA = float(pColor[3]);
+   pR = pColor[0];
+   pG = pColor[1];
+   pB = pColor[2];
+   pA = pColor[3];
 
-   qR = float(qColor[0]);
-   qG = float(qColor[1]);
-   qB = float(qColor[2]);
-   qA = float(pColor[3]);
+   qR = qColor[0];
+   qG = qColor[1];
+   qB = qColor[2];
+   qA = pColor[3];
 
-   char degSegment = 360 / circleSegments;
+   GLint degSegment = 360 / circleSegments;
    degSegment /= 2;
 
    // Prepend degenerate vertex iff not the first primitive in the vector
@@ -66,7 +66,7 @@ int definePill(
       /* pA */ colrs.push_back(pA);
    }
 
-   for (char i = 1; i < circleSegments/2; i++ ) {
+   for (GLuint i = 1; i < circleSegments/2; i++ ) {
       /* pX */ verts.push_back(float(px + radius*cos(ang+degToRad(i*degSegment))));
       /* pY */ verts.push_back(float(py + radius*sin(ang+degToRad(i*degSegment))));
       /* pR */ colrs.push_back(pR);  
@@ -74,8 +74,8 @@ int definePill(
       /* pB */ colrs.push_back(pB);
       /* pA */ colrs.push_back(pA);
 
-      /* pX */ verts.push_back(float(px + radius*cos(ang+degToRad(-i*degSegment))));
-      /* pY */ verts.push_back(float(py + radius*sin(ang+degToRad(-i*degSegment))));
+      /* pX */ verts.push_back(float(px + radius*cos(ang+degToRad(-(GLint)i*degSegment))));
+      /* pY */ verts.push_back(float(py + radius*sin(ang+degToRad(-(GLint)i*degSegment))));
       /* pR */ colrs.push_back(pR);  
       /* pG */ colrs.push_back(pG);  
       /* pB */ colrs.push_back(pB);
@@ -89,9 +89,9 @@ int definePill(
       slope = (py-qy)/(px-qx);
       ang = float(degToRad(180)+atan(slope));
    }
-   for (char i = 1; i < circleSegments/2; i++ ) {
-      /* qX */ verts.push_back(float(qx + radius*cos(ang+degToRad(-(circleSegments/2-i)*degSegment))));
-      /* qY */ verts.push_back(float(qy + radius*sin(ang+degToRad(-(circleSegments/2-i)*degSegment))));
+   for (GLuint i = 1; i < circleSegments/2; i++ ) {
+      /* qX */ verts.push_back(float(qx + radius*cos(ang+degToRad(-(GLint)(circleSegments/2-i)*degSegment))));
+      /* qY */ verts.push_back(float(qy + radius*sin(ang+degToRad(-(GLint)(circleSegments/2-i)*degSegment))));
       /* qR */ colrs.push_back(qR);  
       /* qG */ colrs.push_back(qG);  
       /* qB */ colrs.push_back(qB);
@@ -123,13 +123,13 @@ int definePill(
 }
 
 /* useful overload */
-int definePill(
+GLuint definePill(
       float px,                  /* x-coordinate of Point P */
       float py,                  /* y-coordinate of Point P */
       float qx,                  /* x-coordinate of Point Q */
       float qy,                  /* y-coordinate of Point Q */
       float radius,              /* Radius/Thickness of pill */
-      char circleSegments,       /* Number of sides */
+      GLuint circleSegments,       /* Number of sides */
       float *Color,              /* RGB values of Pill */
       std::vector<float> &verts, /* Input Vector of x,y coordinates */
       std::vector<float> &colrs  /* Input Vector of r,g,b values */
@@ -140,13 +140,13 @@ int definePill(
 /*
  * Used for updating a position index without recalculation or needless memory reads/writes
  */
-int updatePillIndex(
-      char circleSegments, /* Number of sides */
-      int numElements,     /* Number of elements per vertex */
-      int index            /* Index of where to start writing */
+GLuint updatePillIndex(
+      GLuint circleSegments, /* Number of sides */
+      GLuint numElements,     /* Number of elements per vertex */
+      GLuint index            /* Index of where to start writing */
       ){
-   int subIndex = index*numElements;
-   char lim = circleSegments/2;
+   GLuint subIndex = index*numElements;
+   GLint lim = circleSegments/2;
 
    // Prepend degenerate vertex iff not the first primitive in the vector
    if (subIndex == 0) {
@@ -155,11 +155,11 @@ int updatePillIndex(
       subIndex += numElements*2;
    }
 
-   for (char i = 1; i < lim; i++ ) {
+   for (GLint i = 1; i < lim; i++ ) {
       subIndex += numElements*2;
    }
 
-   for (char i = 1; i < lim; i++ ) {
+   for (GLint i = 1; i < lim; i++ ) {
       subIndex += numElements*2;
    }
 
@@ -171,18 +171,18 @@ int updatePillIndex(
 /*
  * Write to pre-allocated input array, updating vertices only 
  */
-int updatePillGeometry(
+GLuint updatePillGeometry(
       float px,            /* x-coordinate of Point P */
       float py,            /* y-coordinate of Point P */
       float qx,            /* x-coordinate of Point Q */
       float qy,            /* y-coordinate of Point Q */
       float radius,        /* Radius/Thickness of pill */
-      char circleSegments, /* Number of sides */
-      int index,           /* Index of where to start writing */
+      GLuint circleSegments, /* Number of sides */
+      GLuint index,           /* Index of where to start writing */
       float *verts         /* Input Vector of x,y coordinates */
       ){
    float slope, ang;
-   int vertIndex = index*2;
+   GLuint vertIndex = index*2;
 
    if (qx >= px) {
       slope = (qy-py)/(qx-px);
@@ -192,7 +192,7 @@ int updatePillGeometry(
       ang = float(atan(slope));
    }
 
-   char degSegment = 360 / circleSegments;
+   GLint degSegment = 360 / circleSegments;
    degSegment /= 2;
 
    // Prepend degenerate vertex iff not the first primitive in the vector
@@ -206,11 +206,11 @@ int updatePillGeometry(
       /* pY */ verts[vertIndex++] = (float(py + radius*sin(ang)));
    }
 
-   for (char i = 1; i < circleSegments/2; i++ ) {
+   for (GLuint i = 1; i < circleSegments/2; i++ ) {
       /* pX */ verts[vertIndex++] = (float(px + radius*cos(ang+degToRad(i*degSegment))));
       /* pY */ verts[vertIndex++] = (float(py + radius*sin(ang+degToRad(i*degSegment))));
-      /* pX */ verts[vertIndex++] = (float(px + radius*cos(ang+degToRad(-i*degSegment))));
-      /* pY */ verts[vertIndex++] = (float(py + radius*sin(ang+degToRad(-i*degSegment))));
+      /* pX */ verts[vertIndex++] = (float(px + radius*cos(ang+degToRad(-(GLint)i*degSegment))));
+      /* pY */ verts[vertIndex++] = (float(py + radius*sin(ang+degToRad(-(GLint)i*degSegment))));
    }
 
    if (qx >= px) {
@@ -220,9 +220,9 @@ int updatePillGeometry(
       slope = (py-qy)/(px-qx);
       ang = float(degToRad(180)+atan(slope));
    }
-   for (char i = 1; i < circleSegments/2; i++ ) {
-      /* qX */ verts[vertIndex++] = (float(qx + radius*cos(ang+degToRad(-(circleSegments/2-i)*degSegment))));
-      /* qY */ verts[vertIndex++] = (float(qy + radius*sin(ang+degToRad(-(circleSegments/2-i)*degSegment))));
+   for (GLuint i = 1; i < circleSegments/2; i++ ) {
+      /* qX */ verts[vertIndex++] = (float(qx + radius*cos(ang+degToRad(-(GLint)(circleSegments/2-(GLint)i)*degSegment))));
+      /* qY */ verts[vertIndex++] = (float(qy + radius*sin(ang+degToRad(-(GLint)(circleSegments/2-(GLint)i)*degSegment))));
       /* qX */ verts[vertIndex++] = (float(qx + radius*cos(ang+degToRad((circleSegments/2-i)*degSegment))));
       /* qY */ verts[vertIndex++] = (float(qy + radius*sin(ang+degToRad((circleSegments/2-i)*degSegment))));
    }
@@ -235,15 +235,15 @@ int updatePillGeometry(
    return vertIndex/2;
 }
 
-int updatePillColor(
-      char circleSegments, /* Number of sides */
+GLuint updatePillColor(
+      GLuint circleSegments, /* Number of sides */
       float *pColor,       /* RGB values of P */
       float *qColor,       /* RGB values of Q */
-      int index,           /* Index of where to start writing */
+      GLuint index,           /* Index of where to start writing */
       float *colrs         /* Input Vector of r,g,b values */
       ){
    float pR, pG, pB, pA, qR, qG, qB, qA;
-   int colrIndex = index*4;
+   GLuint colrIndex = index*4;
 
    pR = float(pColor[0]);
    pG = float(pColor[1]);
@@ -276,7 +276,7 @@ int updatePillColor(
       colrIndex += 8;
    }
 
-   for (char i = 1; i < circleSegments/2; i++ ) {
+   for (GLuint i = 1; i < circleSegments/2; i++ ) {
       /* pR */ colrs[colrIndex+0] = pR;
       /* pG */ colrs[colrIndex+1] = pG;
       /* pB */ colrs[colrIndex+2] = pB;
@@ -289,7 +289,7 @@ int updatePillColor(
       colrIndex += 8;
    }
 
-   for (char i = 1; i < circleSegments/2; i++ ) {
+   for (GLuint i = 1; i < circleSegments/2; i++ ) {
       /* qR */ colrs[colrIndex+0] = qR;
       /* qG */ colrs[colrIndex+1] = qG;
       /* qB */ colrs[colrIndex+2] = qB;
@@ -317,10 +317,10 @@ int updatePillColor(
 }
 
 /* useful overload */
-int updatePillColor(
-      char circleSegments, /* Number of sides */
+GLuint updatePillColor(
+      GLint circleSegments, /* Number of sides */
       float *Color,        /* RGB values of Pill */
-      int index,           /* Index of where to start writing */
+      GLuint index,           /* Index of where to start writing */
       float *colrs         /* Input Vector of r,g,b values */
       ){
    return updatePillColor(circleSegments, Color, Color, index, colrs);
