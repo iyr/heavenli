@@ -646,24 +646,6 @@ def display():
     elif (stateMach['targetScreen'] == 1):
         watchColrSettingInput()
 
-    # Constrain Animation Cursor
-    #if (stateMach['currentState'] == 1):# or stateMach['prvState'] == 0):
-        #stateMach['interactionCursor'] = 1.0
-    #else:
-        #stateMach['interactionCursor'] = constrain(stateMach['interactionCursor'] - stateMach['tDiff'], 0.0, 1.0)
-
-    #if (stateMach['targetScreen'] == 0):
-        #if (stateMach['colrSettingCursor'] > 0):
-            #stateMach['colrSettingCursor'] = constrain(stateMach['colrSettingCursor']-stateMach['tDiff'], 0, 1)
-            #drawSettingColor()
-        #if (stateMach['targetScreen'] == 0) and (stateMach['colrSettingCursor'] == 0):
-            #drawHome()
-
-    #elif (stateMach['targetScreen'] == 1):
-        #if (stateMach['colrSettingCursor'] < 1):
-            #stateMach['colrSettingCursor'] = constrain(stateMach['colrSettingCursor']+stateMach['tDiff'], 0, 1)
-        #drawSettingColor()
-
     stateMach['AllSetButton'].setTimeSlice(stateMach['tDiff']*2)
     stateMach['BackButton'].setTimeSlice(stateMach['tDiff']*2)
     stateMach['ConfirmButton'].setTimeSlice(stateMach['tDiff']*2)
@@ -860,18 +842,11 @@ if __name__ == '__main__':
     stateMach['prevVal']            = -1
     stateMach['prevSat']            = -1
     stateMach['wereColorsTouched']  = False
-    stateMach['colrSettingCursor']  = 0.0
-    stateMach['interactionCursor']  = 0.0
     stateMach['mousePressed']       = False
     stateMach['mouseButton']        = "None"
     stateMach['drawInfo']           = False
 
     # Setup UI animation objects, initial parameters
-    #stateMach['faceColor'] = UIcolor()
-    #stateMach['faceColor'].setTargetColor((0.3, 0.3, 0.3, 1.0))
-    #stateMach['detailColor'] = UIcolor()
-    #stateMach['detailColor'].setTargetColor((0.9, 0.9, 0.9, 1.0))
-
     stateMach['HueRing'] = UIelement()
     #stateMach['HueRing'].setTargetFaceColor(stateMach["faceColor"])
     #stateMach['HueRing'].setTargetDetailColor(stateMach["detailColor"])
