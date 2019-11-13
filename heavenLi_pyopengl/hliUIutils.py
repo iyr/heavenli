@@ -51,9 +51,10 @@ class UIcolor:
 
     # Set time-slice for animation speed
     def setTimeSlice(self, tDiff):
-        self.tDiff = tDiff
-        for i in self.params:
-            self.params[i].setTimeSlice(self.tDiff)
+        if (self.tDiff != tDiff):
+            self.tDiff = tDiff
+            for i in self.params:
+                self.params[i].setTimeSlice(self.tDiff)
         return
 
     # Update all parameters

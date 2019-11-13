@@ -47,6 +47,7 @@ def framerate():
     try:
         stateMach['fps'] = stateMach['frames']/seconds
     except:
+        stateMach['fps'] = 60
         print("Too Fast, Too Quick!!")
 
     if t - stateMach['t1'] >= (1/60.0):
@@ -631,11 +632,9 @@ def display():
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-    #drawBackground()
-
     #stateMach['tDiff'] = 0.70568/stateMach['fps']
     #stateMach['tDiff'] = 1.30568/stateMach['fps']
-    stateMach['tDiff'] = 2.71828/stateMach['fps']
+    stateMach['tDiff'] = 2*(2.71828/stateMach['fps'])
     #stateMach['tDiff'] = 3.14159/stateMach['fps']
     #stateMach['tDiff'] = 6.28318/stateMach['fps']
 
@@ -646,18 +645,18 @@ def display():
     elif (stateMach['targetScreen'] == 1):
         watchColrSettingInput()
 
-    stateMach['AllSetButton'].setTimeSlice(stateMach['tDiff']*2)
-    stateMach['BackButton'].setTimeSlice(stateMach['tDiff']*2)
-    stateMach['ConfirmButton'].setTimeSlice(stateMach['tDiff']*2)
-    stateMach['ColorTriangle'].setTimeSlice(stateMach['tDiff']*2)
-    stateMach['HueRing'].setTimeSlice(stateMach['tDiff']*2)
-    stateMach['BulbButtons'].setTimeSlice(stateMach['tDiff']*2)
-    stateMach['MasterSwitch'].setTimeSlice(stateMach['tDiff']*2)
-    stateMach['GranChanger'].setTimeSlice(stateMach['tDiff']*2)
+    stateMach['AllSetButton'].setTimeSlice(stateMach['tDiff'])
+    stateMach['BackButton'].setTimeSlice(stateMach['tDiff'])
+    stateMach['ConfirmButton'].setTimeSlice(stateMach['tDiff'])
+    stateMach['ColorTriangle'].setTimeSlice(stateMach['tDiff'])
+    stateMach['HueRing'].setTimeSlice(stateMach['tDiff'])
+    stateMach['BulbButtons'].setTimeSlice(stateMach['tDiff'])
+    stateMach['MasterSwitch'].setTimeSlice(stateMach['tDiff'])
+    stateMach['GranChanger'].setTimeSlice(stateMach['tDiff'])
 
     # Update Colors of Lamps
     for i in range(len(stateMach['lamps'])):
-        stateMach['lamps'][i].updateBulbs(stateMach['tDiff']/2)
+        stateMach['lamps'][i].updateBulbs(stateMach['tDiff']*0.5)
 
     #drawPrim(0.0, 0.0, 1.0, 0.0, stateMach['w2h'], stateMach['faceColor'], stateMach['detailColor'], (1.0, 1.0, 1.0, 1.0))
 
