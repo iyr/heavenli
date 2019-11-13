@@ -26,20 +26,25 @@ PyObject* drawConfirm_hliGLutils(PyObject* self, PyObject *args) {
       Py_RETURN_NONE;
    }
 
-   faceColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 0)));
-   faceColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 1)));
-   faceColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 2)));
-   faceColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 3)));
+   faceColor[0] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 0));
+   faceColor[1] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 1));
+   faceColor[2] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 2));
+   faceColor[3] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 3));
 
-   extraColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 0)));
-   extraColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 1)));
-   extraColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 2)));
-   extraColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 3)));
+   extraColor[0] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 0));
+   extraColor[1] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 1));
+   extraColor[2] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 2));
+   extraColor[3] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 3));
 
-   detailColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 0)));
-   detailColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 1)));
-   detailColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2)));
-   detailColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 3)));
+   detailColor[0] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 0));
+   detailColor[1] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 1));
+   detailColor[2] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2));
+   detailColor[3] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 3));
+
+   confirmButton.setNumColors(3);
+   confirmButton.setColorQuartet(0, faceColor);
+   confirmButton.setColorQuartet(1, extraColor);
+   confirmButton.setColorQuartet(2, detailColor);
 
    if (  confirmButton.numVerts == 0   ){
 
@@ -101,19 +106,40 @@ PyObject* drawConfirm_hliGLutils(PyObject* self, PyObject *args) {
       confirmButton.buildCache(confirmVerts, verts, colrs);
    }
 
-   GLboolean updateCache = GL_FALSE;
-   // Geometry allocated, check if color needs to be updated
-   for (int i = 0; i < 4; i++) {
-      if ( confirmButton.colorCache[extraConfirmVerts*4+i] != extraColor[i] ) {
-         for (unsigned int k = extraConfirmVerts; k < confirmButton.numVerts; k++) {
-            confirmButton.colorCache[k*4 + i] = extraColor[i];
-         }
-         updateCache = GL_TRUE;
-      }
-   }
+   if ( confirmButton.colorsChanged ) {
+      unsigned int index = 0;
 
-   // Update colors, if needed
-   if ( updateCache ){
+      int circleSegments = 60;
+      index = updateEllipseColor(
+            circleSegments,
+            faceColor,
+            index, 
+            confirmButton.colorCache);
+
+      index = updatePillColor(
+            circleSegments/2,
+            detailColor,
+            index, 
+            confirmButton.colorCache);
+
+      index = updatePillColor(
+            circleSegments/2,
+            detailColor, 
+            index, 
+            confirmButton.colorCache);
+
+      index = updatePillColor(
+            circleSegments/2,
+            extraColor,
+            index, 
+            confirmButton.colorCache);
+
+      index = updatePillColor(
+            circleSegments/2,
+            extraColor,
+            index, 
+            confirmButton.colorCache);
+
       confirmButton.updateColorCache();
    }
 
