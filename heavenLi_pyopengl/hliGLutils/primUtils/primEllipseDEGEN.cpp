@@ -88,7 +88,7 @@ unsigned int defineCircle(
       ){
    return defineEllipse(bx, by, bs, bs, circleSegments, color, verts, colrs);
 }
- 
+
 // Write to pre-allocated input array, updating vertices only 
 unsigned int updateEllipseGeometry(
       float bx,                     /* X-Coordinate */
@@ -165,3 +165,13 @@ unsigned int updateEllipseColor(
    
    return colrIndex/4;
 }
+
+unsigned int updateCircleColor(
+      unsigned int   circleSegments,
+      float*         color,
+      unsigned int   index,
+      float*         colrs
+      ){
+   return updateEllipseColor(circleSegments, color, index, colrs);
+}
+ 
