@@ -49,7 +49,7 @@ float offScreen = 100.0;            // Used for moving geometry offscreen, will 
 #include "hliGLutils/buttonUtils/drawHueRing.cpp"       // Draws the ring of colored dots on the color picker
 #include "hliGLutils/buttonUtils/drawColrTri.cpp"       // Draws the triangle of colored dots for the color picker
 #include "hliGLutils/buttonUtils/drawConfirm.cpp"       // Draws a checkmark button
-#include "hliGLutils/buttonUtils/primDrawTest.cpp"      // used for testing primitive draw code
+//#include "hliGLutils/buttonUtils/primDrawTest.cpp"      // used for testing primitive draw code
 
 /* END OF INCLUDES   */
 
@@ -59,7 +59,6 @@ float offScreen = 100.0;            // Used for moving geometry offscreen, will 
 PyObject* initShaders_hliGLutils    (PyObject* self, PyObject* args);
 
 PyObject* drawText_hliGLutils       (PyObject* self, PyObject* args);
-//PyObject* loadChar_hliGLutils        (PyObject* self, PyObject* args);
 PyObject* buildAtlas_hliGLutils     (PyObject* self, PyObject* args);
 
 PyObject* drawHomeCircle_hliGLutils (PyObject* self, PyObject* args);
@@ -76,7 +75,6 @@ PyObject* drawConfirm_hliGLutils    (PyObject* self, PyObject* args);
 PyObject* drawGranChanger_hliGLutils(PyObject* self, PyObject* args);
 PyObject* drawHueRing_hliGLutils    (PyObject* self, PyObject* args);
 PyObject* drawPrim_hliGLutils       (PyObject* self, PyObject* args);
-PyObject* primTest_hliGLutils       (PyObject* self, PyObject* args);
 
 /*
  * Python Method Definitions
@@ -86,7 +84,6 @@ static PyMethodDef hliGLutils_methods[] = {
    { "initShaders", (PyCFunction)initShaders_hliGLutils, METH_NOARGS },
 
    { "drawText",        (PyCFunction)drawText_hliGLutils,         METH_VARARGS },
-   //{ "loadChar",        (PyCFunction)loadChar_hliGLutils,       METH_VARARGS },
    { "buildAtlas",      (PyCFunction)buildAtlas_hliGLutils,       METH_VARARGS },
 
    { "drawHomeCircle",  (PyCFunction)drawHomeCircle_hliGLutils,   METH_VARARGS },
@@ -103,7 +100,6 @@ static PyMethodDef hliGLutils_methods[] = {
    { "drawGranChanger", (PyCFunction)drawGranChanger_hliGLutils,  METH_VARARGS },
    { "drawHueRing",     (PyCFunction)drawHueRing_hliGLutils,      METH_VARARGS },
    { "drawPrim",        (PyCFunction)drawPrim_hliGLutils,         METH_VARARGS },
-   { "primTest",        (PyCFunction)primTest_hliGLutils,         METH_VARARGS },
 
    { NULL, NULL, 0, NULL}
 };
