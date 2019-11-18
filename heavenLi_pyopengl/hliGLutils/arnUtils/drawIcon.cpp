@@ -31,7 +31,7 @@ PyObject* drawIcon_hliGLutils(PyObject* self, PyObject* args){
    GLuint      numBulbs, features, arn;
 
    if (!PyArg_ParseTuple(args,
-            "ffflOlOOlffO",
+            "fffIOIOOIffO",
             &gx, &gy,            // icon positon (X, Y)
             &scale,              // icon size
             &arn,                // arrangement
@@ -48,7 +48,6 @@ PyObject* drawIcon_hliGLutils(PyObject* self, PyObject* args){
       printf("failed to parse arguments :(\n");
       Py_RETURN_NONE;
    }
-   //printf("drawIcon arn: %d\n", arn);
 
    // Parse array of tuples containing RGB Colors of bulbs
    bulbColors = new GLfloat[numBulbs*3];
