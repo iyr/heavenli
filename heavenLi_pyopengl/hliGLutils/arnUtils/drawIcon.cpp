@@ -28,7 +28,7 @@ PyObject* drawIcon_hliGLutils(PyObject* self, PyObject* args){
    GLfloat     detailColor[4];
    GLfloat     faceColor[4];
    GLfloat     gx, gy, scale, ao, w2h;
-   GLuint      numBulbs, features, arn, segments=60;
+   GLuint      numBulbs, features, arn;
 
    if (!PyArg_ParseTuple(args,
             "ffflOlOOlffO",
@@ -48,29 +48,30 @@ PyObject* drawIcon_hliGLutils(PyObject* self, PyObject* args){
       printf("failed to parse arguments :(\n");
       Py_RETURN_NONE;
    }
+   //printf("drawIcon arn: %d\n", arn);
 
    // Parse array of tuples containing RGB Colors of bulbs
-   bulbColors = new float[numBulbs*3];
+   bulbColors = new GLfloat[numBulbs*3];
    for (unsigned int i = 0; i < numBulbs; i++) {
       py_tuple = PyList_GetItem(py_list, i);
 
       for (unsigned char j = 0; j < 3; j++) {
          py_float = PyTuple_GetItem(py_tuple, j);
-         bulbColors[i*3+j] = float(PyFloat_AsDouble(py_float));
+         bulbColors[i*3+j] = (GLfloat)PyFloat_AsDouble(py_float);
       }
    }
 
    // Parse RGBA detail colors
-   detailColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 0)));
-   detailColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 1)));
-   detailColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2)));
-   detailColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 3)));
+   detailColor[0] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 0));
+   detailColor[1] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 1));
+   detailColor[2] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2));
+   detailColor[3] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 3));
 
    // Parse RGBA face colors
-   faceColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 0)));
-   faceColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 1)));
-   faceColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 2)));
-   faceColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 3)));
+   faceColor[0] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 0));
+   faceColor[1] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 1));
+   faceColor[2] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 2));
+   faceColor[3] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 3));
 
    // Parse alias text
    const char* inputChars  = PyUnicode_AsUTF8(PyString);
@@ -109,6 +110,7 @@ PyObject* drawIcon_hliGLutils(PyObject* self, PyObject* args){
          0.5f,
          gx, gy,
          scale*2.0f, scale*2.0f,
+         0.0f,
          w2h,
          quack,         // texture atlas to draw characters from
          detailColor,

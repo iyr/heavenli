@@ -76,13 +76,10 @@ PyObject* drawHomeLinear_hliGLutils(PyObject *self, PyObject *args) {
          prevHomeLinearNumBulbs  != numBulbs ){
 
       //printf("Generating geometry for homeLinear\n");
-      GLuint segments = 60;
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
 
       float TLx, TRx, BLx, BRx, TLy, TRy, BLy, BRy;
-      float offset = 4.0f / 60.0f;
-      unsigned int limit = segments/numBulbs;
 
       homeLinear.setNumColors(numBulbs);
       for (unsigned int j = 0; j < numBulbs; j++) {
@@ -180,8 +177,8 @@ PyObject* drawIconLinear_hliGLutils(PyObject *self, PyObject *args) {
    PyObject*   py_float;
    GLfloat*    bulbColors;
    GLfloat     detailColor[4];
-   GLfloat     gx, gy, scale, ao, w2h, alpha=1.0f;
-   GLuint      numBulbs, features, vertIndex = 0;
+   GLfloat     gx, gy, scale, ao, w2h;
+   GLuint      numBulbs, features;
    if (!PyArg_ParseTuple(args,
             "ffflOlffO",
             &gx, &gy,
@@ -261,7 +258,6 @@ void drawIconLinear(
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
       iconLinear.setNumColors(numBulbs+1);
-      float degSegment = float(360.0/float(circleSegments));
 
       // Define Square of Stripes with Rounded Corners
       defineIconLinear(

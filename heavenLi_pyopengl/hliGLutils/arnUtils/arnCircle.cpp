@@ -79,7 +79,7 @@ PyObject* drawHomeCircle_hliGLutils(PyObject *self, PyObject *args) {
 
       homeCircle.setNumColors(numBulbs);
       defineColorWheel(0.0f, 0.0f, 10.0f, circleSegments, 180.0f, numBulbs, 1.0f, bulbColors, verts, colrs);
-      printf("homeCircle vertexBuffer length: %d, Number of vertices: %d, tris: %d\n", verts.size()*8, verts.size(), verts.size()/6);
+      printf("homeCircle vertexBuffer length: %d, Number of vertices: %d, tris: %d\n", (int)verts.size()*8, (int)verts.size(), (int)verts.size()/6);
 
       prevHomeCircleNumBulbs = numBulbs;
       homeCircle.buildCache(verts.size()/2, verts, colrs);
@@ -143,7 +143,6 @@ PyObject* drawIconCircle_hliGLutils(PyObject *self, PyObject *args) {
    GLfloat     detailColor[4];
    GLfloat     gx, gy, scale, ao, w2h;
    GLuint      numBulbs, features;
-   GLint       vertIndex = 0;
 
    if (!PyArg_ParseTuple(args,
             "ffflOlffO",

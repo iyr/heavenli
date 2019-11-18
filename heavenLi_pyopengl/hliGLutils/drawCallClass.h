@@ -69,7 +69,7 @@ drawCall::drawCall(void) {
    //this->drawType       = GL_LINE_STRIP;
    this->drawType       = GL_TRIANGLE_STRIP;
 
-   this->texID          = NULL;
+   this->texID          = 0;
    return;
 };
 
@@ -94,7 +94,7 @@ drawCall::drawCall(unsigned int numColors) {
 
    this->drawType       = GL_TRIANGLE_STRIP;
 
-   this->texID          = NULL;
+   this->texID          = 0;
    return;
 };
 
@@ -205,7 +205,7 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
    // must be initialized before any GL functions are called. 
    if (this->firstRun == GL_TRUE) {
       this->firstRun = GL_FALSE;
-      if (this->texID == NULL)
+      if (this->texID == 0)
          this->texID = whiteTex;
       glGenBuffers(1, &this->VBO);
    } else {
@@ -217,7 +217,7 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
    glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
 
    // Allocate space to hold all vertex coordinate and color data
-   printf("Allocating Buffer, size: %d bytes, %d Total Vertices, %d Congruent Vertices.\n", 8*sizeof(GLfloat)*this->numVerts, this->numVerts, congruentVertices);
+   printf("Allocating Buffer, size: %d bytes, %d Total Vertices, %d Congruent Vertices.\n", int(8*sizeof(GLfloat)*this->numVerts), this->numVerts, congruentVertices);
    glBufferData(GL_ARRAY_BUFFER, 8*sizeof(GLfloat)*this->numVerts, NULL, GL_STATIC_DRAW);
    //glBufferData(GL_ARRAY_BUFFER, 8*sizeof(GLfloat)*this->numVerts, NULL, GL_DYNAMIC_DRAW);
    //glBufferData(GL_ARRAY_BUFFER, 8*sizeof(GLfloat)*this->numVerts, NULL, GL_STREAM_DRAW);
@@ -313,7 +313,7 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
    // must be initialized before any GL functions are called. 
    if (this->firstRun == GL_TRUE) {
       this->firstRun = GL_FALSE;
-      if (this->texID == NULL)
+      if (this->texID == 0)
          this->texID = whiteTex;
       glGenBuffers(1, &this->VBO);
    } else {
@@ -325,7 +325,7 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
    glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
 
    // Allocate space to hold all vertex coordinate and color data
-   printf("Allocating Buffer, size: %d bytes, %d Total Vertices, %d Congruent Vertices.\n", 8*sizeof(GLfloat)*this->numVerts, this->numVerts, congruentVertices);
+   printf("Allocating Buffer, size: %d bytes, %d Total Vertices, %d Congruent Vertices.\n", int(8*sizeof(GLfloat)*this->numVerts), this->numVerts, congruentVertices);
    //printf("Creating Buffer Object, size: %d bytes, %d Total Vertices.\n", 6*sizeof(GLfloat)*this->numVerts, this->numVerts);
    glBufferData(GL_ARRAY_BUFFER, 8*sizeof(GLfloat)*this->numVerts, NULL, GL_STATIC_DRAW);
 

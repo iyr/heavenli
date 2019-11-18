@@ -8,9 +8,9 @@ PyObject* drawPrim_hliGLutils(PyObject* self, PyObject *args) {
    PyObject *extraColorPyTup;
    PyObject *detailColorPyTup;
    float gx, gy, ao, scale, w2h;
-   float faceColor[4];
-   float extraColor[4];
-   float detailColor[4];
+   //float faceColor[4];
+   //float extraColor[4];
+   //float detailColor[4];
    GLuint primVerts;
 
    // Parse Inputs
@@ -27,30 +27,31 @@ PyObject* drawPrim_hliGLutils(PyObject* self, PyObject *args) {
       Py_RETURN_NONE;
    }
 
-   faceColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 0)));
-   faceColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 1)));
-   faceColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 2)));
-   faceColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 3)));
+   //faceColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 0)));
+   //faceColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 1)));
+   //faceColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 2)));
+   //faceColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 3)));
 
-   extraColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 0)));
-   extraColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 1)));
-   extraColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 2)));
-   extraColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 3)));
+   //extraColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 0)));
+   //extraColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 1)));
+   //extraColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 2)));
+   //extraColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(extraColorPyTup, 3)));
 
-   detailColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 0)));
-   detailColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 1)));
-   detailColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2)));
-   detailColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 3)));
+   //detailColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 0)));
+   //detailColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 1)));
+   //detailColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2)));
+   //detailColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 3)));
 
-   int circleSegments = 60;
+   //int circleSegments = 60;
    if (primButton.numVerts == 0){
 
       printf("Initializing Geometry for Prim Button\n");
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
 
-      float px, py, qx, qy, radius;
+      //float px, py, qx, qy, radius;
 
+      /*
       float colors[18] = {
          1.0f, 1.0f, 0.0f,
          1.0f, 0.0f, 1.0f,
@@ -58,8 +59,9 @@ PyObject* drawPrim_hliGLutils(PyObject* self, PyObject *args) {
          1.0f, 0.0f, 0.0f,
          0.0f, 1.0f, 0.0f,
          0.0f, 0.0f, 1.0f};
+         */
       
-      defineRoundRect(-0.25f, 0.25f, 0.55f, -0.05f, 0.02f, 15, detailColor, verts, colrs);
+      //defineRoundRect(-0.25f, 0.25f, 0.55f, -0.05f, 0.02f, 15, detailColor, verts, colrs);
       /*
       defineQuad2pt(
             -0.25f, -0.25f,
