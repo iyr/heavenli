@@ -19,7 +19,7 @@ unsigned int defineString(
 
    int c = 0, lastLineVert=0;
    character* tmg;
-   float ax, lineLength=0.0f;
+   float ax=0.0f, lineLength=0.0f;
 
    GLuint stringLen = inputString.size();
    const char* inputChars = inputString.c_str();
@@ -86,7 +86,7 @@ unsigned int updateString(
       ){
 
    int c = 0, lastLineVert=0;
-   float ax, lineLength=0.0f;
+   float ax=0.0f, lineLength=0.0f;
    GLuint stringLen = inputString.size();
    const char* inputChars = inputString.c_str();
    character* tmg;

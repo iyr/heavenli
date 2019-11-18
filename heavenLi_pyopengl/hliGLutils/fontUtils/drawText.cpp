@@ -50,6 +50,7 @@ PyObject* drawText_hliGLutils(PyObject* self, PyObject* args) {
          alignment,
          gx, gy,
          sx, sy,
+         ao,
          w2h,
          quack,
          textColor,
@@ -92,6 +93,7 @@ void drawText(
       GLfloat     gy,            // Y position
       GLfloat     sx,            // X scale
       GLfloat     sy,            // Y scale
+      GLfloat     ao,            // Rotation angle
       GLfloat     w2h,           // width to height ration
       textAtlas*  atlas,         // texture atlas to draw characters from
       GLfloat*    textColor,     // color of text
@@ -129,7 +131,7 @@ void drawText(
             textColor,
             verts, texuv, colrs);
 
-      GLfloat minX = NULL, minY = NULL, maxX = NULL, maxY = NULL;
+      GLfloat minX = (GLfloat)NULL, minY = (GLfloat)NULL, maxX = (GLfloat)NULL, maxY = (GLfloat)NULL;
 
       for (unsigned int i = 0; i < stringLen*6; i++){
 
@@ -165,7 +167,7 @@ void drawText(
    if (  prevString.compare(inputString) != 0 ){
 
       //static GLfloat minX = NULL, minY = NULL, maxX = NULL, maxY = NULL;
-      GLfloat minX = NULL, minY = NULL, maxX = NULL, maxY = NULL;
+      GLfloat minX = (GLfloat)NULL, minY = (GLfloat)NULL, maxX = (GLfloat)NULL, maxY = (GLfloat)NULL;
       const char* inputChars = inputString.c_str();
 
       for (unsigned int i = stringLen*6; i < prevStringLen*6; i++){
@@ -238,8 +240,8 @@ void drawText(
       //textLine.updateMVP(gx, gy, sx*0.007f*w2h, sy*0.007f*w2h, 0.0f, w2h);
       //textBackdrop.updateMVP(gx, gy, sx*0.007f*w2h, sy*0.007f*w2h, 0.0f, w2h);
    //}
-   textLine.updateMVP(gx, gy, sx*0.007f, sy*0.007f, 0.0f, w2h);
-   textBackdrop.updateMVP(gx, gy, sx*0.007f, sy*0.007f, 0.0f, w2h);
+   textLine.updateMVP(gx, gy, sx*0.007f, sy*0.007f, ao, w2h);
+   textBackdrop.updateMVP(gx, gy, sx*0.007f, sy*0.007f, ao, w2h);
 
    textBackdrop.draw();
    textLine.draw();

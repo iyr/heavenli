@@ -21,6 +21,7 @@ void drawText(
       GLfloat     gy,            // Y position
       GLfloat     sx,            // X scale
       GLfloat     sy,            // Y scale
+      GLfloat     ao,            // Rotation angle
       GLfloat     w2h,           // width to height ration
       textAtlas*  atlas,         // texture atlas to draw characters from
       GLfloat*    textColor,     // color of text

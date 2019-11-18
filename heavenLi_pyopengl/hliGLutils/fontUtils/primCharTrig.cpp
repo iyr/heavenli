@@ -95,7 +95,6 @@ unsigned int updateChar(
       ) {
 
    unsigned int vertIndex = index*2;
-   unsigned int texIndex = index*2;
 
    float x2, y2, w, h, texWidth, texHeight, texOffsetX, texOffsetY;
    character* charGlyph = &atlas->glyphData[c];
