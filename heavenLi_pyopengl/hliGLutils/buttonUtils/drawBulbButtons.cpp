@@ -1,6 +1,7 @@
 using namespace std;
 
-drawCall bulbButton;
+extern std::map<std::string, drawCall> drawCalls;
+
 GLuint   vertsPerBulb;
 GLfloat* buttonCoords       = NULL;
 GLfloat  prevAngOffset;
@@ -50,6 +51,10 @@ PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
       Py_RETURN_NONE;
    }
 
+   if (drawCalls.count("bulbButton") <= 0)
+      drawCalls.insert(std::make_pair("bulbButton", drawCall()));
+   drawCall* bulbButton = &drawCalls["bulbButton"];
+
    // Parse array of tuples containing RGB Colors of bulbs
    bulbColors = new float[numBulbs*3];
    for (int i = 0; i < numBulbs; i++){
@@ -67,9 +72,24 @@ PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
       detailColor[i] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, i)));
    }
 
+   /*
+   drawBulbButtons(
+         gx,
+         gy,
+         arn,
+         numBulbs,
+         circleSegments,
+         angularOffset,
+         buttonScale,
+         w2h,
+         faceColor,
+         detailColor,
+         bulbButton
+         );*/
+
    // Initialize / Update Vertex Geometry and Colors
    if (  prevNumBulbs         != numBulbs ||
-         bulbButton.numVerts  == 0        ||
+         bulbButton->numVerts  == 0        ||
          buttonCoords         == NULL     ){
 
       if (numBulbs > 1) {
@@ -145,7 +165,7 @@ PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
       prevArn              = arn;
       prevBulbButtonScale  = buttonScale;
 
-      bulbButton.buildCache(bulbButtonVerts, verts, colrs);
+      bulbButton->buildCache(bulbButtonVerts, verts, colrs);
    } 
 
    // Recalculate vertex geometry without expensive vertex/array reallocation
@@ -189,8 +209,8 @@ PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
          buttonCoords[j*2+0] = tmx;
          buttonCoords[j*2+1] = tmy;
 
-         index = updateEllipseGeometry(tmx, tmy, 0.4f*buttonScale, 0.4f*buttonScale, circleSegments, index, bulbButton.coordCache);
-         index = updateBulbGeometry(tmx, tmy+0.115f*buttonScale, 0.175f*buttonScale, circleSegments, index, bulbButton.coordCache);
+         index = updateEllipseGeometry(tmx, tmy, 0.4f*buttonScale, 0.4f*buttonScale, circleSegments, index, bulbButton->coordCache);
+         index = updateBulbGeometry(tmx, tmy+0.115f*buttonScale, 0.175f*buttonScale, circleSegments, index, bulbButton->coordCache);
       }
 
       // Update Statemachine Variables
@@ -200,22 +220,22 @@ PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
       prevArn = arn;
       prevBulbButtonScale = buttonScale;
 
-      bulbButton.updateCoordCache();
+      bulbButton->updateCoordCache();
    }
 
    // Vertices / Geometry already calculated
    // Check if colors need to be updated
    int index = 0;
    for (int j = 0; j < numBulbs; j++) {
-      index = updateEllipseColor(circleSegments, faceColor, index, bulbButton.colorCache);
+      index = updateEllipseColor(circleSegments, faceColor, index, bulbButton->colorCache);
       float tmbc[4];
       tmbc[0] = bulbColors[j*3+0];
       tmbc[1] = bulbColors[j*3+1];
       tmbc[2] = bulbColors[j*3+2];
       tmbc[3] = 1.0;
-      index = updateBulbColor(circleSegments, tmbc, detailColor, index, bulbButton.colorCache);
+      index = updateBulbColor(circleSegments, tmbc, detailColor, index, bulbButton->colorCache);
    }
-   bulbButton.updateColorCache();
+   bulbButton->updateColorCache();
 
    //PyList_ClearFreeList();
    py_list = PyList_New(numBulbs);
@@ -231,11 +251,30 @@ PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
    
    // Setup Transformations
    if (w2h <= 1.0)
-      bulbButton.updateMVP(gx, gy, scale/w2h, scale/w2h, ao, w2h);
+      bulbButton->updateMVP(gx, gy, scale/w2h, scale/w2h, ao, w2h);
    else
-      bulbButton.updateMVP(gx, gy, scale, scale, ao, w2h);
+      bulbButton->updateMVP(gx, gy, scale, scale, ao, w2h);
 
-   bulbButton.draw();
+   bulbButton->draw();
 
    return py_list;
 }
+
+/*
+void drawBulbButtons(
+      GLfloat     gx,
+      GLfloat     gy,
+      GLfloat     arn,
+      GLint       numBulbs,
+      GLint       circleSegments,
+      GLfloat     angularOffset,
+      GLfloat     buttonScale,
+      GLfloat     w2h,
+      GLfloat*    faceColor,
+      GLfloat*    detailColor,
+      drawCall*   bulbButton
+      ){
+
+   return;
+}
+*/
