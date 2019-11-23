@@ -1,6 +1,7 @@
 using namespace std;
 
-drawCall clockButton;
+extern std::map<std::string, drawCall> drawCalls;
+//drawCall clockButton;
 GLfloat  prevClockHour;    // Used for animated hour hand
 GLfloat  prevClockMinute;  // Used for animated minute hand
 GLuint   clockVerts;       // Total number of vertices
@@ -11,13 +12,10 @@ PyObject* drawClock_hliGLutils(PyObject *self, PyObject *args)
 {
    PyObject* faceColorPyTup;
    PyObject* detailColorPyTup;
-   GLfloat gx, gy, px, py, qx, qy, radius, ao=0.0f;
+   GLfloat gx, gy;
    GLfloat scale, w2h, hour, minute;
    GLfloat detailColor[4];
    GLfloat faceColor[4];
-   // Set Number of edges on circles
-   char circleSegments = 60;
-
    // Parse Inputs
    if (!PyArg_ParseTuple(args,
             "ffffffOO",
@@ -32,17 +30,53 @@ PyObject* drawClock_hliGLutils(PyObject *self, PyObject *args)
       Py_RETURN_NONE;
    }
 
+   if (drawCalls.count("clockButton") <= 0){
+      drawCalls.insert(std::make_pair("clockButton", drawCall()));
+   }
+
+   drawCall* clockButton = &drawCalls["clockButton"];
    // Parse RGB color tuples of face and detail colors
    for (unsigned int i = 0; i < 4; i++){
       faceColor[i] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, i));
       detailColor[i] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, i));
    }
 
-   clockButton.setNumColors(2);
-   clockButton.setColorQuartet(0, faceColor);
-   clockButton.setColorQuartet(1, detailColor);
+   drawClock(
+         gx,
+         gy,
+         hour,
+         minute,
+         scale,
+         w2h,
+         faceColor,
+         detailColor,
+         clockButton
+         );
+
+   Py_RETURN_NONE;
+}
+
+void drawClock(
+      GLfloat     gx,
+      GLfloat     gy,
+      GLfloat     hour,
+      GLfloat     minute,
+      GLfloat     scale,
+      GLfloat     w2h,
+      GLfloat*    faceColor,
+      GLfloat*    detailColor,
+      drawCall*   clockButton
+      ){
+   GLfloat px, py, qx, qy, radius, ao=0.0f;
+
+   // Set Number of edges on circles
+   GLchar circleSegments = 60;
+
+   clockButton->setNumColors(2);
+   clockButton->setColorQuartet(0, faceColor);
+   clockButton->setColorQuartet(1, detailColor);
    
-   if (  clockButton.numVerts == 0  ){
+   if (  clockButton->numVerts == 0  ){
       printf("Initializing Geometry for Clock Button\n");
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
@@ -71,7 +105,7 @@ PyObject* drawClock_hliGLutils(PyObject *self, PyObject *args)
 
       clockVerts = verts.size()/2;
 
-      clockButton.buildCache(clockVerts, verts, colrs);
+      clockButton->buildCache(clockVerts, verts, colrs);
    } 
 
    // Animate Clock Hands
@@ -90,7 +124,7 @@ PyObject* drawClock_hliGLutils(PyObject *self, PyObject *args)
             radius,
             circleSegments/4,
             faceVerts,
-            clockButton.coordCache);
+            clockButton->coordCache);
 
       qx = float(0.4*cos(degToRad(90-360*(minute/60.0))));
       qy = float(0.4*sin(degToRad(90-360*(minute/60.0))));
@@ -101,32 +135,33 @@ PyObject* drawClock_hliGLutils(PyObject *self, PyObject *args)
             radius,
             circleSegments/4,
             tmp,
-            clockButton.coordCache);
+            clockButton->coordCache);
 
       prevClockHour     = hour;
       prevClockMinute   = minute;
 
-      clockButton.updateCoordCache();
+      clockButton->updateCoordCache();
    }
 
-   if (clockButton.colorsChanged) {
+   if (clockButton->colorsChanged) {
       unsigned int index = 0;
 
       index = updateEllipseColor(
             circleSegments,
             faceColor,
             index,
-            clockButton.colorCache);
+            clockButton->colorCache);
 
-      index = updatePillColor(circleSegments/4, detailColor, index, clockButton.colorCache);
+      index = updatePillColor(circleSegments/4, detailColor, index, clockButton->colorCache);
 
-      index = updatePillColor(circleSegments/4, detailColor, index, clockButton.colorCache);
+      index = updatePillColor(circleSegments/4, detailColor, index, clockButton->colorCache);
 
-      clockButton.updateColorCache();
+      clockButton->updateColorCache();
    }
 
-   clockButton.updateMVP(gx, gy, scale, scale, ao, w2h);
-   clockButton.draw();
+   clockButton->updateMVP(gx, gy, scale, scale, ao, w2h);
+   clockButton->draw();
 
-   Py_RETURN_NONE;
+   return;
 }
+

@@ -2,17 +2,29 @@
  * Graphical buttons draw code
  */
 #include "buttonUtils/drawPrim.cpp"          // Draws a primitive
+
+void drawClock(
+      GLfloat     gx,
+      GLfloat     gy,
+      GLfloat     hour,
+      GLfloat     minute,
+      GLfloat     scale,
+      GLfloat     w2h,
+      GLfloat*    faceColor,
+      GLfloat*    detailColor,
+      drawCall*   clockButton
+      );
 #include "buttonUtils/drawClock.cpp"         // Draws the master switch (clock in center of display)
 
 void drawArrow(
-      float       gx, 
-      float       gy,
-      float       ao,
-      float       scale,
-      float       w2h,
-      float*      faceColor,
-      float*      extraColor,
-      float*      detailColor,
+      GLfloat     gx, 
+      GLfloat     gy,
+      GLfloat     ao,
+      GLfloat     scale,
+      GLfloat     w2h,
+      GLfloat*    faceColor,
+      GLfloat*    extraColor,
+      GLfloat*    detailColor,
       drawCall*   arrowButton
       );
 #include "buttonUtils/drawArrow.cpp"         // Draws a generic arrow that can be oriented in different directions
