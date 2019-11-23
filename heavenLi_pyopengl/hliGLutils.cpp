@@ -22,6 +22,7 @@
 #include "hliGLutils/drawCallClass.h"  // Helper class that abstracts VBO, Matrix Ops, etc.
 #include "hliGLutils/primUtils.h"      // Library of Geometric Primitives for drawing shapes
 #include "hliGLutils/fontUtils.h"      // Helper utilities for loading fonts and drawing text
+#include "hliGLutils/initUtils.h"      // Utilities usually run once that stage/setup/initialize objects
 
 #include "hliGLutils/buttonUtils.h"    // Utilities for drawing UI elements
 #include "hliGLutils/arnUtils.h"       // Dynamic iconography draw code
@@ -29,9 +30,7 @@
 /*
  * Sets up shaders for OpenGL
  */
-GLuint   whiteTex;
-//GLubyte* blankTexture;
-#include "hliGLutils/initShaders.cpp"    // Code that builds a shaderProgram (vert+frag) from source
+//#include "hliGLutils/initShaders.cpp"    // Code that builds a shaderProgram (vert+frag) from source
 
 /* END OF INCLUDES   */
 
