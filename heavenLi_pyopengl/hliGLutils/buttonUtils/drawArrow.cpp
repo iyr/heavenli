@@ -1,7 +1,6 @@
 using namespace std;
 
-drawCall    arrowButton;
-GLuint      extraArrowVerts;
+extern std::map<std::string, drawCall> drawCalls;
 
 PyObject* drawArrow_hliGLutils(PyObject* self, PyObject *args) {
    PyObject *faceColorPyTup;
@@ -11,7 +10,6 @@ PyObject* drawArrow_hliGLutils(PyObject* self, PyObject *args) {
    float faceColor[4];
    float extraColor[4];
    float detailColor[4];
-   GLuint arrowVerts;
 
    // Parse Inputs
    if ( !PyArg_ParseTuple(args,
@@ -42,13 +40,44 @@ PyObject* drawArrow_hliGLutils(PyObject* self, PyObject *args) {
    detailColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2)));
    detailColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 3)));
 
-   arrowButton.setNumColors(3);
-   arrowButton.setColorQuartet(0, faceColor);
-   arrowButton.setColorQuartet(1, extraColor);
-   arrowButton.setColorQuartet(2, detailColor);
+   if (drawCalls.count("arrowButton") <= 0)
+      drawCalls.insert(std::make_pair("arrowButton", drawCall()));
+   drawCall* arrowButton = &drawCalls["arrowButton"];
+
+   drawArrow(
+         gx, gy,
+         ao,
+         scale,
+         w2h,
+         faceColor,
+         extraColor,
+         detailColor,
+         arrowButton
+         );
+
+   Py_RETURN_NONE;
+}
+
+void drawArrow(
+      GLfloat     gx, 
+      GLfloat     gy,
+      GLfloat     ao,
+      GLfloat     scale,
+      GLfloat     w2h,
+      GLfloat*    faceColor,
+      GLfloat*    extraColor,
+      GLfloat*    detailColor,
+      drawCall*   arrowButton
+      ){
+
+   GLuint arrowVerts;
+   arrowButton->setNumColors(3);
+   arrowButton->setColorQuartet(0, faceColor);
+   arrowButton->setColorQuartet(1, extraColor);
+   arrowButton->setColorQuartet(2, detailColor);
 
    int circleSegments = 60;
-   if (arrowButton.numVerts == 0){
+   if (arrowButton->numVerts == 0){
 
       printf("Initializing Geometry for Arrow Button\n");
       vector<GLfloat> verts;
@@ -77,7 +106,7 @@ PyObject* drawArrow_hliGLutils(PyObject* self, PyObject *args) {
             verts, colrs);
 
       px = -0.125f, py = -0.625f;
-      extraArrowVerts = definePill(
+      definePill(
             px, py, 
             qx, qy, 
             radius, 
@@ -107,49 +136,50 @@ PyObject* drawArrow_hliGLutils(PyObject* self, PyObject *args) {
 
       arrowVerts = verts.size()/2;
 
-      arrowButton.buildCache(arrowVerts, verts, colrs);
+      arrowButton->buildCache(arrowVerts, verts, colrs);
    }
 
-   if (arrowButton.colorsChanged) {
+   if (arrowButton->colorsChanged) {
       unsigned int index = 0;
       // Draw button face
       index = updateEllipseColor(
             circleSegments,
             faceColor,
             index, 
-            arrowButton.colorCache);
+            arrowButton->colorCache);
 
       // Draw check-mark base
       index = updatePillColor(
             circleSegments/2,
             detailColor,
             index, 
-            arrowButton.colorCache);
+            arrowButton->colorCache);
 
       index = updatePillColor(
             circleSegments/2,
             detailColor, 
             index, 
-            arrowButton.colorCache);
+            arrowButton->colorCache);
 
       // Draw check-mark infill
       index = updatePillColor(
             circleSegments/2,
             extraColor,
             index, 
-            arrowButton.colorCache);
+            arrowButton->colorCache);
 
       index = updatePillColor(
             circleSegments/2,
             extraColor,
             index, 
-            arrowButton.colorCache);
+            arrowButton->colorCache);
 
-      arrowButton.updateColorCache();
+      arrowButton->updateColorCache();
    }
 
-   arrowButton.updateMVP(gx, gy, scale, scale, ao, w2h);
-   arrowButton.draw();
+   arrowButton->updateMVP(gx, gy, scale, scale, ao, w2h);
+   arrowButton->draw();
 
-   Py_RETURN_NONE;
+   return;
 }
+

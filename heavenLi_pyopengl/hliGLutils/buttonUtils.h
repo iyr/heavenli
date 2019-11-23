@@ -3,7 +3,20 @@
  */
 #include "buttonUtils/drawPrim.cpp"          // Draws a primitive
 #include "buttonUtils/drawClock.cpp"         // Draws the master switch (clock in center of display)
+
+void drawArrow(
+      float       gx, 
+      float       gy,
+      float       ao,
+      float       scale,
+      float       w2h,
+      float*      faceColor,
+      float*      extraColor,
+      float*      detailColor,
+      drawCall*   arrowButton
+      );
 #include "buttonUtils/drawArrow.cpp"         // Draws a generic arrow that can be oriented in different directions
+
 #include "buttonUtils/drawBulbButtons.cpp"   // Draws the Color-setting bottons that encircle/straddle the master switch
 #include "buttonUtils/drawGranChanger.cpp"   // Draws the Granularity Rocker on the color picker screen
 #include "buttonUtils/drawHueRing.cpp"       // Draws the ring of colored dots on the color picker
