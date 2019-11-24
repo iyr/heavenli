@@ -1,6 +1,6 @@
 using namespace std;
 
-drawCall granChangerButton;
+extern std::map<std::string, drawCall> drawCalls;
 
 PyObject* drawGranChanger_hliGLutils(PyObject *self, PyObject *args) {
    PyObject*   py_faceColor;
@@ -35,6 +35,10 @@ PyObject* drawGranChanger_hliGLutils(PyObject *self, PyObject *args) {
       Py_RETURN_NONE;
    }
 
+   if (drawCalls.count("granChangerButton") <= 0)
+      drawCalls.insert(std::make_pair("granChangerButton", drawCall()));
+   drawCall* granChangerButton = &drawCalls["granChangerButton"];
+
    // Parse Colors
    faceColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(py_faceColor, 0)));
    faceColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(py_faceColor, 1)));
@@ -45,12 +49,12 @@ PyObject* drawGranChanger_hliGLutils(PyObject *self, PyObject *args) {
    detailColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(py_detailColor, 2)));
    detailColor[3] = float(PyFloat_AsDouble(PyTuple_GetItem(py_detailColor, 3)));
 
-   granChangerButton.setNumColors(2);
-   granChangerButton.setColorQuartet(0, faceColor);
-   granChangerButton.setColorQuartet(1, detailColor);
+   granChangerButton->setNumColors(2);
+   granChangerButton->setColorQuartet(0, faceColor);
+   granChangerButton->setColorQuartet(1, detailColor);
 
    // Allocate and Define Geometry/Color
-   if (  granChangerButton.numVerts == 0 ) {
+   if (  granChangerButton->numVerts == 0 ) {
       printf("Initializing Geometry for Granularity Rocker\n");
       float unit = float(1.0/36.0);
       float buttonSize = 0.8f;
@@ -130,67 +134,67 @@ PyObject* drawGranChanger_hliGLutils(PyObject *self, PyObject *args) {
             colrs);
 
       granChangerVerts = verts.size()/2;
-      granChangerButton.buildCache(granChangerVerts, verts, colrs);
+      granChangerButton->buildCache(granChangerVerts, verts, colrs);
    }
 
-   if (granChangerButton.colorsChanged) {
+   if (granChangerButton->colorsChanged) {
       unsigned int index = 0;
 
       // Upper Background Mask (quad)
       //index = updateQuadColor(
             //black,
             //index, 
-            //granChangerButton.colorCache);
+            //granChangerButton->colorCache);
 
       // Lower Background Mask (Pill)
       index = updatePillColor(
              circleSegments,
              black,              // Color 
              index, 
-             granChangerButton.colorCache);
+             granChangerButton->colorCache);
 
       // Left (Minus) Button
       index = updateCircleColor(
              circleSegments,        // Number of Circle Triangles 
              faceColor,             // Colors 
              index,
-             granChangerButton.colorCache);
+             granChangerButton->colorCache);
 
       // Right (Plus) Button
       index = updateCircleColor(
              circleSegments,        // Number of Circle Triangles 
              faceColor,             // Colors 
              index,
-             granChangerButton.colorCache);
+             granChangerButton->colorCache);
 
       // Iconography
-      index = updateCircleColor( circleSegments, white, index, granChangerButton.colorCache);
-      index = updateCircleColor( circleSegments, white, index, granChangerButton.colorCache);
-      index = updateCircleColor( circleSegments, white, index, granChangerButton.colorCache);
+      index = updateCircleColor( circleSegments, white, index, granChangerButton->colorCache);
+      index = updateCircleColor( circleSegments, white, index, granChangerButton->colorCache);
+      index = updateCircleColor( circleSegments, white, index, granChangerButton->colorCache);
 
       // Minus Symbol
       index = updatePillColor(
             circleSegments,
             detailColor,                              // Color 
             index,
-            granChangerButton.colorCache);
+            granChangerButton->colorCache);
 
       // Plus Symbol
       index = updatePillColor(
             circleSegments,
             detailColor,                              // Color 
             index,
-            granChangerButton.colorCache);
+            granChangerButton->colorCache);
       index = updatePillColor(
             circleSegments,
             detailColor,                        // Color 
             index,
-            granChangerButton.colorCache);
+            granChangerButton->colorCache);
 
-      granChangerButton.updateColorCache();
+      granChangerButton->updateColorCache();
    }
 
-   granChangerButton.updateMVP(gx, gy, scale, scale, ao, w2h);
-   granChangerButton.draw();
+   granChangerButton->updateMVP(gx, gy, scale, scale, ao, w2h);
+   granChangerButton->draw();
    Py_RETURN_NONE;
 }

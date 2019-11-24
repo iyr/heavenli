@@ -1,6 +1,6 @@
 using namespace std;
 
-drawCall    hueRingButton;
+extern std::map<std::string, drawCall> drawCalls;
 
 GLuint      hueDotsVerts;                 // Used for updating only a portion of the color cache
 GLubyte     prevHueRingNumHues;           // Used for updating Granularity changes
@@ -42,6 +42,10 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
       Py_RETURN_NONE;
    }
 
+   if (drawCalls.count("hueRingButton") <= 0)
+      drawCalls.insert(std::make_pair("hueRingButton", drawCall()));
+   drawCall* hueRingButton = &drawCalls["hueRingButton"];
+
    ringColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(py_tuple, 0)));
    ringColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(py_tuple, 1)));
    ringColor[2] = float(PyFloat_AsDouble(PyTuple_GetItem(py_tuple, 2)));
@@ -49,7 +53,7 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
 
    // (Re)Allocate and Define Geometry/Color buffers
    if (  prevHueRingNumHues      != numHues  ||
-         hueRingButton.numVerts  == 0        ){
+         hueRingButton->numVerts  == 0        ){
 
       //printf("Initializing Geometry for Hue Ring\n");
       vector<GLfloat> verts;
@@ -129,7 +133,7 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
       prevHueRingNumHues = numHues;
       prevHueRingAng = float(prevHueRingAni*360.0f + 90.0f);
 
-      hueRingButton.buildCache(hueRingVerts, verts, colrs);
+      hueRingButton->buildCache(hueRingVerts, verts, colrs);
 
    }
 
@@ -179,9 +183,9 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
             0.03f,
             circleSegments,
             hueDotsVerts,
-            hueRingButton.coordCache);
+            hueRingButton->coordCache);
 
-      hueRingButton.updateCoordCache();
+      hueRingButton->updateCoordCache();
    }
 
    prevHueRingSel = currentHue;
@@ -232,7 +236,7 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
                prevHueDotScale, 
                circleSegments, 
                index, 
-               hueRingButton.coordCache);
+               hueRingButton->coordCache);
 
          // Determine which button dot represents the currently selected hue
          if (abs(currentHue - float(azi*i)) <= 1.0f / float(numHues*2)) {
@@ -251,9 +255,9 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
             0.03f,
             circleSegments,
             hueDotsVerts,
-            hueRingButton.coordCache);
+            hueRingButton->coordCache);
 
-      hueRingButton.updateCoordCache();
+      hueRingButton->updateCoordCache();
    
    } else {
       prevHueDotScale   = hueDotScale;
@@ -263,9 +267,9 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
    GLboolean updateCache = GL_FALSE;
    // Check if selection Ring Color needs to be updated
    for (int i = 0; i < 4; i++) {
-      if (hueRingButton.colorCache[hueDotsVerts*4+i] != ringColor[i]) {
-         for (unsigned int k = hueDotsVerts; k < hueRingButton.numVerts; k++) {
-            hueRingButton.colorCache[k*4+i] = ringColor[i];
+      if (hueRingButton->colorCache[hueDotsVerts*4+i] != ringColor[i]) {
+         for (unsigned int k = hueDotsVerts; k < hueRingButton->numVerts; k++) {
+            hueRingButton->colorCache[k*4+i] = ringColor[i];
          }
 
          updateCache = GL_TRUE;
@@ -274,7 +278,7 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
 
    // Update colors, if needed
    if ( updateCache ){
-      hueRingButton.updateColorCache();
+      hueRingButton->updateColorCache();
    }
          
    // Create a Python List of tuples containing data of each button dot
@@ -288,8 +292,8 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
       PyList_SetItem(py_list, i, py_tuple);
    }
 
-   hueRingButton.updateMVP(gx, gy, scale, scale, ao, w2h);
-   hueRingButton.draw();
+   hueRingButton->updateMVP(gx, gy, scale, scale, ao, w2h);
+   hueRingButton->draw();
 
    return py_list;
 }
