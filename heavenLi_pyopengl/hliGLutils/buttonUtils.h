@@ -33,6 +33,17 @@ void drawArrow(
 #include "buttonUtils/drawGranChanger.cpp"   // Draws the Granularity Rocker on the color picker screen
 #include "buttonUtils/drawHueRing.cpp"       // Draws the ring of colored dots on the color picker
 #include "buttonUtils/drawColrTri.cpp"       // Draws the triangle of colored dots for the color picker
+
+void drawConfirm(
+      GLfloat     gx,
+      GLfloat     gy,
+      GLfloat     scale,
+      GLfloat     w2h,
+      GLfloat*    faceColor,
+      GLfloat*    extraColor,
+      GLfloat*    detailColor,
+      drawCall*   confirmButton
+      );
 #include "buttonUtils/drawConfirm.cpp"       // Draws a checkmark button
 //#include "buttonUtils/primDrawTest.cpp"      // used for testing primitive draw code
 

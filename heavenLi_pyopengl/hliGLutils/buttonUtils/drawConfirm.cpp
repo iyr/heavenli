@@ -1,17 +1,16 @@
 using namespace std;
 
-drawCall    confirmButton;       // drawCall object
-GLuint      extraConfirmVerts;   // Used for determining where to write to update cache
+//drawCall    confirmButton;       // drawCall object
+extern std::map<std::string, drawCall> drawCalls;
 
 PyObject* drawConfirm_hliGLutils(PyObject* self, PyObject *args) {
    PyObject*   faceColorPyTup;
    PyObject*   extraColorPyTup;
    PyObject*   detailColorPyTup;
-   GLfloat     gx, gy, scale, w2h, ao=0.0f;
+   GLfloat     gx, gy, scale, w2h;
    GLfloat     faceColor[4];
    GLfloat     extraColor[4];
    GLfloat     detailColor[4];
-   GLuint      confirmVerts;                 // Total number of vertices
 
    // Parse Inputs
    if ( !PyArg_ParseTuple(args,
@@ -41,12 +40,44 @@ PyObject* drawConfirm_hliGLutils(PyObject* self, PyObject *args) {
    detailColor[2] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 2));
    detailColor[3] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(detailColorPyTup, 3));
 
-   confirmButton.setNumColors(3);
-   confirmButton.setColorQuartet(0, faceColor);
-   confirmButton.setColorQuartet(1, extraColor);
-   confirmButton.setColorQuartet(2, detailColor);
+   if (drawCalls.count("confirmButton") <= 0)
+      drawCalls.insert(std::make_pair("confirmButton", drawCall()));
+   drawCall* confirmButton = &drawCalls["confirmButton"];
 
-   if (  confirmButton.numVerts == 0   ){
+   drawConfirm(
+         gx,
+         gy,
+         scale,
+         w2h,
+         faceColor,
+         extraColor,
+         detailColor,
+         confirmButton
+         );
+
+   Py_RETURN_NONE;
+}
+
+void drawConfirm(
+      GLfloat     gx,
+      GLfloat     gy,
+      GLfloat     scale,
+      GLfloat     w2h,
+      GLfloat*    faceColor,
+      GLfloat*    extraColor,
+      GLfloat*    detailColor,
+      drawCall*   confirmButton
+      ){
+
+   GLfloat  ao=0.0f;
+   GLuint   confirmVerts;                 // Total number of vertices
+
+   confirmButton->setNumColors(3);
+   confirmButton->setColorQuartet(0, faceColor);
+   confirmButton->setColorQuartet(1, extraColor);
+   confirmButton->setColorQuartet(2, detailColor);
+
+   if (  confirmButton->numVerts == 0   ){
 
       printf("Initializing Geometry for Confirm Button\n");
       vector<GLfloat> verts;
@@ -74,7 +105,7 @@ PyObject* drawConfirm_hliGLutils(PyObject* self, PyObject *args) {
 
 
       px = 0.625f, py = 0.375f;
-      extraConfirmVerts = definePill(
+      definePill(
             px, py, 
             qx, qy, 
             radius, 
@@ -103,10 +134,10 @@ PyObject* drawConfirm_hliGLutils(PyObject* self, PyObject *args) {
 
       confirmVerts = verts.size()/2;
 
-      confirmButton.buildCache(confirmVerts, verts, colrs);
+      confirmButton->buildCache(confirmVerts, verts, colrs);
    }
 
-   if ( confirmButton.colorsChanged ) {
+   if ( confirmButton->colorsChanged ) {
       unsigned int index = 0;
 
       int circleSegments = 60;
@@ -114,37 +145,38 @@ PyObject* drawConfirm_hliGLutils(PyObject* self, PyObject *args) {
             circleSegments,
             faceColor,
             index, 
-            confirmButton.colorCache);
+            confirmButton->colorCache);
 
       index = updatePillColor(
             circleSegments/2,
             detailColor,
             index, 
-            confirmButton.colorCache);
+            confirmButton->colorCache);
 
       index = updatePillColor(
             circleSegments/2,
             detailColor, 
             index, 
-            confirmButton.colorCache);
+            confirmButton->colorCache);
 
       index = updatePillColor(
             circleSegments/2,
             extraColor,
             index, 
-            confirmButton.colorCache);
+            confirmButton->colorCache);
 
       index = updatePillColor(
             circleSegments/2,
             extraColor,
             index, 
-            confirmButton.colorCache);
+            confirmButton->colorCache);
 
-      confirmButton.updateColorCache();
+      confirmButton->updateColorCache();
    }
 
-   confirmButton.updateMVP(gx, gy, scale, scale, ao, w2h);
-   confirmButton.draw();
+   confirmButton->updateMVP(gx, gy, scale, scale, ao, w2h);
+   confirmButton->draw();
 
-   Py_RETURN_NONE;
+   return;
 }
+
