@@ -21,11 +21,12 @@ void drawText(
       GLfloat     gy,            // Y position
       GLfloat     sx,            // X scale
       GLfloat     sy,            // Y scale
-      GLfloat     ao,            // Rotation angle
       GLfloat     w2h,           // width to height ration
       textAtlas*  atlas,         // texture atlas to draw characters from
       GLfloat*    textColor,     // color of text
-      GLfloat*    faceColor      // color of backdrop
+      GLfloat*    faceColor,     // color of backdrop
+      drawCall*   textLine,      // pointer to input drawCall to write text
+      drawCall*   textBackdrop   // pointer to input drawCall to write text backdrop
       );
 #include "fontUtils/drawText.cpp"         // Draws an input string with a given font
 

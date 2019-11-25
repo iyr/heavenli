@@ -1,13 +1,11 @@
 //#include <math.h>
 
 using namespace std;
-extern textAtlas* quack;
 
-bool        firstRun = true;
-std::string prevString;
-drawCall    textLine;
-drawCall    textBackdrop;
-GLuint      prevStringLen;
+extern std::map<std::string, drawCall> drawCalls;
+//extern std::map<std::string, textAtlas*> textFonts;
+
+extern textAtlas* quack;
 
 // Python 3 function for drawing text
 PyObject* drawText_hliGLutils(PyObject* self, PyObject* args) {
@@ -15,7 +13,7 @@ PyObject* drawText_hliGLutils(PyObject* self, PyObject* args) {
    PyObject* faceColorPyTup;
    PyObject* PyString;
 
-   GLfloat gx, gy, sx, sy, w2h, alignment, ao=0.0f;
+   GLfloat gx, gy, sx, sy, w2h, alignment;
    GLfloat textColor[4];
    GLfloat faceColor[4];
 
@@ -32,6 +30,16 @@ PyObject* drawText_hliGLutils(PyObject* self, PyObject* args) {
    {
       Py_RETURN_NONE;
    }
+
+   if (drawCalls.count("textLine") <= 0){
+      drawCalls.insert(std::make_pair("textLine", drawCall()));
+   }
+   drawCall* textLine = &drawCalls["textLine"];
+
+   if (drawCalls.count("textBackdrop") <= 0){
+      drawCalls.insert(std::make_pair("textBackdrop", drawCall()));
+   }
+   drawCall* textBackdrop = &drawCalls["textBackdrop"];
 
    const char* inputChars  = PyUnicode_AsUTF8(PyString);
    std::string inputString = inputChars;
@@ -50,11 +58,13 @@ PyObject* drawText_hliGLutils(PyObject* self, PyObject* args) {
          alignment,
          gx, gy,
          sx, sy,
-         ao,
          w2h,
          quack,
          textColor,
-         faceColor);
+         faceColor,
+         textLine,
+         textBackdrop
+         );
 
    Py_RETURN_NONE;
 }
@@ -93,29 +103,27 @@ void drawText(
       GLfloat     gy,            // Y position
       GLfloat     sx,            // X scale
       GLfloat     sy,            // Y scale
-      GLfloat     ao,            // Rotation angle
       GLfloat     w2h,           // width to height ration
       textAtlas*  atlas,         // texture atlas to draw characters from
       GLfloat*    textColor,     // color of text
-      GLfloat*    faceColor      // color of backdrop
+      GLfloat*    faceColor,     // color of backdrop
+      drawCall*   textLine,      // pointer to input drawCall to write text
+      drawCall*   textBackdrop   // pointer to input drawCall to write text backdrop
       ){
 
-   if (firstRun) {
-      firstRun = false;
-      textLine.setDrawType(GL_TRIANGLES);
-      textLine.setNumColors(1);
-      textBackdrop.setNumColors(1);
-      printf("DRAWTEXT FIRST RUN\n");
-   }
+   GLfloat ao=0.0f;
+   textLine->setDrawType(GL_TRIANGLES);
+   textLine->setNumColors(1);
+   textBackdrop->setNumColors(1);
 
    GLuint stringLen = inputString.size();
 
-   textLine.setColorQuartet(0, textColor);
-   textBackdrop.setColorQuartet(0, faceColor);
+   textLine->setColorQuartet(0, textColor);
+   textBackdrop->setColorQuartet(0, faceColor);
 
-   if (  textLine.numVerts       == 0        ||
-         textBackdrop.numVerts   == 0        ||
-         prevStringLen           < stringLen ){
+   if (  textLine->numVerts      == 0        ||
+         textBackdrop->numVerts  == 0        ||
+         textLine->numVerts/6    < stringLen ){
       std::vector <GLfloat> verts;
       std::vector <GLfloat> colrs;
       std::vector <GLfloat> texuv;
@@ -157,24 +165,22 @@ void drawText(
             bgverts,
             bgcolrs);
 
-      prevString     = inputString;
-      prevStringLen  = stringLen;
-      textLine.texID = quack->tex;
-      textLine.buildCache(verts.size()/2, verts, texuv, colrs);
-      textBackdrop.buildCache(bgverts.size()/2, bgverts, bgcolrs);
+      textLine->text  = inputString;
+      textLine->texID = quack->tex;
+      textLine->buildCache(verts.size()/2, verts, texuv, colrs);
+      textBackdrop->buildCache(bgverts.size()/2, bgverts, bgcolrs);
    }
 
-   if (  prevString.compare(inputString) != 0 ){
+   if (  textLine->text.compare(inputString) != 0 ){
 
-      //static GLfloat minX = NULL, minY = NULL, maxX = NULL, maxY = NULL;
       GLfloat minX = (GLfloat)NULL, minY = (GLfloat)NULL, maxX = (GLfloat)NULL, maxY = (GLfloat)NULL;
       const char* inputChars = inputString.c_str();
 
       for (unsigned int i = stringLen*6; i < prevStringLen*6; i++){
-         textLine.coordCache[i*2+0] = 0.0f;
-         textLine.coordCache[i*2+1] = 0.0f;
-         textLine.texuvCache[i*2+0] = 0.0f;
-         textLine.texuvCache[i*2+1] = 0.0f;
+         textLine->coordCache[i*2+0] = 0.0f;
+         textLine->coordCache[i*2+1] = 0.0f;
+         textLine->texuvCache[i*2+0] = 0.0f;
+         textLine->texuvCache[i*2+1] = 0.0f;
       }
 
       GLuint index = 0;
@@ -185,8 +191,8 @@ void drawText(
             alignment,
             atlas,
             index,
-            textLine.coordCache,
-            textLine.texuvCache);
+            textLine->coordCache,
+            textLine->texuvCache);
 
       index = 0;
 
@@ -194,14 +200,14 @@ void drawText(
 
          // only update extrema for characters with metrics
          if (inputChars[i/6] > 32) {
-            if (textLine.coordCache[i*2] < minX)
-               minX = textLine.coordCache[i*2];
-            if (textLine.coordCache[i*2] > maxX)
-               maxX = textLine.coordCache[i*2];
-            if (textLine.coordCache[i*2+1] < minY)
-               minY = textLine.coordCache[i*2+1];
-            if (textLine.coordCache[i*2+1] > maxY)
-               maxY = textLine.coordCache[i*2+1];
+            if (textLine->coordCache[i*2] < minX)
+               minX = textLine->coordCache[i*2];
+            if (textLine->coordCache[i*2] > maxX)
+               maxX = textLine->coordCache[i*2];
+            if (textLine->coordCache[i*2+1] < minY)
+               minY = textLine->coordCache[i*2+1];
+            if (textLine->coordCache[i*2+1] > maxY)
+               maxY = textLine->coordCache[i*2+1];
          }
       }
 
@@ -211,38 +217,33 @@ void drawText(
             10.5f,
             15,
             index,
-            textBackdrop.coordCache);
+            textBackdrop->coordCache);
 
-      textLine.updateTexUVCache();
-      textLine.updateCoordCache();
-      textBackdrop.updateCoordCache();
-      prevString = inputString;
+      textLine->updateTexUVCache();
+      textLine->updateCoordCache();
+      textBackdrop->updateCoordCache();
+      textLine->text = inputString;
    }
 
-   if (  textLine.colorsChanged     ||
-         textBackdrop.colorsChanged ){
+   if (  textLine->colorsChanged     ||
+         textBackdrop->colorsChanged ){
 
       GLuint index = 0;
-      for (unsigned int i = 0; i < prevStringLen; i++)
-         index = updateQuadColor(textColor, index, textLine.colorCache);
+      for (unsigned int i = 0; i < textLine->text.size(); i++)
+         index = updateQuadColor(textColor, index, textLine->colorCache);
 
       index = 0;
-      index = updateRoundRect(15, faceColor, index, textBackdrop.colorCache);
+      index = updateRoundRect(15, faceColor, index, textBackdrop->colorCache);
 
-      textLine.updateColorCache();
-      textBackdrop.updateColorCache();
+      textLine->updateColorCache();
+      textBackdrop->updateColorCache();
    }
 
-   //if (w2h <= 1.0) {
-      //textLine.updateMVP(gx, gy, sx*0.007f/w2h, sy*0.007f/w2h, 0.0f, w2h);
-      //textBackdrop.updateMVP(gx, gy, sx*0.007f/w2h, sy*0.007f/w2h, 0.0f, w2h);
-   //} else {
-      //textLine.updateMVP(gx, gy, sx*0.007f*w2h, sy*0.007f*w2h, 0.0f, w2h);
-      //textBackdrop.updateMVP(gx, gy, sx*0.007f*w2h, sy*0.007f*w2h, 0.0f, w2h);
-   //}
-   textLine.updateMVP(gx, gy, sx*0.007f, sy*0.007f, ao, w2h);
-   textBackdrop.updateMVP(gx, gy, sx*0.007f, sy*0.007f, ao, w2h);
+   textLine->updateMVP(gx, gy, sx*0.007f, sy*0.007f, ao, w2h);
+   textBackdrop->updateMVP(gx, gy, sx*0.007f, sy*0.007f, ao, w2h);
 
-   textBackdrop.draw();
-   textLine.draw();
+   textBackdrop->draw();
+   textLine->draw();
+
+   return;
 }
