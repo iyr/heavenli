@@ -20,6 +20,7 @@ class drawCall {
       GLuint      VBO;           // Buffer Object for OpenGL to store data in graphics memory
       Matrix      MVP;           // Model-View-Projection Matrix for storing transformations
       GLboolean   colorsChanged; // Determines whether color-buffer should be updated
+      std::string text;          // Object text
 
       drawCall(void);
       drawCall(unsigned int numColors);
