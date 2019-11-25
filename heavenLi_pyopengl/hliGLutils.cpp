@@ -16,6 +16,8 @@
 #include <vector>             // Used to dynamically build vertex data arrays
 #include <string>             // "quack"
 #include <math.h>             // Always useful
+#include <map>
+#include <iterator>
 
 #include "hliGLutils/matrixUtils.c"    // Minimal Matrix math library for basic 2D graphics
 #include "hliGLutils/Params.h"         // Caches Matrix Transformation Calculations

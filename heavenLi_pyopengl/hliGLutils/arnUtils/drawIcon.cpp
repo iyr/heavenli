@@ -4,6 +4,8 @@
 using namespace std;
 extern float offScreen;
 extern textAtlas* quack;
+extern std::map<std::string, drawCall> drawCalls;
+//extern std::map<std::string, textAtlas*> textFonts;
 
 /*
  * Explanation of features:
@@ -13,9 +15,6 @@ extern textAtlas* quack;
  * <= 3: color representation + outline + bulb markers + bulb marker halos
  * <= 4: color representation + outline + bulb markers + bulb marker halos + grand halo
  */
-drawCall arnIconCircle;
-drawCall arnIconLinear;
-drawCall arnIconText;
 
 PyObject* drawIcon_hliGLutils(PyObject* self, PyObject* args){
    PyObject*   PyString;
@@ -48,6 +47,19 @@ PyObject* drawIcon_hliGLutils(PyObject* self, PyObject* args){
       printf("failed to parse arguments :(\n");
       Py_RETURN_NONE;
    }
+
+   if (drawCalls.count("arnIconLinear") <= 0)
+      drawCalls.insert(std::make_pair("arnIconLinear", drawCall()));
+   drawCall* arnIconLinear = &drawCalls["arnIconLinear"];
+   if (drawCalls.count("arnIconCircle") <= 0)
+      drawCalls.insert(std::make_pair("arnIconCircle", drawCall()));
+   drawCall* arnIconCircle = &drawCalls["arnIconCircle"];
+   if (drawCalls.count("arnIconText") <= 0)
+      drawCalls.insert(std::make_pair("arnIconText", drawCall()));
+   drawCall* arnIconText = &drawCalls["arnIconText"];
+   if (drawCalls.count("arnIconTextbg") <= 0)
+      drawCalls.insert(std::make_pair("arnIconTextbg", drawCall()));
+   drawCall* arnIconTextbg = &drawCalls["arnIconTextbg"];
 
    // Parse array of tuples containing RGB Colors of bulbs
    bulbColors = new GLfloat[numBulbs*3];
@@ -109,11 +121,12 @@ PyObject* drawIcon_hliGLutils(PyObject* self, PyObject* args){
          0.5f,
          gx, gy,
          scale*2.0f, scale*2.0f,
-         0.0f,
          w2h,
          quack,         // texture atlas to draw characters from
          detailColor,
-         faceColor);
+         faceColor,
+         arnIconText,
+         arnIconTextbg);
 
    delete [] bulbColors;
 
