@@ -62,6 +62,13 @@ class Lamp:
             self.bulbsCurrentHSV.append((i*(1.0/3)+0.16667, 1.00, 1.00))
         self.bulbsTargetHSV = self.bulbsCurrentHSV.copy()
 
+    # Return True iff any of lamp's bulbs/sub-lamps are emitting any amount of light
+    def isOn(self):
+        for i in range(self.numBulbs):
+            if (self.bulbsTargetHSV[i][2] > 0.0):
+                return True
+        return False
+
     # Returns True iff all lamp parameters are set
     # and lamp is ready to send/receive color data streams from heavenli
     # Returns False if a requred parameter is not set
@@ -362,23 +369,39 @@ class Lamp:
 
     def setMainLight(self, lightOn):
 
+        # Turn Lamp On
+        if (lightOn):
+            try:
+                self.setBulbsTargetHSV((1.0, 0.0, 1.0))
+            except Exception as OOF:
+                print(traceback.format_exc())
+                print("Error:", OOF)
+
+        # Turn Lamp Off
+        else:
+            try:
+                self.setBulbsTargetHSV((0.0, 0.0, 0.0))
+            except Exception as OOF:
+                print(traceback.format_exc())
+                print("Error:", OOF)
+
         # Lamp is being turned on
-        if (self.mainLightOn == False) and (lightOn == True):
-            if (self.masterSwitchBehavior == -1):
-                try:
-                    self.setBulbsTargetHSV((1.0, 0.0, 1.0))
-                except Exception as OOF:
-                    print(traceback.format_exc())
-                    print("Error:", OOF)
+        #if (self.mainLightOn == False) and (lightOn == True):
+            #if (self.masterSwitchBehavior == -1):
+                #try:
+                    #self.setBulbsTargetHSV((1.0, 0.0, 1.0))
+                #except Exception as OOF:
+                    #print(traceback.format_exc())
+                    #print("Error:", OOF)
 
         # Lamp is being turn off
-        if (self.mainLightOn == True) and (lightOn == False):
-            if self.masterSwitchBehavior >= -2:
-                try:
-                    self.setBulbsTargetHSV((0.0, 0.0, 0.0))
-                except Exception as OOF:
-                    print(traceback.format_exc())
-                    print("Error:", OOF)
-        self.mainLightOn = lightOn
+        #if (self.mainLightOn == True) and (lightOn == False):
+            #if self.masterSwitchBehavior >= -2:
+                #try:
+                    #self.setBulbsTargetHSV((0.0, 0.0, 0.0))
+                #except Exception as OOF:
+                    #print(traceback.format_exc())
+                    #print("Error:", OOF)
+        #self.mainLightOn = lightOn
         return
 

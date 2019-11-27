@@ -269,9 +269,17 @@ def watchHomeInput():
             min(stateMach['wx'], stateMach['wy'])/2)    # Clock Radius
             and
             stateMach['mousePressed']):                 # Button Must be clicked
-            stateMach['masterSwitch'] = not stateMach['masterSwitch']
+            AreLightsOn = False
             for i in range(len(stateMach['lamps'])):
-                stateMach['lamps'][i].setMainLight(stateMach['masterSwitch'])
+                if(stateMach['lamps'][i].isOn()):
+                    AreLightsOn = True
+
+            if (AreLightsOn):
+                for i in range(len(stateMach['lamps'])):
+                    stateMach['lamps'][i].setMainLight(False)
+            else:
+                for i in range(len(stateMach['lamps'])):
+                    stateMach['lamps'][i].setMainLight(True)
 
         # Watch bulb buttons for input
         if (len(stateMach['lamps']) > 0):
