@@ -97,7 +97,8 @@ def drawElements():
                         stateMach['lamps'][Light].getNumBulbs(), 
                         stateMach['lamps'][Light].getAngle(), 
                         stateMach['w2h'],
-                        stateMach['lamps'][Light].getBulbsCurrentRGB());
+                        stateMach['lamps'][Light].getBulbsCurrentRGB()
+                        )
 
             if (stateMach['lamps'][Light].getArn() == 1):
                 pass
@@ -106,7 +107,8 @@ def drawElements():
                         stateMach['lamps'][Light].getNumBulbs(), 
                         stateMach['lamps'][Light].getAngle(), 
                         stateMach['w2h'],
-                        stateMach['lamps'][Light].getBulbsCurrentRGB());
+                        stateMach['lamps'][Light].getBulbsCurrentRGB()
+                        )
 
         # Draw Granularity Rocker Underneath Clock
         if (stateMach['w2h'] <= 1.0):
@@ -125,7 +127,8 @@ def drawElements():
                     0.0,
                     stateMach['w2h'],
                     stateMach['GranChanger'].getSize(),
-                    stateMach['tDiff'])
+                    stateMach['tDiff']
+                    )
     
         # Draw Clock
         drawClock(
@@ -150,7 +153,8 @@ def drawElements():
                     0.0,
                     stateMach['w2h'],
                     stateMach['GranChanger'].getSize(),
-                    stateMach['tDiff'])
+                    stateMach['tDiff']
+                    )
 
         if (len(stateMach['lamps']) > 0):
             if (stateMach['BulbButtons'].isVisible()):
@@ -163,7 +167,8 @@ def drawElements():
                         stateMach['BulbButtons'].getFaceColor(),
                         stateMach['BulbButtons'].getDetailColor(),
                         stateMach['lamps'][Light].getBulbsCurrentRGB(),
-                        stateMach['w2h'])
+                        stateMach['w2h']
+                        )
 
             if (stateMach['AllSetButton'].isVisible()):
                 drawIcon(
@@ -178,7 +183,8 @@ def drawElements():
                         stateMach['lamps'][Light].getNumBulbs(),
                         stateMach['lamps'][Light].getAngle(),
                         stateMach['w2h'],
-                        stateMach['lamps'][Light].getBulbsCurrentRGB())
+                        stateMach['lamps'][Light].getBulbsCurrentRGB()
+                        )
 
         if (stateMach['wereColorsTouched']):
             selectRingColor = dtc
@@ -210,14 +216,16 @@ def drawElements():
                     int(stateMach['numHues']/2), 
                     selectRingColor,
                     stateMach['w2h'], 
-                    stateMach['tDiff']*0.5)
+                    stateMach['tDiff']*0.5
+                    )
 
         # Draw Confirm Button
         if (stateMach['ConfirmButton'].isVisible()):
             extraColor = colorsys.hsv_to_rgb(
                     stateMach['currentHue'], 
                     stateMach['currentSat'], 
-                    stateMach['currentVal'])
+                    stateMach['currentVal']
+                    )
             extraColor = (extraColor[0], extraColor[1], extraColor[2], 1.0)
 
             drawConfirm(
@@ -227,13 +235,15 @@ def drawElements():
                     stateMach['w2h'], 
                     fcc, 
                     extraColor, 
-                    dtc)
+                    dtc
+                    )
 
         if (stateMach['BackButton'].isVisible()):
             extraColor = colorsys.hsv_to_rgb(
                     stateMach['prevHue'], 
                     stateMach['prevSat'], 
-                    stateMach['prevVal'])
+                    stateMach['prevVal']
+                    )
             extraColor = (extraColor[0], extraColor[1], extraColor[2], 1.0)
 
             # Draw Back Button
@@ -245,7 +255,8 @@ def drawElements():
                     stateMach['w2h'], 
                     fcc, 
                     extraColor, 
-                    dtc)
+                    dtc
+                    )
 
         #tmc = ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 1.0)
     except Exception as OOF:
