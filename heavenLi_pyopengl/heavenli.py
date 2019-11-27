@@ -195,7 +195,7 @@ def drawElements():
                     stateMach['numHues'], 
                     selectRingColor, 
                     stateMach['w2h'], 
-                    stateMach['tDiff']
+                    stateMach['tDiff']*0.5
                     )
 
         # Draw Triangle of Dots with different brightness/saturation
@@ -210,7 +210,7 @@ def drawElements():
                     int(stateMach['numHues']/2), 
                     selectRingColor,
                     stateMach['w2h'], 
-                    stateMach['tDiff'])
+                    stateMach['tDiff']*0.5)
 
         # Draw Confirm Button
         if (stateMach['ConfirmButton'].isVisible()):
