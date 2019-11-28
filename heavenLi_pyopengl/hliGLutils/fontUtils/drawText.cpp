@@ -176,7 +176,7 @@ void drawText(
       GLfloat minX = (GLfloat)NULL, minY = (GLfloat)NULL, maxX = (GLfloat)NULL, maxY = (GLfloat)NULL;
       const char* inputChars = inputString.c_str();
 
-      for (unsigned int i = stringLen*6; i < prevStringLen*6; i++){
+      for (unsigned int i = stringLen*6; i < textLine->text.size()*6; i++){
          textLine->coordCache[i*2+0] = 0.0f;
          textLine->coordCache[i*2+1] = 0.0f;
          textLine->texuvCache[i*2+0] = 0.0f;
