@@ -313,6 +313,7 @@ class Plugin():
                             #print("Received Lamp ID:", chr(ID_a), chr(ID_b))
                             if (len(self.connectedLamps) == 1):
                                 self.connectedLamps[0].setID([ID_a, ID_b])
+                                self.connectedLamps[0].setAlias("ArduinoLamp")
 
                                 # Parse Lamp number of bulbs from packet
                                 if ("NB!" in str(mess)):  
