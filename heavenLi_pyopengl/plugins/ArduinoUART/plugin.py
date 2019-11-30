@@ -205,6 +205,7 @@ class Plugin():
             del self.serialDevice
             pass
 
+        # Return IDs of all lamps provided by Serial Device
         def getLampIDs(self):
             tml = []
             if (len(self.connectedLamps) <= 0):
