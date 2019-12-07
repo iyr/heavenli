@@ -12,6 +12,7 @@ def drawInfo(stateMach):
     infoStr += "\nCursor: " + str(stateMach['cursorX']) + ', ' + str(stateMach['cursorY'])
     infoStr += "\nInput State: " + str(stateMach['currentState'])
     infoStr += "\nMouse Button: " + str(stateMach['mouseButton'])
+    infoStr += "\nCursor Velocity: " + str(stateMach['cursorVelocity'])
     tmc = ( stateMach['faceColor'][0], 
             stateMach['faceColor'][1], 
             stateMach['faceColor'][2], 
