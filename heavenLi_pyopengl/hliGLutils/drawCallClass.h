@@ -379,7 +379,6 @@ void drawCall::updateMVP(GLfloat gx, GLfloat gy, GLfloat sx, GLfloat sy, GLfloat
          this->prevTransforms.sx    != sx    ||
          this->prevTransforms.sy    != sy    ||
          this->prevTransforms.w2h   != w2h   ){
-   printf("ao: %f\n", rot);
       float left = -w2h, right = w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
       MatrixLoadIdentity( &Ortho );
       MatrixLoadIdentity( &ModelView );
