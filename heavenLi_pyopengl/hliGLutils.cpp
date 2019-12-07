@@ -50,6 +50,9 @@ PyObject* drawHomeLinear_hliGLutils (PyObject* self, PyObject* args);
 PyObject* drawIconLinear_hliGLutils (PyObject* self, PyObject* args);
 PyObject* drawIcon_hliGLutils       (PyObject* self, PyObject* args);
 
+PyObject* drawEllipse_hliGLutils    (PyObject* self, PyObject* args);
+PyObject* drawPill_hliGLutils       (PyObject* self, PyObject* args);
+
 PyObject* drawArrow_hliGLutils      (PyObject* self, PyObject* args);
 PyObject* drawBulbButton_hliGLutils (PyObject* self, PyObject* args);
 PyObject* drawClock_hliGLutils      (PyObject* self, PyObject* args);
@@ -68,6 +71,9 @@ static PyMethodDef hliGLutils_methods[] = {
 
    { "drawText",        (PyCFunction)drawText_hliGLutils,         METH_VARARGS },
    { "buildAtlas",      (PyCFunction)buildAtlas_hliGLutils,       METH_VARARGS },
+
+   { "drawEllipse",     (PyCFunction)drawEllipse_hliGLutils,      METH_VARARGS },
+   { "drawPill",        (PyCFunction)drawPill_hliGLutils,         METH_VARARGS },
 
    { "drawHomeCircle",  (PyCFunction)drawHomeCircle_hliGLutils,   METH_VARARGS },
    { "drawIconCircle",  (PyCFunction)drawIconCircle_hliGLutils,   METH_VARARGS },

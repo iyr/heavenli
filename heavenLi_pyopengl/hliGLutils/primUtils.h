@@ -19,6 +19,9 @@ float constrain(float value, float min, float max) {
 #include "primUtils/primColorWheelDEGEN.cpp"
 #include "primUtils/primBulbDEGEN.cpp"
 
+#include "primUtils/drawEllipse.cpp"
+#include "primUtils/drawPill.cpp"
+
 #include "primUtils/hsv2rgb.cpp"
 #include "primUtils/rgb2hsv.cpp"
 

@@ -373,17 +373,18 @@ void drawCall::updateMVP(GLfloat gx, GLfloat gy, GLfloat sx, GLfloat sy, GLfloat
    Matrix ModelView;
 
    // Only recompute MVP matrix if there was an actual change in transformations
-   if (  this->prevTransforms.ao != rot   ||
-         this->prevTransforms.dx != gx    ||
-         this->prevTransforms.dy != gy    ||
-         this->prevTransforms.sx != sx    ||
-         this->prevTransforms.sy != sy    ||
-         this->prevTransforms.w2h != w2h  ){
-      float left = -1.0f*w2h, right = 1.0f*w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
+   if (  this->prevTransforms.ao    != rot   ||
+         this->prevTransforms.dx    != gx    ||
+         this->prevTransforms.dy    != gy    ||
+         this->prevTransforms.sx    != sx    ||
+         this->prevTransforms.sy    != sy    ||
+         this->prevTransforms.w2h   != w2h   ){
+   printf("ao: %f\n", rot);
+      float left = -w2h, right = w2h, bottom = 1.0f, top = 1.0f, near = 1.0f, far = 1.0f;
       MatrixLoadIdentity( &Ortho );
       MatrixLoadIdentity( &ModelView );
       MatrixOrtho( &Ortho, left, right, bottom, top, near, far );
-      MatrixTranslate( &ModelView, 1.0f*gx, 1.0f*gy, 0.0f );
+      MatrixTranslate( &ModelView, gx, gy, 0.0f );
       if (w2h <= 1.0f) {
          MatrixScale( &ModelView, sx, sy*w2h, 1.0f );
       } else {
