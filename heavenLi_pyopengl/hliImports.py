@@ -16,7 +16,7 @@ print("Done!")
 
 print("Loading System Utilities...")
 import sys, time, traceback, datetime, os, serial
-from math import sin,cos,sqrt,pi,radians,hypot
+from math import sin,cos,sqrt,pi,radians,hypot,atan,degrees
 from cobs import cobs
 from platform import machine
 print("Done!")
