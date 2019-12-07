@@ -75,6 +75,14 @@ def framerate():
 
     return
 
+def drawTest():
+    try:
+        pass
+    except Exception as OOF:
+        print(traceback.format_exc())
+        print("Error:", OOF)
+    return
+
 def drawElements():
     global stateMach
 
@@ -657,11 +665,12 @@ def display():
     #stateMach['tDiff'] = 3.14159/stateMach['fps']
     #stateMach['tDiff'] = 6.28318/stateMach['fps']
 
-    drawElements()
+    #drawElements()
+    drawTest()
     
-    if (stateMach['targetScreen'] == 0):
+    if (False and stateMach['targetScreen'] == 0):
         watchHomeInput()
-    elif (stateMach['targetScreen'] == 1):
+    elif (False and stateMach['targetScreen'] == 1):
         watchColrSettingInput()
 
     stateMach['AllSetButton'].setTimeSlice(stateMach['tDiff'])
