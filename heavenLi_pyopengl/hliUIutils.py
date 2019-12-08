@@ -8,11 +8,15 @@ print("Done!")
 
 # function for printing statemachine information
 def drawInfo(stateMach):
-    infoStr = "FPS: " + str(int(stateMach['fps']))
+    infoStr = "//~~~~~~~~~~~~~~~debugeroo, eletric boogaloo~~~~~~~~~~~~~~~\\\\"
+    infoStr += "\nFPS: " + str(int(stateMach['fps']))
     infoStr += "\nCursor: " + str(stateMach['cursorX']) + ', ' + str(stateMach['cursorY'])
     infoStr += "\nInput State: " + str(stateMach['currentState'])
     infoStr += "\nMouse Button: " + str(stateMach['mouseButton'])
-    infoStr += "\nCursor Velocity: " + str(stateMach['cursorVelocity'])
+    infoStr += "\nCursor Velocity (dir): " + str(stateMach['cursorVelocity'][0]) + " deg"
+    infoStr += "\nCursor Velocity (spd): " + str(stateMach['cursorVelocity'][1]) + " px/s"
+    infoStr += "\nCursor Velocity Smoothed (x): " + str(stateMach['cursorVelSmoothed'][0])
+    infoStr += "\nCursor Velocity Smoothed (y): " + str(stateMach['cursorVelSmoothed'][1])
     tmc = ( stateMach['faceColor'][0], 
             stateMach['faceColor'][1], 
             stateMach['faceColor'][2], 
