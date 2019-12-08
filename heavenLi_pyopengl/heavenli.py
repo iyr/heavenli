@@ -48,9 +48,9 @@ def framerate():
         stateMach['fps'] = 60
         print("Too Fast, Too Quick!!")
 
-    if t - stateMach['t1'] >= (0.9):
+    if t - stateMach['t1'] >= (0.0125):
+        calcCursorVelocity(0)
         stateMach['t1'] = t
-        calcCursorVelocity()
 
     if t - stateMach['t0'] >= 1.0:
         stateMach['lamps'] = plugins.pluginLoader.getAllLamps()
@@ -74,20 +74,28 @@ def framerate():
 
     return
 
+# Function for testing drawcode
 def drawTest():
     try:
         tmc = ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 1.0)
-        drawEllipse(0.0, 0.0, 0.5, 0.11, stateMach['w2h'], tmc)
-        #drawPill(
-                #-0.5, 
-                #-0.5, 
-                #0.1, 
-                #0.9*(stateMach['someVar']/100), 
-                #0.2*(stateMach['someVar']/100), 
-                #stateMach['w2h'], 
-                #tmc, 
-                #stateMach['faceColor']
-                #)
+        #drawEllipse(0.0, 0.0, 0.5, 0.11, stateMach['w2h'], tmc)
+
+        red = (1.0, 0.0, 0.0, 1.0)
+        blu = (0.0, 0.0, 1.0, 1.0)
+        w2h = stateMach['w2h']
+        tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -w2h, w2h)
+        tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
+
+        drawPill(
+                tmx,
+                tmy,
+                tmx + stateMach['cursorVelSmoothed'][0],
+                tmy + stateMach['cursorVelSmoothed'][1],
+                0.02, 
+                w2h, 
+                blu,
+                red 
+                )
         pass
     except Exception as OOF:
         print(traceback.format_exc())
@@ -677,33 +685,75 @@ def mouseInteraction(button, state, mouseX, mouseY):
     #print("state: " + str(state) + ", currentState: " + str(stateMach['currentState']))
     return
 
-def calcCursorVelocity():
+def calcCursorVelocity(millis):
     global stateMach
 
     # Get time since louse mouse callback
-    deltaT = (time.time() - stateMach['tCursor'])*1000
+    deltaT = float((time.time() - stateMach['tCursor'])*1000.0)
 
     # Calculate Cursor Velocity Vector
-    deltaX   = stateMach['cursorX'] - stateMach['prevCursorX']
-    deltaY   = stateMach['cursorY'] - stateMach['prevCursorY']
+    deltaX  = float(stateMach['cursorX'] - stateMach['prevCursorX'])
+    deltaY  = float(stateMach['cursorY'] - stateMach['prevCursorY'])
     speedX  = deltaX/deltaT
     speedY  = deltaY/deltaT
     speed   = sqrt(pow(speedX, 2.0) + pow(speedY, 2.0))
-    #if (deltaX != 0.0):
+
+    # Prevent divide by 0, account for float sign-bit weirdness
+    if (deltaX == 0.0 or deltaX == -0.0):
+        deltaX = 0.00000000001
+
+    # Calculate Correct angle based on quadrant vector points to
     if   (deltaX > 0 and deltaY >= 0):
-        ang = int(360.0-(degrees(atan(deltaY/deltaX))))
+        ang = 360.0-(degrees(atan(deltaY/deltaX)))
     elif (deltaX < 0 and deltaY >= 0):
-        ang = int(360.0-(degrees(atan(deltaY/deltaX))+180.0))
+        ang = 360.0-(degrees(atan(deltaY/deltaX))+180.0)
     elif (deltaX < 0 and deltaY <= 0):
-        ang = int(360.0-(degrees(atan(deltaY/deltaX))+180.0))
+        ang = 360.0-(degrees(atan(deltaY/deltaX))+180.0)
     elif (deltaX > 0 and deltaY <= 0):
-        ang = int(360.0-(degrees(atan(deltaY/deltaX))+360.0))
+        ang = 360.0-(degrees(atan(deltaY/deltaX))+360.0)
     else:
-        ang = 0
+        ang = 0.0
+
+    tmn  = len(stateMach['prevCurVelMags'])
+    stateMach['prevCurVelMags'].insert(0, speed)
+    stateMach['prevCurVelMags'] = stateMach['prevCurVelMags'][0:tmn]
+
+    tmm = 0.0
+    for i in range(tmn):
+        tmm += stateMach['prevCurVelMags'][i]*((tmn-i)/tmn)
+    speed = tmm/float(tmn)
+
     stateMach['cursorVelocity'] = (ang, speed)
     stateMach['tCursor'] = time.time()
     stateMach['prevCursorX'] = stateMach['cursorX']
     stateMach['prevCursorY'] = stateMach['cursorY']
+
+    tma = radians(stateMach['cursorVelocity'][0])
+    tms = stateMach['cursorVelocity'][1]*2.0
+    if (tms == 0.0):
+        tms = 0.000000000001
+
+    tmnx = cos(tma)*tms
+    tmn  = len(stateMach['prevCurVelXs'])
+    stateMach['prevCurVelXs'].insert(0, tmnx)
+    stateMach['prevCurVelXs'] = stateMach['prevCurVelXs'][0:tmn]
+
+    tmny = sin(tma)*tms
+    tmn  = len(stateMach['prevCurVelYs'])
+    stateMach['prevCurVelYs'].insert(0, tmny)
+    stateMach['prevCurVelYs'] = stateMach['prevCurVelYs'][0:tmn]
+
+    tmnx = 0.0
+    for i in range(tmn):
+        tmnx += stateMach['prevCurVelXs'][i]*((tmn-i)/tmn)
+    tmnx /= float(tmn)
+
+    tmny = 0.0
+    for i in range(tmn):
+        tmny += stateMach['prevCurVelYs'][i]*((tmn-i)/tmn)
+    tmny /= float(tmn)
+
+    stateMach['cursorVelSmoothed'] = (tmnx, tmny)
 
     return
 
@@ -754,6 +804,7 @@ def display():
 
     glutSwapBuffers()
     plugins.pluginLoader.updatePlugins()
+    #glutTimerFunc(1, calcCursorVelocity, 0)
 
 def idleWindowOpen():
     framerate()
@@ -926,14 +977,19 @@ if __name__ == '__main__':
     stateMach['mousePressed']       = False
     stateMach['mouseButton']        = "None"
     stateMach['drawInfo']           = False
-
-    stateMach['cursorVelX']         = 0
-    stateMach['cursorVelY']         = 0
+    stateMach['cursorVelocity']     = (0.0, 0.0)
+    stateMach['prevCurVelMags']     = [0.0 for i in range(9)]
+    stateMach['prevCurVelXs']       = [0.0 for i in range(9)]
+    stateMach['prevCurVelYs']       = [0.0 for i in range(9)]
+    stateMach['cursorVelSmoothed']  = (0.0, 0.0)
 
     # Setup UI animation objects, initial parameters
     stateMach['UIelements']         = {}
 
     stateMach['UIelements']['MomentumTest'] = UIelement()
+    stateMach['UIelements']['VelocityTest'] = UIelement()
+    stateMach['UIelements']['VelocityTest'].params["coordX"].setCurve("easeInOutSine")
+    stateMach['UIelements']['VelocityTest'].params["coordY"].setCurve("easeInOutSine")
 
     stateMach['UIelements']['HueRing'] = UIelement()
     #stateMach['UIelements']['HueRing'].setTargetFaceColor(stateMach["faceColor"])
