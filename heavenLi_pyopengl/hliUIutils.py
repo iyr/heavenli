@@ -8,15 +8,18 @@ print("Done!")
 
 # function for printing statemachine information
 def drawInfo(stateMach):
-    infoStr = "//~~~~~~~~~~~~~~~debugeroo, eletric boogaloo~~~~~~~~~~~~~~~\\\\"
+    infoStr = "//~~~~~~~~~~~~~~~infoo debugeroo, eletric boogaloo~~~~~~~~~~~~~~~\\\\"
     infoStr += "\nFPS: " + str(int(stateMach['fps']))
+    infoStr += "\nResolution: " + str(stateMach['windowDimW'])+", "+str(stateMach['windowDimH'])
+    infoStr += "\nwidth to height: " + str(stateMach['w2h'])
     infoStr += "\nCursor: " + str(stateMach['cursorX']) + ', ' + str(stateMach['cursorY'])
     infoStr += "\nInput State: " + str(stateMach['currentState'])
     infoStr += "\nMouse Button: " + str(stateMach['mouseButton'])
-    infoStr += "\nCursor Velocity (dir): " + str(stateMach['cursorVelocity'][0]) + " deg"
-    infoStr += "\nCursor Velocity (spd): " + str(stateMach['cursorVelocity'][1]) + " px/s"
-    infoStr += "\nCursor Velocity Smoothed (x): " + str(stateMach['cursorVelSmoothed'][0])
-    infoStr += "\nCursor Velocity Smoothed (y): " + str(stateMach['cursorVelSmoothed'][1])
+    infoStr += "\nCursor Velocity Raw, Polar Ang: " + str(stateMach['cursorVelocity'][0])[:5] + " deg"
+    infoStr += "\nCursor Velocity Raw, Polar Mag: " + str(stateMach['cursorVelocity'][1])[:5] + " px/s"
+    infoStr += "\nCursor Velocity Smoothed, Polar Ang: " + str(stateMach['cursorVelSmoothPol'][0])[:5] + " deg"
+    infoStr += "\nBall Position: " + str(stateMach['BallPosition'])
+    infoStr += "\nBall Velocity: " + str(stateMach['BallVelocity'])
     tmc = ( stateMach['faceColor'][0], 
             stateMach['faceColor'][1], 
             stateMach['faceColor'][2], 

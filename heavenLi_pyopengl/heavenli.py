@@ -77,12 +77,43 @@ def framerate():
 # Function for testing drawcode
 def drawTest():
     try:
+        w2h = stateMach['w2h']
+
         tmc = ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 1.0)
-        #drawEllipse(0.0, 0.0, 0.5, 0.11, stateMach['w2h'], tmc)
+        drawEllipse(
+                stateMach['BallPosition'][0]/w2h,
+                stateMach['BallPosition'][1],
+                0.1, 0.1,
+                w2h,
+                (0.42, 0.0, 0.85, 1.0)
+                )
+
+        # Update Ball position based on its cartesian velocity vector
+        tmx = stateMach['BallPosition'][0]
+        tmy = stateMach['BallPosition'][1]
+        tmx += stateMach['BallVelocity'][0]*0.2
+        tmy += stateMach['BallVelocity'][1]*0.2
+
+        stateMach['BallPosition'] = (tmx, tmy)
+
+        # Reverse Ball's Velocity component(s) if it hits edge of screen
+        tmx = stateMach['BallVelocity'][0]
+        tmy = stateMach['BallVelocity'][1]
+        if (stateMach['BallPosition'][0] < -w2h):
+            tmx = abs(stateMach['BallVelocity'][0])
+        if (stateMach['BallPosition'][0] > w2h):
+            tmx = -abs(stateMach['BallVelocity'][0])
+        if (stateMach['BallPosition'][1] < -1.0):
+            tmy = abs(stateMach['BallVelocity'][1])
+        if (stateMach['BallPosition'][1] > 1.0):
+            tmy = -abs(stateMach['BallVelocity'][1])
+
+        # Reduce Ball's velocity over time to simulate drag
+        cDrag = 0.99
+        stateMach['BallVelocity'] = (tmx*cDrag, tmy*cDrag)
 
         red = (1.0, 0.0, 0.0, 1.0)
         blu = (0.0, 0.0, 1.0, 1.0)
-        w2h = stateMach['w2h']
         tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -w2h, w2h)
         tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
 
@@ -104,8 +135,15 @@ def drawTest():
 
 def watchTest():
     try:
+        w2h = stateMach['w2h']
         if (watchScreen()):
+            tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -w2h, w2h)
+            tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
+            stateMach['BallPosition'] = (tmx, tmy)
             pass
+        if (stateMach['mouseReleased']):
+            stateMach['BallVelocity'] = stateMach['cursorVelSmoothed']
+
         pass
     except Exception as OOF:
         print(traceback.format_exc())
@@ -671,8 +709,9 @@ def mouseInteraction(button, state, mouseX, mouseY):
     # State = 1: button is released, high
     if (stateMach['currentState'] == 1 and state == 0):
         stateMach['mousePressed'] = True
-    #else:
-        #stateMach['mousePressed'] = False
+
+    if (stateMach['currentState'] == 0 and state > 0):
+        stateMach['mouseReleased'] = True
 
     stateMach['currentState'] = state
     if (state == 0):
@@ -685,6 +724,30 @@ def mouseInteraction(button, state, mouseX, mouseY):
     #print("state: " + str(state) + ", currentState: " + str(stateMach['currentState']))
     return
 
+# Convert a vector from Cartesian coordinates to Polar coordinates
+def vecCart2Pol(vector):
+    compx   = vector[0]
+    compy   = vector[1]
+    mag     = sqrt(pow(compx, 2.0) + pow(compy, 2.0))
+    # Prevent divide by 0, account for float sign-bit weirdness
+    if (compx == 0.0 or compx == -0.0):
+        compx = 0.00000000001
+
+    # Calculate Correct angle based on quadrant vector points to
+    if   (compx > 0 and compy >= 0):
+        ang = (degrees(atan(compy/compx)))
+    elif (compx < 0 and compy >= 0):
+        ang = (degrees(atan(compy/compx))+180.0)
+    elif (compx < 0 and compy <= 0):
+        ang = (degrees(atan(compy/compx))+180.0)
+    elif (compx > 0 and compy <= 0):
+        ang = (degrees(atan(compy/compx))+360.0)
+    else:
+        ang = 0.0
+
+    return (ang, mag)
+
+# Calculates the velocity vector of the mouse cursor
 def calcCursorVelocity(millis):
     global stateMach
 
@@ -696,28 +759,22 @@ def calcCursorVelocity(millis):
     deltaY  = float(stateMach['cursorY'] - stateMach['prevCursorY'])
     speedX  = deltaX/deltaT
     speedY  = deltaY/deltaT
-    speed   = sqrt(pow(speedX, 2.0) + pow(speedY, 2.0))
 
-    # Prevent divide by 0, account for float sign-bit weirdness
-    if (deltaX == 0.0 or deltaX == -0.0):
-        deltaX = 0.00000000001
+    # Convert vector to polar coordinates
+    tmv = vecCart2Pol((speedX, speedY))
+    ang = tmv[0]
+    speed = tmv[1]
+    
+    # Flip vector due for translation from pixel-coord space to GL-coord space
+    if ang != 0:
+        ang = 360.0 - ang
 
-    # Calculate Correct angle based on quadrant vector points to
-    if   (deltaX > 0 and deltaY >= 0):
-        ang = 360.0-(degrees(atan(deltaY/deltaX)))
-    elif (deltaX < 0 and deltaY >= 0):
-        ang = 360.0-(degrees(atan(deltaY/deltaX))+180.0)
-    elif (deltaX < 0 and deltaY <= 0):
-        ang = 360.0-(degrees(atan(deltaY/deltaX))+180.0)
-    elif (deltaX > 0 and deltaY <= 0):
-        ang = 360.0-(degrees(atan(deltaY/deltaX))+360.0)
-    else:
-        ang = 0.0
-
+    # Insert vector magnitude into list of vectors magnitudes, remove oldest element
     tmn  = len(stateMach['prevCurVelMags'])
     stateMach['prevCurVelMags'].insert(0, speed)
     stateMach['prevCurVelMags'] = stateMach['prevCurVelMags'][0:tmn]
 
+    # Compute weighted average of previous values, to smooth out jitter
     tmm = 0.0
     for i in range(tmn):
         tmm += stateMach['prevCurVelMags'][i]*((tmn-i)/tmn)
@@ -743,17 +800,20 @@ def calcCursorVelocity(millis):
     stateMach['prevCurVelYs'].insert(0, tmny)
     stateMach['prevCurVelYs'] = stateMach['prevCurVelYs'][0:tmn]
 
+    # Smooth out jitter over n frames
     tmnx = 0.0
     for i in range(tmn):
         tmnx += stateMach['prevCurVelXs'][i]*((tmn-i)/tmn)
     tmnx /= float(tmn)
 
+    # Smooth out jitter over n frames
     tmny = 0.0
     for i in range(tmn):
         tmny += stateMach['prevCurVelYs'][i]*((tmn-i)/tmn)
     tmny /= float(tmn)
 
-    stateMach['cursorVelSmoothed'] = (tmnx, tmny)
+    stateMach['cursorVelSmoothed']  = (tmnx, tmny)
+    stateMach['cursorVelSmoothPol'] = vecCart2Pol((tmnx, tmny))
 
     return
 
@@ -797,6 +857,7 @@ def display():
         drawInfo(stateMach)
 
     stateMach['mousePressed'] = False
+    stateMach['mouseReleased'] = False
 
     # Update UI animation
     for key in stateMach['UIelements']:
@@ -975,6 +1036,7 @@ if __name__ == '__main__':
     stateMach['prevSat']            = -1
     stateMach['wereColorsTouched']  = False
     stateMach['mousePressed']       = False
+    stateMach['mouseReleased']      = False
     stateMach['mouseButton']        = "None"
     stateMach['drawInfo']           = False
     stateMach['cursorVelocity']     = (0.0, 0.0)
@@ -982,14 +1044,12 @@ if __name__ == '__main__':
     stateMach['prevCurVelXs']       = [0.0 for i in range(9)]
     stateMach['prevCurVelYs']       = [0.0 for i in range(9)]
     stateMach['cursorVelSmoothed']  = (0.0, 0.0)
+    stateMach['cursorVelSmoothPol'] = (0.0, 0.0)
+    stateMach['BallPosition']       = (0.0, 0.0)
+    stateMach['BallVelocity']       = (0.0, 0.0)
 
     # Setup UI animation objects, initial parameters
     stateMach['UIelements']         = {}
-
-    stateMach['UIelements']['MomentumTest'] = UIelement()
-    stateMach['UIelements']['VelocityTest'] = UIelement()
-    stateMach['UIelements']['VelocityTest'].params["coordX"].setCurve("easeInOutSine")
-    stateMach['UIelements']['VelocityTest'].params["coordY"].setCurve("easeInOutSine")
 
     stateMach['UIelements']['HueRing'] = UIelement()
     #stateMach['UIelements']['HueRing'].setTargetFaceColor(stateMach["faceColor"])
