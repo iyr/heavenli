@@ -109,7 +109,7 @@ def drawTest():
             tmy = -abs(stateMach['BallVelocity'][1])
 
         # Reduce Ball's velocity over time to simulate drag
-        cDrag = 0.99
+        cDrag = 0.975
         stateMach['BallVelocity'] = (tmx*cDrag, tmy*cDrag)
 
         red = (1.0, 0.0, 0.0, 1.0)
@@ -120,8 +120,8 @@ def drawTest():
         drawPill(
                 tmx,
                 tmy,
-                tmx + stateMach['cursorVelSmoothed'][0],
-                tmy + stateMach['cursorVelSmoothed'][1],
+                tmx + stateMach['cursorVelSmoothed'][0]*0.5,
+                tmy + stateMach['cursorVelSmoothed'][1]*0.5,
                 0.02, 
                 w2h, 
                 blu,
