@@ -79,14 +79,15 @@ def drawTest():
     try:
         w2h = stateMach['w2h']
 
+        # test color that changes over time
         tmc = ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 1.0)
-        drawEllipse(
-                stateMach['BallPosition'][0]/w2h,
-                stateMach['BallPosition'][1],
-                0.1, 0.1,
-                w2h,
-                (0.42, 0.0, 0.85, 1.0)
-                )
+        #drawEllipse(
+                #stateMach['BallPosition'][0]/w2h,
+                #stateMach['BallPosition'][1],
+                #0.1, 0.1,
+                #w2h,
+                #(0.42, 0.0, 0.85, 1.0)
+                #)
 
         # Update Ball position based on its cartesian velocity vector
         tmx = stateMach['BallPosition'][0]
@@ -127,7 +128,33 @@ def drawTest():
                 blu,
                 red 
                 )
+
+        tms = stateMach['UIelements']['testMenu'].getSize()
+        mx = stateMach['UIelements']['testMenu'].getPosX()
+        my = stateMach['UIelements']['testMenu'].getPosY()
+        dmx = mx + stateMach['Menus']['testMenu'].getDeployed()
+        dmy = my + stateMach['Menus']['testMenu'].getDeployed()*(7.75)
+        if (mx == dmx) and (my == dmy):
+            drawEllipse(
+                    mx*tms,
+                    my*tms,
+                    tms, tms,
+                    w2h,
+                    stateMach['faceColor']
+                    )
+        else:
+            drawPill(
+                    mx*tms,
+                    my*tms,
+                    dmx*tms,
+                    dmy*tms,
+                    1.0*tms,
+                    w2h,
+                    stateMach['faceColor'],
+                    stateMach['faceColor']
+                    )
         pass
+
     except Exception as OOF:
         print(traceback.format_exc())
         print("Error:", OOF)
@@ -137,9 +164,21 @@ def watchTest():
     try:
         w2h = stateMach['w2h']
         if (watchScreen()):
-            tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -w2h, w2h)
-            tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
-            stateMach['BallPosition'] = (tmx, tmy)
+            #tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -w2h, w2h)
+            #tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
+            #stateMach['BallPosition'] = (tmx, tmy)
+
+            if (watchDot(
+                stateMach['UIelements']['testMenu'].getTarPosX(),
+                stateMach['UIelements']['testMenu'].getTarPosY(),
+                #mapRanges(stateMach['UIelements']['testMenu'].getTarPosX(), -1.0,  1.0, 0, stateMach['wx']*2),  # X coord of button
+                #mapRanges(stateMach['UIelements']['testMenu'].getTarPosY(),  1.0, -1.0, 0, stateMach['wy']*2),  # Y coord of button
+                stateMach['UIelements']['testMenu'].getTarSize()*2.0)
+                and
+                stateMach['mousePressed']
+                ):
+                print("quack")
+                stateMach['Menus']['testMenu'].toggleOpen()
             pass
         if (stateMach['mouseReleased']):
             stateMach['BallVelocity'] = stateMach['cursorVelSmoothed']
@@ -344,6 +383,9 @@ def drawElements():
 def watchHomeInput():
     global stateMach
 
+    # convenience / readibility variable
+    w2h = stateMach['w2h']
+
     # Placeholder variable
     Light = 0
 
@@ -373,8 +415,8 @@ def watchHomeInput():
         if (len(stateMach['lamps']) > 0):
             for i in range(len(stateMach['bulbButtons'])):
 
-                posX = mapRanges(stateMach['bulbButtons'][i][0], -stateMach['w2h'], stateMach['w2h'], 0, stateMach['wx']*2)# X coord of button
-                posY = mapRanges(stateMach['bulbButtons'][i][1],               1.0,             -1.0, 0, stateMach['wy']*2)# Y coord of button
+                posX = mapRanges(stateMach['bulbButtons'][i][0], -w2h,  w2h, 0, stateMach['wx']*2)# X coord of button
+                posY = mapRanges(stateMach['bulbButtons'][i][1],  1.0, -1.0, 0, stateMach['wy']*2)# Y coord of button
 
                 if (watchDot(
                     posX, posY,
@@ -394,26 +436,26 @@ def watchHomeInput():
                     stateMach['UIelements']['BulbButtons'].setTarSize(0.0)
 
                     stateMach['UIelements']['ColorTriangle'].setTarSize(1.0)
-                    stateMach['UIelements']['ColorTriangle'].setValue("coordX", stateMach['bulbButtons'][i][0]/stateMach['w2h'])
+                    stateMach['UIelements']['ColorTriangle'].setValue("coordX", stateMach['bulbButtons'][i][0]/w2h)
                     stateMach['UIelements']['ColorTriangle'].setValue("coordY", stateMach['bulbButtons'][i][1])
                     stateMach['UIelements']['ColorTriangle'].setTarPosX(0.0)
                     stateMach['UIelements']['ColorTriangle'].setTarPosY(0.0)
 
                     stateMach['UIelements']['HueRing'].setSize(0.0)
                     stateMach['UIelements']['HueRing'].setTarSize(1.0)
-                    stateMach['UIelements']['HueRing'].setValue("coordX", stateMach['bulbButtons'][i][0]/stateMach['w2h'])
+                    stateMach['UIelements']['HueRing'].setValue("coordX", stateMach['bulbButtons'][i][0]/w2h)
                     stateMach['UIelements']['HueRing'].setValue("coordY", stateMach['bulbButtons'][i][1])
                     stateMach['UIelements']['HueRing'].setTarPosX(0.0)
                     stateMach['UIelements']['HueRing'].setTarPosY(0.0)
 
                     stateMach['UIelements']['BackButton'].setTarSize(0.2)
-                    stateMach['UIelements']['BackButton'].setValue("coordX", stateMach['bulbButtons'][i][0]/stateMach['w2h'])
+                    stateMach['UIelements']['BackButton'].setValue("coordX", stateMach['bulbButtons'][i][0]/w2h)
                     stateMach['UIelements']['BackButton'].setValue("coordY", stateMach['bulbButtons'][i][1])
                     stateMach['UIelements']['BackButton'].setTarPosX(-0.75)
                     stateMach['UIelements']['BackButton'].setTarPosY(-0.75)
 
                     stateMach['UIelements']['ConfirmButton'].setTarSize( 0.2)
-                    stateMach['UIelements']['ConfirmButton'].setValue("coordX", stateMach['bulbButtons'][i][0]/stateMach['w2h'])
+                    stateMach['UIelements']['ConfirmButton'].setValue("coordX", stateMach['bulbButtons'][i][0]/w2h)
                     stateMach['UIelements']['ConfirmButton'].setValue("coordY", stateMach['bulbButtons'][i][1])
                     stateMach['UIelements']['ConfirmButton'].setTarPosX( 0.75)
                     stateMach['UIelements']['ConfirmButton'].setTarPosY(-0.75)
@@ -430,7 +472,7 @@ def watchHomeInput():
             if (watchDot(
                 mapRanges(stateMach['UIelements']['AllSetButton'].getTarPosX(), -1.0,  1.0, 0, stateMach['wx']*2),  # X coord of button
                 mapRanges(stateMach['UIelements']['AllSetButton'].getTarPosY(),  1.0, -1.0, 0, stateMach['wy']*2),  # Y coord of button
-                min(stateMach['wx'], stateMach['wy'])*0.2)          # Button Radius
+                stateMach['UIelements']['AllSetButton'].getSize()*min(stateMach['wx'], stateMach['wy'])*1.75)
                 and
                 len(stateMach['lamps']) > 0
                 and
@@ -460,13 +502,13 @@ def watchHomeInput():
                 stateMach['UIelements']['HueRing'].setTarPosY(0.0)
 
                 stateMach['UIelements']['BackButton'].setTarSize(0.2)
-                stateMach['UIelements']['BackButton'].setValue("coordX", stateMach['UIelements']['AllSetButton'].getPosX()/stateMach['w2h'])
+                stateMach['UIelements']['BackButton'].setValue("coordX", stateMach['UIelements']['AllSetButton'].getPosX()/w2h)
                 stateMach['UIelements']['BackButton'].setValue("coordY", stateMach['UIelements']['AllSetButton'].getPosY())
                 stateMach['UIelements']['BackButton'].setTarPosX(-0.75)
                 stateMach['UIelements']['BackButton'].setTarPosY(-0.75)
 
                 stateMach['UIelements']['ConfirmButton'].setTarSize( 0.2)
-                stateMach['UIelements']['ConfirmButton'].setValue("coordX", stateMach['UIelements']['AllSetButton'].getPosX()/stateMach['w2h'])
+                stateMach['UIelements']['ConfirmButton'].setValue("coordX", stateMach['UIelements']['AllSetButton'].getPosX()/w2h)
                 stateMach['UIelements']['ConfirmButton'].setValue("coordY", stateMach['UIelements']['AllSetButton'].getPosY())
                 stateMach['UIelements']['ConfirmButton'].setTarPosX( 0.75)
                 stateMach['UIelements']['ConfirmButton'].setTarPosY(-0.75)
@@ -675,7 +717,9 @@ def watchColrSettingInput():
 # Check if user is clicking in circle
 def watchDot(px, py, pr):
     global stateMach
-    if (1.0 >= pow((stateMach['cursorX']-px/2), 2) / pow(pr/2, 2) + pow((stateMach['cursorY']-py/2), 2) / pow(pr/2, 2)):
+    if (abs(pr) == 0.0):
+        return False
+    elif (1.0 >= pow((stateMach['cursorX']-px/2), 2) / pow(pr/2, 2) + pow((stateMach['cursorY']-py/2), 2) / pow(pr/2, 2)):
         return True
     else:
         return False
@@ -847,6 +891,8 @@ def display():
     # Update animation speed of UI elements
     for key in stateMach['UIelements']:
         stateMach['UIelements'][key].setTimeSlice(stateMach['tDiff'])
+    for key in stateMach['Menus']:
+        stateMach['Menus'][key].setTimeSlice(stateMach['tDiff'])
 
     # Update Colors of Lamps
     for i in range(len(stateMach['lamps'])):
@@ -862,6 +908,10 @@ def display():
     # Update UI animation
     for key in stateMach['UIelements']:
         stateMach['UIelements'][key].updateParams()
+
+    # Update Menu States
+    for key in stateMach['Menus']:
+        stateMach['Menus'][key].update()
 
     glutSwapBuffers()
     plugins.pluginLoader.updatePlugins()
@@ -1047,9 +1097,15 @@ if __name__ == '__main__':
     stateMach['cursorVelSmoothPol'] = (0.0, 0.0)
     stateMach['BallPosition']       = (0.0, 0.0)
     stateMach['BallVelocity']       = (0.0, 0.0)
+    stateMach['UIelements']         = {}
+    stateMach['Menus']              = {}
+
+    stateMach['Menus']['testMenu']  = Menu()
+    stateMach['UIelements']['testMenu'] = UIelement()
+    stateMach['UIelements']['testMenu'].setTarSize(0.1)
+    stateMach['UIelements']['testMenu'].setAccel(0.125)
 
     # Setup UI animation objects, initial parameters
-    stateMach['UIelements']         = {}
 
     stateMach['UIelements']['HueRing'] = UIelement()
     #stateMach['UIelements']['HueRing'].setTargetFaceColor(stateMach["faceColor"])
