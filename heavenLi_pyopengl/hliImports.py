@@ -24,12 +24,13 @@ print("Done!")
 print("Loading heavenLi Utilities...")
 import colorsys
 try:
-    from animUtils import *
+    #from animUtils import *
     from lampClass import *
     from rangeUtils import *
     import plugins.pluginLoader
     from hliUIutils import *
     from textUtils import *
+    from menuClass import *
 except Exception as OOF:
     print(traceback.format_exc())
     print("Error:", OOF)

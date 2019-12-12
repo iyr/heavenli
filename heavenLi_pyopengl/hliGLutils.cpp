@@ -44,14 +44,16 @@ PyObject* initShaders_hliGLutils    (PyObject* self, PyObject* args);
 PyObject* drawText_hliGLutils       (PyObject* self, PyObject* args);
 PyObject* buildAtlas_hliGLutils     (PyObject* self, PyObject* args);
 
+PyObject* drawEllipse_hliGLutils    (PyObject* self, PyObject* args);
+PyObject* drawPill_hliGLutils       (PyObject* self, PyObject* args);
+
 PyObject* drawHomeCircle_hliGLutils (PyObject* self, PyObject* args);
 PyObject* drawIconCircle_hliGLutils (PyObject* self, PyObject* args);
 PyObject* drawHomeLinear_hliGLutils (PyObject* self, PyObject* args);
 PyObject* drawIconLinear_hliGLutils (PyObject* self, PyObject* args);
 PyObject* drawIcon_hliGLutils       (PyObject* self, PyObject* args);
 
-PyObject* drawEllipse_hliGLutils    (PyObject* self, PyObject* args);
-PyObject* drawPill_hliGLutils       (PyObject* self, PyObject* args);
+PyObject* drawMenu_hliGLutils       (PyObject* self, PyObject* args);
 
 PyObject* drawArrow_hliGLutils      (PyObject* self, PyObject* args);
 PyObject* drawBulbButton_hliGLutils (PyObject* self, PyObject* args);
@@ -80,6 +82,8 @@ static PyMethodDef hliGLutils_methods[] = {
    { "drawHomeLinear",  (PyCFunction)drawHomeLinear_hliGLutils,   METH_VARARGS },
    { "drawIconLinear",  (PyCFunction)drawIconLinear_hliGLutils,   METH_VARARGS },
    { "drawIcon",        (PyCFunction)drawIcon_hliGLutils,         METH_VARARGS },
+
+   { "drawMenu",        (PyCFunction)drawMenu_hliGLutils,         METH_VARARGS },
 
    { "drawArrow",       (PyCFunction)drawArrow_hliGLutils,        METH_VARARGS },
    { "drawBulbButton",  (PyCFunction)drawBulbButton_hliGLutils,   METH_VARARGS },

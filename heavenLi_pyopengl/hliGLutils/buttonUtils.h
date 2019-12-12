@@ -47,3 +47,16 @@ void drawConfirm(
 #include "buttonUtils/drawConfirm.cpp"       // Draws a checkmark button
 //#include "buttonUtils/primDrawTest.cpp"      // used for testing primitive draw code
 
+void drawMenu(
+      GLfloat     gx,
+      GLfloat     gy,
+      GLfloat     scale,
+      GLfloat     direction,
+      GLfloat     deployed,
+      GLfloat     w2h,
+      GLfloat*    faceColor,
+      GLfloat*    detailColor,
+      drawCall*   MenuOpen,
+      drawCall*   MenuClosed
+      );
+#include "buttonUtils/drawMenu.cpp"
