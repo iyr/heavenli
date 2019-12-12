@@ -3,7 +3,7 @@ using namespace std;
 //drawCall    confirmButton;       // drawCall object
 extern std::map<std::string, drawCall> drawCalls;
 
-PyObject* drawConfirm_hliGLutils(PyObject* self, PyObject *args) {
+PyObject* drawConfirm_hliGLutils(PyObject* self, PyObject* args) {
    PyObject*   faceColorPyTup;
    PyObject*   extraColorPyTup;
    PyObject*   detailColorPyTup;
