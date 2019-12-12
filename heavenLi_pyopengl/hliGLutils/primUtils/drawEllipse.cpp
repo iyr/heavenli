@@ -51,6 +51,11 @@ PyObject* drawEllipse_hliGLutils(PyObject* self, PyObject *args) {
    Py_RETURN_NONE;
 }
 
+GLfloat prevGx;
+GLfloat prevGy;
+GLfloat prevSx;
+GLfloat prevSy;
+
 void drawEllipse(
       GLfloat     gx, 
       GLfloat     gy,
@@ -74,8 +79,10 @@ void drawEllipse(
 
       // Draw button face
       defineEllipse(
-            0.0f, 0.0f,
-            1.0f, 1.0f,
+            //0.0f, 0.0f,
+            //1.0f, 1.0f,
+            gx, gy,
+            sx, sy,
             circleSegments,
             faceColor,
             verts, colrs);
@@ -83,6 +90,29 @@ void drawEllipse(
       ellipseVerts = verts.size()/2;
 
       ellipseButton->buildCache(ellipseVerts, verts, colrs);
+   }
+
+   if (  prevGx   != gx ||
+         prevGy   != gy ||
+         prevSx   != sx ||
+         prevSy   != sy ){
+
+      GLint index = 0;
+
+      index = updateEllipseGeometry(
+            gx, gy,
+            sx, sy,
+            circleSegments,
+            index,
+            ellipseButton->coordCache
+            );
+
+      prevGx   = gx;
+      prevGy   = gy;
+      prevSx   = sx;
+      prevSy   = sy;
+
+      ellipseButton->updateCoordCache();
    }
 
    if (ellipseButton->colorsChanged) {
@@ -97,7 +127,8 @@ void drawEllipse(
       ellipseButton->updateColorCache();
    }
 
-   ellipseButton->updateMVP(gx, gy, sx, sy, 0.0f, w2h);
+   //ellipseButton->updateMVP(gx, gy, sx, sy, 0.0f, w2h);
+   ellipseButton->updateMVP(0.0f, 0.0f, 1.0f, 1.0f, 0.0f, w2h);
    ellipseButton->draw();
 
    return;
