@@ -130,7 +130,9 @@ void drawConfirm(
             radius,
             circleSegments/2,
             extraColor,
-            verts, colrs);
+            verts, 
+            colrs
+            );
 
       confirmVerts = verts.size()/2;
 
@@ -145,7 +147,8 @@ void drawConfirm(
             circleSegments,
             faceColor,
             index, 
-            confirmButton->colorCache);
+            confirmButton->colorCache
+            );
 
       index = updatePillColor(
             circleSegments/2,
