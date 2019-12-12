@@ -81,13 +81,13 @@ def drawTest():
 
         # test color that changes over time
         tmc = ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 1.0)
-        #drawEllipse(
-                #stateMach['BallPosition'][0]/w2h,
-                #stateMach['BallPosition'][1],
-                #0.1, 0.1,
-                #w2h,
-                #(0.42, 0.0, 0.85, 1.0)
-                #)
+        drawEllipse(
+                stateMach['BallPosition'][0],#/w2h,
+                stateMach['BallPosition'][1],
+                0.1, 0.1,
+                w2h,
+                (0.42, 0.0, 0.85, 1.0)
+                )
 
         # Update Ball position based on its cartesian velocity vector
         tmx = stateMach['BallPosition'][0]
@@ -115,8 +115,13 @@ def drawTest():
 
         red = (1.0, 0.0, 0.0, 1.0)
         blu = (0.0, 0.0, 1.0, 1.0)
-        tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -w2h, w2h)
-        tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
+
+        if (w2h >= 1.0):
+            tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -w2h, w2h)
+            tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
+        else:
+            tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -1.0, 1.0)
+            tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0/w2h, -1.0/w2h)
 
         drawPill(
                 tmx,
@@ -129,30 +134,7 @@ def drawTest():
                 red 
                 )
 
-        tms = stateMach['UIelements']['testMenu'].getSize()
-        mx = stateMach['UIelements']['testMenu'].getPosX()
-        my = stateMach['UIelements']['testMenu'].getPosY()
-        dmx = mx + stateMach['Menus']['testMenu'].getDeployed()
-        dmy = my + stateMach['Menus']['testMenu'].getDeployed()*(7.75)
-        if (mx == dmx) and (my == dmy):
-            drawEllipse(
-                    mx*tms,
-                    my*tms,
-                    tms, tms,
-                    w2h,
-                    stateMach['faceColor']
-                    )
-        else:
-            drawPill(
-                    mx*tms,
-                    my*tms,
-                    dmx*tms,
-                    dmy*tms,
-                    1.0*tms,
-                    w2h,
-                    stateMach['faceColor'],
-                    stateMach['faceColor']
-                    )
+        stateMach['Menus']['testMenu'].draw(stateMach)
         pass
 
     except Exception as OOF:
@@ -164,20 +146,17 @@ def watchTest():
     try:
         w2h = stateMach['w2h']
         if (watchScreen()):
-            #tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -w2h, w2h)
-            #tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
-            #stateMach['BallPosition'] = (tmx, tmy)
+            tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -w2h, w2h)
+            tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
+            stateMach['BallPosition'] = (tmx, tmy)
 
             if (watchDot(
-                stateMach['UIelements']['testMenu'].getTarPosX(),
-                stateMach['UIelements']['testMenu'].getTarPosY(),
-                #mapRanges(stateMach['UIelements']['testMenu'].getTarPosX(), -1.0,  1.0, 0, stateMach['wx']*2),  # X coord of button
-                #mapRanges(stateMach['UIelements']['testMenu'].getTarPosY(),  1.0, -1.0, 0, stateMach['wy']*2),  # Y coord of button
-                stateMach['UIelements']['testMenu'].getTarSize()*2.0)
+                mapRanges(stateMach['UIelements']['testMenu'].getTarPosX(), -1.0,  1.0, 0, stateMach['wx']*2),  # X coord of button
+                mapRanges(stateMach['UIelements']['testMenu'].getTarPosY(),  1.0, -1.0, 0, stateMach['wy']*2),  # Y coord of button
+                stateMach['UIelements']['testMenu'].getTarSize()*min(stateMach['wx'], stateMach['wy']))
                 and
                 stateMach['mousePressed']
                 ):
-                print("quack")
                 stateMach['Menus']['testMenu'].toggleOpen()
             pass
         if (stateMach['mouseReleased']):
@@ -472,7 +451,7 @@ def watchHomeInput():
             if (watchDot(
                 mapRanges(stateMach['UIelements']['AllSetButton'].getTarPosX(), -1.0,  1.0, 0, stateMach['wx']*2),  # X coord of button
                 mapRanges(stateMach['UIelements']['AllSetButton'].getTarPosY(),  1.0, -1.0, 0, stateMach['wy']*2),  # Y coord of button
-                stateMach['UIelements']['AllSetButton'].getSize()*min(stateMach['wx'], stateMach['wy'])*1.75)
+                stateMach['UIelements']['AllSetButton'].getTarSize()*min(stateMach['wx'], stateMach['wy'])*1.75)
                 and
                 len(stateMach['lamps']) > 0
                 and
@@ -1102,8 +1081,11 @@ if __name__ == '__main__':
 
     stateMach['Menus']['testMenu']  = Menu()
     stateMach['UIelements']['testMenu'] = UIelement()
-    stateMach['UIelements']['testMenu'].setTarSize(0.1)
+    stateMach['UIelements']['testMenu'].setTarSize(0.15)
     stateMach['UIelements']['testMenu'].setAccel(0.125)
+    stateMach['UIelements']['testMenu'].setAccel(0.125)
+    stateMach['UIelements']['testMenu'].setTarPosX(-0.775)
+    stateMach['UIelements']['testMenu'].setTarPosY(-0.775)
 
     # Setup UI animation objects, initial parameters
 
