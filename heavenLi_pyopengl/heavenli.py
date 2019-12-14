@@ -49,7 +49,7 @@ def framerate():
         print("Too Fast, Too Quick!!")
 
     if t - stateMach['t1'] >= (0.0125):
-        calcCursorVelocity(0)
+        #calcCursorVelocity(0)
         stateMach['t1'] = t
 
     if t - stateMach['t0'] >= 1.0:
@@ -81,19 +81,29 @@ def drawTest():
 
         # test color that changes over time
         tmc = ( 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 0.9*(stateMach['someVar']/100), 1.0)
+        tmx = stateMach['BallPosition'][0]
+        tmy = stateMach['BallPosition'][1]
+
+        if (w2h < 1.0):
+            tmx /= w2h
+            tmy /= w2h
         drawEllipse(
-                stateMach['BallPosition'][0],#/w2h,
-                stateMach['BallPosition'][1],
+                tmx,
+                tmy,
                 0.1, 0.1,
                 w2h,
                 (0.42, 0.0, 0.85, 1.0)
                 )
 
+        cDrag  = 1.0
+        accelX = -stateMach['BallVelocity'][0]*cDrag
+        accelY = -stateMach['BallVelocity'][1]*cDrag
         # Update Ball position based on its cartesian velocity vector
-        tmx = stateMach['BallPosition'][0]
-        tmy = stateMach['BallPosition'][1]
-        tmx += stateMach['BallVelocity'][0]*0.2
-        tmy += stateMach['BallVelocity'][1]*0.2
+        PxDs = min(stateMach['windowDimW'], stateMach['windowDimH'])
+        tDelta = (time.time()-stateMach['tPhys'])
+
+        tmx = stateMach['BallPosition'][0] + 2.0*(stateMach['BallVelocity'][0]*tDelta + 0.5*accelX*pow(tDelta, 2.0))
+        tmy = stateMach['BallPosition'][1] + 2.0*(stateMach['BallVelocity'][1]*tDelta + 0.5*accelY*pow(tDelta, 2.0))
 
         stateMach['BallPosition'] = (tmx, tmy)
 
@@ -110,11 +120,34 @@ def drawTest():
             tmy = -abs(stateMach['BallVelocity'][1])
 
         # Reduce Ball's velocity over time to simulate drag
-        cDrag = 0.975
-        stateMach['BallVelocity'] = (tmx*cDrag, tmy*cDrag)
+        tvx = tmx + accelX*tDelta
+        tvy = tmy + accelY*tDelta
+        if (sqrt(pow(tvx, 2.0)+pow(tvy, 2.0)) <= 0.01):
+            stateMach['BallVelocity'] = (0.0, 0.0)
+        else:
+            stateMach['BallVelocity'] = (tvx, tvy)
+        stateMach['tPhys'] = time.time()
 
         red = (1.0, 0.0, 0.0, 1.0)
         blu = (0.0, 0.0, 1.0, 1.0)
+
+        if (w2h >= 1.0):
+            tmx = stateMach['BallPosition'][0]
+            tmy = stateMach['BallPosition'][1]
+        else:
+            tmx = stateMach['BallPosition'][0]/w2h
+            tmy = stateMach['BallPosition'][1]/w2h
+
+        drawPill(
+                tmx,
+                tmy,
+                tmx + stateMach['BallVelocity'][0]*0.1,
+                tmy + stateMach['BallVelocity'][1]*0.1,
+                0.02, 
+                w2h, 
+                blu,
+                red 
+                )
 
         if (w2h >= 1.0):
             tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -w2h, w2h)
@@ -126,8 +159,8 @@ def drawTest():
         drawPill(
                 tmx,
                 tmy,
-                tmx + stateMach['cursorVelSmoothed'][0]*0.5,
-                tmy + stateMach['cursorVelSmoothed'][1]*0.5,
+                tmx + stateMach['cursorVelSmoothed'][0]*0.1,
+                tmy + stateMach['cursorVelSmoothed'][1]*0.1,
                 0.02, 
                 w2h, 
                 blu,
@@ -774,14 +807,22 @@ def vecCart2Pol(vector):
 def calcCursorVelocity(millis):
     global stateMach
 
+    PxDs = min(stateMach['windowDimW'], stateMach['windowDimH'])
+
+    w2h = stateMach['w2h']
+
     # Get time since louse mouse callback
-    deltaT = float((time.time() - stateMach['tCursor'])*1000.0)
+    deltaT = float((time.time() - stateMach['tCursor']))
 
     # Calculate Cursor Velocity Vector
-    deltaX  = float(stateMach['cursorX'] - stateMach['prevCursorX'])
-    deltaY  = float(stateMach['cursorY'] - stateMach['prevCursorY'])
-    speedX  = deltaX/deltaT
-    speedY  = deltaY/deltaT
+    ccx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -w2h, w2h)
+    ccy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
+    pcx = mapRanges(stateMach['prevCursorX'], 0, stateMach['windowDimW'], -w2h, w2h)
+    pcy = mapRanges(stateMach['prevCursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
+    deltaX = ccx-pcx
+    deltaY = ccy-pcy
+    speedX = deltaX/deltaT
+    speedY = deltaY/deltaT
 
     # Convert vector to polar coordinates
     tmv = vecCart2Pol((speedX, speedY))
@@ -789,7 +830,7 @@ def calcCursorVelocity(millis):
     speed = tmv[1]
     
     # Flip vector due for translation from pixel-coord space to GL-coord space
-    if ang != 0:
+    if ang != 0.0:
         ang = 360.0 - ang
 
     # Insert vector magnitude into list of vectors magnitudes, remove oldest element
@@ -809,16 +850,16 @@ def calcCursorVelocity(millis):
     stateMach['prevCursorY'] = stateMach['cursorY']
 
     tma = radians(stateMach['cursorVelocity'][0])
-    tms = stateMach['cursorVelocity'][1]*2.0
-    if (tms == 0.0):
-        tms = 0.000000000001
+    tms = stateMach['cursorVelocity'][1]
+    if (abs(tms) <= 0.000001):
+        tms = 0.0
 
-    tmnx = cos(tma)*tms
+    tmnx = speedX
     tmn  = len(stateMach['prevCurVelXs'])
     stateMach['prevCurVelXs'].insert(0, tmnx)
     stateMach['prevCurVelXs'] = stateMach['prevCurVelXs'][0:tmn]
 
-    tmny = sin(tma)*tms
+    tmny = speedY
     tmn  = len(stateMach['prevCurVelYs'])
     stateMach['prevCurVelYs'].insert(0, tmny)
     stateMach['prevCurVelYs'] = stateMach['prevCurVelYs'][0:tmn]
@@ -854,6 +895,7 @@ def display():
     #stateMach['tDiff'] = 6.28318/stateMach['fps']
 
     drawTestObjects = False
+    calcCursorVelocity(0)
 
     if (not drawTestObjects):
         drawElements()
@@ -1030,6 +1072,7 @@ if __name__ == '__main__':
     stateMach['t0']                 = time.time()
     stateMach['t1']                 = time.time()
     stateMach['tCursor']            = time.time()
+    stateMach['tPhys']              = time.time()
     stateMach['frames']             = 0
     stateMach['lamps']              = []
     stateMach['screen']             = 0

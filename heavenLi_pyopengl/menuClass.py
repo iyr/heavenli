@@ -19,7 +19,7 @@ class Menu:
         self.deltaCenter = 0.0
 
         # Current selected element of the menu (index: list, key: dict, value: range-tuple)
-        self.selectedElement = None
+        self.selectedElement = 0.0
 
         # True iff deployed == 1.0
         self.isOpen = False
@@ -32,6 +32,9 @@ class Menu:
 
         # Floating cursor for selecting via dragging or flicking (inertial scrolling)
         self.selectionCursor = 0.0
+
+        # Number of elements
+        self.numElements = 0
 
     # Returns True if menu is fully deployed and ready to use
     def isOpen(self):
@@ -76,8 +79,8 @@ class Menu:
         w2h = stateMach['w2h']
 
         tms = stateMach['UIelements']['testMenu'].getSize()
-        mx = stateMach['UIelements']['testMenu'].getPosX()
-        my = stateMach['UIelements']['testMenu'].getPosY()
+        mx = stateMach['UIelements']['testMenu'].getTarPosX()
+        my = stateMach['UIelements']['testMenu'].getTarPosY()
 
         drawMenu(
                 mx,
@@ -85,6 +88,10 @@ class Menu:
                 tms,
                 self.direction,
                 self.deployed.getVal(),
+                self.selectedElement,
+                self.numElements,
+                self.menuType,
+                self.dispIndex,
                 w2h,
                 stateMach['faceColor'],
                 stateMach['detailColor']
