@@ -48,15 +48,19 @@ void drawConfirm(
 //#include "buttonUtils/primDrawTest.cpp"      // used for testing primitive draw code
 
 void drawMenu(
-      GLfloat     gx,
-      GLfloat     gy,
-      GLfloat     scale,
-      GLfloat     direction,
-      GLfloat     deployed,
-      GLfloat     w2h,
-      GLfloat*    faceColor,
-      GLfloat*    detailColor,
-      drawCall*   MenuOpen,
-      drawCall*   MenuClosed
+      GLfloat     gx, 
+      GLfloat     gy,            // Menu Position
+      GLfloat     scale,         // Menu Size
+      GLfloat     direction,     // Direction, in degrees about the unit circle, the menu slides out to
+      GLfloat     deployed,      // 0.0=closed, 1.0=completely open
+      GLfloat     floatingIndex, // index of the selected element, used for scroll bar
+      GLuint      numElements,   // number of elements
+      GLuint      menuType,      // 0=carousel w/ rollover, 1=linear strip w/ terminals, 2=value slider w/ min/max
+      GLboolean   drawIndex,     // whether or not to draw the index over the number of elements
+      GLfloat     w2h,           // width to height ratio
+      GLfloat*    faceColor,     // Main color for the body of the menu
+      GLfloat*    detailColor,   // scroll bar, 
+      drawCall*   MenuOpen,      // drawCall object for drawing the menu open
+      drawCall*   MenuClosed     // drawCall object for drawing the menu closed
       );
 #include "buttonUtils/drawMenu.cpp"
