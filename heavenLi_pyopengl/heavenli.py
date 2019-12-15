@@ -77,6 +77,7 @@ def framerate():
 # Function for testing drawcode
 def drawTest():
     try:
+        stateMach['Menus']['testMenu'].setDir(360.0*stateMach['someVar']/100.0)
         w2h = stateMach['w2h']
 
         # test color that changes over time
@@ -894,7 +895,7 @@ def display():
     #stateMach['tDiff'] = 3.14159/stateMach['fps']
     #stateMach['tDiff'] = 6.28318/stateMach['fps']
 
-    drawTestObjects = False
+    drawTestObjects = True
     calcCursorVelocity(0)
 
     if (not drawTestObjects):
@@ -1127,8 +1128,10 @@ if __name__ == '__main__':
     stateMach['UIelements']['testMenu'].setTarSize(0.15)
     stateMach['UIelements']['testMenu'].setAccel(0.125)
     stateMach['UIelements']['testMenu'].setAccel(0.125)
-    stateMach['UIelements']['testMenu'].setTarPosX(-0.775)
-    stateMach['UIelements']['testMenu'].setTarPosY(-0.775)
+    #stateMach['UIelements']['testMenu'].setTarPosX(-0.775)
+    #stateMach['UIelements']['testMenu'].setTarPosY(-0.775)
+    stateMach['UIelements']['testMenu'].setTarPosX(0.0)
+    stateMach['UIelements']['testMenu'].setTarPosY(0.0)
 
     # Setup UI animation objects, initial parameters
 
