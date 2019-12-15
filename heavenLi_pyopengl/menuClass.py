@@ -36,6 +36,11 @@ class Menu:
         # Number of elements
         self.numElements = 0
 
+    # Set the deployment slide-out direction
+    def setDir(self, angle):
+        self.direction = angle
+        return
+
     # Returns True if menu is fully deployed and ready to use
     def isOpen(self):
         if self.deployed.getVal() == 1.0:
