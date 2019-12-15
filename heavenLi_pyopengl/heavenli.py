@@ -103,22 +103,34 @@ def drawTest():
         PxDs = min(stateMach['windowDimW'], stateMach['windowDimH'])
         tDelta = (time.time()-stateMach['tPhys'])
 
-        tmx = stateMach['BallPosition'][0] + 2.0*(stateMach['BallVelocity'][0]*tDelta + 0.5*accelX*pow(tDelta, 2.0))
-        tmy = stateMach['BallPosition'][1] + 2.0*(stateMach['BallVelocity'][1]*tDelta + 0.5*accelY*pow(tDelta, 2.0))
+        # Update Ball Position based on velocity + acceleration
+        tmx = stateMach['BallPosition'][0]+2.0*stateMach['BallVelocity'][0]*tDelta+accelX*pow(tDelta, 2.0)
+        tmy = stateMach['BallPosition'][1]+2.0*stateMach['BallVelocity'][1]*tDelta+accelY*pow(tDelta, 2.0)
+
+        # Wrap ball around to opposite side if it hits edge of screen
+        if (tmx < -w2h):
+            tmx = w2h
+        if (tmx > w2h):
+            tmx = -w2h
+        if (tmy < -1.0):
+            tmy = 1.0
+        if (tmy > 1.0):
+            tmy = -1.0
 
         stateMach['BallPosition'] = (tmx, tmy)
 
-        # Reverse Ball's Velocity component(s) if it hits edge of screen
         tmx = stateMach['BallVelocity'][0]
         tmy = stateMach['BallVelocity'][1]
-        if (stateMach['BallPosition'][0] < -w2h):
-            tmx = abs(stateMach['BallVelocity'][0])
-        if (stateMach['BallPosition'][0] > w2h):
-            tmx = -abs(stateMach['BallVelocity'][0])
-        if (stateMach['BallPosition'][1] < -1.0):
-            tmy = abs(stateMach['BallVelocity'][1])
-        if (stateMach['BallPosition'][1] > 1.0):
-            tmy = -abs(stateMach['BallVelocity'][1])
+
+        ## Reverse Ball's Velocity component(s) if it hits edge of screen
+        #if (stateMach['BallPosition'][0] < -w2h):
+            #tmx = abs(stateMach['BallVelocity'][0])
+        #if (stateMach['BallPosition'][0] > w2h):
+            #tmx = -abs(stateMach['BallVelocity'][0])
+        #if (stateMach['BallPosition'][1] < -1.0):
+            #tmy = abs(stateMach['BallVelocity'][1])
+        #if (stateMach['BallPosition'][1] > 1.0):
+            #tmy = -abs(stateMach['BallVelocity'][1])
 
         # Reduce Ball's velocity over time to simulate drag
         tvx = tmx + accelX*tDelta
@@ -895,7 +907,7 @@ def display():
     #stateMach['tDiff'] = 3.14159/stateMach['fps']
     #stateMach['tDiff'] = 6.28318/stateMach['fps']
 
-    drawTestObjects = True
+    drawTestObjects = False
     calcCursorVelocity(0)
 
     if (not drawTestObjects):
