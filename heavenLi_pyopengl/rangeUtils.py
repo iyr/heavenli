@@ -1,3 +1,4 @@
+# Maps a value from one range to another
 def mapRanges(value, leftMin, leftMax, rightMin, rightMax):
     # Figure out how 'wide' each range is
     leftSpan = leftMax - leftMin
@@ -7,6 +8,7 @@ def mapRanges(value, leftMin, leftMax, rightMin, rightMax):
     # Convert the 0-1 range into a value in the right range.
     return rightMin + (valueScaled * rightSpan)
 
+# Limits a value to a range
 def constrain(val, min_val, max_val):
     if (val <= min_val):
         return min_val
@@ -14,3 +16,16 @@ def constrain(val, min_val, max_val):
         return max_val
     else:
         return val
+
+# Used to safely index list objects with supercritical index values
+def rollover(index, length):
+    if (index >= 0) and (index < length):
+        return index
+    elif (index >= length):
+        while (index >= length):
+            index -= length
+        return index
+    elif (index < 0):
+        while (index < 0):
+            index += length
+        return index
