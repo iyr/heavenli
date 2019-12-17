@@ -1,6 +1,7 @@
 from hliUIutils import UIparam
 from hliGLutils import *
 from rangeUtils import *
+import time
 
 # Class definition for a drop/slide out menu
 class Menu:
@@ -31,14 +32,55 @@ class Menu:
         self.dispIndex = True
 
         # Floating cursor for selecting via dragging or flicking (inertial scrolling)
-        self.selectionCursor = 0.0
+        # One-dimensional value parallel to the menu deployment direction
+        self.selectionCursorPosition = 0.0
+        self.selectionCursorVelocity = 0.0
 
         # Number of elements
         self.numElements = 0
 
+        # Timer for updating physics
+        self.tPhys = time.time()
+
+    # Set the cursor's velocity magnitude (speed)
+    def setCurVel(self, velocity):
+
+        # Input is a single value
+        if type(velocity) is float:
+            self.selectionCursorVelocity = float(velocity)
+
+        # Input is a tuple velocity vector
+        elif type(velocity) is tuple:
+            tmvx = velocity[0]*cos(self.direction)
+            tmvy = velocity[1]*sin(self.direction)
+            self.selectionCursorVelocity = hypot(tmvx, tmvy)
+
+        # Input unknown
+        else:
+            self.selectionCursorVelocity = 0.0
+        return
+
+    # Set the selection cursor's position
+    def setCurPos(self, position):
+
+        # Input is a single value
+        if type(position) is float:
+            self.selectionCursorPosition = float(position)
+
+        # Input is a tuple velocity vector
+        elif type(position) is tuple:
+            tmvx = position[0]*cos(self.direction)
+            tmvy = position[1]*sin(self.direction)
+            self.selectionCursorPosition = hypot(tmvx, tmvy)
+
+        # Input unknown
+        else:
+            self.selectionCursorPosition = 0.0
+        return
+
     # Set the deployment slide-out direction
     def setDir(self, angle):
-        self.direction = angle
+        self.direction = float(angle)
         return
 
     # Returns True if menu is fully deployed and ready to use
@@ -72,6 +114,23 @@ class Menu:
 
     # Update parameters n' stuff
     def update(self):
+
+        # Set cursor acceleration + decay rate
+        cDrag   = 1.0
+        accel   = self.selectionCursorVelocity*cDrag
+
+        # Get time since last update to decouple update rate from framerate
+        tDelta  = time.time()-self.tPhys
+
+        # Update Cursor position
+        self.selectionCursorPosition += 2.0*self.selectionCursorVelocity*tDelta
+        self.selectionCursorPosition += accel*pow(tDelta, 2.0)
+
+        # Decay Cursor velocity over time to simulate drag
+        self.selectionCursorVelocity += accel*tDelta
+        if self.selectionCursorPosition <= 0.01:
+            self.selectionCursorVelocity = 0.0
+
         self.deployed.updateVal()
         return
 
@@ -80,6 +139,12 @@ class Menu:
         self.deployed.setTimeSlice(tDiff)
         return
 
+    # Set whether or not to draw index
+    def setIndexDraw(self, doDraw):
+        self.dispIndex = bool(doDraw)
+        return
+
+    # The actual OpenGL draw call
     def draw(self, stateMach):
         w2h = stateMach['w2h']
 
