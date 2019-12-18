@@ -21,6 +21,11 @@ from cobs import cobs
 from platform import machine
 print("Done!")
 
+print("Loading Geometry Utilities...")
+from shapely.geometry import Point
+from shapely.geometry.polygon import Polygon
+print("Done!")
+
 print("Loading heavenLi Utilities...")
 import colorsys
 try:

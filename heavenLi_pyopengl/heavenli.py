@@ -77,7 +77,7 @@ def framerate():
 # Function for testing drawcode
 def drawTest():
     try:
-        stateMach['Menus']['testMenu'].setDir(360.0*stateMach['someVar']/100.0)
+        #stateMach['Menus']['testMenu'].setDir(360.0*stateMach['someVar']/100.0)
         w2h = stateMach['w2h']
 
         # test color that changes over time
@@ -196,18 +196,16 @@ def watchTest():
             tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
             stateMach['BallPosition'] = (tmx, tmy)
 
-            # X coord of button
-            tmx = mapRanges(stateMach['UIelements']['testMenu'].getTarPosX(), -1.0,  1.0, 0, stateMach['wx']*2)  
-            # Y coord of button
-            tmy = mapRanges(stateMach['UIelements']['testMenu'].getTarPosY(),  1.0, -1.0, 0, stateMach['wy']*2)  
-            # Size of button
-            tms = stateMach['UIelements']['testMenu'].getTarSize()*min(stateMach['wx'], stateMach['wy'])
+            tmx = stateMach['UIelements']['testMenu'].getTarPosX()*w2h
+            tmy = stateMach['UIelements']['testMenu'].getTarPosY()
+            tms = stateMach['UIelements']['testMenu'].getTarSize()
+
+            if (w2h < 1.0):
+                tms *= w2h
             
             if (watchDot(tmx, tmy, tms)
                 and
                 stateMach['mousePressed']
-                #and
-                #not stateMach['Menus']['testMenu'].isOpen()
                 ):
                 stateMach['Menus']['testMenu'].toggleOpen()
 
@@ -241,6 +239,7 @@ def drawElements():
     fcc = stateMach['faceColor']
     dtc = stateMach['detailColor']
 
+
     try:
         # Draw Background
         if (len(stateMach['lamps']) > 0):
@@ -264,6 +263,10 @@ def drawElements():
                         stateMach['w2h'],
                         stateMach['lamps'][Light].getBulbsCurrentRGB()
                         )
+
+        # Draw Menus
+        #for key in stateMach['Menus']:
+            #stateMach['Menus'][key].draw(stateMach)
 
         # Draw Granularity Rocker Underneath Clock
         if (stateMach['w2h'] <= 1.0):
@@ -432,6 +435,19 @@ def watchHomeInput():
     # Watch Home Screen for input
     if (watchScreen()):
     
+        #tmx = stateMach['UIelements']['testMenu'].getTarPosX()*w2h
+        #tmy = stateMach['UIelements']['testMenu'].getTarPosY()
+        #tms = stateMach['UIelements']['testMenu'].getTarSize()
+
+        #if (w2h < 1.0):
+            #tms *= w2h
+            
+        #if (watchDot(tmx, tmy, tms)
+            #and
+            #stateMach['mousePressed']
+            #):
+            #stateMach['Menus']['testMenu'].toggleOpen()
+
         tms = stateMach['UIelements']['MasterSwitch'].getTarSize()
         # Watch Clock for input
         if (w2h < 1.0):
@@ -471,7 +487,6 @@ def watchHomeInput():
                     posY,
                     tms
                     )   
-                    #min(stateMach['wx'], stateMach['wy'])*0.5*0.3)                                      # Button Radius
                     and
                     len(stateMach['lamps']) > 0
                     and
@@ -1209,16 +1224,16 @@ if __name__ == '__main__':
     stateMach['Menus']              = {}
 
     stateMach['Menus']['testMenu']  = Menu()
-    stateMach['Menus']['testMenu'].setIndexDraw(False)
+    stateMach['Menus']['testMenu'].setIndexDraw(True)
 
     stateMach['UIelements']['testMenu'] = UIelement()
-    stateMach['UIelements']['testMenu'].setTarSize(0.15)
+    stateMach['UIelements']['testMenu'].setTarSize(0.2)
     stateMach['UIelements']['testMenu'].setAccel(0.125)
     stateMach['UIelements']['testMenu'].setAccel(0.125)
-    #stateMach['UIelements']['testMenu'].setTarPosX(-0.775)
-    #stateMach['UIelements']['testMenu'].setTarPosY(-0.775)
-    stateMach['UIelements']['testMenu'].setTarPosX(0.0)
-    stateMach['UIelements']['testMenu'].setTarPosY(0.0)
+    stateMach['UIelements']['testMenu'].setTarPosX(-0.775)
+    stateMach['UIelements']['testMenu'].setTarPosY(-0.775)
+    #stateMach['UIelements']['testMenu'].setTarPosX(0.0)
+    #stateMach['UIelements']['testMenu'].setTarPosY(0.0)
 
     # Setup UI animation objects, initial parameters
 

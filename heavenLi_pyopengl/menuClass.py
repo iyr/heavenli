@@ -22,9 +22,6 @@ class Menu:
         # Current selected element of the menu (index: list, key: dict, value: range-tuple)
         self.selectedElement = 0.0
 
-        # True iff deployed == 1.0
-        self.isOpen = False
-
         # Which direction, in degrees about the unit circle, the menu slides out
         self.direction = 90.0
 
@@ -41,6 +38,12 @@ class Menu:
 
         # Timer for updating physics
         self.tPhys = time.time()
+
+    # Watch menu for scroll input
+    def watch(self, mmx, mmy, tmx, tmy, tms, tmv):
+        #if (tms >= hypot(tmx, tmy)
+        pass
+        return
 
     # Set the cursor's velocity magnitude (speed)
     def setCurVel(self, velocity):
