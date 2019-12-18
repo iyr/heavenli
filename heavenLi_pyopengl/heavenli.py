@@ -196,18 +196,33 @@ def watchTest():
             tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
             stateMach['BallPosition'] = (tmx, tmy)
 
-            if (watchDot(
-                mapRanges(stateMach['UIelements']['testMenu'].getTarPosX(), -1.0,  1.0, 0, stateMach['wx']*2),  # X coord of button
-                mapRanges(stateMach['UIelements']['testMenu'].getTarPosY(),  1.0, -1.0, 0, stateMach['wy']*2),  # Y coord of button
-                stateMach['UIelements']['testMenu'].getTarSize()*min(stateMach['wx'], stateMach['wy']))
+            # X coord of button
+            tmx = mapRanges(stateMach['UIelements']['testMenu'].getTarPosX(), -1.0,  1.0, 0, stateMach['wx']*2)  
+            # Y coord of button
+            tmy = mapRanges(stateMach['UIelements']['testMenu'].getTarPosY(),  1.0, -1.0, 0, stateMach['wy']*2)  
+            # Size of button
+            tms = stateMach['UIelements']['testMenu'].getTarSize()*min(stateMach['wx'], stateMach['wy'])
+            
+            if (watchDot(tmx, tmy, tms)
                 and
                 stateMach['mousePressed']
+                #and
+                #not stateMach['Menus']['testMenu'].isOpen()
                 ):
                 stateMach['Menus']['testMenu'].toggleOpen()
+
+            tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -w2h, w2h)
+            tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
+            tms = stateMach['UIelements']['testMenu'].getTarSize()#*min(stateMach['wx'], stateMach['wy'])
+            tmv = stateMach['cursorVelSmoothed']
+            mmx = stateMach['UIelements']['testMenu'].getTarPosX()
+            mmy = stateMach['UIelements']['testMenu'].getTarPosX()
+            
+            stateMach['Menus']['testMenu'].watch(mmx, mmy, tmx, tmy, tms, tmv)
+
             pass
         if (stateMach['mouseReleased']):
             stateMach['BallVelocity'] = stateMach['cursorVelSmoothed']
-
         pass
     except Exception as OOF:
         print(traceback.format_exc())
@@ -554,24 +569,26 @@ def watchColrSettingInput():
     global stateMach
 
     Light = 0
+    # Convenience variable
+    w2h = stateMach['w2h']
 
     # Watch Color Picker Screen for input
     if (watchScreen()):
 
         gctmx = stateMach['UIelements']['GranChanger'].getTarSize()*(24.0/36.0)
         tmr = min(stateMach['wx'], stateMach['wy']*(12.0/36.0)*0.3)
-        if (stateMach['w2h'] <= 1.0):
-            gctmy = stateMach['UIelements']['GranChanger'].getPosY()*stateMach['w2h']
+        if (w2h <= 1.0):
+            gctmy = stateMach['UIelements']['GranChanger'].getPosY()*w2h
         else:
             gctmy = stateMach['UIelements']['GranChanger'].getPosY()
 
-        if (stateMach['w2h'] <= 1.0):
-            gctmx *= stateMach['w2h']
-            tmr *= stateMach['w2h']
+        if (w2h <= 1.0):
+            gctmx *= w2h
+            tmr *= w2h
 
         # Watch Granularity Rocker for Input
         if (watchDot(
-            mapRanges(gctmx, -stateMach['w2h'], stateMach['w2h'], 0, stateMach['wx']*2),
+            mapRanges(gctmx, -w2h, w2h, 0, stateMach['wx']*2),
             mapRanges(gctmy, 1.0, -1.0, 0, stateMach['wy']*2),
             tmr)
             and
@@ -582,7 +599,7 @@ def watchColrSettingInput():
 
         # Watch Granularity Rocker for Input
         if (watchDot(
-            mapRanges(-gctmx, -stateMach['w2h'], stateMach['w2h'], 0, stateMach['wx']*2),
+            mapRanges(-gctmx, -w2h, w2h, 0, stateMach['wx']*2),
             mapRanges(gctmy, 1.0, -1.0, 0, stateMach['wy']*2),
             tmr)
             and
@@ -594,15 +611,15 @@ def watchColrSettingInput():
         # Watch Hue Ring for Input
         for i in range(len(stateMach['hueButtons'])):
             tmr = 1.0
-            if (stateMach['w2h'] <= 1.0):
+            if (w2h <= 1.0):
                 stateMach['hueButtons'][i] = (
-                        stateMach['hueButtons'][i][0]*stateMach['w2h'], 
-                        stateMach['hueButtons'][i][1]*stateMach['w2h'], 
+                        stateMach['hueButtons'][i][0]*w2h, 
+                        stateMach['hueButtons'][i][1]*w2h, 
                         stateMach['hueButtons'][i][2])
-                tmr = stateMach['w2h']
+                tmr = w2h
 
             if (watchDot(
-                mapRanges(stateMach['hueButtons'][i][0], -1.0*stateMach['w2h'], 1.0*stateMach['w2h'], 0, stateMach['wx']*2),
+                mapRanges(stateMach['hueButtons'][i][0], -1.0*w2h, 1.0*w2h, 0, stateMach['wx']*2),
                 mapRanges(stateMach['hueButtons'][i][1], 1.0, -1.0, 0, stateMach['wy']*2),
                 min(stateMach['wx'], stateMach['wy'])*0.15*(12.0/float(stateMach['numHues'])))
                 and
@@ -625,17 +642,17 @@ def watchColrSettingInput():
         # Watch Sat / Val Triangle for input
         for i in range(len(stateMach['satValButtons'])):
             tmr = 1.0
-            if (stateMach['w2h'] <= 1.0):
+            if (w2h <= 1.0):
                 stateMach['satValButtons'][i] = (
-                        stateMach['satValButtons'][i][0]*stateMach['w2h'],     # X-Coord of Button
-                        stateMach['satValButtons'][i][1]*stateMach['w2h'],     # Y-Coord of Button
+                        stateMach['satValButtons'][i][0]*w2h,     # X-Coord of Button
+                        stateMach['satValButtons'][i][1]*w2h,     # Y-Coord of Button
                         stateMach['satValButtons'][i][2],                    # Saturation of Button
                         stateMach['satValButtons'][i][3])                    # Value of Button
-                tmr = stateMach['w2h']
+                tmr = w2h
 
-            # Map relative x-Coord to screen x-Coord
+            # Map relative GL-Coord to screen aspect-Coord
             if (watchDot(
-                mapRanges(stateMach['satValButtons'][i][0], -1.0*stateMach['w2h'], 1.0*stateMach['w2h'], 0, stateMach['wx']*2),
+                mapRanges(stateMach['satValButtons'][i][0], -1.0*w2h, 1.0*w2h, 0, stateMach['wx']*2),
                 mapRanges(stateMach['satValButtons'][i][1], 1.0, -1.0, 0, stateMach['wy']*2),
                 min(stateMach['wx'], stateMach['wy'])*0.073)):
 
@@ -654,8 +671,8 @@ def watchColrSettingInput():
 
         # Watch Confirm Button for input
         if (watchDot(
-        mapRanges(stateMach['UIelements']['ConfirmButton'].getPosX(), -1.0,  1.0, 0, stateMach['wx']*2),
-        mapRanges(stateMach['UIelements']['ConfirmButton'].getPosY(),  1.0, -1.0, 0, stateMach['wy']*2),
+        mapRanges(stateMach['UIelements']['ConfirmButton'].getPosX(), -1.0,  1.0, 0, stateMach['wx']*2.0),
+        mapRanges(stateMach['UIelements']['ConfirmButton'].getPosY(),  1.0, -1.0, 0, stateMach['wy']*2.0),
         min(stateMach['wx'], stateMach['wy'])*0.2)
         and
         stateMach['mousePressed']):
@@ -705,8 +722,8 @@ def watchColrSettingInput():
 
         # Watch Back Button for input
         if (watchDot(
-        mapRanges(stateMach['UIelements']['BackButton'].getPosX(), -1.0,  1.0, 0, stateMach['wx']*2),
-        mapRanges(stateMach['UIelements']['BackButton'].getPosY(),  1.0, -1.0, 0, stateMach['wy']*2),
+        mapRanges(stateMach['UIelements']['BackButton'].getPosX(), -1.0,  1.0, 0, stateMach['wx']*2.0),
+        mapRanges(stateMach['UIelements']['BackButton'].getPosY(),  1.0, -1.0, 0, stateMach['wy']*2.0),
         min(stateMach['wx'], stateMach['wy'])*0.2)
         and
         stateMach['mousePressed']):
@@ -742,12 +759,21 @@ def watchColrSettingInput():
 # Check if user is clicking in circle
 def watchDot(px, py, pr):
     global stateMach
+    cx = mapRanges(stateMach['cursorX'], 0, stateMach['wx'], -w2h, w2h)
+    cy = mapRanges(stateMach['cursorY'], 0, stateMach['wy'], 1.0, -1.0)
     if (abs(pr) == 0.0):
         return False
-    elif (1.0 >= pow((stateMach['cursorX']-px/2), 2) / pow(pr/2, 2) + pow((stateMach['cursorY']-py/2), 2) / pow(pr/2, 2)):
+    elif (pr/2.0 >= hypot(cx-px/2, cy-py/2)):
         return True
     else:
         return False
+
+# Check if user is clicking in arbitrary polygon defined by list of tuples of points
+def watchPolygon(polygon, point):
+    point = Point(point)        # shapely object
+    polygon = Polygon(polygon)  # shapely object
+
+    return (polygon.contains(point) or polygon.intersects(point))
 
 # Used to process user input
 def watchScreen():
@@ -1136,6 +1162,8 @@ if __name__ == '__main__':
     stateMach['Menus']              = {}
 
     stateMach['Menus']['testMenu']  = Menu()
+    stateMach['Menus']['testMenu'].setIndexDraw(False)
+
     stateMach['UIelements']['testMenu'] = UIelement()
     stateMach['UIelements']['testMenu'].setTarSize(0.15)
     stateMach['UIelements']['testMenu'].setAccel(0.125)
