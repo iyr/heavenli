@@ -205,7 +205,7 @@ def watchTest():
             
             if (watchDot(tmx, tmy, tms)
                 and
-                stateMach['mousePressed']
+                stateMach['mousePressed'] == 0
                 ):
                 stateMach['Menus']['testMenu'].toggleOpen()
 
@@ -265,8 +265,8 @@ def drawElements():
                         )
 
         # Draw Menus
-        #for key in stateMach['Menus']:
-            #stateMach['Menus'][key].draw(stateMach)
+        for key in stateMach['Menus']:
+            stateMach['Menus'][key].draw(stateMach)
 
         # Draw Granularity Rocker Underneath Clock
         if (stateMach['w2h'] <= 1.0):
@@ -472,18 +472,18 @@ def watchHomeInput():
     # Watch Home Screen for input
     if (watchScreen()):
     
-        #tmx = stateMach['UIelements']['testMenu'].getTarPosX()*w2h
-        #tmy = stateMach['UIelements']['testMenu'].getTarPosY()
-        #tms = stateMach['UIelements']['testMenu'].getTarSize()
+        tmx = stateMach['UIelements']['testMenu'].getTarPosX()*w2h
+        tmy = stateMach['UIelements']['testMenu'].getTarPosY()
+        tms = stateMach['UIelements']['testMenu'].getTarSize()
 
-        #if (w2h < 1.0):
-            #tms *= w2h
+        if (w2h < 1.0):
+            tms *= w2h
             
-        #if (watchDot(tmx, tmy, tms)
-            #and
-            #stateMach['mousePressed']
-            #):
-            #stateMach['Menus']['testMenu'].toggleOpen()
+        if (watchDot(tmx, tmy, tms)
+            and
+            stateMach['mousePressed'] == 0
+            ):
+            stateMach['Menus']['testMenu'].toggleOpen()
 
         tms = stateMach['UIelements']['MasterSwitch'].getTarSize()
         # Watch Clock for input
@@ -496,7 +496,8 @@ def watchHomeInput():
             tms*0.5 # Clock Radius
             )
             and
-            stateMach['mousePressed']):                 # Button Must be clicked
+            stateMach['mousePressed'] == 0
+            ):                 # Button Must be clicked
             AreLightsOn = False
             for i in range(len(stateMach['lamps'])):
                 if(stateMach['lamps'][i].isOn()):
@@ -527,7 +528,8 @@ def watchHomeInput():
                     and
                     len(stateMach['lamps']) > 0
                     and
-                    stateMach['mousePressed']): # Button Must be clicked
+                    stateMach['mousePressed'] == 0
+                    ): # Button Must be clicked
 
                     # Set Color Picker as target Screen selecting bulb i
                     stateMach['targetBulb'] = i
@@ -558,7 +560,8 @@ def watchHomeInput():
                 and
                 len(stateMach['lamps']) > 0
                 and
-                stateMach['mousePressed']): # Button Must be clicked
+                stateMach['mousePressed'] == 0
+                ): # Button Must be clicked
 
                 # Set Color Picker as target Screen selecting bulb all bulbs
                 stateMach['targetBulb'] = stateMach["lamps"][Light].getNumBulbs()
@@ -612,7 +615,8 @@ def watchColrSettingInput():
             tms
             )
             and
-            stateMach['mousePressed']):
+            stateMach['mousePressed'] == 0
+            ):
                 stateMach['numHues'] += 2
                 if stateMach['numHues'] > 14:
                     stateMach['numHues'] = 14
@@ -624,7 +628,8 @@ def watchColrSettingInput():
             tms
             )
             and
-            stateMach['mousePressed']):
+            stateMach['mousePressed'] == 0
+            ):
                 stateMach['numHues'] -= 2
                 if stateMach['numHues'] < 10:
                     stateMach['numHues'] = 10
@@ -645,7 +650,8 @@ def watchColrSettingInput():
 
             if (watchDot(posX, posY, tms )
                 and
-                stateMach['mousePressed']):
+                stateMach['mousePressed'] == 0
+                ):
 
                 stateMach['wereColorsTouched'] = True
                 stateMach['currentHue'] = stateMach['hueButtons'][i][2]
@@ -681,7 +687,10 @@ def watchColrSettingInput():
                 posX,
                 posY,
                 tms
-                )):
+                )
+                and
+                stateMach['currentState'] == 0
+                ):
 
                 stateMach['wereColorsTouched'] = True
                 stateMach['currentSat'] = stateMach['satValButtons'][i][2]
@@ -708,7 +717,8 @@ def watchColrSettingInput():
             tms
             )
         and
-        stateMach['mousePressed']):
+        stateMach['mousePressed'] == 0
+        ):
             stateMach['wereColorsTouched'] = False
             if (len(stateMach['lamps']) > 0):
                 if (stateMach['targetBulb'] == stateMach['lamps'][Light].getNumBulbs()):
@@ -765,7 +775,8 @@ def watchColrSettingInput():
             tms
             )
         and
-        stateMach['mousePressed']):
+        stateMach['mousePressed'] == 0
+        ):
             stateMach['wereColorsTouched'] = False
             if (len(stateMach['lamps']) > 0):
                 if (stateMach['targetBulb'] == stateMach['lamps'][Light].getNumBulbs()):
@@ -819,7 +830,7 @@ def watchPolygon(polygon, point):
 # Used to process user input
 def watchScreen():
     global stateMach
-    if (stateMach['currentState'] == 0 or stateMach['mousePressed']):
+    if (stateMach['currentState'] == 0 or stateMach['mousePressed'] >= 0):
         return True
     else:
         return False
@@ -844,10 +855,10 @@ def mouseInteraction(button, state, mouseX, mouseY):
     # State = 0: button is pressed, low
     # State = 1: button is released, high
     if (stateMach['currentState'] == 1 and state == 0):
-        stateMach['mousePressed'] = True
+        stateMach['mousePressed'] = button
 
     if (stateMach['currentState'] == 0 and state > 0):
-        stateMach['mouseReleased'] = True
+        stateMach['mouseReleased'] = button
 
     stateMach['currentState'] = state
     if (state == 0):
@@ -855,7 +866,7 @@ def mouseInteraction(button, state, mouseX, mouseY):
     elif (button > 2):
         stateMach['mouseButton'] = button
     else:
-        stateMach['mouseButton'] = "None"
+        stateMach['mouseButton'] = -1
 
     #print("state: " + str(state) + ", currentState: " + str(stateMach['currentState']))
     return
@@ -1003,8 +1014,10 @@ def display():
     if (stateMach['drawInfo']):
         drawInfo(stateMach)
 
-    stateMach['mousePressed'] = False
-    stateMach['mouseReleased'] = False
+    if (stateMach['currentState'] != 0):
+        stateMach['mouseButton'] = -1
+    stateMach['mousePressed'] = -1
+    stateMach['mouseReleased'] = -1
 
     # Update UI animation
     for key in stateMach['UIelements']:
@@ -1187,9 +1200,9 @@ if __name__ == '__main__':
     stateMach['prevVal']            = -1
     stateMach['prevSat']            = -1
     stateMach['wereColorsTouched']  = False
-    stateMach['mousePressed']       = False
-    stateMach['mouseReleased']      = False
-    stateMach['mouseButton']        = "None"
+    stateMach['mousePressed']       = -1
+    stateMach['mouseReleased']      = -1
+    stateMach['mouseButton']        = -1
     stateMach['drawInfo']           = False
     stateMach['cursorVelocity']     = (0.0, 0.0)
     stateMach['prevCurVelMags']     = [0.0 for i in range(9)]
@@ -1204,10 +1217,11 @@ if __name__ == '__main__':
 
     stateMach['Menus']['testMenu']  = Menu()
     stateMach['Menus']['testMenu'].setIndexDraw(True)
+    #stateMach['Menus']['testMenu'].setIndexDraw(False)
 
     stateMach['UIelements']['testMenu'] = UIelement()
+    #stateMach['UIelements']['testMenu'].setTarSize(0.15)
     stateMach['UIelements']['testMenu'].setTarSize(0.2)
-    stateMach['UIelements']['testMenu'].setAccel(0.125)
     stateMach['UIelements']['testMenu'].setAccel(0.125)
     stateMach['UIelements']['testMenu'].setTarPosX(-0.775)
     stateMach['UIelements']['testMenu'].setTarPosY(-0.775)
