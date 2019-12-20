@@ -196,6 +196,7 @@ def watchTest():
             tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
             stateMach['BallPosition'] = (tmx, tmy)
 
+            # Watch menu to toggle open
             tmx = stateMach['UIelements']['testMenu'].getTarPosX()*w2h
             tmy = stateMach['UIelements']['testMenu'].getTarPosY()
             tms = stateMach['UIelements']['testMenu'].getTarSize()
@@ -209,17 +210,46 @@ def watchTest():
                 ):
                 stateMach['Menus']['testMenu'].toggleOpen()
 
-            tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -w2h, w2h)
-            tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
-            tms = stateMach['UIelements']['testMenu'].getTarSize()#*min(stateMach['wx'], stateMach['wy'])
-            tmv = stateMach['cursorVelSmoothed']
-            mmx = stateMach['UIelements']['testMenu'].getTarPosX()
-            mmy = stateMach['UIelements']['testMenu'].getTarPosX()
-            
-            stateMach['Menus']['testMenu'].watch(mmx, mmy, tmx, tmy, tms, tmv)
+        if (stateMach['Menus']['testMenu'].isOpen()):
+            # Watch menu body for input
+            polygon = []
+            tmx = cos(radians(stateMach['Menus']['testMenu'].getDir()+90))
+            tmy = sin(radians(stateMach['Menus']['testMenu'].getDir()))
 
-            pass
-        if (stateMach['mouseReleased']):
+            tms = stateMach['UIelements']['testMenu'].getTarSize()
+            if (w2h < 1.0):
+                tms *= w2h
+
+            polygon.append((tmx, tmy))  # A
+            polygon.append((-tmx, tmy)) # B
+            tmy *=  5.75 + float(stateMach['Menus']['testMenu'].getIndexDraw())
+            polygon.append((-tmx, tmy)) # C
+            polygon.append((tmx, tmy))  # D
+            for i in range(len(polygon)):
+                tmx = polygon[i][0]
+                tmy = polygon[i][1]
+                tmx *= stateMach['UIelements']['testMenu'].getTarSize()
+                tmy *= tms
+
+                if w2h < 1.0:
+                    tmx += stateMach['UIelements']['testMenu'].getTarPosX()
+                else:
+                    tmx += stateMach['UIelements']['testMenu'].getTarPosX()*w2h
+                tmy += stateMach['UIelements']['testMenu'].getTarPosY()
+                polygon[i] = (tmx,tmy)
+
+            if (watchPolygon(polygon)):
+                pass
+            elif (watchDot(
+                    stateMach['UIelements']['testMenu'].getTarPosX()*w2h,
+                    tmy,
+                    tms
+                )):
+                pass
+            else:
+                pass
+
+        if (stateMach['mouseReleased'] >= 0):
             stateMach['BallVelocity'] = stateMach['cursorVelSmoothed']
         pass
     except Exception as OOF:
@@ -812,17 +842,54 @@ def watchDot(px, py, pr):
     w2h = stateMach['w2h']
     cx = mapRanges(stateMach['cursorX'], 0, stateMach['wx'], -w2h, w2h)
     cy = mapRanges(stateMach['cursorY'], 0, stateMach['wy'], 1.0, -1.0)
+    if (stateMach['drawInfo']):
+        if w2h < 1.0:
+            px /= w2h
+            py /= w2h
+            pr /= w2h
+        drawEllipse(
+                px, 
+                py,
+                pr,
+                pr,
+                w2h,
+                (1.0, 0.0, 1.0, 1.0)
+                )
     if (abs(pr) == 0.0):
         return False
     elif (pr >= hypot(cx-px, cy-py)):
-    #elif (pr/2.0 >= hypot(cx-px/2, cy-py/2)):
         return True
     else:
         return False
 
 # Check if user is clicking in arbitrary polygon defined by list of tuples of points
-def watchPolygon(polygon, point):
-    point = Point(point)        # shapely object
+def watchPolygon(polygon):#, point):
+    w2h = stateMach['w2h']
+    if w2h < 1.0:
+        tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -1.0, 1.0)
+    else:
+        tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -w2h, w2h)
+    tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
+
+    if (stateMach['drawInfo']):
+        for i in range(len(polygon)):
+            tmx1 = polygon[i-1][0]
+            tmy1 = polygon[i-1][1]
+            tmx2 = polygon[i+0][0]
+            tmy2 = polygon[i+0][1]
+            if w2h < 1.0:
+                tmy1 /= w2h
+                tmy2 /= w2h
+
+            drawPill(
+                    tmx1, tmy1,
+                    tmx2, tmy2,
+                    0.002,
+                    w2h,
+                    (1.0, 0.0, 1.0, 1.0),
+                    (1.0, 0.0, 1.0, 1.0)
+                    )
+    point = Point((tmx, tmy))        # shapely object
     polygon = Polygon(polygon)  # shapely object
 
     return (polygon.contains(point) or polygon.intersects(point))
@@ -985,7 +1052,7 @@ def display():
     #stateMach['tDiff'] = 3.14159/stateMach['fps']
     #stateMach['tDiff'] = 6.28318/stateMach['fps']
 
-    drawTestObjects = False
+    drawTestObjects = True
     calcCursorVelocity(0)
 
     if (not drawTestObjects):
@@ -1216,8 +1283,8 @@ if __name__ == '__main__':
     stateMach['Menus']              = {}
 
     stateMach['Menus']['testMenu']  = Menu()
-    stateMach['Menus']['testMenu'].setIndexDraw(True)
-    #stateMach['Menus']['testMenu'].setIndexDraw(False)
+    #stateMach['Menus']['testMenu'].setIndexDraw(True)
+    stateMach['Menus']['testMenu'].setIndexDraw(False)
 
     stateMach['UIelements']['testMenu'] = UIelement()
     #stateMach['UIelements']['testMenu'].setTarSize(0.15)

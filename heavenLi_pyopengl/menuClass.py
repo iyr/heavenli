@@ -39,6 +39,14 @@ class Menu:
         # Timer for updating physics
         self.tPhys = time.time()
 
+    # index draw getter
+    def getIndexDraw(self):
+        return bool(self.dispIndex)
+
+    # Get Menu deployment direction
+    def getDir(self):
+        return float(self.direction)
+
     # Watch menu for scroll input
     def watch(self, mmx, mmy, tmx, tmy, tms, tmv):
         #if (tms >= hypot(tmx, tmy)
