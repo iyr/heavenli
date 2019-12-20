@@ -8,11 +8,15 @@ print("Done!")
 
 # function for printing statemachine information
 def drawInfo(stateMach):
+    w2h = stateMach['w2h']
     infoStr = "//~~~~~~~~~~~~~~~infoo debugeroo, eletric boogaloo~~~~~~~~~~~~~~~\\\\"
     infoStr += "\nFPS: " + str(int(stateMach['fps']))
     infoStr += "\nResolution: " + str(stateMach['windowDimW'])+", "+str(stateMach['windowDimH'])
-    infoStr += "\nwidth to height: " + str(stateMach['w2h'])
+    infoStr += "\nwidth to height: " + str(w2h)
     infoStr += "\nCursor: " + str(stateMach['cursorX']) + ', ' + str(stateMach['cursorY'])
+    tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -w2h, w2h)
+    tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
+    infoStr += "\nCursor (GL): " + str(tmx) + ', ' + str(tmy)
     infoStr += "\nInput State: " + str(stateMach['currentState'])
     infoStr += "\nMouse Button: " + str(stateMach['mouseButton'])
     #infoStr += "\nCursor Velocity Raw, Polar Ang: " + str(stateMach['cursorVelocity'][0]) + " deg"
