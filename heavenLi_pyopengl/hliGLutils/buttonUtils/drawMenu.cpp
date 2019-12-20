@@ -155,7 +155,7 @@ void drawMenu(
          dmy1 = sin(degToRad(direction))*deployed;
          dmx2 = cos(degToRad(direction+90.0))*deployed;
          dmy2 = sin(degToRad(direction+90.0))*deployed;
-         tmo1 = 6.75f+(GLfloat)drawIndex;
+         tmo1 = 5.75f+(GLfloat)drawIndex;
 
          // Menu Body
          definePill(
@@ -170,17 +170,17 @@ void drawMenu(
                colrs
                );
 
-         tmo1 = 7.5f+(GLfloat)drawIndex;
-         tmo2 = 7.25f+(GLfloat)drawIndex;
+         tmo1 = 6.5f;
+         tmo2 = 6.25f;
 
          // Distil Arrow
          definePill(
                mx+dmx1*tmo1,
                my+dmy1*tmo1,
-               mx+dmx1*tmo2+dmx2*0.25f*pow(deployed, 3.0f),
+               mx+dmx1*tmo2+dmx2*0.75f*pow(deployed, 3.0f),
                my+dmy1*tmo2+dmy2*0.25f,
                arrowRad,
-               circleSegments/4,
+               circleSegments/5,
                detailColor,
                verts,
                colrs
@@ -188,26 +188,26 @@ void drawMenu(
          definePill(
                mx+dmx1*tmo1,
                my+dmy1*tmo1,
-               mx+dmx1*tmo2-dmx2*0.25f*pow(deployed, 3.0f),
+               mx+dmx1*tmo2-dmx2*0.75f*pow(deployed, 3.0f),
                my+dmy1*tmo2-dmy2*0.25f,
                arrowRad,
-               circleSegments/4,
+               circleSegments/5,
                detailColor,
                verts,
                colrs
                );
 
-         tmo1 = 1.0f+(GLfloat)drawIndex;
-         tmo2 = 1.25f+(GLfloat)drawIndex;
+         tmo1 = 1.0f;
+         tmo2 = 1.25f;
 
          // Proximal Arrow
          definePill(
                mx+dmx1*tmo1,
                my+dmy1*tmo1,
-               mx+dmx1*tmo2+dmx2*0.25f*pow(deployed, 3.0f),
+               mx+dmx1*tmo2+dmx2*0.75f*pow(deployed, 3.0f),
                my+dmy1*tmo2+dmy2*0.25f,
                arrowRad,
-               circleSegments/4,
+               circleSegments/5,
                detailColor,
                verts,
                colrs
@@ -215,10 +215,10 @@ void drawMenu(
          definePill(
                mx+dmx1*tmo1,
                my+dmy1*tmo1,
-               mx+dmx1*tmo2-dmx2*0.25f*pow(deployed, 3.0f),
+               mx+dmx1*tmo2-dmx2*0.75f*pow(deployed, 3.0f),
                my+dmy1*tmo2-dmy2*0.25f,
                arrowRad,
-               circleSegments/4,
+               circleSegments/5,
                detailColor,
                verts,
                colrs
@@ -242,13 +242,13 @@ void drawMenu(
 
          // Distil Arrow
          index = updatePillColor(
-               circleSegments/4,
+               circleSegments/5,
                detailColor,
                index,
                MenuOpen->colorCache
                );
          index = updatePillColor(
-               circleSegments/4,
+               circleSegments/5,
                detailColor,
                index,
                MenuOpen->colorCache
@@ -256,13 +256,13 @@ void drawMenu(
 
          // Proximal Arrow
          index = updatePillColor(
-               circleSegments/4,
+               circleSegments/5,
                detailColor,
                index,
                MenuOpen->colorCache
                );
          index = updatePillColor(
-               circleSegments/4,
+               circleSegments/5,
                detailColor,
                index,
                MenuOpen->colorCache
@@ -287,7 +287,7 @@ void drawMenu(
          dmy1 = sin(degToRad(direction))*deployed;
          dmx2 = cos(degToRad(direction+90.0))*deployed;
          dmy2 = sin(degToRad(direction+90.0))*deployed;
-         tmo1 = 6.75f+(GLfloat)drawIndex;
+         tmo1 = 5.75f+(GLfloat)drawIndex;
 
          // Menu Body
          index = updatePillGeometry(
@@ -301,52 +301,52 @@ void drawMenu(
                MenuOpen->coordCache
                );
 
-         tmo1 = 7.5f+(GLfloat)drawIndex;
-         tmo2 = 7.25f+(GLfloat)drawIndex;
+         tmo1 = 6.5f;
+         tmo2 = 6.25f;
 
          // Distil Arrow
          index = updatePillGeometry(
                mx+dmx1*tmo1,
                my+dmy1*tmo1,
-               mx+dmx1*tmo2+dmx2*0.25f*pow(deployed, 3.0f),
+               mx+dmx1*tmo2+dmx2*0.75f*pow(deployed, 3.0f),
                my+dmy1*tmo2+dmy2*0.25f,
                arrowRad,
-               circleSegments/4,
+               circleSegments/5,
                index,
                MenuOpen->coordCache
                );
          index = updatePillGeometry(
                mx+dmx1*tmo1,
                my+dmy1*tmo1,
-               mx+dmx1*tmo2-dmx2*0.25f*pow(deployed, 3.0f),
+               mx+dmx1*tmo2-dmx2*0.75f*pow(deployed, 3.0f),
                my+dmy1*tmo2-dmy2*0.25f,
                arrowRad,
-               circleSegments/4,
+               circleSegments/5,
                index,
                MenuOpen->coordCache
                );
 
-         tmo1 = 1.0f+(GLfloat)drawIndex;
-         tmo2 = 1.25f+(GLfloat)drawIndex;
+         tmo1 = 1.0f;
+         tmo2 = 1.25f;
 
          // Proximal Arrow
          index = updatePillGeometry(
                mx+dmx1*tmo1,
                my+dmy1*tmo1,
-               mx+dmx1*tmo2+dmx2*0.25f*pow(deployed, 3.0f),
+               mx+dmx1*tmo2+dmx2*0.75f*pow(deployed, 3.0f),
                my+dmy1*tmo2+dmy2*0.25f,
                arrowRad,
-               circleSegments/4,
+               circleSegments/5,
                index,
                MenuOpen->coordCache
                );
          index = updatePillGeometry(
                mx+dmx1*tmo1,
                my+dmy1*tmo1,
-               mx+dmx1*tmo2-dmx2*0.25f*pow(deployed, 3.0f),
+               mx+dmx1*tmo2-dmx2*0.75f*pow(deployed, 3.0f),
                my+dmy1*tmo2-dmy2*0.25f,
                arrowRad,
-               circleSegments/4,
+               circleSegments/5,
                index,
                MenuOpen->coordCache
                );
