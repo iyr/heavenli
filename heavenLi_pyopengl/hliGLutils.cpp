@@ -44,6 +44,7 @@ PyObject* initShaders_hliGLutils    (PyObject* self, PyObject* args);
 PyObject* drawText_hliGLutils       (PyObject* self, PyObject* args);
 PyObject* buildAtlas_hliGLutils     (PyObject* self, PyObject* args);
 
+PyObject* drawArch_hliGLutils       (PyObject* self, PyObject* args);
 PyObject* drawEllipse_hliGLutils    (PyObject* self, PyObject* args);
 PyObject* drawPill_hliGLutils       (PyObject* self, PyObject* args);
 
@@ -74,6 +75,7 @@ static PyMethodDef hliGLutils_methods[] = {
    { "drawText",        (PyCFunction)drawText_hliGLutils,         METH_VARARGS },
    { "buildAtlas",      (PyCFunction)buildAtlas_hliGLutils,       METH_VARARGS },
 
+   { "drawArch",        (PyCFunction)drawArch_hliGLutils,         METH_VARARGS },
    { "drawEllipse",     (PyCFunction)drawEllipse_hliGLutils,      METH_VARARGS },
    { "drawPill",        (PyCFunction)drawPill_hliGLutils,         METH_VARARGS },
 
