@@ -64,12 +64,6 @@ PyObject* drawPill_hliGLutils(PyObject* self, PyObject *args) {
    Py_RETURN_NONE;
 }
 
-GLfloat prevPx;
-GLfloat prevPy;
-GLfloat prevQx;
-GLfloat prevQy;
-GLfloat prevRad;
-
 void drawPill(
       GLfloat     px, 
       GLfloat     py,
@@ -81,6 +75,11 @@ void drawPill(
       GLfloat*    qColor,
       drawCall*   pillButton
       ){
+   static GLfloat prevPx,
+                  prevPy,
+                  prevQx,
+                  prevQy,
+                  prevRad;
 
    GLuint pillVerts;
    pillButton->setNumColors(2);

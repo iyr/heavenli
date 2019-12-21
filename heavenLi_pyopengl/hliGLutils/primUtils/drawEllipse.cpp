@@ -51,11 +51,6 @@ PyObject* drawEllipse_hliGLutils(PyObject* self, PyObject *args) {
    Py_RETURN_NONE;
 }
 
-GLfloat prevGx;
-GLfloat prevGy;
-GLfloat prevSx;
-GLfloat prevSy;
-
 void drawEllipse(
       GLfloat     gx, 
       GLfloat     gy,
@@ -65,6 +60,11 @@ void drawEllipse(
       GLfloat*    faceColor,
       drawCall*   ellipseButton
       ){
+
+   static GLfloat prevGx,
+                  prevGy,
+                  prevSx,
+                  prevSy;
 
    GLuint ellipseVerts;
    ellipseButton->setNumColors(1);
