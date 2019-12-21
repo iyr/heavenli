@@ -23,7 +23,7 @@ class Menu:
         self.selectedElement = 0.0
 
         # Which direction, in degrees about the unit circle, the menu slides out
-        self.direction = 90.0
+        self.direction = 0.0
 
         # Whether or not to display the index of the elemen
         self.dispIndex = True
