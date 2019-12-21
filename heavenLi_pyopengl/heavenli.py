@@ -212,39 +212,42 @@ def watchTest():
 
         if (stateMach['Menus']['testMenu'].isOpen()):
             # Watch menu body for input
-            polygon = []
-            tmx = cos(radians(stateMach['Menus']['testMenu'].getDir()+90))
-            tmy = sin(radians(stateMach['Menus']['testMenu'].getDir()))
-
             tms = stateMach['UIelements']['testMenu'].getTarSize()
             if (w2h < 1.0):
                 tms *= w2h
 
-            polygon.append((tmx, tmy))  # A
-            polygon.append((-tmx, tmy)) # B
-            tmy *=  5.75 + float(stateMach['Menus']['testMenu'].getIndexDraw())
-            polygon.append((-tmx, tmy)) # C
-            polygon.append((tmx, tmy))  # D
-            for i in range(len(polygon)):
-                tmx = polygon[i][0]
-                tmy = polygon[i][1]
+            polygon2 = []
+            ang = stateMach['Menus']['testMenu'].getDir()
+            da  = 90.0-degrees(atan((23/4)+float(stateMach['Menus']['testMenu'].getIndexDraw())))
+
+            rad = sqrt(2)
+            polygon2.append((rad*cos(radians(ang+45)), rad*sin(radians(ang+45))))   # A
+            polygon2.append((rad*cos(radians(ang-45)), rad*sin(radians(ang-45))))   # B
+            rad = (23/4)+float(stateMach['Menus']['testMenu'].getIndexDraw())
+            polygon2.append((rad*cos(radians(ang-da)), rad*sin(radians(ang-da))))     # C
+            polygon2.append((rad*cos(radians(ang+da)), rad*sin(radians(ang+da))))     # D
+            for i in range(len(polygon2)):
+                tmx = polygon2[i][0]
+                tmy = polygon2[i][1]
                 tmx *= stateMach['UIelements']['testMenu'].getTarSize()
                 tmy *= tms
 
-                if w2h < 1.0:
-                    tmx += stateMach['UIelements']['testMenu'].getTarPosX()
-                else:
-                    tmx += stateMach['UIelements']['testMenu'].getTarPosX()*w2h
-                tmy += stateMach['UIelements']['testMenu'].getTarPosY()
-                polygon[i] = (tmx,tmy)
+                polygon2[i] = (tmx,tmy)
+            tmx = rad*cos(radians(ang))*stateMach['UIelements']['testMenu'].getTarSize()
+            tmy = rad*sin(radians(ang))*tms
+            if w2h < 1.0:
+                tmx *= w2h
 
-            if (watchPolygon(polygon)):
+            if (watchPolygon(polygon2)):
+                print("quack")
                 pass
             elif (watchDot(
-                    stateMach['UIelements']['testMenu'].getTarPosX()*w2h,
+                    tmx,
+                    #stateMach['UIelements']['testMenu'].getTarPosX()*w2h,
                     tmy,
                     tms
                 )):
+                print("moo")
                 pass
             else:
                 pass
@@ -840,8 +843,12 @@ def watchColrSettingInput():
 def watchDot(px, py, pr):
     global stateMach
     w2h = stateMach['w2h']
-    cx = mapRanges(stateMach['cursorX'], 0, stateMach['wx'], -w2h, w2h)
-    cy = mapRanges(stateMach['cursorY'], 0, stateMach['wy'], 1.0, -1.0)
+    if w2h >= 1.0:
+        cx = mapRanges(stateMach['cursorX'], 0, stateMach['wx'], -w2h, w2h)
+        cy = mapRanges(stateMach['cursorY'], 0, stateMach['wy'], 1.0, -1.0)
+    else:
+        cx = mapRanges(stateMach['cursorX'], 0, stateMach['wx'], -1.0, 1.0)
+        cy = mapRanges(stateMach['cursorY'], 0, stateMach['wy'], 1/w2h, -1/w2h)
     if (stateMach['drawInfo']):
         if w2h < 1.0:
             px /= w2h
@@ -1285,15 +1292,16 @@ if __name__ == '__main__':
     stateMach['Menus']['testMenu']  = Menu()
     #stateMach['Menus']['testMenu'].setIndexDraw(True)
     stateMach['Menus']['testMenu'].setIndexDraw(False)
+    #stateMach['Menus']['testMenu'].setDir(45.0)
 
     stateMach['UIelements']['testMenu'] = UIelement()
-    #stateMach['UIelements']['testMenu'].setTarSize(0.15)
-    stateMach['UIelements']['testMenu'].setTarSize(0.2)
+    stateMach['UIelements']['testMenu'].setTarSize(0.15)
+    #stateMach['UIelements']['testMenu'].setTarSize(0.2)
     stateMach['UIelements']['testMenu'].setAccel(0.125)
-    stateMach['UIelements']['testMenu'].setTarPosX(-0.775)
-    stateMach['UIelements']['testMenu'].setTarPosY(-0.775)
-    #stateMach['UIelements']['testMenu'].setTarPosX(0.0)
-    #stateMach['UIelements']['testMenu'].setTarPosY(0.0)
+    #stateMach['UIelements']['testMenu'].setTarPosX(-0.775)
+    #stateMach['UIelements']['testMenu'].setTarPosY(-0.775)
+    stateMach['UIelements']['testMenu'].setTarPosX(0.0)
+    stateMach['UIelements']['testMenu'].setTarPosY(0.0)
 
     # Setup UI animation objects, initial parameters
 
