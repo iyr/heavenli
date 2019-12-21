@@ -197,7 +197,7 @@ void drawMenu(
                colrs
                );
 
-         tmo1 = 1.0f;
+         tmo1 = 1.0f + arrowRad;
          tmo2 = 1.25f;
 
          // Proximal Arrow
@@ -227,47 +227,6 @@ void drawMenu(
          prevDir = direction;
          prevDep = deployed;
          MenuOpen->buildCache(verts.size()/2, verts, colrs);
-      }
-
-      if (  MenuOpen->colorsChanged ){
-         GLuint index = 0;
-
-         // Menu Body
-         index = updatePillColor(
-               circleSegments,
-               faceColor,
-               index,
-               MenuOpen->colorCache
-               );
-
-         // Distil Arrow
-         index = updatePillColor(
-               circleSegments/5,
-               detailColor,
-               index,
-               MenuOpen->colorCache
-               );
-         index = updatePillColor(
-               circleSegments/5,
-               detailColor,
-               index,
-               MenuOpen->colorCache
-               );
-
-         // Proximal Arrow
-         index = updatePillColor(
-               circleSegments/5,
-               detailColor,
-               index,
-               MenuOpen->colorCache
-               );
-         index = updatePillColor(
-               circleSegments/5,
-               detailColor,
-               index,
-               MenuOpen->colorCache
-               );
-         MenuOpen->updateColorCache();
       }
 
       if (  prevDep  != deployed    ||
@@ -326,7 +285,7 @@ void drawMenu(
                MenuOpen->coordCache
                );
 
-         tmo1 = 1.0f;
+         tmo1 = 1.0f + arrowRad;
          tmo2 = 1.25f;
 
          // Proximal Arrow
@@ -352,6 +311,47 @@ void drawMenu(
                );
 
          MenuOpen->updateCoordCache();
+      }
+
+      if (  MenuOpen->colorsChanged ){
+         GLuint index = 0;
+
+         // Menu Body
+         index = updatePillColor(
+               circleSegments,
+               faceColor,
+               index,
+               MenuOpen->colorCache
+               );
+
+         // Distil Arrow
+         index = updatePillColor(
+               circleSegments/5,
+               detailColor,
+               index,
+               MenuOpen->colorCache
+               );
+         index = updatePillColor(
+               circleSegments/5,
+               detailColor,
+               index,
+               MenuOpen->colorCache
+               );
+
+         // Proximal Arrow
+         index = updatePillColor(
+               circleSegments/5,
+               detailColor,
+               index,
+               MenuOpen->colorCache
+               );
+         index = updatePillColor(
+               circleSegments/5,
+               detailColor,
+               index,
+               MenuOpen->colorCache
+               );
+         MenuOpen->updateColorCache();
       }
 
       MenuOpen->updateMVP(gx, gy, scale, scale, ao, w2h);
