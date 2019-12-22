@@ -131,13 +131,14 @@ PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
          }
 
          // Relative coordinates of each button (from the center of the circle)
-         tmx = float(0.75*cos(ang));
-         tmy = float(0.75*sin(ang));
-         if (w2h >= 1.0) {
-            tmx *= float(pow(w2h, 0.5));
+         GLfloat baseRad = 0.7f + constrain(abs(1.0f-w2h)*0.1f, 0.0f, 0.14f);
+         tmx = float(baseRad*cos(ang));
+         tmy = float(baseRad*sin(ang));
+         if (w2h >= 1.0f) {
+            tmx *= float(pow(w2h, 0.5f));
          } else {
             tmx *= float(w2h);
-            tmy *= float(pow(w2h, 0.5));
+            tmy *= float(pow(w2h, 0.5f));
          }
 
          buttonCoords[j*2+0] = tmx;
@@ -198,8 +199,9 @@ PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
          }
 
          // Relative coordinates of each button (from the center of the circle)
-         tmx = float(0.75*cos(ang));
-         tmy = float(0.75*sin(ang));
+         GLfloat baseRad = 0.7f + constrain(abs(1.0f-w2h)*0.1f, 0.0f, 0.14f);
+         tmx = float(baseRad*cos(ang));
+         tmy = float(baseRad*sin(ang));
          if (w2h >= 1.0) {
             tmx *= float(pow(w2h, 0.5));
          } else {
