@@ -2,17 +2,6 @@ using namespace std;
 
 extern std::map<std::string, drawCall> drawCalls;
 
-GLuint   vertsPerBulb;
-GLfloat* buttonCoords       = NULL;
-GLfloat  prevAngOffset;
-GLfloat  prevBulbButtonScale;
-GLfloat  prevBulbButtonW2H;
-GLint    colorsStart;
-GLint    colorsEnd;
-GLint    detailEnd;
-GLint    prevNumBulbs;
-GLint    prevArn;
-
 PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
 {
    PyObject*   faceColorPyTup;
@@ -30,10 +19,22 @@ PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
                gy=0.0f, 
                scale=1.0f, 
                ao=0.0f;
-   GLint    arn, 
-            numBulbs, 
-            circleSegments;
-   GLuint   bulbButtonVerts;
+   GLint       arn, 
+               numBulbs, 
+               circleSegments;
+   GLuint      bulbButtonVerts;
+
+   static GLuint     vertsPerBulb;
+   static GLfloat*   buttonCoords = NULL;
+   static GLfloat    prevAngOffset,
+                     prevBulbButtonScale,
+                     prevBulbButtonW2H;
+   static GLint      colorsStart,
+                     colorsEnd,
+                     detailEnd,
+                     prevNumBulbs,
+                     prevArn;
+
 
    // Parse input arguments
    if (!PyArg_ParseTuple(args, 
