@@ -2,15 +2,6 @@ using namespace std;
 
 extern std::map<std::string, drawCall> drawCalls;
 
-GLuint      hueDotsVerts;                 // Used for updating only a portion of the color cache
-GLubyte     prevHueRingNumHues;           // Used for updating Granularity changes
-GLfloat     prevHueDotScale      = 0.0;   // Used for animating granularity changes
-GLfloat     prevHueDotDist       = 0.0;   // Used for animating granularity changes
-GLfloat     prevHueRingAng       = 0.0;   // Used for animating selection ring
-GLfloat     prevHueRingAni       = 0.0;   // Used to resolve edge-case bug for animating selection ring
-GLfloat     prevHueRingSel       = 0.0;   // Used to resolve edge-case bug for animating selection ring
-GLfloat     *hueButtonData       = NULL;  /* X, Y, hue per button */
-
 PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
    PyObject*      py_list;
    PyObject*      py_tuple;
@@ -26,6 +17,16 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
    char           circleSegments = 45;
    unsigned char  numHues = 12;
    GLuint         hueRingVerts;                 // Total number of vertices
+
+   static GLuint      hueDotsVerts;                // Used for updating only a portion of the color cache
+   static GLubyte     prevHueRingNumHues;          // Used for updating Granularity changes
+   static GLfloat     prevHueDotScale     = 0.0;   // Used for animating granularity changes
+   static GLfloat     prevHueDotDist      = 0.0;   // Used for animating granularity changes
+   static GLfloat     prevHueRingAng      = 0.0;   // Used for animating selection ring
+   static GLfloat     prevHueRingAni      = 0.0;   // resolve edge-case bug for animating selection ring
+   static GLfloat     prevHueRingSel      = 0.0;   // resolve edge-case bug for animating selection ring
+   static GLfloat     *hueButtonData      = NULL;  /* X, Y, hue per button */
+
 
    // Parse Inputs
    if (!PyArg_ParseTuple(args,
@@ -75,10 +76,10 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
       float ringX = 100.0f, ringY = 100.0f;
       for (int i = 0; i < numHues; i++) {
 
-         if (  prevHueDotScale   == 0.0f   )
+         //if (  prevHueDotScale   == 0.0f   )
             prevHueDotScale = float(tmr*(12.0f/numHues));
 
-         if (  prevHueDotDist    == 0.0f   )
+         //if (  prevHueDotDist    == 0.0f   )
             prevHueDotDist = float(0.67f*pow(numHues/12.0f, 1.0f/4.0f));
 
          // Calculate distance between dots about the center
@@ -99,7 +100,6 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
          hueButtonData[i*2+1] = tmy;
          
          // Draw dot
-         //drawEllipse(tmx, tmy, prevHueDotScale, circleSegments, colors, verts, colrs);
          defineEllipse(tmx, tmy, prevHueDotScale, prevHueDotScale, circleSegments, colors, verts, colrs);
 
          // Determine which button dot represents the currently selected hue
