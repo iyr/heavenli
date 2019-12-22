@@ -76,10 +76,10 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
       float ringX = 100.0f, ringY = 100.0f;
       for (int i = 0; i < numHues; i++) {
 
-         //if (  prevHueDotScale   == 0.0f   )
+         if (  prevHueDotScale   == 0.0f   )
             prevHueDotScale = float(tmr*(12.0f/numHues));
 
-         //if (  prevHueDotDist    == 0.0f   )
+         if (  prevHueDotDist    == 0.0f   )
             prevHueDotDist = float(0.67f*pow(numHues/12.0f, 1.0f/4.0f));
 
          // Calculate distance between dots about the center
@@ -229,6 +229,10 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
          tmx = float(cos(degToRad(ang))*prevHueDotDist);
          tmy = float(sin(degToRad(ang))*prevHueDotDist);
 
+         // Store position and related data of button dot
+         hueButtonData[i*2+0] = tmx;
+         hueButtonData[i*2+1] = tmy;
+         
          // Draw dot
          index = updateEllipseGeometry(
                tmx, tmy, 
