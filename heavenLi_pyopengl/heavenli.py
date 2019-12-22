@@ -77,7 +77,7 @@ def framerate():
 # Function for testing drawcode
 def drawTest():
     try:
-        #stateMach['Menus']['testMenu'].setDir(360.0*stateMach['someVar']/100.0)
+        stateMach['Menus']['testMenu'].setDir(360.0*stateMach['someVar']/100.0)
         w2h = stateMach['w2h']
 
         # test color that changes over time
@@ -298,8 +298,8 @@ def drawElements():
                         )
 
         # Draw Menus
-        for key in stateMach['Menus']:
-            stateMach['Menus'][key].draw(stateMach)
+        #for key in stateMach['Menus']:
+            #stateMach['Menus'][key].draw(stateMach)
 
         # Draw Granularity Rocker Underneath Clock
         if (stateMach['w2h'] <= 1.0):
@@ -505,18 +505,18 @@ def watchHomeInput():
     # Watch Home Screen for input
     if (watchScreen()):
     
-        tmx = stateMach['UIelements']['testMenu'].getTarPosX()*w2h
-        tmy = stateMach['UIelements']['testMenu'].getTarPosY()
-        tms = stateMach['UIelements']['testMenu'].getTarSize()
+        #tmx = stateMach['UIelements']['testMenu'].getTarPosX()*w2h
+        #tmy = stateMach['UIelements']['testMenu'].getTarPosY()
+        #tms = stateMach['UIelements']['testMenu'].getTarSize()
 
-        if (w2h < 1.0):
-            tms *= w2h
+        #if (w2h < 1.0):
+            #tms *= w2h
             
-        if (watchDot(tmx, tmy, tms)
-            and
-            stateMach['mousePressed'] == 0
-            ):
-            stateMach['Menus']['testMenu'].toggleOpen()
+        #if (watchDot(tmx, tmy, tms)
+            #and
+            #stateMach['mousePressed'] == 0
+            #):
+            #stateMach['Menus']['testMenu'].toggleOpen()
 
         tms = stateMach['UIelements']['MasterSwitch'].getTarSize()
         # Watch Clock for input
@@ -854,14 +854,27 @@ def watchDot(px, py, pr):
             px /= w2h
             py /= w2h
             pr /= w2h
-        drawEllipse(
-                px, 
+        drawArch(
+                px,
                 py,
-                pr,
-                pr,
+                pr-0.002,
+                pr-0.002,
+                0.0,
+                360.0,
+                0.002,
                 w2h,
                 (1.0, 0.0, 1.0, 1.0)
                 )
+
+
+        #drawEllipse(
+                #px, 
+                #py,
+                #pr,
+                #pr,
+                #w2h,
+                #(1.0, 0.0, 1.0, 1.0)
+                #)
     if (abs(pr) == 0.0):
         return False
     elif (pr >= hypot(cx-px, cy-py)):
@@ -904,7 +917,12 @@ def watchPolygon(polygon):#, point):
 # Used to process user input
 def watchScreen():
     global stateMach
-    if (stateMach['currentState'] == 0 or stateMach['mousePressed'] >= 0):
+    if (    stateMach['currentState'] == 0 
+            or 
+            stateMach['mousePressed'] >= 0
+            or
+            stateMach['drawInfo']
+            ):
         return True
     else:
         return False
@@ -1059,7 +1077,7 @@ def display():
     #stateMach['tDiff'] = 3.14159/stateMach['fps']
     #stateMach['tDiff'] = 6.28318/stateMach['fps']
 
-    drawTestObjects = True
+    drawTestObjects = False
     calcCursorVelocity(0)
 
     if (not drawTestObjects):
@@ -1103,7 +1121,6 @@ def display():
 
     glutSwapBuffers()
     plugins.pluginLoader.updatePlugins()
-    #glutTimerFunc(1, calcCursorVelocity, 0)
 
 def idleWindowOpen():
     framerate()
@@ -1293,6 +1310,7 @@ if __name__ == '__main__':
     #stateMach['Menus']['testMenu'].setIndexDraw(True)
     stateMach['Menus']['testMenu'].setIndexDraw(False)
     #stateMach['Menus']['testMenu'].setDir(45.0)
+    stateMach['Menus']['testMenu'].setDir(0)
 
     stateMach['UIelements']['testMenu'] = UIelement()
     stateMach['UIelements']['testMenu'].setTarSize(0.15)
