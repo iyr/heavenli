@@ -210,6 +210,20 @@ def watchTest():
                 ):
                 stateMach['Menus']['testMenu'].toggleOpen()
 
+            if (    stateMach['currentState'] == 0
+                    and
+                    stateMach['mouseButton'] == 0
+                    ):
+                #curPosX = stateMach['windowPosX'] - stateMach['cursorX']
+                #curPosY = stateMach['windowPosY'] - stateMach['cursorY']
+                #curPosX = stateMach['cursorX']-stateMach['mousePosAtPressX'] + (stateMach['windowPosX'] - stateMach['prevWindowPosX'])
+                #curPosY = stateMach['cursorY']-stateMach['mousePosAtPressY'] + (stateMach['windowPosY'] - stateMach['prevWindowPosY'])
+                #tmx = curPosX#+stateMach['prevWindowPosX']
+                #tmy = curPosY#+stateMach['prevWindowPosY']
+                #print(tmx, tmy)
+                #glutPositionWindow(tmx, tmy)
+                pass
+
         if (stateMach['Menus']['testMenu'].isOpen()):
             # Watch menu body for input
             tms = stateMach['UIelements']['testMenu'].getTarSize()
@@ -947,6 +961,10 @@ def mouseInteraction(button, state, mouseX, mouseY):
     # State = 0: button is pressed, low
     # State = 1: button is released, high
     if (stateMach['currentState'] == 1 and state == 0):
+        #stateMach['prevWindowPosX'] = stateMach['windowPosX']
+        #stateMach['prevWindowPosY'] = stateMach['windowPosY']
+        stateMach['mousePosAtPressX'] = stateMach['cursorX']
+        stateMach['mousePosAtPressY'] = stateMach['cursorY']
         stateMach['mousePressed'] = button
 
     if (stateMach['currentState'] == 0 and state > 0):
@@ -1119,6 +1137,8 @@ def display():
     for key in stateMach['Menus']:
         stateMach['Menus'][key].update()
 
+    stateMach['windowPosX'] = glutGet(GLUT_WINDOW_X)
+    stateMach['windowPosY'] = glutGet(GLUT_WINDOW_Y)
     glutSwapBuffers()
     plugins.pluginLoader.updatePlugins()
 
@@ -1166,17 +1186,14 @@ def special(k, x, y):
 
     elif k == GLUT_KEY_F11:
         if stateMach['isFullScreen'] == False:
-            stateMach['windowPosX'] = glutGet(GLUT_WINDOW_X)
-            stateMach['windowPosY'] = glutGet(GLUT_WINDOW_Y)-37
-            print(stateMach['windowPosX'], stateMach['windowPosY'])
+            stateMach['prevWindowPosX'] = glutGet(GLUT_WINDOW_X)
+            stateMach['prevWindowPosY'] = glutGet(GLUT_WINDOW_Y)-37
             stateMach['prevWindowDimW'] = glutGet(GLUT_WINDOW_WIDTH)
             stateMach['prevWindowDimH'] = glutGet(GLUT_WINDOW_HEIGHT)
             stateMach['isFullScreen'] = True
             glutFullScreen()
         elif stateMach['isFullScreen'] == True:
-            print(stateMach['windowPosX'], stateMach['windowPosY'])
-            glutPositionWindow(stateMach['windowPosX'], stateMach['windowPosY'])
-            #glutPositionWindow(960, 540)
+            glutPositionWindow(stateMach['prevWindowPosX'], stateMach['prevWindowPosY'])
             glutReshapeWindow(stateMach['prevWindowDimW'], stateMach['prevWindowDimH'])
             stateMach['isFullScreen'] = False
     
@@ -1265,6 +1282,8 @@ if __name__ == '__main__':
     stateMach['fps']                = 60
     stateMach['windowPosX']         = 0
     stateMach['windowPosY']         = 0
+    stateMach['prevWindowPosX']     = 0
+    stateMach['prevWindowPosY']     = 0
     stateMach['windowDimW']         = 800
     stateMach['windowDimH']         = 480
     stateMach['prevWindowDimW']     = 800
@@ -1273,6 +1292,8 @@ if __name__ == '__main__':
     stateMach['cursorY']            = 0
     stateMach['prevCursorX']        = 0
     stateMach['prevCursorY']        = 0
+    stateMach['mousePosAtPressX']   = 0
+    stateMach['mousePosAtPressY']   = 0
     stateMach['isFullScreen']       = False
     stateMach['isAnimating']        = False
     stateMach['wx']                 = 0
