@@ -1077,7 +1077,7 @@ def display():
     #stateMach['tDiff'] = 3.14159/stateMach['fps']
     #stateMach['tDiff'] = 6.28318/stateMach['fps']
 
-    drawTestObjects = False
+    drawTestObjects = True
     calcCursorVelocity(0)
 
     if (not drawTestObjects):
@@ -1167,14 +1167,17 @@ def special(k, x, y):
     elif k == GLUT_KEY_F11:
         if stateMach['isFullScreen'] == False:
             stateMach['windowPosX'] = glutGet(GLUT_WINDOW_X)
-            stateMach['windowPosY'] = glutGet(GLUT_WINDOW_Y)
-            stateMach['windowDimW'] = glutGet(GLUT_WINDOW_WIDTH)
-            stateMach['windowDimH'] = glutGet(GLUT_WINDOW_HEIGHT)
+            stateMach['windowPosY'] = glutGet(GLUT_WINDOW_Y)-37
+            print(stateMach['windowPosX'], stateMach['windowPosY'])
+            stateMach['prevWindowDimW'] = glutGet(GLUT_WINDOW_WIDTH)
+            stateMach['prevWindowDimH'] = glutGet(GLUT_WINDOW_HEIGHT)
             stateMach['isFullScreen'] = True
             glutFullScreen()
         elif stateMach['isFullScreen'] == True:
+            print(stateMach['windowPosX'], stateMach['windowPosY'])
             glutPositionWindow(stateMach['windowPosX'], stateMach['windowPosY'])
-            glutReshapeWindow(stateMach['windowDimW'], stateMach['windowDimH'])
+            #glutPositionWindow(960, 540)
+            glutReshapeWindow(stateMach['prevWindowDimW'], stateMach['prevWindowDimH'])
             stateMach['isFullScreen'] = False
     
     if k == GLUT_KEY_F12:
@@ -1230,8 +1233,6 @@ def reshape(width, height):
     stateMach['wy'] = height
     stateMach['windowDimW'] = width
     stateMach['windowDimH'] = height
-    stateMach['windowPosX'] = glutGet(GLUT_WINDOW_X)
-    stateMach['windowPosY'] = glutGet(GLUT_WINDOW_Y)
     glViewport(0, 0, width, height)
 
 # Only Render if the window (any pixel of it at all) is visible
@@ -1266,6 +1267,8 @@ if __name__ == '__main__':
     stateMach['windowPosY']         = 0
     stateMach['windowDimW']         = 800
     stateMach['windowDimH']         = 480
+    stateMach['prevWindowDimW']     = 800
+    stateMach['prevWindowDimH']     = 480
     stateMach['cursorX']            = 0
     stateMach['cursorY']            = 0
     stateMach['prevCursorX']        = 0
@@ -1306,6 +1309,13 @@ if __name__ == '__main__':
     stateMach['UIelements']         = {}
     stateMach['Menus']              = {}
 
+    stateMach['testList'] = []
+    stateMach['testList'].append((1.0, 1.0, 0.0, 1.0))
+    stateMach['testList'].append((1.0, 0.0, 1.0, 1.0))
+    stateMach['testList'].append((0.0, 1.0, 1.0, 1.0))
+    stateMach['testList'].append((1.0, 0.0, 0.0, 1.0))
+    stateMach['testList'].append((0.0, 0.0, 1.0, 1.0))
+    stateMach['testList'].append((0.0, 1.0, 0.0, 1.0))
     stateMach['Menus']['testMenu']  = Menu()
     #stateMach['Menus']['testMenu'].setIndexDraw(True)
     stateMach['Menus']['testMenu'].setIndexDraw(False)
