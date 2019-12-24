@@ -1095,7 +1095,7 @@ def display():
     #stateMach['tDiff'] = 3.14159/stateMach['fps']
     #stateMach['tDiff'] = 6.28318/stateMach['fps']
 
-    drawTestObjects = True
+    drawTestObjects = False
     calcCursorVelocity(0)
 
     if (not drawTestObjects):
