@@ -2,6 +2,7 @@
 
 from lampClass import *
 import pytweening
+from math import hypot
 print("Loading hliGLutils...")
 from hliGLutils import *
 print("Done!")
@@ -15,9 +16,10 @@ def drawInfo(stateMach):
     infoStr += "\nwidth to height: " + str(w2h)
     infoStr += "\nwindow posigion: " + str(stateMach['windowPosX'])+", "+str(stateMach['windowPosY'])
     infoStr += "\nCursor: " + str(stateMach['cursorX']) + ', ' + str(stateMach['cursorY'])
-    tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -w2h, w2h)
-    tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
-    infoStr += "\nCursor (GL): " + str(tmx) + ', ' + str(tmy)
+    #tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -w2h, w2h)
+    #tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
+    #infoStr += "\nCursor (GL): " + str(tmx) + ', ' + str(tmy)
+    infoStr += "\nCursor (GL): " + str(stateMach['cursorXgl']) + ', ' + str(stateMach['cursorYgl'])
     infoStr += "\nInput State: " + str(stateMach['currentState'])
     infoStr += "\nMouse Button: " + str(stateMach['mouseButton'])
     #infoStr += "\nCursor Velocity Raw, Polar Ang: " + str(stateMach['cursorVelocity'][0]) + " deg"
@@ -32,6 +34,33 @@ def drawInfo(stateMach):
             stateMach['faceColor'][2], 
             stateMach['faceColor'][3]/2)
     drawText(infoStr, 0.0, -1.0, 0.85, 0.25, 0.25, stateMach['w2h'], stateMach['detailColor'], tmc)
+
+# Check if user is clicking in circle
+#def watchDot(px, py, pr, cxgl, cygl, w2h, drawInfo):
+def watchDot(px, py, pr, cxgl, cygl, w2h, drawInfo):
+    if w2h < 1.0:
+        px /= w2h
+        py /= w2h
+        pr /= w2h
+    if (drawInfo and abs(pr) > 0.0):
+        drawArch(
+                px,
+                py,
+                pr-0.002,
+                pr-0.002,
+                0.0,
+                360.0,
+                0.002,
+                w2h,
+                (1.0, 0.0, 1.0, 1.0)
+                )
+
+    if (abs(pr) == 0.0):
+        return False
+    elif (pr >= hypot(cxgl-px, cygl-py)):
+        return True
+    else:
+        return False
 
 # This class helps the management and animation of colors
 class UIcolor:
@@ -123,6 +152,9 @@ class UIelement:
         self.params["detCol"] = UIcolor()
         self.tDiff = 1.0
 
+        # Used to manually control visibility
+        self.isVis = True
+
     # Set time-slice for animation speed
     def setTimeSlice(self, tDiff):
         self.tDiff = tDiff
@@ -172,6 +204,8 @@ class UIelement:
         if (self.params["scaleX"] == 0.0):
             return False
         elif (self.params["scaleY"] == 0.0):
+            return False
+        elif (self.isVis == False):
             return False
         else:
             return True
@@ -299,13 +333,13 @@ class UIparam:
     # Used for making real-time changes, corrections.
     # Use sparringly
     def setValue(self, value):
-        self.currentVal = value
+        self.currentVal = float(value)
         return
 
     # Use to temporarily tune animation speed (multiplies tDiff)
     # Resets to 1.0 (default) after animation completes
     def setAccel(self, value):
-        self.accel = value
+        self.accel = float(value)
         return
 
     # Choose which animation curve to use

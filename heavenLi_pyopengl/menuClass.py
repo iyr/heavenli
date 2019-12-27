@@ -1,4 +1,4 @@
-from hliUIutils import UIparam
+from hliUIutils import UIparam, UIelement
 from hliGLutils import *
 from rangeUtils import *
 import time
@@ -16,20 +16,26 @@ class Menu:
         # Cursor for animating menu slide-out (0 = closed, 1 = open)
         self.deployed = UIparam()
 
+        # Couple the UIelement to the menu
+        self.UIelement = UIelement()
+
         # distance from the center of the element closest to the center
         self.deltaCenter = 0.0
 
         # Current selected element of the menu (index: list, key: dict, value: range-tuple)
         self.selectedElement = 0.0
 
-        # Which direction, in degrees about the unit circle, the menu slides out
-        self.direction = 0.0
+        # Which direction (N, E, S, W), the menu slides out, for input
+        self.dir = "E"
+
+        # Which angle, in degrees about the unit circle, the menu slides out, for animation/drawing
+        self.angle = 0.0
 
         # Whether or not to display the index of the elemen
         self.dispIndex = True
 
         # Floating cursor for selecting via dragging or flicking (inertial scrolling)
-        # One-dimensional value parallel to the menu deployment direction
+        # One-dimensional value parallel to the menu deployment angle
         self.selectionCursorPosition = 0.0
         self.selectionCursorVelocity = 0.0
 
@@ -43,13 +49,23 @@ class Menu:
     def getIndexDraw(self):
         return bool(self.dispIndex)
 
-    # Get Menu deployment direction
-    def getDir(self):
-        return float(self.direction)
+    # Get Menu deployment angle
+    def getAng(self):
+        return float(self.angle)
 
     # Watch menu for scroll input
-    def watch(self, mmx, mmy, tmx, tmy, tms, tmv):
-        #if (tms >= hypot(tmx, tmy)
+    def watch(self, w2h, cxgl, cygl):
+
+        ## Watch menu to toggle open
+        #tmx = self.UIelement.getTarPosX()*w2h
+        #tmy = self.UIelement.getTarPosY()
+        #tms = self.UIelement.getTarSize()
+
+        #if (watchDot(tmx, tmy, tms)
+            #and
+            #stateMach['mousePressed'] == 0
+            #):
+            #self.toggleOpen()
         pass
         return
 
@@ -62,8 +78,8 @@ class Menu:
 
         # Input is a tuple velocity vector
         elif type(velocity) is tuple:
-            tmvx = velocity[0]*cos(self.direction)
-            tmvy = velocity[1]*sin(self.direction)
+            tmvx = velocity[0]*cos(self.angle)
+            tmvy = velocity[1]*sin(self.angle)
             self.selectionCursorVelocity = hypot(tmvx, tmvy)
 
         # Input unknown
@@ -80,8 +96,8 @@ class Menu:
 
         # Input is a tuple velocity vector
         elif type(position) is tuple:
-            tmvx = position[0]*cos(self.direction)
-            tmvy = position[1]*sin(self.direction)
+            tmvx = position[0]*cos(self.angle)
+            tmvy = position[1]*sin(self.angle)
             self.selectionCursorPosition = hypot(tmvx, tmvy)
 
         # Input unknown
@@ -89,9 +105,9 @@ class Menu:
             self.selectionCursorPosition = 0.0
         return
 
-    # Set the deployment slide-out direction
-    def setDir(self, angle):
-        self.direction = float(angle)
+    # Set the deployment slide-out angle
+    def setAng(self, angle):
+        self.angle = float(angle)
         return
 
     # Returns True if menu is fully deployed and ready to use
@@ -143,11 +159,13 @@ class Menu:
             self.selectionCursorVelocity = 0.0
 
         self.deployed.updateVal()
+        self.UIelement.updateParams()
         return
 
     # Set animation speed
     def setTimeSlice(self, tDiff):
         self.deployed.setTimeSlice(tDiff)
+        self.UIelement.setTimeSlice(tDiff)
         return
 
     # Set whether or not to draw index
@@ -159,15 +177,15 @@ class Menu:
     def draw(self, stateMach):
         w2h = stateMach['w2h']
 
-        tms = stateMach['UIelements']['testMenu'].getSize()
-        mx = stateMach['UIelements']['testMenu'].getTarPosX()
-        my = stateMach['UIelements']['testMenu'].getTarPosY()
+        tms = self.UIelement.getSize()
+        mx = self.UIelement.getTarPosX()
+        my = self.UIelement.getTarPosY()
 
         drawMenu(
                 mx,
                 my,
                 tms,
-                self.direction,
+                self.angle,
                 self.deployed.getVal(),
                 self.selectedElement,
                 self.numElements,

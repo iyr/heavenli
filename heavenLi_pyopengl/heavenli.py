@@ -77,7 +77,7 @@ def framerate():
 # Function for testing drawcode
 def drawTest():
     try:
-        stateMach['Menus']['testMenu'].setDir(360.0*stateMach['someVar']/100.0)
+        stateMach['Menus']['testMenu'].setAng(360.0*stateMach['someVar']/100.0)
         w2h = stateMach['w2h']
 
         # test color that changes over time
@@ -196,20 +196,9 @@ def watchTest():
             tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
             stateMach['BallPosition'] = (tmx, tmy)
 
-            # Watch menu to toggle open
-            tmx = stateMach['UIelements']['testMenu'].getTarPosX()*w2h
-            tmy = stateMach['UIelements']['testMenu'].getTarPosY()
-            tms = stateMach['UIelements']['testMenu'].getTarSize()
-
-            if (w2h < 1.0):
-                tms *= w2h
+            #if (w2h < 1.0):
+                #tms *= w2h
             
-            if (watchDot(tmx, tmy, tms)
-                and
-                stateMach['mousePressed'] == 0
-                ):
-                stateMach['Menus']['testMenu'].toggleOpen()
-
             if (    stateMach['currentState'] == 0
                     and
                     stateMach['mouseButton'] == 0
@@ -224,14 +213,36 @@ def watchTest():
                 #glutPositionWindow(tmx, tmy)
                 pass
 
-        if (stateMach['Menus']['testMenu'].isOpen()):
+            stateMach['Menus']['testMenu'].watch(
+                    stateMach['cursorXgl'], 
+                    stateMach['cursorYgl'], 
+                    w2h, 
+                    stateMach['drawInfo'])
+
+            if (False 
+                and 
+                watchDot(
+                tmx, 
+                tmy, 
+                tms, 
+                stateMach['cursorXgl'], 
+                stateMach['cursorYgl'], 
+                w2h, 
+                stateMach['drawInfo']
+                )
+                and
+                stateMach['mousePressed'] == 0
+                ):
+                stateMach['Menus']['testMenu'].toggleOpen()
+
+        if (False and stateMach['Menus']['testMenu'].isOpen()):
             # Watch menu body for input
-            tms = stateMach['UIelements']['testMenu'].getTarSize()
+            tms = stateMach['Menus']['testMenu'].UIelement.getTarSize()
             if (w2h < 1.0):
                 tms *= w2h
 
             polygon2 = []
-            ang = stateMach['Menus']['testMenu'].getDir()
+            ang = stateMach['Menus']['testMenu'].getAng()
             da  = 90.0-degrees(atan((23/4)+float(stateMach['Menus']['testMenu'].getIndexDraw())))
 
             rad = sqrt(2)
@@ -243,11 +254,11 @@ def watchTest():
             for i in range(len(polygon2)):
                 tmx = polygon2[i][0]
                 tmy = polygon2[i][1]
-                tmx *= stateMach['UIelements']['testMenu'].getTarSize()
+                tmx *= stateMach['Menus']['testMenu'].UIelement.getTarSize()
                 tmy *= tms
 
                 polygon2[i] = (tmx,tmy)
-            tmx = rad*cos(radians(ang))*stateMach['UIelements']['testMenu'].getTarSize()
+            tmx = rad*cos(radians(ang))*stateMach['Menus']['testMenu'].UIelement.getTarSize()
             tmy = rad*sin(radians(ang))*tms
             if w2h < 1.0:
                 tmx *= w2h
@@ -257,9 +268,12 @@ def watchTest():
                 pass
             elif (watchDot(
                     tmx,
-                    #stateMach['UIelements']['testMenu'].getTarPosX()*w2h,
                     tmy,
-                    tms
+                    tms,
+                    stateMach['cursorXgl'],
+                    stateMach['cursorYgl'],
+                    stateMach['w2h'],
+                    stateMach['drawInfo']
                 )):
                 print("moo")
                 pass
@@ -285,7 +299,7 @@ def drawElements():
 
     fcc = stateMach['faceColor']
     dtc = stateMach['detailColor']
-
+    w2h = stateMach['w2h']
 
     try:
         # Draw Background
@@ -297,7 +311,7 @@ def drawElements():
                         stateMach['wx'], stateMach['wy'], 
                         stateMach['lamps'][Light].getNumBulbs(), 
                         stateMach['lamps'][Light].getAngle(), 
-                        stateMach['w2h'],
+                        w2h,
                         stateMach['lamps'][Light].getBulbsCurrentRGB()
                         )
 
@@ -307,16 +321,16 @@ def drawElements():
                         stateMach['wx'], stateMach['wy'],
                         stateMach['lamps'][Light].getNumBulbs(), 
                         stateMach['lamps'][Light].getAngle(), 
-                        stateMach['w2h'],
+                        w2h,
                         stateMach['lamps'][Light].getBulbsCurrentRGB()
                         )
 
         # Draw Menus
-        #for key in stateMach['Menus']:
-            #stateMach['Menus'][key].draw(stateMach)
+        for key in stateMach['Menus']:
+            stateMach['Menus'][key].draw(stateMach)
 
         # Draw Granularity Rocker Underneath Clock
-        if (stateMach['w2h'] <= 1.0):
+        if (w2h <= 1.0):
             gctmy = stateMach['UIelements']['GranChanger'].getPosY()*stateMach['w2h']
         else:
             gctmy = stateMach['UIelements']['GranChanger'].getPosY()
@@ -330,7 +344,7 @@ def drawElements():
                     stateMach['UIelements']['GranChanger'].getDetailColor(),
                     stateMach['numHues'],
                     0.0,
-                    stateMach['w2h'],
+                    w2h,
                     stateMach['UIelements']['GranChanger'].getSize(),
                     stateMach['tDiff']
                     )
@@ -342,7 +356,7 @@ def drawElements():
                 stateMach['hour'],                                          # Hour to be displayed
                 stateMach['minute'],                                        # Minute to be displayed
                 stateMach['UIelements']['MasterSwitch'].getSize(),          # Size of Clock
-                stateMach['w2h'],                                           # w2h for proper aspect ratio scaling
+                w2h,                                           # w2h for proper aspect ratio scaling
                 stateMach['UIelements']['MasterSwitch'].getFaceColor(),     # color of the clock face
                 stateMach['UIelements']['MasterSwitch'].getDetailColor()    # color of the clock hands
                 )
@@ -356,12 +370,15 @@ def drawElements():
                     stateMach['UIelements']['GranChanger'].getDetailColor(),
                     stateMach['numHues'],
                     0.0,
-                    stateMach['w2h'],
+                    w2h,
                     stateMach['UIelements']['GranChanger'].getSize(),
                     stateMach['tDiff']
                     )
 
+        # Draw Lamp buttons
         if (len(stateMach['lamps']) > 0):
+
+            # Draw Bulb Buttons
             if (stateMach['UIelements']['BulbButtons'].isVisible()):
                 stateMach['bulbButtons'] = drawBulbButton(
                         stateMach['lamps'][Light].getArn(),
@@ -372,9 +389,10 @@ def drawElements():
                         stateMach['UIelements']['BulbButtons'].getFaceColor(),
                         stateMach['UIelements']['BulbButtons'].getDetailColor(),
                         stateMach['lamps'][Light].getBulbsCurrentRGB(),
-                        stateMach['w2h']
+                        w2h
                         )
 
+            # Draw All-Set Button
             if (stateMach['UIelements']['AllSetButton'].isVisible()):
                 drawIcon(
                         stateMach['UIelements']['AllSetButton'].getPosX(), 
@@ -387,7 +405,7 @@ def drawElements():
                         stateMach['UIelements']['AllSetButton'].getDetailColor(),
                         stateMach['lamps'][Light].getNumBulbs(),
                         stateMach['lamps'][Light].getAngle(),
-                        stateMach['w2h'],
+                        w2h,
                         stateMach['lamps'][Light].getBulbsCurrentRGB()
                         )
 
@@ -405,7 +423,7 @@ def drawElements():
                     stateMach['currentHue'], 
                     stateMach['numHues'], 
                     selectRingColor, 
-                    stateMach['w2h'], 
+                    w2h, 
                     stateMach['tDiff']*0.5
                     )
 
@@ -420,7 +438,7 @@ def drawElements():
                     stateMach['currentVal'],
                     int(stateMach['numHues']/2), 
                     selectRingColor,
-                    stateMach['w2h'], 
+                    w2h, 
                     stateMach['tDiff']*0.5
                     )
 
@@ -437,12 +455,13 @@ def drawElements():
                     stateMach['UIelements']['ConfirmButton'].getPosX(), 
                     stateMach['UIelements']['ConfirmButton'].getPosY(), 
                     stateMach['UIelements']['ConfirmButton'].getSize(), 
-                    stateMach['w2h'], 
+                    w2h, 
                     fcc, 
                     extraColor, 
                     dtc
                     )
 
+        # Draw Back Button
         if (stateMach['UIelements']['BackButton'].isVisible()):
             extraColor = colorsys.hsv_to_rgb(
                     stateMach['prevHue'], 
@@ -457,7 +476,7 @@ def drawElements():
                     stateMach['UIelements']['BackButton'].getPosY(), 
                     180.0,
                     stateMach['UIelements']['BackButton'].getSize(), 
-                    stateMach['w2h'], 
+                    w2h, 
                     fcc, 
                     extraColor, 
                     dtc
@@ -526,7 +545,7 @@ def watchHomeInput():
         #if (w2h < 1.0):
             #tms *= w2h
             
-        #if (watchDot(tmx, tmy, tms)
+        #if (watchDot(tmx, tmy, tms, stateMach['cursorXgl'], stateMach['cursorYgl'], w2h, stateMach['drawInfo'])
             #and
             #stateMach['mousePressed'] == 0
             #):
@@ -540,7 +559,11 @@ def watchHomeInput():
         if (watchDot(
             0.0,    # Middle of Screen
             0.0,    # Middle of Screen
-            tms*0.5 # Clock Radius
+            tms*0.5,
+            stateMach['cursorXgl'],
+            stateMach['cursorYgl'],
+            stateMach['w2h'],
+            stateMach['drawInfo']# Clock Radius
             )
             and
             stateMach['mousePressed'] == 0
@@ -570,7 +593,11 @@ def watchHomeInput():
                 if (watchDot(
                     posX, 
                     posY,
-                    tms
+                    tms,
+                    stateMach['cursorXgl'],
+                    stateMach['cursorYgl'],
+                    stateMach['w2h'],
+                    stateMach['drawInfo']
                     )   
                     and
                     len(stateMach['lamps']) > 0
@@ -602,7 +629,11 @@ def watchHomeInput():
             if (watchDot(
                 posX,
                 posY,
-                tms
+                tms,
+                stateMach['cursorXgl'],
+                stateMach['cursorYgl'],
+                stateMach['w2h'],
+                stateMach['drawInfo']
                 )
                 and
                 len(stateMach['lamps']) > 0
@@ -659,7 +690,11 @@ def watchColrSettingInput():
         if (watchDot(
             posX,
             posY,
-            tms
+            tms,
+            stateMach['cursorXgl'],
+            stateMach['cursorYgl'],
+            stateMach['w2h'],
+            stateMach['drawInfo']
             )
             and
             stateMach['mousePressed'] == 0
@@ -672,7 +707,11 @@ def watchColrSettingInput():
         if (watchDot(
             -posX,
             posY,
-            tms
+            tms,
+            stateMach['cursorXgl'],
+            stateMach['cursorYgl'],
+            stateMach['w2h'],
+            stateMach['drawInfo']
             )
             and
             stateMach['mousePressed'] == 0
@@ -695,7 +734,7 @@ def watchColrSettingInput():
             if (w2h < 1.0):
                 tms  *= w2h
 
-            if (watchDot(posX, posY, tms )
+            if (watchDot(posX, posY, tms, stateMach['cursorXgl'], stateMach['cursorYgl'], w2h, stateMach['drawInfo'] )
                 and
                 stateMach['mousePressed'] == 0
                 ):
@@ -733,7 +772,11 @@ def watchColrSettingInput():
             if (watchDot(
                 posX,
                 posY,
-                tms
+                tms,
+                stateMach['cursorXgl'],
+                stateMach['cursorYgl'],
+                stateMach['w2h'],
+                stateMach['drawInfo']
                 )
                 and
                 stateMach['currentState'] == 0
@@ -761,7 +804,11 @@ def watchColrSettingInput():
         if (watchDot(
             posX,
             posY,
-            tms
+            tms,
+            stateMach['cursorXgl'],
+            stateMach['cursorYgl'],
+            stateMach['w2h'],
+            stateMach['drawInfo']
             )
         and
         stateMach['mousePressed'] == 0
@@ -783,7 +830,10 @@ def watchColrSettingInput():
             stateMach['UIelements']['MasterSwitch'].setTargetFaceColor(stateMach['faceColor'])
             stateMach['UIelements']['MasterSwitch'].setTargetDetailColor(stateMach['detailColor'])
             stateMach['UIelements']['ColorTriangle'].setTarSize(0.0)
-            stateMach['UIelements']['HueRing'].setTarSize(10.0)
+            if w2h >= 1.0:
+                stateMach['UIelements']['HueRing'].setTarSize(10.0*w2h)
+            else:
+                stateMach['UIelements']['HueRing'].setTarSize(10.0/w2h)
             stateMach['UIelements']['BulbButtons'].setTarSize(0.4)
             stateMach['UIelements']['AllSetButton'].setTarSize(0.1275)
             stateMach['UIelements']['BackButton'].setTarSize(0.0)
@@ -819,7 +869,11 @@ def watchColrSettingInput():
         if (watchDot(
             posX,
             posY,
-            tms
+            tms,
+            stateMach['cursorXgl'],
+            stateMach['cursorYgl'],
+            stateMach['w2h'],
+            stateMach['drawInfo']
             )
         and
         stateMach['mousePressed'] == 0
@@ -852,49 +906,6 @@ def watchColrSettingInput():
             stateMach['UIelements']['GranChanger'].setTarPosY(0.0)
             stateMach['UIelements']['GranChanger'].setAccel(0.33)
 
-
-# Check if user is clicking in circle
-def watchDot(px, py, pr):
-    global stateMach
-    w2h = stateMach['w2h']
-    if w2h >= 1.0:
-        cx = mapRanges(stateMach['cursorX'], 0, stateMach['wx'], -w2h, w2h)
-        cy = mapRanges(stateMach['cursorY'], 0, stateMach['wy'], 1.0, -1.0)
-    else:
-        cx = mapRanges(stateMach['cursorX'], 0, stateMach['wx'], -1.0, 1.0)
-        cy = mapRanges(stateMach['cursorY'], 0, stateMach['wy'], 1/w2h, -1/w2h)
-    if (stateMach['drawInfo']):
-        if w2h < 1.0:
-            px /= w2h
-            py /= w2h
-            pr /= w2h
-        drawArch(
-                px,
-                py,
-                pr-0.002,
-                pr-0.002,
-                0.0,
-                360.0,
-                0.002,
-                w2h,
-                (1.0, 0.0, 1.0, 1.0)
-                )
-
-
-        #drawEllipse(
-                #px, 
-                #py,
-                #pr,
-                #pr,
-                #w2h,
-                #(1.0, 0.0, 1.0, 1.0)
-                #)
-    if (abs(pr) == 0.0):
-        return False
-    elif (pr >= hypot(cx-px, cy-py)):
-        return True
-    else:
-        return False
 
 # Check if user is clicking in arbitrary polygon defined by list of tuples of points
 def watchPolygon(polygon):#, point):
@@ -947,16 +958,43 @@ def mouseActive(mouseX, mouseY):
     stateMach['cursorX'] = mouseX
     stateMach['cursorY'] = mouseY
 
+    # Map cursor coordinates to GL coordinates
+    w2h = stateMach['w2h']
+    if w2h >= 1.0:
+        stateMach['cursorXgl'] = mapRanges(mouseX, 0, stateMach['wx'], -w2h, w2h)
+        stateMach['cursorYgl'] = mapRanges(mouseY, 0, stateMach['wy'], 1.0, -1.0)
+    else:
+        stateMach['cursorXgl'] = mapRanges(mouseX, 0, stateMach['wx'], -1.0, 1.0)
+        stateMach['cursorYgl'] = mapRanges(mouseY, 0, stateMach['wy'], 1/w2h, -1/w2h)
+
 def mousePassive(mouseX, mouseY):
     global stateMach
     stateMach['cursorX'] = mouseX
     stateMach['cursorY'] = mouseY
+
+    # Map cursor coordinates to GL coordinates
+    w2h = stateMach['w2h']
+    if w2h >= 1.0:
+        stateMach['cursorXgl'] = mapRanges(mouseX, 0, stateMach['wx'], -w2h, w2h)
+        stateMach['cursorYgl'] = mapRanges(mouseY, 0, stateMach['wy'], 1.0, -1.0)
+    else:
+        stateMach['cursorXgl'] = mapRanges(mouseX, 0, stateMach['wx'], -1.0, 1.0)
+        stateMach['cursorYgl'] = mapRanges(mouseY, 0, stateMach['wy'], 1/w2h, -1/w2h)
 
 def mouseInteraction(button, state, mouseX, mouseY):
     global stateMach
 
     stateMach['cursorX'] = mouseX
     stateMach['cursorY'] = mouseY
+
+    # Map cursor coordinates to GL coordinates
+    w2h = stateMach['w2h']
+    if w2h >= 1.0:
+        stateMach['cursorXgl'] = mapRanges(mouseX, 0, stateMach['wx'], -w2h, w2h)
+        stateMach['cursorYgl'] = mapRanges(mouseY, 0, stateMach['wy'], 1.0, -1.0)
+    else:
+        stateMach['cursorXgl'] = mapRanges(mouseX, 0, stateMach['wx'], -1.0, 1.0)
+        stateMach['cursorYgl'] = mapRanges(mouseY, 0, stateMach['wy'], 1/w2h, -1/w2h)
 
     # State = 0: button is pressed, low
     # State = 1: button is released, high
@@ -1096,6 +1134,7 @@ def display():
     #stateMach['tDiff'] = 6.28318/stateMach['fps']
 
     drawTestObjects = False
+    #drawTestObjects = True
     calcCursorVelocity(0)
 
     if (not drawTestObjects):
@@ -1288,6 +1327,8 @@ if __name__ == '__main__':
     stateMach['windowDimH']         = 480
     stateMach['prevWindowDimW']     = 800
     stateMach['prevWindowDimH']     = 480
+    stateMach['cursorXgl']          = 0
+    stateMach['cursorYgl']          = 0
     stateMach['cursorX']            = 0
     stateMach['cursorY']            = 0
     stateMach['prevCursorX']        = 0
@@ -1337,20 +1378,20 @@ if __name__ == '__main__':
     stateMach['testList'].append((1.0, 0.0, 0.0, 1.0))
     stateMach['testList'].append((0.0, 0.0, 1.0, 1.0))
     stateMach['testList'].append((0.0, 1.0, 0.0, 1.0))
+
     stateMach['Menus']['testMenu']  = Menu()
     #stateMach['Menus']['testMenu'].setIndexDraw(True)
     stateMach['Menus']['testMenu'].setIndexDraw(False)
-    #stateMach['Menus']['testMenu'].setDir(45.0)
-    stateMach['Menus']['testMenu'].setDir(0)
+    #stateMach['Menus']['testMenu'].setAng(45.0)
+    stateMach['Menus']['testMenu'].setAng(0)
 
-    stateMach['UIelements']['testMenu'] = UIelement()
-    stateMach['UIelements']['testMenu'].setTarSize(0.15)
-    #stateMach['UIelements']['testMenu'].setTarSize(0.2)
-    stateMach['UIelements']['testMenu'].setAccel(0.125)
-    #stateMach['UIelements']['testMenu'].setTarPosX(-0.775)
-    #stateMach['UIelements']['testMenu'].setTarPosY(-0.775)
-    stateMach['UIelements']['testMenu'].setTarPosX(0.0)
-    stateMach['UIelements']['testMenu'].setTarPosY(0.0)
+    stateMach['Menus']['testMenu'].UIelement.setTarSize(0.15)
+    #stateMach['Menus']['testMenu'].UIelement.setTarSize(0.2)
+    stateMach['Menus']['testMenu'].UIelement.setAccel(0.125)
+    #stateMach['Menus']['testMenu'].UIelement.setTarPosX(-0.775)
+    #stateMach['Menus']['testMenu'].UIelement.setTarPosY(-0.775)
+    stateMach['Menus']['testMenu'].UIelement.setTarPosX(0.0)
+    stateMach['Menus']['testMenu'].UIelement.setTarPosY(0.0)
 
     # Setup UI animation objects, initial parameters
 
