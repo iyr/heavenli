@@ -213,72 +213,7 @@ def watchTest():
                 #glutPositionWindow(tmx, tmy)
                 pass
 
-            stateMach['Menus']['testMenu'].watch(
-                    stateMach['cursorXgl'], 
-                    stateMach['cursorYgl'], 
-                    w2h, 
-                    stateMach['drawInfo'])
-
-            if (False 
-                and 
-                watchDot(
-                tmx, 
-                tmy, 
-                tms, 
-                stateMach['cursorXgl'], 
-                stateMach['cursorYgl'], 
-                w2h, 
-                stateMach['drawInfo']
-                )
-                and
-                stateMach['mousePressed'] == 0
-                ):
-                stateMach['Menus']['testMenu'].toggleOpen()
-
-        if (False and stateMach['Menus']['testMenu'].isOpen()):
-            # Watch menu body for input
-            tms = stateMach['Menus']['testMenu'].UIelement.getTarSize()
-            if (w2h < 1.0):
-                tms *= w2h
-
-            polygon2 = []
-            ang = stateMach['Menus']['testMenu'].getAng()
-            da  = 90.0-degrees(atan((23/4)+float(stateMach['Menus']['testMenu'].getIndexDraw())))
-
-            rad = sqrt(2)
-            polygon2.append((rad*cos(radians(ang+45)), rad*sin(radians(ang+45))))   # A
-            polygon2.append((rad*cos(radians(ang-45)), rad*sin(radians(ang-45))))   # B
-            rad = (23/4)+float(stateMach['Menus']['testMenu'].getIndexDraw())
-            polygon2.append((rad*cos(radians(ang-da)), rad*sin(radians(ang-da))))     # C
-            polygon2.append((rad*cos(radians(ang+da)), rad*sin(radians(ang+da))))     # D
-            for i in range(len(polygon2)):
-                tmx = polygon2[i][0]
-                tmy = polygon2[i][1]
-                tmx *= stateMach['Menus']['testMenu'].UIelement.getTarSize()
-                tmy *= tms
-
-                polygon2[i] = (tmx,tmy)
-            tmx = rad*cos(radians(ang))*stateMach['Menus']['testMenu'].UIelement.getTarSize()
-            tmy = rad*sin(radians(ang))*tms
-            if w2h < 1.0:
-                tmx *= w2h
-
-            if (watchPolygon(polygon2)):
-                print("quack")
-                pass
-            elif (watchDot(
-                    tmx,
-                    tmy,
-                    tms,
-                    stateMach['cursorXgl'],
-                    stateMach['cursorYgl'],
-                    stateMach['w2h'],
-                    stateMach['drawInfo']
-                )):
-                print("moo")
-                pass
-            else:
-                pass
+            stateMach['Menus']['testMenu'].watch(stateMach)
 
         if (stateMach['mouseReleased'] >= 0):
             stateMach['BallVelocity'] = stateMach['cursorVelSmoothed']
@@ -488,7 +423,27 @@ def drawElements():
         print("Error:", OOF)
     return
 
-def engageColorPicker(xOrigin, yOrigin):
+
+# Sets UI elements to go to home screen
+def goHome(xOrigin=0.0, yOrigin=0.0):
+    stateMach['wereColorsTouched'] = False
+    stateMach['UIelements']['MasterSwitch'].setTarSize(1.0)
+    stateMach['UIelements']['MasterSwitch'].setTargetFaceColor(stateMach['faceColor'])
+    stateMach['UIelements']['MasterSwitch'].setTargetDetailColor(stateMach['detailColor'])
+    stateMach['UIelements']['ColorTriangle'].setTarSize(0.0)
+    stateMach['UIelements']['HueRing'].setTarSize(10.0)
+    stateMach['UIelements']['BulbButtons'].setTarSize(0.4)
+    stateMach['UIelements']['AllSetButton'].setTarSize(0.1275)
+    stateMach['UIelements']['BackButton'].setTarSize(0.0)
+    stateMach['UIelements']['ConfirmButton'].setTarSize(0.0)
+    stateMach['UIelements']['GranChanger'].setTarSize(0.0)
+    stateMach['UIelements']['GranChanger'].setTarPosY(0.0)
+    stateMach['UIelements']['GranChanger'].setAccel(0.33)
+    stateMach['targetScreen'] = 0
+
+
+# Sets UI elements for color picker screen
+def engageColorPicker(xOrigin=0.0, yOrigin=0.0):
     stateMach['targetScreen'] = 1
     stateMach['UIelements']['MasterSwitch'].setTarSize(1.75)
     stateMach['UIelements']['MasterSwitch'].setTargetFaceColor((0.0, 0.0, 0.0, 1.0))
@@ -611,9 +566,6 @@ def watchHomeInput():
                             stateMach['bulbButtons'][i][0]/w2h,
                             stateMach['bulbButtons'][i][1]
                             )
-
-                    stateMach['UIelements']['GranChanger'].setTarSize(0.3)
-                    stateMach['UIelements']['GranChanger'].setTarPosY(-0.91)
 
                     # Record previous color(s)
                     stateMach['prevHue'] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[0]
@@ -826,22 +778,7 @@ def watchColrSettingInput():
                         stateMach['currentSat'], 
                         stateMach['currentVal'] ) )
 
-            stateMach['UIelements']['MasterSwitch'].setTarSize(1.0)
-            stateMach['UIelements']['MasterSwitch'].setTargetFaceColor(stateMach['faceColor'])
-            stateMach['UIelements']['MasterSwitch'].setTargetDetailColor(stateMach['detailColor'])
-            stateMach['UIelements']['ColorTriangle'].setTarSize(0.0)
-            if w2h >= 1.0:
-                stateMach['UIelements']['HueRing'].setTarSize(10.0*w2h)
-            else:
-                stateMach['UIelements']['HueRing'].setTarSize(10.0/w2h)
-            stateMach['UIelements']['BulbButtons'].setTarSize(0.4)
-            stateMach['UIelements']['AllSetButton'].setTarSize(0.1275)
-            stateMach['UIelements']['BackButton'].setTarSize(0.0)
-            stateMach['UIelements']['ConfirmButton'].setTarSize(0.0)
-            stateMach['UIelements']['GranChanger'].setTarSize(0.0)
-            stateMach['UIelements']['GranChanger'].setTarPosY(0.0)
-            stateMach['UIelements']['GranChanger'].setAccel(0.33)
-            stateMach['targetScreen'] = 0
+            goHome()
 
         if ( stateMach['wereColorsTouched'] and len(stateMach['lamps']) > 0):
             if (stateMach['targetBulb'] == stateMach['lamps'][Light].getNumBulbs()):
@@ -892,52 +829,7 @@ def watchColrSettingInput():
                         stateMach['prevSat'], 
                         stateMach['prevVal'] ) )
 
-            stateMach['UIelements']['MasterSwitch'].setTarSize(1.0)
-            stateMach['UIelements']['MasterSwitch'].setTargetFaceColor(stateMach['faceColor'])
-            stateMach['UIelements']['MasterSwitch'].setTargetDetailColor(stateMach['detailColor'])
-            stateMach['UIelements']['ColorTriangle'].setTarSize(0.0)
-            stateMach['UIelements']['HueRing'].setTarSize(10.0)
-            stateMach['targetScreen'] = 0
-            stateMach['UIelements']['BulbButtons'].setTarSize(0.4)
-            stateMach['UIelements']['AllSetButton'].setTarSize(0.1275)
-            stateMach['UIelements']['BackButton'].setTarSize(0.0)
-            stateMach['UIelements']['ConfirmButton'].setTarSize(0.0)
-            stateMach['UIelements']['GranChanger'].setTarSize(0.0)
-            stateMach['UIelements']['GranChanger'].setTarPosY(0.0)
-            stateMach['UIelements']['GranChanger'].setAccel(0.33)
-
-
-# Check if user is clicking in arbitrary polygon defined by list of tuples of points
-def watchPolygon(polygon):#, point):
-    w2h = stateMach['w2h']
-    if w2h < 1.0:
-        tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -1.0, 1.0)
-    else:
-        tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -w2h, w2h)
-    tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
-
-    if (stateMach['drawInfo']):
-        for i in range(len(polygon)):
-            tmx1 = polygon[i-1][0]
-            tmy1 = polygon[i-1][1]
-            tmx2 = polygon[i+0][0]
-            tmy2 = polygon[i+0][1]
-            if w2h < 1.0:
-                tmy1 /= w2h
-                tmy2 /= w2h
-
-            drawPill(
-                    tmx1, tmy1,
-                    tmx2, tmy2,
-                    0.002,
-                    w2h,
-                    (1.0, 0.0, 1.0, 1.0),
-                    (1.0, 0.0, 1.0, 1.0)
-                    )
-    point = Point((tmx, tmy))        # shapely object
-    polygon = Polygon(polygon)  # shapely object
-
-    return (polygon.contains(point) or polygon.intersects(point))
+            goHome()
 
 # Used to process user input
 def watchScreen():
@@ -1133,8 +1025,8 @@ def display():
     #stateMach['tDiff'] = 3.14159/stateMach['fps']
     #stateMach['tDiff'] = 6.28318/stateMach['fps']
 
-    drawTestObjects = False
-    #drawTestObjects = True
+    #drawTestObjects = False
+    drawTestObjects = True
     calcCursorVelocity(0)
 
     if (not drawTestObjects):
@@ -1260,8 +1152,9 @@ def key(ch, x, y):
                 stateMach['lamps'][Light].setArn(0)
 
     if ch == as_8_bit('h'):
-        stateMach['wereColorsTouched'] = False
-        stateMach['targetScreen'] = 0
+        goHome()
+        #stateMach['wereColorsTouched'] = False
+        #stateMach['targetScreen'] = 0
 
     if ch == as_8_bit(']'):
         stateMach['features'] += 1

@@ -1,6 +1,7 @@
-from hliUIutils import UIparam, UIelement
+from hliUIutils import UIparam, UIelement, watchDot, watchBox, watchPolygon
 from hliGLutils import *
 from rangeUtils import *
+from math import degrees, atan, sin, cos, sqrt, radians
 import time
 
 # Class definition for a drop/slide out menu
@@ -49,23 +50,101 @@ class Menu:
     def getIndexDraw(self):
         return bool(self.dispIndex)
 
+    # Get direction (NESW) angle, for watching input
+    def getDirAng(self):
+        if self.dir == "E":
+            return 0.0
+        if self.dir == "N":
+            return 90.0
+        if self.dir == "W":
+            return 180.0
+        if self.dir == "S":
+            return 270.0
+
+    # Set deployment direction
+    def setDir(self, direction):
+        if( (direction != "N")
+        and (direction != "E")
+        and (direction != "S")
+        and (direction != "W")
+        ):
+            self.dir = "E"
+        else:
+            self.dir = direction
+
     # Get Menu deployment angle
     def getAng(self):
         return float(self.angle)
 
-    # Watch menu for scroll input
-    def watch(self, w2h, cxgl, cygl):
+    # Watch menu for input
+    def watch(self, sm):
+        w2h = sm['w2h']
 
-        ## Watch menu to toggle open
-        #tmx = self.UIelement.getTarPosX()*w2h
-        #tmy = self.UIelement.getTarPosY()
-        #tms = self.UIelement.getTarSize()
+        # Watch menu to toggle open
+        tmx = self.UIelement.getTarPosX()*sm['w2h']
+        tmy = self.UIelement.getTarPosY()
+        tms = self.UIelement.getTarSize()
 
-        #if (watchDot(tmx, tmy, tms)
-            #and
-            #stateMach['mousePressed'] == 0
-            #):
-            #self.toggleOpen()
+        if sm['w2h'] < 1.0:
+            tms *= sm['w2h']
+
+        if (watchDot(
+                tmx, 
+                tmy, 
+                tms,
+                sm['cursorXgl'],
+                sm['cursorYgl'],
+                sm['w2h'],
+                sm['drawInfo']
+                )
+            and
+            sm['mousePressed'] == 0
+            ):
+            self.toggleOpen()
+
+        # Watch Menu for scroll
+        polygon = []
+        ang = self.getAng()
+        da  = 90.0-degrees(atan((23/4)+float(self.getIndexDraw())))
+
+        rad = sqrt(2)
+        polygon.append((rad*cos(radians(ang+45)), rad*sin(radians(ang+45))))   # A
+        polygon.append((rad*cos(radians(ang-45)), rad*sin(radians(ang-45))))   # B
+        rad = (23/4)+float(self.getIndexDraw())
+        polygon.append((rad*cos(radians(ang-da)), rad*sin(radians(ang-da))))     # C
+        polygon.append((rad*cos(radians(ang+da)), rad*sin(radians(ang+da))))     # D
+        for i in range(len(polygon)):
+            tmx = polygon[i][0]
+            tmy = polygon[i][1]
+            tmx *= self.UIelement.getTarSize()
+            tmy *= tms
+
+            polygon2[i] = (tmx,tmy)
+
+        rad *= self.UIelement.getSize()
+        if w2h < 1.0:
+            tmx *= w2h
+        #if sm['w2h'] < 1.0:
+            #px *= sm['w2h']
+            #qx *= sm['w2h']
+
+        if (self.isOpen()
+            and
+            (watchPolygon(sm['cursorXgl'], sm['cursorYgl'], polygon, w2h, sm['drawInfo'])
+            or
+            watchDot(
+                rad*cos(radians(ang)), 
+                rad*sin(radians(ang)),
+                tms,
+                sm['cursorXgl'],
+                sm['cursorYgl'],
+                sm['w2h'],
+                sm['drawInfo']
+                )
+            )):
+            print("quack")
+            pass
+
         pass
         return
 
