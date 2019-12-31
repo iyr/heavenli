@@ -78,8 +78,6 @@ class Menu:
 
     # Watch menu for input
     def watch(self, sm):
-        w2h = sm['w2h']
-
         # Watch menu to toggle open
         tmx = self.UIelement.getTarPosX()*sm['w2h']
         tmy = self.UIelement.getTarPosY()
@@ -102,39 +100,44 @@ class Menu:
             ):
             self.toggleOpen()
 
-        # Watch Menu for scroll
+        # Watch Menu Body for scroll / select
         polygon = []
         ang = self.getAng()
         da  = 90.0-degrees(atan((23/4)+float(self.getIndexDraw())))
 
-        rad = sqrt(2)
-        polygon.append((rad*cos(radians(ang+45)), rad*sin(radians(ang+45))))   # A
-        polygon.append((rad*cos(radians(ang-45)), rad*sin(radians(ang-45))))   # B
-        rad = (23/4)+float(self.getIndexDraw())
-        polygon.append((rad*cos(radians(ang-da)), rad*sin(radians(ang-da))))     # C
-        polygon.append((rad*cos(radians(ang+da)), rad*sin(radians(ang+da))))     # D
-        for i in range(len(polygon)):
-            tmx = polygon[i][0]
-            tmy = polygon[i][1]
-            tmx *= self.UIelement.getTarSize()
-            tmy *= tms
 
-            polygon2[i] = (tmx,tmy)
+        # Proximal Box Corners
+        radius = sqrt(2)
+        radx = radius*self.UIelement.getTarSize()
+        rady = radius*tms
 
-        rad *= self.UIelement.getSize()
-        if w2h < 1.0:
-            tmx *= w2h
-        #if sm['w2h'] < 1.0:
-            #px *= sm['w2h']
-            #qx *= sm['w2h']
+        tmr = radians(ang+45)
+        polygon.append( (cos(tmr)*radx, sin(tmr)*rady) )
+
+        tmr = radians(ang-45)
+        polygon.append( (cos(tmr)*radx, sin(tmr)*rady) )
+
+        # Distil Box Corners
+        radius = (23/4)+float(self.getIndexDraw())
+        radx = radius*self.UIelement.getTarSize()
+        rady = radius*tms
+
+        tmr = radians(ang-da)
+        polygon.append( (cos(tmr)*radx, sin(tmr)*rady) )
+
+        tmr = radians(ang+da)
+        polygon.append( (cos(tmr)*radx, sin(tmr)*rady) )
+
+        # Aspect correct radius for watchdot
+        radius *= self.UIelement.getSize()
 
         if (self.isOpen()
             and
-            (watchPolygon(sm['cursorXgl'], sm['cursorYgl'], polygon, w2h, sm['drawInfo'])
+            (watchPolygon(sm['cursorXgl'], sm['cursorYgl'], polygon, sm['w2h'], sm['drawInfo'])
             or
             watchDot(
-                rad*cos(radians(ang)), 
-                rad*sin(radians(ang)),
+                radius*cos(radians(ang)), 
+                radius*sin(radians(ang)),
                 tms,
                 sm['cursorXgl'],
                 sm['cursorYgl'],

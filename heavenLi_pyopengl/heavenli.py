@@ -261,8 +261,8 @@ def drawElements():
                         )
 
         # Draw Menus
-        for key in stateMach['Menus']:
-            stateMach['Menus'][key].draw(stateMach)
+        #for key in stateMach['Menus']:
+            #stateMach['Menus'][key].draw(stateMach)
 
         # Draw Granularity Rocker Underneath Clock
         if (w2h <= 1.0):
@@ -952,8 +952,13 @@ def calcCursorVelocity(millis):
     pcy = mapRanges(stateMach['prevCursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
     deltaX = ccx-pcx
     deltaY = ccy-pcy
-    speedX = deltaX/deltaT
-    speedY = deltaY/deltaT
+
+    if deltaT <= 0:
+        speedX = 0
+        speedY = 0
+    else:
+        speedX = deltaX/deltaT
+        speedY = deltaY/deltaT
 
     # Convert vector to polar coordinates
     tmv = vecCart2Pol((speedX, speedY))
@@ -1025,8 +1030,8 @@ def display():
     #stateMach['tDiff'] = 3.14159/stateMach['fps']
     #stateMach['tDiff'] = 6.28318/stateMach['fps']
 
-    #drawTestObjects = False
-    drawTestObjects = True
+    drawTestObjects = False
+    #drawTestObjects = True
     calcCursorVelocity(0)
 
     if (not drawTestObjects):
@@ -1150,6 +1155,14 @@ def key(ch, x, y):
                 stateMach['lamps'][Light].setArn(1)
             elif stateMach['lamps'][Light].getArn() == 1:
                 stateMach['lamps'][Light].setArn(0)
+
+    if ch == as_8_bit('p'):
+        print(stateMach)
+        #filename = "quack.sm"
+        #fileObj  = open(filename, 'wb')
+        ##pickle.dump(stateMach, fileObj)
+        #pickle.dump(stateMach['lamps'][0], fileObj)
+        #fileObj.close()
 
     if ch == as_8_bit('h'):
         goHome()
@@ -1277,6 +1290,7 @@ if __name__ == '__main__':
     stateMach['Menus']['testMenu'].setIndexDraw(False)
     #stateMach['Menus']['testMenu'].setAng(45.0)
     stateMach['Menus']['testMenu'].setAng(0)
+    stateMach['Menus']['testMenu']
 
     stateMach['Menus']['testMenu'].UIelement.setTarSize(0.15)
     #stateMach['Menus']['testMenu'].UIelement.setTarSize(0.2)
