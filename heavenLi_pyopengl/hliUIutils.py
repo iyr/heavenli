@@ -20,6 +20,7 @@ def drawInfo(stateMach):
     #tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
     #infoStr += "\nCursor (GL): " + str(tmx) + ', ' + str(tmy)
     infoStr += "\nCursor (GL): " + str(stateMach['cursorXgl']) + ', ' + str(stateMach['cursorYgl'])
+    infoStr += "\nCursor (Desktop): " + str(stateMach['pynputMouse'].position[0]) + ', ' + str(stateMach['pynputMouse'].position[1])
     infoStr += "\nInput State: " + str(stateMach['currentState'])
     infoStr += "\nMouse Button: " + str(stateMach['mouseButton'])
     #infoStr += "\nCursor Velocity Raw, Polar Ang: " + str(stateMach['cursorVelocity'][0]) + " deg"

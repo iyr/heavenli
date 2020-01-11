@@ -203,14 +203,11 @@ def watchTest():
                     and
                     stateMach['mouseButton'] == 0
                     ):
-                #curPosX = stateMach['windowPosX'] - stateMach['cursorX']
-                #curPosY = stateMach['windowPosY'] - stateMach['cursorY']
-                #curPosX = stateMach['cursorX']-stateMach['mousePosAtPressX'] + (stateMach['windowPosX'] - stateMach['prevWindowPosX'])
-                #curPosY = stateMach['cursorY']-stateMach['mousePosAtPressY'] + (stateMach['windowPosY'] - stateMach['prevWindowPosY'])
-                #tmx = curPosX#+stateMach['prevWindowPosX']
-                #tmy = curPosY#+stateMach['prevWindowPosY']
-                #print(tmx, tmy)
-                #glutPositionWindow(tmx, tmy)
+
+                curPos = stateMach['pynputMouse'].position
+                tmx = curPos[0] - stateMach['mousePosAtPressX']
+                tmy = curPos[1] - stateMach['mousePosAtPressY']
+                glutPositionWindow(tmx, tmy)
                 pass
 
             stateMach['Menus']['testMenu'].watch(stateMach)
@@ -489,6 +486,7 @@ def watchHomeInput():
 
     # Placeholder variable
     Light = 0
+    noButtonPressed = True
 
     # Watch Home Screen for input
     if (watchScreen()):
@@ -523,6 +521,7 @@ def watchHomeInput():
             and
             stateMach['mousePressed'] == 0
             ):                 # Button Must be clicked
+            noButtonPressed = False
             AreLightsOn = False
             for i in range(len(stateMach['lamps'])):
                 if(stateMach['lamps'][i].isOn()):
@@ -559,6 +558,7 @@ def watchHomeInput():
                     and
                     stateMach['mousePressed'] == 0
                     ): # Button Must be clicked
+                    noButtonPressed = False
 
                     # Set Color Picker as target Screen selecting bulb i
                     stateMach['targetBulb'] = i
@@ -592,6 +592,7 @@ def watchHomeInput():
                 and
                 stateMach['mousePressed'] == 0
                 ): # Button Must be clicked
+                noButtonPressed = False
 
                 # Set Color Picker as target Screen selecting bulb all bulbs
                 stateMach['targetBulb'] = stateMach["lamps"][Light].getNumBulbs()
@@ -608,6 +609,19 @@ def watchHomeInput():
                     stateMach['prevHues'][i] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[0]
                     stateMach['prevSats'][i] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[1]
                     stateMach['prevVals'][i] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[2]
+
+        if (  stateMach['currentState'] == 0
+                and
+                stateMach['mouseButton'] == 0
+                and
+                noButtonPressed == True
+                ):
+
+            curPos = stateMach['pynputMouse'].position
+            tmx = curPos[0] - stateMach['mousePosAtPressX']
+            tmy = curPos[1] - stateMach['mousePosAtPressY']#-37
+
+            #glutPositionWindow(tmx, tmy)
 
 def watchColrSettingInput():
     global stateMach
@@ -895,6 +909,8 @@ def mouseInteraction(button, state, mouseX, mouseY):
         #stateMach['prevWindowPosY'] = stateMach['windowPosY']
         stateMach['mousePosAtPressX'] = stateMach['cursorX']
         stateMach['mousePosAtPressY'] = stateMach['cursorY']
+        stateMach['windowHeight'] = stateMach['pynputMouse'].position[1] - (stateMach['windowPosY'] + stateMach['cursorY'])
+
         stateMach['mousePressed'] = button
 
     if (stateMach['currentState'] == 0 and state > 0):
@@ -1076,15 +1092,16 @@ def display():
     stateMach['windowPosX'] = glutGet(GLUT_WINDOW_X)
     stateMach['windowPosY'] = glutGet(GLUT_WINDOW_Y)
     glutSwapBuffers()
-    plugins.pluginLoader.updatePlugins()
 
 def idleWindowOpen():
     framerate()
     glutPostRedisplay()
+    plugins.pluginLoader.updatePlugins()
     pass
 
 def idleWindowMinimized():
     framerate()
+    plugins.pluginLoader.updatePlugins()
     pass
 
 # change view angle
@@ -1262,6 +1279,8 @@ if __name__ == '__main__':
     stateMach['prevVal']            = -1
     stateMach['prevSat']            = -1
     stateMach['wereColorsTouched']  = False
+    stateMach['pynputMouse']        = Controller()
+    stateMach['windowHeight']       = 0
     stateMach['mousePressed']       = -1
     stateMach['mouseReleased']      = -1
     stateMach['mouseButton']        = -1
@@ -1369,7 +1388,7 @@ if __name__ == '__main__':
         print("Disabling Antialiasing")
         glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE)
     else:
-        glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_MULTISAMPLE)
+        glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_MULTISAMPLE)# | GLUT_BORDERLESS)
 
     glutInitWindowPosition(stateMach['windowPosX'], stateMach['windowPosY'])
     glutInitWindowSize(stateMach['windowDimW'], stateMach['windowDimH'])
