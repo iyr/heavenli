@@ -1407,6 +1407,14 @@ if __name__ == '__main__':
     glutKeyboardFunc(key)
     glutVisibilityFunc(visible)
 
+    if "-f" in sys.argv:
+        stateMach['isFullScreen'] = True
+        glutFullScreen()
+
+    if "-nocursor" in sys.argv:
+        glutSetCursor(GLUT_CURSOR_NONE)
+
+
     if "-info" in sys.argv:
         print("GL_RENDERER   = ", glGetString(GL_RENDERER))
         print("GL_VERSION    = ", glGetString(GL_VERSION))
