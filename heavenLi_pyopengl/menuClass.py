@@ -95,10 +95,14 @@ class Menu:
                 sm['w2h'],
                 sm['drawInfo']
                 )
-            and
-            sm['mousePressed'] == 0
+            #and
+            #sm['mousePressed'] == 0
             ):
-            self.toggleOpen()
+
+            if (sm['mousePressed'] == 0):
+                self.toggleOpen()
+
+            return True
 
         # Watch Menu Body for scroll / select
         polygon = []
@@ -145,11 +149,12 @@ class Menu:
                 sm['drawInfo']
                 )
             )):
-            print("quack")
+            #print("quack")
             pass
+            return True
 
         pass
-        return
+        return False
 
     # Set the cursor's velocity magnitude (speed)
     def setCurVel(self, velocity):
