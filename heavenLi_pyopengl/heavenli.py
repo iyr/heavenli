@@ -191,26 +191,21 @@ def drawTest():
 def watchTest():
     try:
         w2h = stateMach['w2h']
-        if (watchScreen()):
+        if (    watchScreen()
+                and
+                stateMach['WindowBarHeight'] != False
+                ):
             tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -w2h, w2h)
             tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
             stateMach['BallPosition'] = (tmx, tmy)
+            #stateMach['noButtonsPressed'] = True
 
-            #if (w2h < 1.0):
-                #tms *= w2h
-            
-            if (    stateMach['currentState'] == 0
-                    and
-                    stateMach['mouseButton'] == 0
-                    ):
-
-                curPos = stateMach['pynputMouse'].position
-                tmx = curPos[0] - stateMach['mousePosAtPressX']
-                tmy = curPos[1] - stateMach['mousePosAtPressY']
-                glutPositionWindow(tmx, tmy)
+            if (stateMach['Menus']['testMenu'].watch(stateMach)):
+                stateMach['noButtonsPressed'] = False
                 pass
 
-            stateMach['Menus']['testMenu'].watch(stateMach)
+            # Drag window if no buttons pressed
+            dragWindow()
 
         if (stateMach['mouseReleased'] >= 0):
             stateMach['BallVelocity'] = stateMach['cursorVelSmoothed']
@@ -486,10 +481,13 @@ def watchHomeInput():
 
     # Placeholder variable
     Light = 0
-    noButtonPressed = True
+    #stateMach['noButtonsPressed'] = True
 
     # Watch Home Screen for input
-    if (watchScreen()):
+    if (    watchScreen()
+            and
+            stateMach['WindowBarHeight'] != False
+            ):
     
         #tmx = stateMach['UIelements']['testMenu'].getTarPosX()*w2h
         #tmy = stateMach['UIelements']['testMenu'].getTarPosY()
@@ -521,7 +519,7 @@ def watchHomeInput():
             and
             stateMach['mousePressed'] == 0
             ):                 # Button Must be clicked
-            noButtonPressed = False
+            stateMach['noButtonsPressed'] = False
             AreLightsOn = False
             for i in range(len(stateMach['lamps'])):
                 if(stateMach['lamps'][i].isOn()):
@@ -558,7 +556,7 @@ def watchHomeInput():
                     and
                     stateMach['mousePressed'] == 0
                     ): # Button Must be clicked
-                    noButtonPressed = False
+                    stateMach['noButtonsPressed'] = False
 
                     # Set Color Picker as target Screen selecting bulb i
                     stateMach['targetBulb'] = i
@@ -592,7 +590,7 @@ def watchHomeInput():
                 and
                 stateMach['mousePressed'] == 0
                 ): # Button Must be clicked
-                noButtonPressed = False
+                stateMach['noButtonsPressed'] = False
 
                 # Set Color Picker as target Screen selecting bulb all bulbs
                 stateMach['targetBulb'] = stateMach["lamps"][Light].getNumBulbs()
@@ -610,18 +608,8 @@ def watchHomeInput():
                     stateMach['prevSats'][i] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[1]
                     stateMach['prevVals'][i] = stateMach['lamps'][Light].getBulbCurrentHSV(i)[2]
 
-        if (  stateMach['currentState'] == 0
-                and
-                stateMach['mouseButton'] == 0
-                and
-                noButtonPressed == True
-                ):
-
-            curPos = stateMach['pynputMouse'].position
-            tmx = curPos[0] - stateMach['mousePosAtPressX']
-            tmy = curPos[1] - stateMach['mousePosAtPressY']#-37
-
-            #glutPositionWindow(tmx, tmy)
+        # Drag window if no buttons pressed
+        dragWindow()
 
 def watchColrSettingInput():
     global stateMach
@@ -665,11 +653,11 @@ def watchColrSettingInput():
             and
             stateMach['mousePressed'] == 0
             ):
+                stateMach['noButtonsPressed'] = False
                 stateMach['numHues'] += 2
                 if stateMach['numHues'] > 14:
                     stateMach['numHues'] = 14
 
-        # Watch Granularity Rocker for Input
         if (watchDot(
             -posX,
             posY,
@@ -682,6 +670,7 @@ def watchColrSettingInput():
             and
             stateMach['mousePressed'] == 0
             ):
+                stateMach['noButtonsPressed'] = False
                 stateMach['numHues'] -= 2
                 if stateMach['numHues'] < 10:
                     stateMach['numHues'] = 10
@@ -704,6 +693,7 @@ def watchColrSettingInput():
                 and
                 stateMach['mousePressed'] == 0
                 ):
+                stateMach['noButtonsPressed'] = False
 
                 stateMach['wereColorsTouched'] = True
                 stateMach['currentHue'] = stateMach['hueButtons'][i][2]
@@ -747,6 +737,7 @@ def watchColrSettingInput():
                 and
                 stateMach['currentState'] == 0
                 ):
+                stateMach['noButtonsPressed'] = False
 
                 stateMach['wereColorsTouched'] = True
                 stateMach['currentSat'] = stateMach['satValButtons'][i][2]
@@ -779,6 +770,7 @@ def watchColrSettingInput():
         and
         stateMach['mousePressed'] == 0
         ):
+            stateMach['noButtonsPressed'] = False
             stateMach['wereColorsTouched'] = False
             if (len(stateMach['lamps']) > 0):
                 if (stateMach['targetBulb'] == stateMach['lamps'][Light].getNumBulbs()):
@@ -829,6 +821,7 @@ def watchColrSettingInput():
         and
         stateMach['mousePressed'] == 0
         ):
+            stateMach['noButtonsPressed'] = False
             stateMach['wereColorsTouched'] = False
             if (len(stateMach['lamps']) > 0):
                 if (stateMach['targetBulb'] == stateMach['lamps'][Light].getNumBulbs()):
@@ -845,9 +838,18 @@ def watchColrSettingInput():
 
             goHome()
 
+        # Drag window if no buttons pressed
+        dragWindow()
+
 # Used to process user input
 def watchScreen():
     global stateMach
+
+    # Calibrate window title bar height if not set
+    if (stateMach['WindowBarHeight'] == False):
+        stateMach['WindowBarHeight'] = glutGet(GLUT_WINDOW_Y) - stateMach['prevWindowPosY'] 
+        print("Window Title Bar Height set: " + str(stateMach['WindowBarHeight']))
+
     if (    stateMach['currentState'] == 0 
             or 
             stateMach['mousePressed'] >= 0
@@ -857,6 +859,34 @@ def watchScreen():
         return True
     else:
         return False
+
+def dragWindow():
+    if (    stateMach['currentState'] == 0
+            and
+            stateMach['mouseButton'] == 0
+            and
+            stateMach['noButtonsPressed'] == True
+            and
+            stateMach['WindowBarHeight'] != False
+            and
+            stateMach['isFullScreen'] == False
+            ):
+        pass
+        if (stateMach['WindowBarHeight'] is None):
+            if (stateMach['mousePressed'] == 0):
+                stateMach['prevWindowPosX'] = glutGet(GLUT_WINDOW_X)
+                stateMach['prevWindowPosY'] = glutGet(GLUT_WINDOW_Y)
+
+            stateMach['WindowBarHeight'] = False
+            print(stateMach['WindowBarHeight'])
+            tmx = glutGet(GLUT_WINDOW_X)
+            tmy = glutGet(GLUT_WINDOW_Y)
+        else:
+            curPos = stateMach['pynputMouse'].position
+            tmx = curPos[0] - stateMach['mousePosAtPressX']
+            tmy = curPos[1] - stateMach['mousePosAtPressY'] - stateMach['WindowBarHeight']
+
+        glutPositionWindow(tmx, tmy)
 
 def mouseActive(mouseX, mouseY):
     global stateMach
@@ -905,8 +935,6 @@ def mouseInteraction(button, state, mouseX, mouseY):
     # State = 0: button is pressed, low
     # State = 1: button is released, high
     if (stateMach['currentState'] == 1 and state == 0):
-        #stateMach['prevWindowPosX'] = stateMach['windowPosX']
-        #stateMach['prevWindowPosY'] = stateMach['windowPosY']
         stateMach['mousePosAtPressX'] = stateMach['cursorX']
         stateMach['mousePosAtPressY'] = stateMach['cursorY']
         stateMach['windowHeight'] = stateMach['pynputMouse'].position[1] - (stateMach['windowPosY'] + stateMach['cursorY'])
@@ -914,6 +942,7 @@ def mouseInteraction(button, state, mouseX, mouseY):
         stateMach['mousePressed'] = button
 
     if (stateMach['currentState'] == 0 and state > 0):
+        stateMach['noButtonsPressed'] = True
         stateMach['mouseReleased'] = button
 
     stateMach['currentState'] = state
@@ -1226,6 +1255,8 @@ if __name__ == '__main__':
     global stateMach
     stateMach = {}
     print("Initializing...")
+    stateMach['WindowBarHeight']    = None
+    stateMach['noButtonsPressed'] = True
     stateMach['prevHues']           = [None for i in range(6)]
     stateMach['prevSats']           = [None for i in range(6)]
     stateMach['prevVals']           = [None for i in range(6)]
@@ -1413,7 +1444,6 @@ if __name__ == '__main__':
 
     if "-nocursor" in sys.argv:
         glutSetCursor(GLUT_CURSOR_NONE)
-
 
     if "-info" in sys.argv:
         print("GL_RENDERER   = ", glGetString(GL_RENDERER))
