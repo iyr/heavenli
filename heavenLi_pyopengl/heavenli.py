@@ -64,10 +64,6 @@ def framerate():
         if (stateMach['hour'] > 11):
             stateMach['hour'] -= 12
 
-        #if (machine() == "armv6l" or machine() == "armv7l"):
-            #pass
-            #glutSetCursor(GLUT_CURSOR_NONE)
-
     if stateMach['frameLimit'] and (stateMach['fps'] > 66):
         pass
         time.sleep(0.015)
@@ -77,7 +73,8 @@ def framerate():
 # Function for testing drawcode
 def drawTest():
     try:
-        stateMach['Menus']['testMenu'].setAng(360.0*stateMach['someVar']/100.0)
+        #stateMach['Menus']['testMenu'].setAng(360.0*stateMach['someVar']/100.0)
+        stateMach['Menus']['testMenu'].setAng(90.0)
         w2h = stateMach['w2h']
 
         # test color that changes over time
@@ -192,13 +189,10 @@ def watchTest():
     try:
         w2h = stateMach['w2h']
         if (    watchScreen()
-                and
-                stateMach['WindowBarHeight'] != False
                 ):
             tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -w2h, w2h)
             tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
             stateMach['BallPosition'] = (tmx, tmy)
-            #stateMach['noButtonsPressed'] = True
 
             if (stateMach['Menus']['testMenu'].watch(stateMach)):
                 stateMach['noButtonsPressed'] = False
@@ -846,7 +840,11 @@ def watchScreen():
     global stateMach
 
     # Calibrate window title bar height if not set
-    if (stateMach['WindowBarHeight'] == False):
+    if (    type(stateMach['WindowBarHeight']) == str
+            and
+            abs(glutGet(GLUT_WINDOW_Y) - stateMach['prevWindowPosY']) != 0
+            ):
+        #print(stateMach['WindowBarHeight'], glutGet(GLUT_WINDOW_Y), stateMach['prevWindowPosY'])
         stateMach['WindowBarHeight'] = glutGet(GLUT_WINDOW_Y) - stateMach['prevWindowPosY'] 
         print("Window Title Bar Height set: " + str(stateMach['WindowBarHeight']))
 
@@ -867,18 +865,19 @@ def dragWindow():
             and
             stateMach['noButtonsPressed'] == True
             and
-            stateMach['WindowBarHeight'] != False
+            type(stateMach['WindowBarHeight']) != str
             and
             stateMach['isFullScreen'] == False
             ):
         pass
-        if (stateMach['WindowBarHeight'] is None):
+        if (type(stateMach['WindowBarHeight']) == type(None)
+                ):
             if (stateMach['mousePressed'] == 0):
                 stateMach['prevWindowPosX'] = glutGet(GLUT_WINDOW_X)
                 stateMach['prevWindowPosY'] = glutGet(GLUT_WINDOW_Y)
 
-            stateMach['WindowBarHeight'] = False
-            print(stateMach['WindowBarHeight'])
+            #print(stateMach['WindowBarHeight'], glutGet(GLUT_WINDOW_Y), stateMach['prevWindowPosY'])
+            stateMach['WindowBarHeight'] = "noSet"
             tmx = glutGet(GLUT_WINDOW_X)
             tmy = glutGet(GLUT_WINDOW_Y)
         else:
@@ -1075,8 +1074,8 @@ def display():
     #stateMach['tDiff'] = 3.14159/stateMach['fps']
     #stateMach['tDiff'] = 6.28318/stateMach['fps']
 
-    drawTestObjects = False
-    #drawTestObjects = True
+    #drawTestObjects = False
+    drawTestObjects = True
     calcCursorVelocity(0)
 
     if (not drawTestObjects):
@@ -1256,7 +1255,7 @@ if __name__ == '__main__':
     stateMach = {}
     print("Initializing...")
     stateMach['WindowBarHeight']    = None
-    stateMach['noButtonsPressed'] = True
+    stateMach['noButtonsPressed']   = True
     stateMach['prevHues']           = [None for i in range(6)]
     stateMach['prevSats']           = [None for i in range(6)]
     stateMach['prevVals']           = [None for i in range(6)]
@@ -1415,11 +1414,23 @@ if __name__ == '__main__':
     glutInit(sys.argv)
 
     # Disable anti-aliasing if running on a Raspberry Pi Zero
-    if (machine() == "armv6l" or machine() == "armv7l"):
-        print("Disabling Antialiasing")
-        glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE)
-    else:
-        glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_MULTISAMPLE)# | GLUT_BORDERLESS)
+    #if (machine() == "armv6l" or machine() == "armv7l"):
+        #print("Disabling Antialiasing")
+        #glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE)
+    #else:
+        #glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_MULTISAMPLE)# | GLUT_BORDERLESS)
+
+    # Initialize glut display mode
+    GLUT_INIT = GLUT_RGBA | GLUT_DOUBLE
+
+    if "-aa" in sys.argv:
+        GLUT_INIT = GLUT_INIT | GLUT_MULTISAMPLE
+
+    if "-borderless" in sys.argv:
+        stateMach['WindowBarHeight'] = int(0)
+        GLUT_INIT = GLUT_INIT | GLUT_BORDERLESS
+
+    glutInitDisplayMode(GLUT_INIT)
 
     glutInitWindowPosition(stateMach['windowPosX'], stateMach['windowPosY'])
     glutInitWindowSize(stateMach['windowDimW'], stateMach['windowDimH'])
