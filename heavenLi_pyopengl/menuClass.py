@@ -109,6 +109,8 @@ class Menu:
         ang = self.getAng()
         da  = 90.0-degrees(atan((23/4)+float(self.getIndexDraw())))
 
+        ofx     = self.UIelement.getTarPosX()
+        ofy     = self.UIelement.getTarPosY()
 
         # Proximal Box Corners
         radius = sqrt(2)
@@ -116,39 +118,59 @@ class Menu:
         rady = radius*tms
 
         tmr = radians(ang+45)
-        polygon.append( (cos(tmr)*radx, sin(tmr)*rady) )
+        polygon.append( (
+            ofx+cos(tmr)*radx, 
+            ofy+sin(tmr)*rady
+            ) )
 
         tmr = radians(ang-45)
-        polygon.append( (cos(tmr)*radx, sin(tmr)*rady) )
+        polygon.append( (
+            ofx+cos(tmr)*radx, 
+            ofy+sin(tmr)*rady
+            ) )
 
         # Distil Box Corners
-        radius = (23/4)+float(self.getIndexDraw())
-        radx = radius*self.UIelement.getTarSize()
-        rady = radius*tms
+        radius  = (23/4)+float(self.getIndexDraw())
+        radx    = radius*self.UIelement.getTarSize()
+        rady    = radius*tms
 
         tmr = radians(ang-da)
-        polygon.append( (cos(tmr)*radx, sin(tmr)*rady) )
+        polygon.append( (
+            ofx+cos(tmr)*radx, 
+            ofy+sin(tmr)*rady
+            ) )
 
         tmr = radians(ang+da)
-        polygon.append( (cos(tmr)*radx, sin(tmr)*rady) )
+        polygon.append( (
+            ofx+cos(tmr)*radx, 
+            ofy+sin(tmr)*rady
+            ) )
 
         # Aspect correct radius for watchdot
         radius *= self.UIelement.getSize()
 
-        if (self.isOpen()
-            and
-            (watchPolygon(sm['cursorXgl'], sm['cursorYgl'], polygon, sm['w2h'], sm['drawInfo'])
-            or
-            watchDot(
-                radius*cos(radians(ang)), 
-                radius*sin(radians(ang)),
-                tms,
-                sm['cursorXgl'],
-                sm['cursorYgl'],
-                sm['w2h'],
-                sm['drawInfo']
+        if (    self.isOpen()
+                and
+                (
+                    watchPolygon(
+                        sm['cursorXgl'], 
+                        sm['cursorYgl'], 
+                        polygon, 
+                        sm['w2h'], 
+                        sm['drawInfo']
+                        )
+                    or
+                    watchDot(
+                        ofx+radius*cos(radians(ang)), 
+                        ofy+radius*sin(radians(ang)),
+                        tms,
+                        sm['cursorXgl'],
+                        sm['cursorYgl'],
+                        sm['w2h'],
+                        sm['drawInfo']
+                        )
                 )
-            )):
+            ):
             #print("quack")
             pass
             return True
