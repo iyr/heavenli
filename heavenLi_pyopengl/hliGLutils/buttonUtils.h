@@ -54,6 +54,7 @@ void drawMenu(
       GLfloat     direction,     // Direction, in degrees about the unit circle, the menu slides out to
       GLfloat     deployed,      // 0.0=closed, 1.0=completely open
       GLfloat     floatingIndex, // index of the selected element, used for scroll bar
+      GLfloat     scrollCursor,  // animation cursor for element motion during scrolling (-1.0 to 1.0)
       GLuint      numElements,   // number of elements
       GLuint      menuType,      // 0=carousel w/ rollover, 1=linear strip w/ terminals, 2=value slider w/ min/max
       GLboolean   drawIndex,     // whether or not to draw the index over the number of elements
