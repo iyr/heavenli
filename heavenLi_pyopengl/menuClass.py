@@ -17,6 +17,9 @@ class Menu:
         # Cursor for animating menu slide-out (0 = closed, 1 = open)
         self.deployed = UIparam()
 
+        # Used to animate scrolling snapping to a target
+        self.scrollSnap = UIparam()
+
         # Couple the UIelement to the menu
         self.UIelement = UIelement()
 
@@ -25,6 +28,9 @@ class Menu:
 
         # Current selected element of the menu (index: list, key: dict, value: range-tuple)
         self.selectedElement = 0.0
+
+        # Index of the previously selected element when changing elements / scrolling
+        self.prevSelectionIndex = 0
 
         # Which direction (N, E, S, W), the menu slides out, for input
         self.dir = "E"
@@ -39,6 +45,9 @@ class Menu:
         # One-dimensional value parallel to the menu deployment angle
         self.selectionCursorPosition = 0.0
         self.selectionCursorVelocity = 0.0
+
+        # Used for tracking scroll input when cursor has moved off the menu
+        self.isTrackingScroll = False
 
         # Number of elements
         self.numElements = 0
@@ -97,8 +106,8 @@ class Menu:
                 w2h,
                 sm['drawInfo']
                 )
-            #and
-            #sm['mousePressed'] == 0
+            and
+            not self.isTrackingScroll
             ):
 
             if (sm['mousePressed'] == 0):
@@ -176,21 +185,30 @@ class Menu:
                         w2h,
                         sm['drawInfo']
                         )
+                    or
+                    self.isTrackingScroll
                 )
             ):
 
             tmx = mapRanges(sm['cursorX'], 0, sm['windowDimW'], -w2h, w2h)
             tmy = mapRanges(sm['cursorY'], 0, sm['windowDimH'], 1.0, -1.0)
-            self.selectionCursorPosition = tmx*cos(self.angle) + tmy*sin(self.angle)
+            tmx /= 2.0*self.UIelement.getTarSize()
+            tmy /= 2.0*self.UIelement.getTarSize()
+            radAng = radians(self.angle)
+            self.selectionCursorPosition = tmx*cos(radAng) + tmy*sin(radAng)
+            self.isTrackingScroll = True
             
             pass
             if (sm['mouseReleased'] >= 0):
+                self.isTrackingScroll = False
                 self.selectionCursorVelocity = (
-                    (sm['cursorVelSmoothed'][0]*cos(self.angle)) + 
-                    (sm['cursorVelSmoothed'][1]*sin(self.angle))
+                    (2.0*sm['cursorVelSmoothed'][0]*cos(self.angle)) + 
+                    (2.0*sm['cursorVelSmoothed'][1]*sin(self.angle))
                 )
 
-                print(sm['cursorVelSmoothed'])
+            if (sm['mousePressed'] >= 0):
+                self.prevSelectionIndex = self.selectionCursorPosition
+
             return True
 
         pass
@@ -285,7 +303,7 @@ class Menu:
         return self.deployed.getVal()
 
     # Update parameters n' stuff
-    def update(self):
+    def update(self, sm):
 
         # Set cursor acceleration + decay rate
         cDrag   = 1.0
@@ -295,28 +313,47 @@ class Menu:
         tDelta  = time.time()-self.tPhys
 
         # Update Cursor position
-        tmp = self.selectionCursorPosition + 2.0*self.selectionCursorVelocity*tDelta + accel*pow(tDelta, 2.0)
-        if (tmp < 0.0):
-            tmp = self.numElements
-        if (tmp > self.numElements):
-            tmp = 0.0
-        self.selectionCursorPosition = tmp
+        if (sm['currentState'] == 1):
+            tmp = self.selectionCursorPosition + 2.0*self.selectionCursorVelocity*tDelta + accel*pow(tDelta, 2.0)
+            if (tmp < 0.0):
+                tmp = self.numElements
+            if (tmp > self.numElements):
+                tmp = 0.0
+            self.selectionCursorPosition = tmp
 
-        # Decay cursor velocity
-        tmp = self.selectionCursorVelocity + accel*tDelta
+            # Decay cursor velocity
+            tmp = self.selectionCursorVelocity + accel*tDelta
 
-        if (abs(tmp) <= 0.01):
-            self.selectionCursorVelocity = 0.0
-        else:
-            self.selectionCursorVelocity = tmp
+            # Don't let cursor take forever to coast to a stop
+            if (abs(tmp) <= 0.10):
+                self.selectionCursorVelocity = 0.0
+
+                # Snap cursor to nearest whole number, animate
+                if (    abs(normalizeCursor(self.prevSelectionIndex, self.selectionCursorPosition)) >= 0.001
+                        and
+                        abs(normalizeCursor(self.prevSelectionIndex, self.selectionCursorPosition)) <= 0.999
+                        and
+                        not self.scrollSnap.isAnimating()
+                        ):
+                    self.scrollSnap.setValue(self.selectionCursorPosition)
+                    self.scrollSnap.setTargetVal(round(self.selectionCursorPosition))
+                else:
+                    self.selectionCursorPosition = self.scrollSnap.getVal()
+                    pass
+            else:
+                # Update Cursor velocity
+                self.selectionCursorVelocity = tmp
+
         self.tPhys = time.time()
 
+        self.scrollSnap.updateVal()
         self.deployed.updateVal()
         self.UIelement.updateParams()
         return
 
     # Set animation speed
     def setTimeSlice(self, tDiff):
+        self.scrollSnap.setTimeSlice(tDiff)
         self.deployed.setTimeSlice(tDiff)
         self.UIelement.setTimeSlice(tDiff)
         return
@@ -333,6 +370,9 @@ class Menu:
         tms = self.UIelement.getSize()
         mx = self.UIelement.getTarPosX()
         my = self.UIelement.getTarPosY()
+        sc = normalizeCursor(self.prevSelectionIndex, self.selectionCursorPosition)
+        if sc < 0.0:
+            sc += 1.0
 
         drawMenu(
                 mx,
@@ -341,6 +381,7 @@ class Menu:
                 self.angle,
                 self.deployed.getVal(),
                 self.selectedElement,
+                sc,
                 self.numElements,
                 self.menuType,
                 self.dispIndex,
@@ -352,8 +393,8 @@ class Menu:
         tmx = self.selectionCursorPosition*cos(self.angle)
         tmy = self.selectionCursorPosition*sin(self.angle)
 
-        if (w2h < 1.0):
-            tmy /= w2h
+        #if (w2h > 1.0):
+            #tmy *= w2h
         drawEllipse(
                 mx+0.5,
                 tmy,
