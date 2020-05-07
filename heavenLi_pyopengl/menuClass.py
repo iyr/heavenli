@@ -1,7 +1,7 @@
 from hliUIutils import UIparam, UIelement, watchDot, watchBox, watchPolygon
 from hliGLutils import *
 from rangeUtils import *
-from math import degrees, atan, sin, cos, sqrt, radians
+from math import degrees, atan, sin, cos, sqrt, radians, hypot
 import time
 
 # Class definition for a drop/slide out menu
@@ -46,6 +46,7 @@ class Menu:
         # Timer for updating physics
         self.tPhys = time.time()
 
+
     # index draw getter
     def getIndexDraw(self):
         return bool(self.dispIndex)
@@ -79,12 +80,13 @@ class Menu:
     # Watch menu for input
     def watch(self, sm):
         # Watch menu to toggle open
-        tmx = self.UIelement.getTarPosX()*sm['w2h']
+        w2h = sm['w2h']
+        tmx = self.UIelement.getTarPosX()*w2h
         tmy = self.UIelement.getTarPosY()
         tms = self.UIelement.getTarSize()
 
-        if sm['w2h'] < 1.0:
-            tms *= sm['w2h']
+        if w2h < 1.0:
+            tms *= w2h
 
         if (watchDot(
                 tmx, 
@@ -92,7 +94,7 @@ class Menu:
                 tms,
                 sm['cursorXgl'],
                 sm['cursorYgl'],
-                sm['w2h'],
+                w2h,
                 sm['drawInfo']
                 )
             #and
@@ -146,8 +148,13 @@ class Menu:
             ofy+sin(tmr)*rady
             ) )
 
+
         # Aspect correct radius for watchdot
         radius *= self.UIelement.getSize()
+        if w2h < 1.0:
+            ofy = ofy+radius*sin(radians(ang))*w2h
+        else:
+            ofy = (ofy+radius*sin(radians(ang)))
 
         if (    self.isOpen()
                 and
@@ -156,27 +163,56 @@ class Menu:
                         sm['cursorXgl'], 
                         sm['cursorYgl'], 
                         polygon, 
-                        sm['w2h'], 
+                        w2h, 
                         sm['drawInfo']
                         )
                     or
                     watchDot(
                         ofx+radius*cos(radians(ang)), 
-                        ofy+radius*sin(radians(ang)),
+                        ofy,
                         tms,
                         sm['cursorXgl'],
                         sm['cursorYgl'],
-                        sm['w2h'],
+                        w2h,
                         sm['drawInfo']
                         )
                 )
             ):
-            #print("quack")
+
+            tmx = mapRanges(sm['cursorX'], 0, sm['windowDimW'], -w2h, w2h)
+            tmy = mapRanges(sm['cursorY'], 0, sm['windowDimH'], 1.0, -1.0)
+            self.selectionCursorPosition = tmx*cos(self.angle) + tmy*sin(self.angle)
+            
             pass
+            if (sm['mouseReleased'] >= 0):
+                self.selectionCursorVelocity = (
+                    (sm['cursorVelSmoothed'][0]*cos(self.angle)) + 
+                    (sm['cursorVelSmoothed'][1]*sin(self.angle))
+                )
+
+                print(sm['cursorVelSmoothed'])
             return True
 
         pass
         return False
+
+    # Set menu number of elements
+    def setNumElements(self, numElements):
+
+        # Sanity Check
+        if (numElements < 0):
+            self.numElements = 0
+
+        # Sanity Check
+        elif (type(numElements) != int):
+
+            # Sanity Check
+            if (type(numElements) == float and numElements > 0.0):
+                self.numElements = int(numElements)
+            else:
+                self.numElements = 0.0
+        else:
+            self.numElements = numElements
 
     # Set the cursor's velocity magnitude (speed)
     def setCurVel(self, velocity):
@@ -253,19 +289,27 @@ class Menu:
 
         # Set cursor acceleration + decay rate
         cDrag   = 1.0
-        accel   = self.selectionCursorVelocity*cDrag
+        accel   = -self.selectionCursorVelocity*cDrag
 
         # Get time since last update to decouple update rate from framerate
         tDelta  = time.time()-self.tPhys
 
         # Update Cursor position
-        self.selectionCursorPosition += 2.0*self.selectionCursorVelocity*tDelta
-        self.selectionCursorPosition += accel*pow(tDelta, 2.0)
+        tmp = self.selectionCursorPosition + 2.0*self.selectionCursorVelocity*tDelta + accel*pow(tDelta, 2.0)
+        if (tmp < 0.0):
+            tmp = self.numElements
+        if (tmp > self.numElements):
+            tmp = 0.0
+        self.selectionCursorPosition = tmp
 
-        # Decay Cursor velocity over time to simulate drag
-        self.selectionCursorVelocity += accel*tDelta
-        if self.selectionCursorPosition <= 0.01:
+        # Decay cursor velocity
+        tmp = self.selectionCursorVelocity + accel*tDelta
+
+        if (abs(tmp) <= 0.01):
             self.selectionCursorVelocity = 0.0
+        else:
+            self.selectionCursorVelocity = tmp
+        self.tPhys = time.time()
 
         self.deployed.updateVal()
         self.UIelement.updateParams()
@@ -303,6 +347,19 @@ class Menu:
                 w2h,
                 stateMach['faceColor'],
                 stateMach['detailColor']
+                )
+
+        tmx = self.selectionCursorPosition*cos(self.angle)
+        tmy = self.selectionCursorPosition*sin(self.angle)
+
+        if (w2h < 1.0):
+            tmy /= w2h
+        drawEllipse(
+                mx+0.5,
+                tmy,
+                0.1, 0.1,
+                w2h,
+                (0.85, 0.42, 0.0, 1.0)
                 )
 
         pass
