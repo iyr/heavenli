@@ -6,7 +6,7 @@ PyObject* drawMenu_hliGLutils(PyObject* self, PyObject* args) {
    PyObject*   faceColorPyTup;
    //PyObject*   extraColorPyTup;
    PyObject*   detailColorPyTup;
-   GLfloat     gx, gy, scale, w2h, deployed, direction, floatingIndex;
+   GLfloat     gx, gy, scale, w2h, deployed, direction, floatingIndex, scrollCursor;
    GLuint      numElements, menuType;
    GLint       drawIndex;
    GLfloat     faceColor[4];
@@ -14,12 +14,13 @@ PyObject* drawMenu_hliGLutils(PyObject* self, PyObject* args) {
 
    // Parse Inputs
    if ( !PyArg_ParseTuple(args,
-            "ffffffIIpfOO",//O",
+            "fffffffIIpfOO",//O",
             &gx, &gy,         // Menu Position
             &scale,           // Menu Size
             &direction,       // Direction, in degrees about the unit circle, the menu slides out to
             &deployed,        // 0.0=closed, 1.0=completely open
             &floatingIndex,   // index of the selected element, used for scroll bar
+            &scrollCursor,    // animation cursor for element motion during scrolling
             &numElements,     // number of elements
             &menuType,        // 0=carousel w/ rollover, 1=linear strip w/ terminals, 2=value slider w/ min/max
             &drawIndex,       // whether or not to draw the index over the number of elements
@@ -54,6 +55,7 @@ PyObject* drawMenu_hliGLutils(PyObject* self, PyObject* args) {
          direction,     // Direction, in degrees about the unit circle, the menu slides out to
          deployed,      // 0.0=closed, 1.0=completely open
          floatingIndex, // index of the selected element, used for scroll bar
+         scrollCursor,  // animation cursor for element motion during scrolling (-1.0 to 1.0)
          numElements,   // number of elements
          menuType,      // 0=carousel w/ rollover, 1=linear strip w/ terminals, 2=value slider w/ min/max
          drawIndex,     // whether or not to draw the index over the number of elements
@@ -77,6 +79,7 @@ void drawMenu(
       GLfloat     direction,     // Direction, in degrees about the unit circle, the menu slides out to
       GLfloat     deployed,      // 0.0=closed, 1.0=completely open
       GLfloat     floatingIndex, // index of the selected element, used for scroll bar
+      GLfloat     scrollCursor,  // animation cursor for element motion during scrolling (-1.0 to 1.0)
       GLuint      numElements,   // number of elements
       GLuint      menuType,      // 0=carousel w/ rollover, 1=linear strip w/ terminals, 2=value slider w/ min/max
       GLboolean   drawIndex,     // whether or not to draw the index over the number of elements
@@ -88,6 +91,7 @@ void drawMenu(
       ){
 
    GLuint circleSegments = 60;
+   GLuint numListings = 3;
 
    // Draw single circle when menu closed
    if (deployed <= 0.0001) {
@@ -159,6 +163,63 @@ void drawMenu(
                verts,
                colrs
                );
+
+         // Element Diamonds
+         if (abs(scrollCursor) == 0.0f) {
+            GLfloat tms = 1.0f;
+            for (int i = 0; i < numListings+1; i++) {
+               if (i == numListings)
+                  tms = 0.0f;
+               defineEllipse(
+                     mx + (2.0f + (GLfloat)i*1.75f + (GLfloat)drawIndex)*deployed,
+                     my,
+                     0.1f*tms,
+                     0.1f*tms,
+                     2,
+                     detailColor,
+                     verts,
+                     colrs
+                     );
+            }
+         } else {
+            GLfloat tms = 1.0f;
+            GLfloat tmx;
+            for (int i = 0; i < numListings+1; i++) {
+
+               if (i == 0) {
+                  tms = scrollCursor;
+                  tmx = mx + (
+                        2.0f + 
+                        ((GLfloat)i)*1.75f + 
+                        (GLfloat)drawIndex
+                        )*deployed;
+               } else if (i == numListings) {
+                  tms -= abs(scrollCursor);
+                  tmx = mx + (
+                        2.0f + 
+                        ((GLfloat)i - 1.0f)*1.75f + 
+                        (GLfloat)drawIndex
+                        )*deployed;
+               } else {
+                  tms = 1.0f;
+                  tmx = mx + (
+                        2.0f + 
+                        ((GLfloat)i + scrollCursor - 1.0f)*1.75f + 
+                        (GLfloat)drawIndex
+                        )*deployed;
+               }
+               defineEllipse(
+                     tmx,
+                     my,
+                     0.1f*tms,
+                     0.1f*tms,
+                     2,
+                     detailColor,
+                     verts,
+                     colrs
+                     );
+            }
+         }
 
          tmo = 6.5f;
 
@@ -239,6 +300,61 @@ void drawMenu(
                MenuOpen->coordCache
                );
 
+         // Element Diamonds
+         if (abs(scrollCursor) == 0.0f) {
+            GLfloat tms = 1.0f;
+            for (int i = 0; i < numListings+1; i++) {
+               if (i == numListings)
+                  tms = 0.0f;
+               index = updateEllipseGeometry(
+                     mx + (2.0f + (GLfloat)i*1.75f + (GLfloat)drawIndex)*deployed,
+                     my,
+                     0.1f*tms,
+                     0.1f*tms,
+                     2,
+                     index,
+                     MenuOpen->coordCache
+                     );
+            }
+         } else {
+            GLfloat tms = 1.0f;
+            GLfloat tmx;
+            for (int i = 0; i < numListings+1; i++) {
+
+               if (i == 0) {
+                  tms = scrollCursor;
+                  tmx = mx + (
+                        2.0f + 
+                        ((GLfloat)i)*1.75f + 
+                        (GLfloat)drawIndex
+                        )*deployed;
+               } else if (i == numListings) {
+                  tms -= abs(scrollCursor);
+                  tmx = mx + (
+                        2.0f + 
+                        ((GLfloat)i - 1.0f)*1.75f + 
+                        (GLfloat)drawIndex
+                        )*deployed;
+               } else {
+                  tms = 1.0f;
+                  tmx = mx + (
+                        2.0f + 
+                        ((GLfloat)i + scrollCursor - 1.0f)*1.75f + 
+                        (GLfloat)drawIndex
+                        )*deployed;
+               }
+               index = updateEllipseGeometry(
+                     tmx,
+                     my,
+                     0.1f*tms,
+                     0.1f*tms,
+                     2,
+                     index,
+                     MenuOpen->coordCache
+                     );
+            }
+         }
+
          tmo = 6.5f;
 
          // Distil Arrow
@@ -301,6 +417,27 @@ void drawMenu(
                MenuOpen->colorCache
                );
 
+         // Element Diamonds
+         if (abs(scrollCursor) == 0.0f) {
+            for (int i = 0; i < numListings+1; i++) {
+               index = updateEllipseColor(
+                     2,
+                     detailColor,
+                     index,
+                     MenuOpen->colorCache
+                     );
+            }
+         } else {
+            for (int i = 0; i < numListings+1; i++) {
+               index = updateEllipseColor(
+                     2,
+                     detailColor,
+                     index,
+                     MenuOpen->colorCache
+                     );
+            }
+         }
+
          // Distil Arrow
          index = updatePillColor(
                circleSegments/5,
@@ -328,6 +465,7 @@ void drawMenu(
                index,
                MenuOpen->colorCache
                );
+
          MenuOpen->updateColorCache();
       }
 
