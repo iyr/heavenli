@@ -32,9 +32,6 @@ class Menu:
         # Index of the previously selected element when changing elements / scrolling
         self.prevSelectionIndex = 0
 
-        # Which direction (N, E, S, W), the menu slides out, for input
-        self.dir = "E"
-
         # Which angle, in degrees about the unit circle, the menu slides out, for animation/drawing
         self.angle = 0.0
 
@@ -59,28 +56,6 @@ class Menu:
     # index draw getter
     def getIndexDraw(self):
         return bool(self.dispIndex)
-
-    # Get direction (NESW) angle, for watching input
-    def getDirAng(self):
-        if self.dir == "E":
-            return 0.0
-        if self.dir == "N":
-            return 90.0
-        if self.dir == "W":
-            return 180.0
-        if self.dir == "S":
-            return 270.0
-
-    # Set deployment direction
-    def setDir(self, direction):
-        if( (direction != "N")
-        and (direction != "E")
-        and (direction != "S")
-        and (direction != "W")
-        ):
-            self.dir = "E"
-        else:
-            self.dir = direction
 
     # Get Menu deployment angle
     def getAng(self):
@@ -192,8 +167,10 @@ class Menu:
 
             tmx = mapRanges(sm['cursorX'], 0, sm['windowDimW'], -w2h, w2h)
             tmy = mapRanges(sm['cursorY'], 0, sm['windowDimH'], 1.0, -1.0)
-            tmx /= 2.0*self.UIelement.getTarSize()
-            tmy /= 2.0*self.UIelement.getTarSize()
+            tmx /= 1.75*self.UIelement.getTarSize()
+            tmy /= 1.75*self.UIelement.getTarSize()
+            tmx += self.UIelement.getPosX()*self.UIelement.getSize()
+            tmy += self.UIelement.getPosY()*self.UIelement.getSize()
             radAng = radians(self.angle)
             self.selectionCursorPosition = tmx*cos(radAng) + tmy*sin(radAng)
             self.isTrackingScroll = True
@@ -392,16 +369,6 @@ class Menu:
 
         tmx = self.selectionCursorPosition*cos(self.angle)
         tmy = self.selectionCursorPosition*sin(self.angle)
-
-        #if (w2h > 1.0):
-            #tmy *= w2h
-        drawEllipse(
-                mx+0.5,
-                tmy,
-                0.1, 0.1,
-                w2h,
-                (0.85, 0.42, 0.0, 1.0)
-                )
 
         pass
         return
