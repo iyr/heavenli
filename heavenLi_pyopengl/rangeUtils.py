@@ -1,3 +1,5 @@
+from math import ceil, floor
+
 # Maps a value from one range to another
 def mapRanges(value, leftMin, leftMax, rightMin, rightMax):
     # Figure out how 'wide' each range is
@@ -29,3 +31,12 @@ def rollover(index, length):
         while (index < 0):
             index += length
         return index
+
+# Leaves just the fractional of a float (-1.0 to 1.0)
+def normalizeCursor(prevC, curC):
+    if (prevC > curC):
+        return curC - ceil(curC)
+    elif (prevC < curC):
+        return curC - floor(curC)
+    else:
+        return 0.0
