@@ -40,11 +40,13 @@ def drawInfo(stateMach):
 def watchPolygon(cxgl, cygl, polygon, w2h, drawInfo):#, point):
     tmx = cxgl
     tmy = cygl
-    #if w2h < 1.0:
-        #tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -1.0, 1.0)
-    #else:
-        #tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -w2h, w2h)
-    #tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
+
+    for i in range(len(polygon)):
+        tmx1 = polygon[i][0]
+        tmy1 = polygon[i][1]
+        if w2h < 1.0:
+            tmy1 /= w2h
+        polygon[i] = (tmx1, tmy1)
 
     if (drawInfo):
         for i in range(len(polygon)):
@@ -52,9 +54,6 @@ def watchPolygon(cxgl, cygl, polygon, w2h, drawInfo):#, point):
             tmy1 = polygon[i-1][1]
             tmx2 = polygon[i+0][0]
             tmy2 = polygon[i+0][1]
-            if w2h < 1.0:
-                tmy1 /= w2h
-                tmy2 /= w2h
 
             drawPill(
                     tmx1, tmy1,
@@ -66,7 +65,7 @@ def watchPolygon(cxgl, cygl, polygon, w2h, drawInfo):#, point):
                     )
 
     n = len(polygon)
-    inside =False
+    inside = False
 
     p1x,p1y = polygon[0]
     for i in range(n+1):
@@ -80,6 +79,7 @@ def watchPolygon(cxgl, cygl, polygon, w2h, drawInfo):#, point):
                         inside = not inside
         p1x,p1y = p2x,p2y
 
+    print(inside)
     return inside
 
 # Check if user is over a box
@@ -399,6 +399,10 @@ class UIparam:
         self.curve          = "Default"
         return
 
+    # Returns true if values are animating
+    def isAnimating(self):
+        return not self.targetReached
+
     # Used for tuning animation speed
     def setTimeSlice(self, tDiff):
         self.tDiff = tDiff
@@ -459,6 +463,7 @@ class UIparam:
         else:
             self.currentVal = self.targetVal
             self.cursor     = 1.0
+            self.targetReached = True
 
         return
 
