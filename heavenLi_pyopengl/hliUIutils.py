@@ -79,7 +79,6 @@ def watchPolygon(cxgl, cygl, polygon, w2h, drawInfo):#, point):
                         inside = not inside
         p1x,p1y = p2x,p2y
 
-    print(inside)
     return inside
 
 # Check if user is over a box
