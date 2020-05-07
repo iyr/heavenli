@@ -53,6 +53,7 @@ class Lamp:
         # 1+: lamps comprised of lamps
         self.metaLampLevel = 0
 
+        # is lamp on (at all)
         self.mainLightOn = True
 
         # Number of Bulbs
