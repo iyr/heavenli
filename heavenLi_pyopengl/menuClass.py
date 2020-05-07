@@ -292,10 +292,6 @@ class Menu:
         # Update Cursor position
         if (sm['currentState'] == 1):
             tmp = self.selectionCursorPosition + 2.0*self.selectionCursorVelocity*tDelta + accel*pow(tDelta, 2.0)
-            if (tmp < 0.0):
-                tmp = self.numElements
-            if (tmp > self.numElements):
-                tmp = 0.0
             self.selectionCursorPosition = tmp
 
             # Decay cursor velocity
@@ -306,9 +302,13 @@ class Menu:
                 self.selectionCursorVelocity = 0.0
 
                 # Snap cursor to nearest whole number, animate
-                if (    abs(normalizeCursor(self.prevSelectionIndex, self.selectionCursorPosition)) >= 0.001
+                tmn = normalizeCursor(self.prevSelectionIndex, self.selectionCursorPosition)
+                #print(tmn, self.prevSelectionIndex, self.selectionCursorPosition)
+                while tmn < 0.0:
+                    tmn += 1.0
+                if (    tmn >= 0.001
                         and
-                        abs(normalizeCursor(self.prevSelectionIndex, self.selectionCursorPosition)) <= 0.999
+                        tmn <= 0.999
                         and
                         not self.scrollSnap.isAnimating()
                         ):

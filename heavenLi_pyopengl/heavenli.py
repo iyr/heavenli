@@ -74,7 +74,7 @@ def framerate():
 def drawTest():
     try:
         #stateMach['Menus']['testMenu'].setAng(360.0*stateMach['someVar']/100.0)
-        stateMach['Menus']['testMenu'].setAng(90.0)
+        stateMach['Menus']['testMenu'].setAng(180.0)
         w2h = stateMach['w2h']
 
         # test color that changes over time
@@ -85,6 +85,8 @@ def drawTest():
         if (w2h < 1.0):
             tmx /= w2h
             tmy /= w2h
+
+        # Draw Purple Ball
         drawEllipse(
                 tmx,
                 tmy,
@@ -853,6 +855,8 @@ def watchScreen():
             stateMach['mousePressed'] >= 0
             or
             stateMach['drawInfo']
+            or
+            stateMach['mouseReleased'] >= 0
             ):
         return True
     else:
@@ -1074,8 +1078,8 @@ def display():
     #stateMach['tDiff'] = 3.14159/stateMach['fps']
     #stateMach['tDiff'] = 6.28318/stateMach['fps']
 
-    #drawTestObjects = False
-    drawTestObjects = True
+    drawTestObjects = False
+    #drawTestObjects = True
     calcCursorVelocity(0)
 
     if (not drawTestObjects):
@@ -1115,7 +1119,7 @@ def display():
 
     # Update Menu States
     for key in stateMach['Menus']:
-        stateMach['Menus'][key].update()
+        stateMach['Menus'][key].update(stateMach)
 
     stateMach['windowPosX'] = glutGet(GLUT_WINDOW_X)
     stateMach['windowPosY'] = glutGet(GLUT_WINDOW_Y)
@@ -1339,7 +1343,6 @@ if __name__ == '__main__':
     stateMach['Menus']['testMenu'].setIndexDraw(False)
     #stateMach['Menus']['testMenu'].setAng(45.0)
     stateMach['Menus']['testMenu'].setAng(0)
-    stateMach['Menus']['testMenu']
 
     stateMach['Menus']['testMenu'].UIelement.setTarSize(0.15)
     #stateMach['Menus']['testMenu'].UIelement.setTarSize(0.2)
@@ -1347,7 +1350,8 @@ if __name__ == '__main__':
     #stateMach['Menus']['testMenu'].UIelement.setTarPosX(-0.775)
     #stateMach['Menus']['testMenu'].UIelement.setTarPosY(-0.775)
     stateMach['Menus']['testMenu'].UIelement.setTarPosX(0.0)
-    stateMach['Menus']['testMenu'].UIelement.setTarPosY(0.0)
+    stateMach['Menus']['testMenu'].UIelement.setTarPosY(-0.5)
+    stateMach['Menus']['testMenu'].setNumElements(len(stateMach['testList']))
 
     # Setup UI animation objects, initial parameters
 
