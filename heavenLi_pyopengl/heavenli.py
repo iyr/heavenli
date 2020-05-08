@@ -180,6 +180,23 @@ def drawTest():
                 )
 
         stateMach['Menus']['testMenu'].draw(stateMach)
+        quack = stateMach['Menus']['testMenu'].getElements()
+        for i in range(len(quack)):
+            tmx = quack[i][1]*stateMach['Menus']['testMenu'].UIelement.getSize()
+            tmy = quack[i][2]*stateMach['Menus']['testMenu'].UIelement.getSize()
+            tmx += stateMach['Menus']['testMenu'].UIelement.getPosX()
+            tmy += stateMach['Menus']['testMenu'].UIelement.getPosY()
+            if w2h < 1.0:
+                tmy /= w2h
+            drawEllipse(
+                    tmx,
+                    tmy,
+                    quack[i][3]*0.1,
+                    quack[i][3]*0.1,
+                    w2h,
+                    stateMach['testList'][quack[i][0]]
+                    )
+
         pass
 
     except Exception as OOF:
@@ -1331,12 +1348,12 @@ if __name__ == '__main__':
     stateMach['Menus']              = {}
 
     stateMach['testList'] = []
-    stateMach['testList'].append((1.0, 1.0, 0.0, 1.0))
-    stateMach['testList'].append((1.0, 0.0, 1.0, 1.0))
-    stateMach['testList'].append((0.0, 1.0, 1.0, 1.0))
-    stateMach['testList'].append((1.0, 0.0, 0.0, 1.0))
-    stateMach['testList'].append((0.0, 0.0, 1.0, 1.0))
-    stateMach['testList'].append((0.0, 1.0, 0.0, 1.0))
+    stateMach['testList'].append((1.0, 1.0, 0.0, 1.0))  # Yellow
+    stateMach['testList'].append((1.0, 0.0, 1.0, 1.0))  # Magenta
+    stateMach['testList'].append((0.0, 1.0, 1.0, 1.0))  # Cyan
+    stateMach['testList'].append((1.0, 0.0, 0.0, 1.0))  # Red
+    stateMach['testList'].append((0.0, 0.0, 1.0, 1.0))  # Blue
+    stateMach['testList'].append((0.0, 1.0, 0.0, 1.0))  # Green
 
     stateMach['Menus']['testMenu']  = Menu()
     #stateMach['Menus']['testMenu'].setIndexDraw(True)
