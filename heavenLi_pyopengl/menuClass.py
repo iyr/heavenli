@@ -17,6 +17,9 @@ class Menu:
         # Cursor for animating menu slide-out (0 = closed, 1 = open)
         self.deployed = UIparam()
 
+        # list of 3-tuples contain posx, posy, and scale
+        self.elementCoords = []
+
         # Used to animate scrolling snapping to a target
         self.scrollSnap = UIparam()
 
@@ -56,10 +59,42 @@ class Menu:
         # Timer for updating physics
         self.tPhys = time.time()
 
+    # helper function for getting the indices of the elements strattling the selected element
+    def cursor2indices(self, diff):
+        indices = []
+
+        for i in range(
+                floor(self.selectionCursorPosition - diff),
+                ceil(self.selectionCursorPosition + diff)+1
+                ):
+            indices.append(rollover(i, self.numElements))
+
+        return indices
+
+    # Return a list of tuples containing the index, posX, posY, and scale of visible elements
+    def getElements(self):
+        tml = self.cursor2indices(1.0);
+        tme = []
+
+        for i in range(len(tml)):
+            tme.append(
+                        (   
+                        tml[len(tml)-1-i],
+                        self.elementCoords[i][0],
+                        self.elementCoords[i][1],
+                        self.elementCoords[i][2]
+                        )
+                    )
+
+        return tme
 
     # index draw getter
     def getIndexDraw(self):
         return bool(self.dispIndex)
+
+    # Get number of elements menu is managing
+    def getNumElements(self):
+        return self.numElements
 
     # Get Menu deployment angle
     def getAng(self):
@@ -359,7 +394,7 @@ class Menu:
         if sc < 0.0:
             sc += 1.0
 
-        drawMenu(
+        self.elementCoords = drawMenu(
                 mx,
                 my,
                 tms,
