@@ -183,21 +183,23 @@ void drawMenu(
             }
          } else {
             GLfloat tms = 1.0f;
-            GLfloat tmx;
+            GLfloat tmx, tma;
             for (int i = 0; i < numListings+1; i++) {
 
                if (i == 0) {
+                  tma = -3.0f*pow(scrollCursor, 2.0f) + 4.0f*scrollCursor;
                   tms = scrollCursor;
                   tmx = mx + (
                         2.0f + 
-                        ((GLfloat)i)*1.75f + 
+                        ((GLfloat)i - tma + 1.0f)*1.75f + 
                         (GLfloat)drawIndex
                         )*deployed;
                } else if (i == numListings) {
                   tms -= abs(scrollCursor);
+                  tma = -3.0f*pow(1.0f-scrollCursor, 2.0f) + 4.0f*(1.0f-scrollCursor);
                   tmx = mx + (
                         2.0f + 
-                        ((GLfloat)i - 1.0f)*1.75f + 
+                        ((GLfloat)i + tma - 2.0f)*1.75f + 
                         (GLfloat)drawIndex
                         )*deployed;
                } else {
@@ -221,6 +223,31 @@ void drawMenu(
             }
          }
 
+         tmo = 3.75f;
+
+         // Center Arrow
+         definePill(
+               mx+tmo*deployed,
+               my+0.85f*pow(deployed, 3.0f),
+               mx+tmo*deployed-0.20f*deployed,
+               my+1.00f*pow(deployed, 3.0f),
+               arrowRad,
+               circleSegments/5,
+               detailColor,
+               verts,
+               colrs
+               );
+         definePill(
+               mx+tmo*deployed,
+               my+0.85f*pow(deployed, 3.0f),
+               mx+tmo*deployed+0.20f*deployed,
+               my+1.00f*pow(deployed, 3.0f),
+               arrowRad,
+               circleSegments/5,
+               detailColor,
+               verts,
+               colrs
+               );
          tmo = 6.5f;
 
          // Distil Arrow
@@ -318,21 +345,23 @@ void drawMenu(
             }
          } else {
             GLfloat tms = 1.0f;
-            GLfloat tmx;
+            GLfloat tmx, tma;
             for (int i = 0; i < numListings+1; i++) {
 
                if (i == 0) {
+                  tma = -3.0f*pow(scrollCursor, 2.0f) + 4.0f*scrollCursor;
                   tms = scrollCursor;
                   tmx = mx + (
                         2.0f + 
-                        ((GLfloat)i)*1.75f + 
+                        ((GLfloat)i - tma + 1.0f)*1.75f + 
                         (GLfloat)drawIndex
                         )*deployed;
                } else if (i == numListings) {
                   tms -= abs(scrollCursor);
+                  tma = -3.0f*pow(1.0f-scrollCursor, 2.0f) + 4.0f*(1.0f-scrollCursor);
                   tmx = mx + (
                         2.0f + 
-                        ((GLfloat)i - 1.0f)*1.75f + 
+                        ((GLfloat)i + tma - 2.0f)*1.75f + 
                         (GLfloat)drawIndex
                         )*deployed;
                } else {
@@ -354,6 +383,31 @@ void drawMenu(
                      );
             }
          }
+
+         tmo = 3.75f;
+
+         // Center Arrow
+         index = updatePillGeometry(
+               mx+tmo*deployed,
+               my+0.85f*pow(deployed, 3.0f),
+               mx+tmo*deployed-0.20f*deployed,
+               my+1.00f*pow(deployed, 3.0f),
+               arrowRad,
+               circleSegments/5,
+               index,
+               MenuOpen->coordCache
+               );
+
+         index = updatePillGeometry(
+               mx+tmo*deployed,
+               my+0.85f*pow(deployed, 3.0f),
+               mx+tmo*deployed+0.20f*deployed,
+               my+1.00f*pow(deployed, 3.0f),
+               arrowRad,
+               circleSegments/5,
+               index,
+               MenuOpen->coordCache
+               );
 
          tmo = 6.5f;
 
@@ -437,6 +491,21 @@ void drawMenu(
                      );
             }
          }
+
+         // Center Arrow
+         index = updatePillColor(
+               circleSegments/5,
+               detailColor,
+               index,
+               MenuOpen->colorCache
+               );
+
+         index = updatePillColor(
+               circleSegments/5,
+               detailColor,
+               index,
+               MenuOpen->colorCache
+               );
 
          // Distil Arrow
          index = updatePillColor(
