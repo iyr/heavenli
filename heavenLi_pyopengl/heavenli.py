@@ -59,8 +59,8 @@ def framerate():
         stateMach['frames'] = 0
         ct = datetime.datetime.now()
         stateMach['second'] = ct.second
-        stateMach['minute'] = ct.minute + stateMach['second']/60
-        stateMach['hour'] = ct.hour + stateMach['minute']/60
+        stateMach['minute'] = ct.minute + stateMach['second']*0.016666667
+        stateMach['hour'] = ct.hour + stateMach['minute']*0.016666667
         if (stateMach['hour'] > 11):
             stateMach['hour'] -= 12
 
@@ -74,7 +74,7 @@ def framerate():
 def drawTest():
     try:
         #stateMach['Menus']['testMenu'].setAng(360.0*stateMach['someVar']/100.0)
-        stateMach['Menus']['testMenu'].setAng(180.0)
+        stateMach['Menus']['testMenu'].setAng(90.0)
         w2h = stateMach['w2h']
 
         # test color that changes over time
