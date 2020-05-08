@@ -23,11 +23,13 @@ def getSerialPorts():
         try:
             s = serial.Serial(port)
             s.close()
-            if (str(port) not in "/dev/ttyAMA0" and
-                str(port) not in "/dev/ttyS0"):
+            if (    str(port) not in "/dev/ttyAMA0" 
+                    and
+                    str(port) not in "/dev/ttyS0"
+                ):
                 result.append(port)
         except (OSError, serial.SerialException):
-            #print("Port: " + str(port) + " not available")
+            print("Port: " + str(port) + " not available")
             pass
 
     return result
