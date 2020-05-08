@@ -43,6 +43,10 @@ class Menu:
         self.selectionCursorPosition = 0.0
         self.selectionCursorVelocity = 0.0
 
+        # Used for tracking relative delta for moving selectionCursor
+        self.mouseCursorAtPressX = 0.0
+        self.mouseCursorAtPressY = 0.0
+
         # Used for tracking scroll input when cursor has moved off the menu
         self.isTrackingScroll = False
 
@@ -165,15 +169,15 @@ class Menu:
                 )
             ):
 
-            tmx = mapRanges(sm['cursorX'], 0, sm['windowDimW'], -w2h, w2h)
-            tmy = mapRanges(sm['cursorY'], 0, sm['windowDimH'], 1.0, -1.0)
-            tmx /= 1.75*self.UIelement.getTarSize()
-            tmy /= 1.75*self.UIelement.getTarSize()
-            tmx += self.UIelement.getPosX()*self.UIelement.getSize()
-            tmy += self.UIelement.getPosY()*self.UIelement.getSize()
-            radAng = radians(self.angle)
-            self.selectionCursorPosition = tmx*cos(radAng) + tmy*sin(radAng)
-            self.isTrackingScroll = True
+            if (self.isTrackingScroll):
+                tmx = mapRanges(sm['cursorX'], 0, sm['windowDimW'], -w2h, w2h) - self.mouseCursorAtPressX
+                tmy = mapRanges(sm['cursorY'], 0, sm['windowDimH'], 1.0, -1.0) - self.mouseCursorAtPressY
+                tmx /= 1.75*self.UIelement.getTarSize()
+                tmy /= 1.75*self.UIelement.getTarSize()
+                tmx += self.UIelement.getPosX()*self.UIelement.getSize()
+                tmy += self.UIelement.getPosY()*self.UIelement.getSize()
+                radAng = radians(self.angle)
+                self.selectionCursorPosition = tmx*cos(radAng) + tmy*sin(radAng) + self.prevSelectionIndex
             
             pass
             if (sm['mouseReleased'] >= 0):
@@ -184,6 +188,9 @@ class Menu:
                 )
 
             if (sm['mousePressed'] >= 0):
+                self.isTrackingScroll = True
+                self.mouseCursorAtPressX = mapRanges(sm['cursorX'], 0, sm['windowDimW'], -w2h, w2h)
+                self.mouseCursorAtPressY = mapRanges(sm['cursorY'], 0, sm['windowDimH'], 1.0, -1.0)
                 self.prevSelectionIndex = self.selectionCursorPosition
 
             return True
@@ -298,14 +305,15 @@ class Menu:
             tmp = self.selectionCursorVelocity + accel*tDelta
 
             # Don't let cursor take forever to coast to a stop
-            if (abs(tmp) <= 0.10):
+            if (abs(tmp) <= 0.15):
                 self.selectionCursorVelocity = 0.0
 
                 # Snap cursor to nearest whole number, animate
                 tmn = normalizeCursor(self.prevSelectionIndex, self.selectionCursorPosition)
-                #print(tmn, self.prevSelectionIndex, self.selectionCursorPosition)
+
                 while tmn < 0.0:
                     tmn += 1.0
+
                 if (    tmn >= 0.001
                         and
                         tmn <= 0.999
