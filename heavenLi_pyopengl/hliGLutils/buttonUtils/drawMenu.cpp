@@ -6,11 +6,15 @@ PyObject* drawMenu_hliGLutils(PyObject* self, PyObject* args) {
    PyObject*   faceColorPyTup;
    //PyObject*   extraColorPyTup;
    PyObject*   detailColorPyTup;
+   PyObject*   py_list;
+   PyObject*   py_tuple;
+   PyObject*   py_float;
    GLfloat     gx, gy, scale, w2h, deployed, direction, floatingIndex, scrollCursor;
    GLuint      numElements, menuType;
    GLint       drawIndex;
    GLfloat     faceColor[4];
    GLfloat     detailColor[4];
+   GLfloat*    elementCoords = NULL;
 
    // Parse Inputs
    if ( !PyArg_ParseTuple(args,
@@ -49,6 +53,8 @@ PyObject* drawMenu_hliGLutils(PyObject* self, PyObject* args) {
       drawCalls.insert(std::make_pair("MenuClosed", drawCall()));
    drawCall* MenuClosed = &drawCalls["MenuClosed"];
 
+   elementCoords = new GLfloat[3*4];
+
    drawMenu(
          gx, gy,        // Menu Position
          scale,         // Menu Size
@@ -59,6 +65,7 @@ PyObject* drawMenu_hliGLutils(PyObject* self, PyObject* args) {
          numElements,   // number of elements
          menuType,      // 0=carousel w/ rollover, 1=linear strip w/ terminals, 2=value slider w/ min/max
          drawIndex,     // whether or not to draw the index over the number of elements
+         elementCoords, // Relative coordinate of menu elements
          w2h,           // width to height ratio
          faceColor,     // Main color for the body of the menu
          detailColor,   // scroll bar, 
@@ -66,7 +73,18 @@ PyObject* drawMenu_hliGLutils(PyObject* self, PyObject* args) {
          MenuClosed     // drawCall object for drawing the menu closed
          );
 
-   Py_RETURN_NONE;
+   py_list = PyList_New(4);
+   for (int i = 0; i < 4; i++) {
+      py_tuple = PyTuple_New(3);
+      PyTuple_SetItem(py_tuple, 0, PyFloat_FromDouble(elementCoords[i*3+0]));
+      PyTuple_SetItem(py_tuple, 1, PyFloat_FromDouble(elementCoords[i*3+1]));
+      PyTuple_SetItem(py_tuple, 2, PyFloat_FromDouble(elementCoords[i*3+2]));
+      PyList_SetItem(py_list, i, py_tuple);
+   }
+
+   delete [] elementCoords;
+
+   return py_list;
 }
 
 GLfloat  prevDep,
@@ -83,6 +101,7 @@ void drawMenu(
       GLuint      numElements,   // number of elements
       GLuint      menuType,      // 0=carousel w/ rollover, 1=linear strip w/ terminals, 2=value slider w/ min/max
       GLboolean   drawIndex,     // whether or not to draw the index over the number of elements
+      GLfloat*    elementCoords, // Relative coordinates of Menu elements
       GLfloat     w2h,           // width to height ratio
       GLfloat*    faceColor,     // Main color for the body of the menu
       GLfloat*    detailColor,   // scroll bar, 
@@ -167,7 +186,9 @@ void drawMenu(
          // Element Diamonds
          if (abs(scrollCursor) == 0.0f) {
             GLfloat tms = 1.0f;
+            GLfloat tmr;
             for (int i = 0; i < numListings+1; i++) {
+               tmr = (2.0f + (GLfloat)i*1.75f + (GLfloat)drawIndex)*deployed;
                if (i == numListings)
                   tms = 0.0f;
                defineEllipse(
@@ -180,38 +201,29 @@ void drawMenu(
                      verts,
                      colrs
                      );
+               elementCoords[i*3+0] = mx+tmr*cos(degToRad(direction));
+               elementCoords[i*3+1] = my+tmr*sin(degToRad(direction));
+               elementCoords[i*3+2] = tms;
             }
          } else {
             GLfloat tms = 1.0f;
-            GLfloat tmx, tma;
+            GLfloat tmr, tma;
             for (int i = 0; i < numListings+1; i++) {
 
                if (i == 0) {
                   tma = -3.0f*pow(scrollCursor, 2.0f) + 4.0f*scrollCursor;
                   tms = scrollCursor;
-                  tmx = mx + (
-                        2.0f + 
-                        ((GLfloat)i - tma + 1.0f)*1.75f + 
-                        (GLfloat)drawIndex
-                        )*deployed;
+                  tmr = (2.0f + ((GLfloat)i - tma + 1.0f)*1.75f + (GLfloat)drawIndex)*deployed;
                } else if (i == numListings) {
                   tms -= abs(scrollCursor);
                   tma = -3.0f*pow(1.0f-scrollCursor, 2.0f) + 4.0f*(1.0f-scrollCursor);
-                  tmx = mx + (
-                        2.0f + 
-                        ((GLfloat)i + tma - 2.0f)*1.75f + 
-                        (GLfloat)drawIndex
-                        )*deployed;
+                  tmr = (2.0f + ((GLfloat)i + tma - 2.0f)*1.75f + (GLfloat)drawIndex)*deployed;
                } else {
                   tms = 1.0f;
-                  tmx = mx + (
-                        2.0f + 
-                        ((GLfloat)i + scrollCursor - 1.0f)*1.75f + 
-                        (GLfloat)drawIndex
-                        )*deployed;
+                  tmr = (2.0f + ((GLfloat)i + scrollCursor - 1.0f)*1.75f + (GLfloat)drawIndex)*deployed;
                }
                defineEllipse(
-                     tmx,
+                     mx+tmr,
                      my,
                      0.1f*tms,
                      0.1f*tms,
@@ -220,6 +232,9 @@ void drawMenu(
                      verts,
                      colrs
                      );
+               elementCoords[i*3+0] = mx+tmr*cos(degToRad(direction));
+               elementCoords[i*3+1] = my+tmr*sin(degToRad(direction));
+               elementCoords[i*3+2] = tms;
             }
          }
 
@@ -330,7 +345,9 @@ void drawMenu(
          // Element Diamonds
          if (abs(scrollCursor) == 0.0f) {
             GLfloat tms = 1.0f;
+            GLfloat tmr;
             for (int i = 0; i < numListings+1; i++) {
+               tmr = (2.0f + (GLfloat)i*1.75f + (GLfloat)drawIndex)*deployed;
                if (i == numListings)
                   tms = 0.0f;
                index = updateEllipseGeometry(
@@ -342,38 +359,29 @@ void drawMenu(
                      index,
                      MenuOpen->coordCache
                      );
+               elementCoords[i*3+0] = mx+tmr*cos(degToRad(direction));
+               elementCoords[i*3+1] = my+tmr*sin(degToRad(direction));
+               elementCoords[i*3+2] = tms;
             }
          } else {
             GLfloat tms = 1.0f;
-            GLfloat tmx, tma;
+            GLfloat tmr, tma;
             for (int i = 0; i < numListings+1; i++) {
 
                if (i == 0) {
                   tma = -3.0f*pow(scrollCursor, 2.0f) + 4.0f*scrollCursor;
                   tms = scrollCursor;
-                  tmx = mx + (
-                        2.0f + 
-                        ((GLfloat)i - tma + 1.0f)*1.75f + 
-                        (GLfloat)drawIndex
-                        )*deployed;
+                  tmr = (2.0f + ((GLfloat)i - tma + 1.0f)*1.75f + (GLfloat)drawIndex)*deployed;
                } else if (i == numListings) {
                   tms -= abs(scrollCursor);
                   tma = -3.0f*pow(1.0f-scrollCursor, 2.0f) + 4.0f*(1.0f-scrollCursor);
-                  tmx = mx + (
-                        2.0f + 
-                        ((GLfloat)i + tma - 2.0f)*1.75f + 
-                        (GLfloat)drawIndex
-                        )*deployed;
+                  tmr = (2.0f + ((GLfloat)i + tma - 2.0f)*1.75f + (GLfloat)drawIndex)*deployed;
                } else {
                   tms = 1.0f;
-                  tmx = mx + (
-                        2.0f + 
-                        ((GLfloat)i + scrollCursor - 1.0f)*1.75f + 
-                        (GLfloat)drawIndex
-                        )*deployed;
+                  tmr = (2.0f + ((GLfloat)i + scrollCursor - 1.0f)*1.75f + (GLfloat)drawIndex)*deployed;
                }
                index = updateEllipseGeometry(
-                     tmx,
+                     mx+tmr,
                      my,
                      0.1f*tms,
                      0.1f*tms,
@@ -381,6 +389,9 @@ void drawMenu(
                      index,
                      MenuOpen->coordCache
                      );
+               elementCoords[i*3+0] = mx+tmr*cos(degToRad(direction));
+               elementCoords[i*3+1] = my+tmr*sin(degToRad(direction));
+               elementCoords[i*3+2] = tms;
             }
          }
 
