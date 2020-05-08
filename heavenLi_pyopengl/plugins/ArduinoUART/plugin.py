@@ -21,8 +21,15 @@ def getSerialPorts():
     result = []
     for port in ports:
         try:
-            s = serial.Serial(port)
-            s.close()
+            if (    "ttyS1" not in str(port)
+                    and
+                    "ttyS2" not in str(port)
+                    and
+                    "ttyS3" not in str(port)
+                ):
+                print("quack")
+                s = serial.Serial(port)
+                s.close()
             if (    str(port) not in "/dev/ttyAMA0" 
                     and
                     str(port) not in "/dev/ttyS0"
