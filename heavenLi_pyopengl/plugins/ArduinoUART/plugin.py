@@ -27,7 +27,6 @@ def getSerialPorts():
                     and
                     "ttyS3" not in str(port)
                 ):
-                print("quack")
                 s = serial.Serial(port)
                 s.close()
             if (    str(port) not in "/dev/ttyAMA0" 
@@ -36,7 +35,7 @@ def getSerialPorts():
                 ):
                 result.append(port)
         except (OSError, serial.SerialException):
-            print("Port: " + str(port) + " not available")
+            #print("Port: " + str(port) + " not available")
             pass
 
     return result
