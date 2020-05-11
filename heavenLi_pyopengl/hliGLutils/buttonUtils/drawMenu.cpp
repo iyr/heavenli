@@ -203,7 +203,7 @@ void drawMenu(
                      );
                elementCoords[i*3+0] = mx+tmr*cos(degToRad(direction));
                elementCoords[i*3+1] = my+tmr*sin(degToRad(direction));
-               elementCoords[i*3+2] = tms;
+               elementCoords[i*3+2] = tms*deployed;
             }
          } else {
             GLfloat tms = 1.0f;
@@ -234,7 +234,7 @@ void drawMenu(
                      );
                elementCoords[i*3+0] = mx+tmr*cos(degToRad(direction));
                elementCoords[i*3+1] = my+tmr*sin(degToRad(direction));
-               elementCoords[i*3+2] = tms;
+               elementCoords[i*3+2] = tms*deployed;
             }
          }
 
@@ -361,7 +361,7 @@ void drawMenu(
                      );
                elementCoords[i*3+0] = mx+tmr*cos(degToRad(direction));
                elementCoords[i*3+1] = my+tmr*sin(degToRad(direction));
-               elementCoords[i*3+2] = tms;
+               elementCoords[i*3+2] = tms*deployed;
             }
          } else {
             GLfloat tms = 1.0f;
@@ -391,7 +391,7 @@ void drawMenu(
                      );
                elementCoords[i*3+0] = mx+tmr*cos(degToRad(direction));
                elementCoords[i*3+1] = my+tmr*sin(degToRad(direction));
-               elementCoords[i*3+2] = tms;
+               elementCoords[i*3+2] = tms*deployed;
             }
          }
 

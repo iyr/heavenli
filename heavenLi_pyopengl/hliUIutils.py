@@ -407,6 +407,10 @@ class UIparam:
         self.tDiff = tDiff
         return
 
+    # Returns whether the target value is reached
+    def isTargetReached(self):
+        return self.targetReached
+
     # Set Target Value for the Current Value to transition to
     def setTargetVal(self, target):
         self.cursor         = 0.0

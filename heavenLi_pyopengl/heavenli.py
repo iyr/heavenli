@@ -75,6 +75,7 @@ def drawTest():
     try:
         #stateMach['Menus']['testMenu'].setAng(360.0*stateMach['someVar']/100.0)
         stateMach['Menus']['testMenu'].setAng(90.0)
+        stateMach['Menus']['testMenu'].setLayout(1)
         w2h = stateMach['w2h']
 
         # test color that changes over time
@@ -92,7 +93,8 @@ def drawTest():
                 tmy,
                 0.1, 0.1,
                 w2h,
-                (0.42, 0.0, 0.85, 1.0)
+                #(0.42, 0.0, 0.85, 1.0)
+                stateMach['testList'][stateMach['Menus']['testMenu'].getSelection()]
                 )
 
         cDrag  = 1.0
@@ -180,14 +182,21 @@ def drawTest():
                 )
 
         stateMach['Menus']['testMenu'].draw(stateMach)
+
+        # Get relative positions / sizes of visible elements
         quack = stateMach['Menus']['testMenu'].getElements()
-        for i in range(len(quack)):
+
+        # Loop through drawing menu elements, draw first and last elements before middle elements for proper z-layering draw-order
+        for i in range(-1, len(quack)-1):
             tmx = quack[i][1]*stateMach['Menus']['testMenu'].UIelement.getSize()
             tmy = quack[i][2]*stateMach['Menus']['testMenu'].UIelement.getSize()
+
             tmx += stateMach['Menus']['testMenu'].UIelement.getPosX()
-            tmy += stateMach['Menus']['testMenu'].UIelement.getPosY()
             if w2h < 1.0:
-                tmy /= w2h
+                tmy += stateMach['Menus']['testMenu'].UIelement.getPosY()/w2h
+            else:
+                tmy += stateMach['Menus']['testMenu'].UIelement.getPosY()
+
             drawEllipse(
                     tmx,
                     tmy,
@@ -196,6 +205,20 @@ def drawTest():
                     w2h,
                     stateMach['testList'][quack[i][0]]
                     )
+
+        # Draw selected element in menu core
+        tmx = stateMach['Menus']['testMenu'].UIelement.getPosX()
+        tmy = stateMach['Menus']['testMenu'].UIelement.getPosY()
+        if w2h < 1.0:
+            tmy /= w2h
+        drawEllipse(
+                tmx,
+                tmy,
+                stateMach['Menus']['testMenu'].UIelement.getSize()*0.7,
+                stateMach['Menus']['testMenu'].UIelement.getSize()*0.7,
+                w2h,
+                stateMach['testList'][stateMach['Menus']['testMenu'].getSelection()]
+                )
 
         pass
 
@@ -209,9 +232,11 @@ def watchTest():
         w2h = stateMach['w2h']
         if (    watchScreen()
                 ):
-            tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -w2h, w2h)
-            tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
-            stateMach['BallPosition'] = (tmx, tmy)
+
+            if (stateMach['mouseButton'] == 2):
+                tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -w2h, w2h)
+                tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
+                stateMach['BallPosition'] = (tmx, tmy)
 
             if (stateMach['Menus']['testMenu'].watch(stateMach)):
                 stateMach['noButtonsPressed'] = False
@@ -220,8 +245,12 @@ def watchTest():
             # Drag window if no buttons pressed
             dragWindow()
 
-        if (stateMach['mouseReleased'] >= 0):
-            stateMach['BallVelocity'] = stateMach['cursorVelSmoothed']
+        if (stateMach['mouseReleased'] == 2):
+            tmv = (
+                    stateMach['BallVelocity'][0] + stateMach['cursorVelSmoothed'][0],
+                    stateMach['BallVelocity'][1] + stateMach['cursorVelSmoothed'][1]
+                    )
+            stateMach['BallVelocity'] = tmv
         pass
     except Exception as OOF:
         print(traceback.format_exc())
@@ -906,6 +935,9 @@ def dragWindow():
             tmx = curPos[0] - stateMach['mousePosAtPressX']
             tmy = curPos[1] - stateMach['mousePosAtPressY'] - stateMach['WindowBarHeight']
 
+        for menu in stateMach['Menus']:
+            stateMach['Menus'][menu].close()
+            stateMach['Menus'][menu].update(stateMach)
         glutPositionWindow(tmx, tmy)
 
 def mouseActive(mouseX, mouseY):
