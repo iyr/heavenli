@@ -8,7 +8,7 @@ PyObject* drawMenu_hliGLutils(PyObject* self, PyObject* args) {
    PyObject*   detailColorPyTup;
    PyObject*   py_list;
    PyObject*   py_tuple;
-   PyObject*   py_float;
+   //PyObject*   py_float;
    GLfloat     gx, gy, scale, w2h, deployed, direction, floatingIndex, scrollCursor;
    GLuint      numElements, menuLayout;
    GLint       drawIndex;
@@ -110,7 +110,7 @@ void drawMenu(
       ){
 
    GLuint circleSegments = 60;
-   GLuint numListings = 3;
+   //GLuint numListings = 3;
 
    // Draw single circle when menu closed
    if (deployed <= 0.0001) {
@@ -154,7 +154,7 @@ void drawMenu(
    } 
    else // Draw Menu Body / with elements when open
    {
-      GLfloat arrowRad = 0.05f*pow(deployed, 2.0f);
+      //GLfloat arrowRad = 0.05f*pow(deployed, 2.0f);
       MenuOverflow->setNumColors(2);
       MenuOverflow->setColorQuartet(0, faceColor);
       MenuOverflow->setColorQuartet(1, detailColor);

@@ -48,7 +48,7 @@ unsigned int drawMenuOverflow(
          ){
       float tms = 1.0f;
       float tmr;
-      for (int i = 0; i < numListings+1; i++) {
+      for (unsigned int i = 0; i < numListings+1; i++) {
          tmr = (2.0f + (float)i*1.75f + (float)drawIndex)*deployed;
          if (i == numListings)
             tms = 0.0f;
@@ -69,7 +69,7 @@ unsigned int drawMenuOverflow(
    } else {
       float tms = 1.0f;
       float tmr, tma;
-      for (int i = 0; i < numListings+1; i++) {
+      for (unsigned int i = 0; i < numListings+1; i++) {
 
          if (i == 0) {
             tma = -3.0f*pow(scrollCursor, 2.0f) + 4.0f*scrollCursor;
@@ -280,7 +280,7 @@ unsigned int drawMenuOverflow(
          ){
       float tms = 1.0f;
       float tmr;
-      for (int i = 0; i < numListings+1; i++) {
+      for (unsigned int i = 0; i < numListings+1; i++) {
          tmr = (2.0f + (float)i*1.75f + (float)drawIndex)*deployed;
          if (i == numListings)
             tms = 0.0f;
@@ -300,7 +300,7 @@ unsigned int drawMenuOverflow(
    } else {
       float tms = 1.0f;
       float tmr, tma;
-      for (int i = 0; i < numListings+1; i++) {
+      for (unsigned int i = 0; i < numListings+1; i++) {
          if (i == 0) {
             tma = -3.0f*pow(scrollCursor, 2.0f) + 4.0f*scrollCursor;
             tms = scrollCursor;
@@ -478,7 +478,7 @@ unsigned int drawMenuOverflow(
          );
 
    // Element Diamonds
-   for (int i = 0; i < numListings+1; i++) {
+   for (unsigned int i = 0; i < numListings+1; i++) {
       subIndex = updateEllipseColor(
             2,
             detailColor,
