@@ -18,6 +18,7 @@ float constrain(float value, float min, float max) {
 
 #include "primUtils/primColorWheelDEGEN.cpp"
 #include "primUtils/primBulbDEGEN.cpp"
+#include "primUtils/primMenuOverflowDEGEN.cpp"
 
 #include "primUtils/drawArch.cpp"
 #include "primUtils/drawEllipse.cpp"
