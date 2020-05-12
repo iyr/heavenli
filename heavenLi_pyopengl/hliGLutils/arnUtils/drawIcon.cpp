@@ -48,12 +48,12 @@ PyObject* drawIcon_hliGLutils(PyObject* self, PyObject* args){
       Py_RETURN_NONE;
    }
 
-   if (drawCalls.count("arnIconLinear") <= 0)
-      drawCalls.insert(std::make_pair("arnIconLinear", drawCall()));
-   drawCall* arnIconLinear = &drawCalls["arnIconLinear"];
-   if (drawCalls.count("arnIconCircle") <= 0)
-      drawCalls.insert(std::make_pair("arnIconCircle", drawCall()));
-   drawCall* arnIconCircle = &drawCalls["arnIconCircle"];
+   //if (drawCalls.count("arnIconLinear") <= 0)
+      //drawCalls.insert(std::make_pair("arnIconLinear", drawCall()));
+   //drawCall* arnIconLinear = &drawCalls["arnIconLinear"];
+   //if (drawCalls.count("arnIconCircle") <= 0)
+      //drawCalls.insert(std::make_pair("arnIconCircle", drawCall()));
+   //drawCall* arnIconCircle = &drawCalls["arnIconCircle"];
    if (drawCalls.count("arnIconText") <= 0)
       drawCalls.insert(std::make_pair("arnIconText", drawCall()));
    drawCall* arnIconText = &drawCalls["arnIconText"];
