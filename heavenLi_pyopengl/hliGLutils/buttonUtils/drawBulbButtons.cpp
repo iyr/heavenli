@@ -24,15 +24,15 @@ PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
                circleSegments;
    GLuint      bulbButtonVerts;
 
-   static GLuint     vertsPerBulb;
+   //static GLuint     vertsPerBulb;
    static GLfloat*   buttonCoords = NULL;
    static GLfloat    prevAngOffset,
                      prevBulbButtonScale,
                      prevBulbButtonW2H;
-   static GLint      colorsStart,
-                     colorsEnd,
-                     detailEnd,
-                     prevNumBulbs,
+   //static GLint      colorsStart,
+                     //colorsEnd,
+   static GLint      prevNumBulbs,
+                     //detailEnd,
                      prevArn;
 
 
@@ -152,10 +152,10 @@ PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
          tmbc[3] = 1.0;
          defineBulb(tmx, tmy+0.115f*buttonScale, 0.175f*buttonScale, circleSegments, tmbc, detailColor, verts, colrs);
 
-         if (j == 0) {
-            vertsPerBulb = verts.size()/2;
-            detailEnd = colrs.size();
-         }
+         //if (j == 0) {
+            //vertsPerBulb = verts.size()/2;
+            //detailEnd = colrs.size();
+         //}
       }
       // Pack Vertices / Colors into global array buffers
       bulbButtonVerts = verts.size()/2;
