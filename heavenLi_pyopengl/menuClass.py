@@ -35,9 +35,6 @@ class Menu:
         # Current selected element of the menu (index: list, key: dict, value: range-tuple)
         self.selectedElement = 0
 
-        # index of the previously selected element
-        self.prevSelectedElement = 0
-
         # Index of the previously selected element when changing elements / scrolling
         self.prevSelectedElement = 0
 
@@ -367,11 +364,30 @@ class Menu:
             if (sm['mouseReleased'] == 0):
                 #if (not self.scrollSnap.isAnimating()):
                 self.isTrackingScroll = False
+
                 tmv = (
                     (2.0*sm['cursorVelSmoothed'][0]*cos(self.angle)) + 
                     (2.0*sm['cursorVelSmoothed'][1]*sin(self.angle))
                 )
                 self.selectionCursorVelocity += tmv
+                #if (self.menuLayout == 0):
+                    #tmv = (
+                        #(2.0*sm['cursorVelSmoothed'][0]*cos(self.angle)) + 
+                        #(2.0*sm['cursorVelSmoothed'][1]*sin(self.angle))
+                    #)
+                    #self.selectionCursorVelocity += tmv
+                #elif (self.menuLayout == 1):
+                    #if (    self.selectionCursorPosition == 0.0
+                            #or
+                            #self.selectionCursorPosition == self.numElements-1.0
+                            #):
+                        #self.selectionCursorVelocity = 0
+                    #else:
+                        #tmv = (
+                            #(2.0*sm['cursorVelSmoothed'][0]*cos(self.angle)) + 
+                            #(2.0*sm['cursorVelSmoothed'][1]*sin(self.angle))
+                        #)
+                        #self.selectionCursorVelocity += tmv
 
             if (sm['mousePressed'] == 0):
                 self.mouseCursorAtPressX = mapRanges(sm['cursorX'], 0, sm['windowDimW'], -w2h, w2h)
@@ -384,7 +400,8 @@ class Menu:
 
             return True
 
-        pass
+        if (sm['currentState'] == 1):
+            self.isTrackingScroll = False
 
         return False
 
@@ -508,10 +525,23 @@ class Menu:
 
                 # Snap cursor to nearest whole number, animate
                 tmn = normalizeCursor(self.prevSelectionCursorPosition, self.selectionCursorPosition)
-                # shift range to positive
                 while tmn < 0.0:
                     tmn += 1.0
 
+                # Resolve edge-case bug related to kinetic scroll reached list terminals
+                if (    self.menuLayout == 1
+                        and
+                        (   self.selectionCursorPosition == 0.0
+                            or
+                            self.selectionCursorPosition == self.numElements-1.0
+                            )
+                        and
+                        not self.scrollSnap.isAnimating()
+                        ):
+                    self.scrollSnap.setValue(self.delimitValue(self.selectionCursorPosition))
+                    self.scrollSnap.setTargetVal(round(self.delimitValue(self.selectionCursorPosition)))
+
+                # Snap-to-whole number animation finished
                 if (    tmn >= 0.000001
                         and
                         tmn <= 0.999999
@@ -520,32 +550,27 @@ class Menu:
                         ):
                     self.scrollSnap.setValue(self.delimitValue(self.selectionCursorPosition))
                     self.scrollSnap.setTargetVal(round(self.delimitValue(self.selectionCursorPosition)))
-                else:
-
-                    # Resolve weird edge case bug related to scrolling to bottom of list
-                    #if (    self.selectionCursorPosition == 1.0
-                            #or
-                            #self.selectionCursorPosition == float(self.numElements-2)
-                            #):
-                        #pass
-                    #else:
-                        #self.selectionCursorPosition = self.delimitValue(self.scrollSnap.getVal())
-                    self.selectionCursorPosition = self.delimitValue(self.scrollSnap.getVal())
+                else: # Run Snap-to-whole number animation
+                    self.selectionCursorPosition = self.scrollSnap.getVal()
             else:
                 # Update Cursor velocity
                 self.selectionCursorVelocity = tmp
 
+        # Update Index of the element ultimately returned, always a whole number
         if (self.scrollSnap.isTargetReached()):
             self.selectedElement = rollover(round(self.delimitValue(self.selectionCursorPosition)), self.numElements)
         else:
             self.selectedElement = rollover(round(self.delimitValue(self.scrollSnap.getTar())), self.numElements)
 
+        # Detect changes in selected element
         if (self.prevSelectedElement != self.selectedElement):
             #print(self.selectedElement, self.selectionCursorPosition)
             self.prevSelectedElement = self.selectedElement
 
+        # Update Timer
         self.tPhys = time.time()
 
+        # Update animations
         self.scrollSnap.updateVal()
         self.deployed.updateVal()
         self.UIelement.updateParams()
@@ -582,6 +607,7 @@ class Menu:
             #tmc = self.selectionCursorPosition
         tmc = self.selectionCursorPosition
 
+        print(self.selectionCursorVelocity, self.selectionCursorPosition, self.selectedElement, self.scrollSnap.getTar(), self.scrollSnap.getVal())
         self.elementCoords = drawMenu(
                 mx,
                 my,
