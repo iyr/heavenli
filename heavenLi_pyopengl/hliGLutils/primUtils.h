@@ -1,13 +1,34 @@
-
 // Convenience functions
 #define degToRad(angleindegrees) ((angleindegrees) * 3.1415926535 / 180.0)
-float constrain(float value, float min, float max) {
+float constrain(
+      float value,   // Input value to constrain
+      float min,     // Minimum
+      float max      // Maximum
+      ) {
    if (value > max)
       return max;
    else if (value < min)
       return min;
    else
       return value;
+}
+
+float rangeShift(
+      float value,   // Input value to shift
+      float oldMin,  // Input value range minimum
+      float oldMax,  // Input value range maximum
+      float newMin,  // Output value range minimum
+      float newMax   // Output value range maximum
+      ) {
+   float oldRange = (oldMax - oldMin);
+
+   if (oldRange == 0.0f) {
+      return newMin;
+   } else {
+      float newRange = (newMax - newMin);
+      float tmv = (((value - oldMin)*newRange) / oldRange) + newMin;
+      return tmv;
+   }
 }
 
 #include "primUtils/primEllipseDEGEN.cpp"
