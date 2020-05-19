@@ -68,6 +68,9 @@ class Menu:
         # Timer for updating physics
         self.tPhys = time.time()
 
+        # (experimental) number of listings to display
+        self.numListings = 7
+
     # change menu layout
     def setLayout(self, layout):
         if layout == 0:
@@ -87,6 +90,7 @@ class Menu:
     def cursor2indices(self, diff):
         indices = []
 
+        diff = floor(self.numListings/2.0)
         tmc = self.delimitValue(self.selectionCursorPosition)
         #tmc = constrain(self.selectionCursorPosition, 1.0, self.numElements-2.0)
         if (self.menuLayout == 0):
@@ -97,10 +101,10 @@ class Menu:
                 indices.append(rollover(i, self.numElements))
             return indices
         elif (self.menuLayout == 1):
-            if (tmc == 0.0 or tmc <= 1.0):
-                return [0, 1, 2]
-            elif (tmc >= self.numElements-2.0 and tmc <= self.numElements-1.0):
-                return [self.numElements-3, self.numElements-2, self.numElements-1]
+            if (tmc <= diff):
+                return [i for i in range(self.numListings)]
+            elif (tmc >= self.numElements-1.0-diff):#2.0 and tmc <= self.numElements-1.0):
+                return [self.numElements-self.numListings+i for i in range(self.numListings)]
             else:
                 for i in range(
                         floor(tmc - diff),
@@ -112,6 +116,7 @@ class Menu:
     # Return a list of tuples containing the index, posX, posY, and scale of visible elements
     def getElements(self):
         tml = self.cursor2indices(1.0);
+        #print(tml)
         tme = []
 
         for i in range(len(tml)):
@@ -135,7 +140,10 @@ class Menu:
 
     # Simplify mouse wheel scrolling
     def scrollButton(self, button):
-        self.selectionCursorVelocity = 0.0
+        self.selectionCursorVelocity     = 0.0
+        self.selectionCursorPosition     = self.scrollSnap.getTar()
+        self.prevSelectionCursorPosition = self.scrollSnap.getTar()
+
         # Mouse wheel scroll up
         if (button == 3):
             self.scrollSnap.setTargetVal(self.delimitValue(self.scrollSnap.getTar()+1.0))
@@ -195,96 +203,62 @@ class Menu:
         ang     = self.getAng()
         ofx     = self.UIelement.getTarPosX()
         ofy     = self.UIelement.getTarPosY()
-
-        # Watch increment/decrement buttons for input
-        tmx0    = 5.75*self.UIelement.getTarSize()
-        tmy0    = 5.75*self.UIelement.getTarSize()
-        tmx2    = 2.0*self.UIelement.getTarSize()
-        tmy2    = 2.0*self.UIelement.getTarSize()
         thr     = 0.1*self.UIelement.getSize()
-        tmes0   = 0.15
-        tmes2   = tmes0
-
+        diff    = floor(self.numListings/2)
+        tmes    = 0.125
+        endOffset   = 1.0/(self.numListings-1.0)
+        elementSpacing  = ((6.0-endOffset)-(1.5+endOffset))/(self.numListings-1.0)
         if w2h < 1.0:
-            tmy0 *= w2h
-            tmes0 *= w2h
-            tmy2 *= w2h
-            tmes2 *= w2h
-        if (    self.isOpen()
-                and
-                not self.isTrackingScroll
-                and
-                watchDot(
-                    ofx + cos(radians(ang))*tmx0,
-                    ofy + sin(radians(ang))*tmy0,
-                    tmes0,
-                    sm['cursorXgl'],
-                    sm['cursorYgl'],
-                    w2h,
-                    sm['drawInfo']
-                    )
-                ):
+            tmes *= w2h
 
-            self.scrollButton(sm['mousePressed'])
+        # watch elements directly for selection/scroll
+        for i in range(self.numListings):
+            tmx = (1.5 + endOffset + i*elementSpacing)*self.UIelement.getTarSize()
+            tmy = (1.5 + endOffset + i*elementSpacing)*self.UIelement.getTarSize()
+            if w2h < 1.0:
+                tmy *= w2h
+            if (    self.isOpen()
+                    and
+                    not self.isTrackingScroll
+                    and
+                    watchDot(
+                        ofx + cos(radians(ang))*tmx,
+                        ofy + sin(radians(ang))*tmy,
+                        tmes,
+                        sm['cursorXgl'],
+                        sm['cursorYgl'],
+                        w2h,
+                        sm['drawInfo']
+                        )
+                    ):
+                # Scroll with mouse wheel
+                self.scrollButton(sm['mousePressed'])
 
-            # Record position of cursor when left-clicked
-            if (sm['mousePressed'] == 0):
-                self.mouseCursorAtPressX = mapRanges(sm['cursorX'], 0, sm['windowDimW'], -w2h, w2h)
-                self.mouseCursorAtPressY = mapRanges(sm['cursorY'], 0, sm['windowDimH'], 1.0, -1.0)
-                if (self.scrollSnap.isAnimating()):
-                    self.prevSelectionCursorPosition = self.scrollSnap.getTar()
-                else:
-                    self.prevSelectionCursorPosition = self.selectionCursorPosition
+                # Record position of cursor when left-clicked
+                if (sm['mousePressed'] == 0):
+                    self.mouseCursorAtPressX = mapRanges(sm['cursorX'], 0, sm['windowDimW'], -w2h, w2h)
+                    self.mouseCursorAtPressY = mapRanges(sm['cursorY'], 0, sm['windowDimH'], 1.0, -1.0)
+                    if (self.scrollSnap.isAnimating()):
+                        self.prevSelectionCursorPosition = self.scrollSnap.getTar()
+                    else:
+                        self.prevSelectionCursorPosition = self.selectionCursorPosition
 
-            if (sm['mouseReleased'] == 0):
-                self.selectionCursorVelocity = 0.0
-                self.scrollSnap.setTargetVal(self.delimitValue(self.scrollSnap.getTar()-1.0))
+                if (sm['mouseReleased'] == 0):
+                    #self.selectionCursorVelocity = 0.0
+                    tml = self.cursor2indices(1.0)
+                    self.scrollSnap.setTargetVal(tml[self.numListings-1-i])
+                    #self.scrollSnap.setTargetVal(self.delimitValue(self.scrollSnap.getTar()-1.0))
 
-            # Swipe to scroll if cursor is dragged
-            dfx = mapRanges(sm['cursorX'], 0, sm['windowDimW'], -w2h, w2h) - self.mouseCursorAtPressX
-            dfy = mapRanges(sm['cursorY'], 0, sm['windowDimH'], 1.0, -1.0) - self.mouseCursorAtPressY
-            if (hypot(dfx, dfy) > thr):
-                self.isTrackingScroll = True
+                # Swipe to scroll if cursor is dragged
+                dfx = mapRanges(sm['cursorX'], 0, sm['windowDimW'], -w2h, w2h) - self.mouseCursorAtPressX
+                dfy = mapRanges(sm['cursorY'], 0, sm['windowDimH'], 1.0, -1.0) - self.mouseCursorAtPressY
+                if (    hypot(dfx, dfy) > thr
+                        and
+                        sm['mouseButton'] == 0
+                        ):
+                    self.isTrackingScroll = True
 
-            return True
-
-        if (    self.isOpen()
-                and
-                not self.isTrackingScroll
-                and
-                watchDot(
-                    ofx + cos(radians(ang))*tmx2,
-                    ofy + sin(radians(ang))*tmy2,
-                    tmes2,
-                    sm['cursorXgl'],
-                    sm['cursorYgl'],
-                    w2h,
-                    sm['drawInfo']
-                    )
-                ):
-
-            self.scrollButton(sm['mousePressed'])
-
-            # Record position of cursor when left-clicked
-            if (sm['mousePressed'] == 0):
-                self.mouseCursorAtPressX = mapRanges(sm['cursorX'], 0, sm['windowDimW'], -w2h, w2h)
-                self.mouseCursorAtPressY = mapRanges(sm['cursorY'], 0, sm['windowDimH'], 1.0, -1.0)
-                if (self.scrollSnap.isAnimating()):
-                    self.prevSelectionCursorPosition = self.scrollSnap.getTar()
-                else:
-                    self.prevSelectionCursorPosition = self.selectionCursorPosition
-
-            if (sm['mouseReleased'] == 0):
-                self.selectionCursorVelocity = 0.0
-                self.scrollSnap.setTargetVal(self.delimitValue(self.scrollSnap.getTar()+1.0))
-
-            # Swipe to scroll if cursor is dragged
-            dfx = mapRanges(sm['cursorX'], 0, sm['windowDimW'], -w2h, w2h) - self.mouseCursorAtPressX
-            dfy = mapRanges(sm['cursorY'], 0, sm['windowDimH'], 1.0, -1.0) - self.mouseCursorAtPressY
-            if (hypot(dfx, dfy) > thr):
-                self.isTrackingScroll = True
-
-            return True
+                return True
 
         # Watch Menu Body for scroll / select
         polygon = []
@@ -345,6 +319,7 @@ class Menu:
                 )
             ):
 
+            # Scroll with mouse wheel
             self.scrollButton(sm['mousePressed'])
 
             # Swipe to scroll
@@ -365,30 +340,14 @@ class Menu:
                 #if (not self.scrollSnap.isAnimating()):
                 self.isTrackingScroll = False
 
+                # normalize velocity to menu's slide-out direction
                 tmv = (
                     (2.0*sm['cursorVelSmoothed'][0]*cos(self.angle)) + 
                     (2.0*sm['cursorVelSmoothed'][1]*sin(self.angle))
                 )
                 self.selectionCursorVelocity += tmv
-                #if (self.menuLayout == 0):
-                    #tmv = (
-                        #(2.0*sm['cursorVelSmoothed'][0]*cos(self.angle)) + 
-                        #(2.0*sm['cursorVelSmoothed'][1]*sin(self.angle))
-                    #)
-                    #self.selectionCursorVelocity += tmv
-                #elif (self.menuLayout == 1):
-                    #if (    self.selectionCursorPosition == 0.0
-                            #or
-                            #self.selectionCursorPosition == self.numElements-1.0
-                            #):
-                        #self.selectionCursorVelocity = 0
-                    #else:
-                        #tmv = (
-                            #(2.0*sm['cursorVelSmoothed'][0]*cos(self.angle)) + 
-                            #(2.0*sm['cursorVelSmoothed'][1]*sin(self.angle))
-                        #)
-                        #self.selectionCursorVelocity += tmv
 
+            # Begin dragging menu elements
             if (sm['mousePressed'] == 0):
                 self.mouseCursorAtPressX = mapRanges(sm['cursorX'], 0, sm['windowDimW'], -w2h, w2h)
                 self.mouseCursorAtPressY = mapRanges(sm['cursorY'], 0, sm['windowDimH'], 1.0, -1.0)
@@ -400,7 +359,10 @@ class Menu:
 
             return True
 
-        if (sm['currentState'] == 1):
+        # Resolve peculiar edge-case bug
+        if (    sm['currentState'] == 1
+                or
+                sm['mousePressed'] != 0):
             self.isTrackingScroll = False
 
         return False
@@ -517,10 +479,26 @@ class Menu:
             self.selectionCursorPosition = self.delimitValue(tmp)
 
             # Decay cursor velocity
-            tmp = self.selectionCursorVelocity + accel*tDelta
+            tmv = self.selectionCursorVelocity + accel*tDelta
 
-            # Don't let cursor take forever to coast to a stop
-            if (abs(tmp) <= 0.15):
+            # Zero cursor velocity if cursor reaches end of linear strip terminated list
+            if (    self.menuLayout == 1
+                    and
+                    (   self.selectionCursorPosition == 0.0
+                        and
+                        self.selectionCursorVelocity < 0.0
+                        )
+                    or
+                    (   self.selectionCursorPosition == self.numElements-1.0
+                        and
+                        self.selectionCursorVelocity > 0.0
+                        )
+                    ):
+                tmv = 0.0
+
+            # Prematurely zero cursor velocity so it doesn't take forever to coast to a stop,
+            # animate snap to index of nearest whole number
+            if (abs(tmv) <= 0.15):
                 self.selectionCursorVelocity = 0.0
 
                 # Snap cursor to nearest whole number, animate
@@ -554,7 +532,7 @@ class Menu:
                     self.selectionCursorPosition = self.scrollSnap.getVal()
             else:
                 # Update Cursor velocity
-                self.selectionCursorVelocity = tmp
+                self.selectionCursorVelocity = tmv
 
         # Update Index of the element ultimately returned, always a whole number
         if (self.scrollSnap.isTargetReached()):
@@ -564,6 +542,8 @@ class Menu:
 
         # Detect changes in selected element
         if (self.prevSelectedElement != self.selectedElement):
+            #self.scrollSnap.setTargetVal(self.selectedElement)
+            #self.scrollSnap.setValue(self.selectedElement)
             #print(self.selectedElement, self.selectionCursorPosition)
             self.prevSelectedElement = self.selectedElement
 
@@ -596,18 +576,22 @@ class Menu:
         tms = self.UIelement.getSize()
         mx = self.UIelement.getTarPosX()
         my = self.UIelement.getTarPosY()
-        sc = normalizeCursor(self.prevSelectionCursorPosition, self.selectionCursorPosition)
-        if sc < 0.0:
-            sc += 1.0
+        scrollCursor = normalizeCursor(
+                self.prevSelectionCursorPosition, 
+                self.selectionCursorPosition
+                )
+        if scrollCursor < 0.0:
+            scrollCursor += 1.0
 
         tmc = 0.0
-        #if (self.scrollSnap.isAnimating()):
-            #tmc = self.scrollSnap.getTar()
-        #else:
-            #tmc = self.selectionCursorPosition
         tmc = self.selectionCursorPosition
 
-        print(self.selectionCursorVelocity, self.selectionCursorPosition, self.selectedElement, self.scrollSnap.getTar(), self.scrollSnap.getVal())
+        while tmc > self.numElements-1.0:
+            tmc -= self.numElements
+
+        while tmc < 0.0:
+            tmc += self.numElements
+        #print(self.selectionCursorVelocity, self.selectionCursorPosition, self.selectedElement, self.scrollSnap.getTar(), self.scrollSnap.getVal())
         self.elementCoords = drawMenu(
                 mx,
                 my,
@@ -615,9 +599,10 @@ class Menu:
                 self.angle,
                 self.deployed.getVal(),
                 tmc,
-                sc,
+                scrollCursor,
                 self.numElements,
                 self.menuLayout,
+                self.numListings,
                 self.dispIndex,
                 w2h,
                 stateMach['faceColor'],
@@ -625,4 +610,3 @@ class Menu:
                 )
 
         return
-
