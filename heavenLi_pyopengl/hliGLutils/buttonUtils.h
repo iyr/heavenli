@@ -57,6 +57,7 @@ void drawMenu(
       GLfloat     scrollCursor,  // animation cursor for element motion during scrolling (-1.0 to 1.0)
       GLuint      numElements,   // number of elements
       GLuint      menuType,      // 0=carousel w/ rollover, 1=linear strip w/ terminals, 2=value slider w/ min/max
+      GLuint      numListings,   // number of elements to display at once
       GLboolean   drawIndex,     // whether or not to draw the index over the number of elements
       GLfloat*    elementCoords, // Relative coordinates of Menu elements
       GLfloat     w2h,           // width to height ratio
