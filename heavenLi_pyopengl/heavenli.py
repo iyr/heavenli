@@ -31,6 +31,7 @@ def init():
     print("Initialization Finished")
     return
 
+# Throttle FPS and update timers
 def framerate():
     global stateMach
     t = time.time()
@@ -53,14 +54,14 @@ def framerate():
         stateMach['t1'] = t
 
     if t - stateMach['t0'] >= 1.0:
-        stateMach['lamps'] = plugins.pluginLoader.getAllLamps()
         #print("%.0f frames in %3.1f seconds = %6.3f FPS" % (stateMach['frames'],seconds,stateMach['fps']))
-        stateMach['t0'] = t
+        stateMach['lamps']  = plugins.pluginLoader.getAllLamps()
+        stateMach['t0']     = t
         stateMach['frames'] = 0
-        ct = datetime.datetime.now()
+        ct                  = datetime.datetime.now()
         stateMach['second'] = ct.second
         stateMach['minute'] = ct.minute + stateMach['second']*0.016666667
-        stateMach['hour'] = ct.hour + stateMach['minute']*0.016666667
+        stateMach['hour']   = ct.hour + stateMach['minute']*0.016666667
         if (stateMach['hour'] > 11):
             stateMach['hour'] -= 12
 
@@ -200,8 +201,8 @@ def drawTest():
             drawEllipse(
                     tmx,
                     tmy,
-                    quack[i][3]*0.1,
-                    quack[i][3]*0.1,
+                    quack[i][3]*0.05,
+                    quack[i][3]*0.05,
                     w2h,
                     stateMach['testList'][quack[i][0]]
                     )
@@ -1386,6 +1387,8 @@ if __name__ == '__main__':
     stateMach['testList'].append((1.0, 0.0, 0.0, 1.0))  # Red
     stateMach['testList'].append((0.0, 0.0, 1.0, 1.0))  # Blue
     stateMach['testList'].append((0.0, 1.0, 0.0, 1.0))  # Green
+    stateMach['testList'].append((0.4, 0.0, 1.0, 1.0))  # Purple
+    stateMach['testList'].append((1.0, 0.4, 0.0, 1.0))  # Orange
 
     stateMach['Menus']['testMenu']  = Menu()
     #stateMach['Menus']['testMenu'].setIndexDraw(True)
