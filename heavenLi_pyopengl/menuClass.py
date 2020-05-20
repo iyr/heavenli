@@ -141,16 +141,18 @@ class Menu:
     # Simplify mouse wheel scrolling
     def scrollButton(self, button):
         self.selectionCursorVelocity     = 0.0
-        self.selectionCursorPosition     = self.scrollSnap.getTar()
-        self.prevSelectionCursorPosition = self.scrollSnap.getTar()
 
         # Mouse wheel scroll up
         if (button == 3):
             self.scrollSnap.setTargetVal(self.delimitValue(self.scrollSnap.getTar()+1.0))
+            self.selectionCursorPosition     = self.scrollSnap.getTar()
+            self.prevSelectionCursorPosition = self.scrollSnap.getTar()
 
         # Mouse wheel scroll down
         if (button == 4):
             self.scrollSnap.setTargetVal(self.delimitValue(self.scrollSnap.getTar()-1.0))
+            self.selectionCursorPosition     = self.scrollSnap.getTar()
+            self.prevSelectionCursorPosition = self.scrollSnap.getTar()
 
     # get index for the currently selected
     def getSelection(self):
@@ -238,10 +240,7 @@ class Menu:
                 if (sm['mousePressed'] == 0):
                     self.mouseCursorAtPressX = mapRanges(sm['cursorX'], 0, sm['windowDimW'], -w2h, w2h)
                     self.mouseCursorAtPressY = mapRanges(sm['cursorY'], 0, sm['windowDimH'], 1.0, -1.0)
-                    if (self.scrollSnap.isAnimating()):
-                        self.prevSelectionCursorPosition = self.scrollSnap.getTar()
-                    else:
-                        self.prevSelectionCursorPosition = self.selectionCursorPosition
+                    self.prevSelectionCursorPosition = self.selectionCursorPosition
 
                 if (sm['mouseReleased'] == 0):
                     #self.selectionCursorVelocity = 0.0
@@ -342,19 +341,24 @@ class Menu:
 
                 # normalize velocity to menu's slide-out direction
                 tmv = (
-                    (2.0*sm['cursorVelSmoothed'][0]*cos(self.angle)) + 
-                    (2.0*sm['cursorVelSmoothed'][1]*sin(self.angle))
+                    (4.0*sm['cursorVelSmoothed'][0]*cos(self.angle)) + 
+                    (4.0*sm['cursorVelSmoothed'][1]*sin(self.angle))
                 )
                 self.selectionCursorVelocity += tmv
 
             # Begin dragging menu elements
             if (sm['mousePressed'] == 0):
+
+                # Record initial mouse coordinates to get delta
                 self.mouseCursorAtPressX = mapRanges(sm['cursorX'], 0, sm['windowDimW'], -w2h, w2h)
                 self.mouseCursorAtPressY = mapRanges(sm['cursorY'], 0, sm['windowDimH'], 1.0, -1.0)
-                if (self.scrollSnap.isAnimating()):
-                    self.prevSelectionCursorPosition = self.scrollSnap.getTar()
-                else:
-                    self.prevSelectionCursorPosition = self.selectionCursorPosition
+
+                # Re/Set animation, initial position, tracking flag
+                #if (self.scrollSnap.isAnimating()):
+                    #self.prevSelectionCursorPosition = self.scrollSnap.getTar()
+                #else:
+                    #self.prevSelectionCursorPosition = self.selectionCursorPosition
+                self.prevSelectionCursorPosition = self.selectionCursorPosition
                 self.isTrackingScroll = True
 
             return True
