@@ -155,6 +155,12 @@ void drawMenu(
          MenuClosed->updateColorCache();
       }
 
+      // Set element diamond coordinates/sizes
+      for (unsigned int i = 0; i < numListings+1; i++) {
+         elementCoords[i*3+0] = 0.0f;
+         elementCoords[i*3+1] = 0.0f;
+         elementCoords[i*3+2] = 0.0f;
+      }
       MenuClosed->updateMVP(gx, gy, scale, scale, -direction, w2h);
       MenuClosed->draw();
    } 
