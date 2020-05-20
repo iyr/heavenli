@@ -1389,6 +1389,13 @@ if __name__ == '__main__':
     stateMach['testList'].append((0.0, 1.0, 0.0, 1.0))  # Green
     stateMach['testList'].append((0.4, 0.0, 1.0, 1.0))  # Purple
     stateMach['testList'].append((1.0, 0.4, 0.0, 1.0))  # Orange
+    for i in range(64):
+        stateMach['testList'].append((
+            random.random(),
+            random.random(),
+            random.random(),
+            1.0
+            ))
 
     stateMach['Menus']['testMenu']  = Menu()
     #stateMach['Menus']['testMenu'].setIndexDraw(True)
