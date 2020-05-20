@@ -15,7 +15,7 @@ import numpy as np
 print("Done!")
 
 print("Loading System Utilities...")
-import sys, time, traceback, datetime, os, serial
+import sys, time, traceback, datetime, os, serial, random
 from math import sin,cos,sqrt,pi,radians,hypot,atan,degrees
 from cobs import cobs
 from platform import machine
@@ -24,10 +24,10 @@ from pynput.mouse import Controller
 #import pickle
 print("Done!")
 
-print("Loading Geometry Utilities...")
-from shapely.geometry import Point
-from shapely.geometry.polygon import Polygon
-print("Done!")
+#print("Loading Geometry Utilities...")
+#from shapely.geometry import Point
+#from shapely.geometry.polygon import Polygon
+#print("Done!")
 
 print("Loading heavenLi Utilities...")
 import colorsys
