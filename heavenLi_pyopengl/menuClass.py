@@ -140,19 +140,21 @@ class Menu:
 
     # Simplify mouse wheel scrolling
     def scrollButton(self, button):
-        self.selectionCursorVelocity     = 0.0
+        self.selectionCursorVelocity = 0.0
 
         # Mouse wheel scroll up
         if (button == 3):
-            self.scrollSnap.setTargetVal(self.delimitValue(self.scrollSnap.getTar()+1.0))
-            self.selectionCursorPosition     = self.scrollSnap.getTar()
-            self.prevSelectionCursorPosition = self.scrollSnap.getTar()
+            if (self.scrollSnap.isAnimating()):
+                self.scrollSnap.setTargetVal(self.delimitValue(self.scrollSnap.getTar()+1.0))
+            else:
+                self.scrollSnap.setTargetVal(self.delimitValue(round(self.selectionCursorPosition)+1.0))
 
         # Mouse wheel scroll down
         if (button == 4):
-            self.scrollSnap.setTargetVal(self.delimitValue(self.scrollSnap.getTar()-1.0))
-            self.selectionCursorPosition     = self.scrollSnap.getTar()
-            self.prevSelectionCursorPosition = self.scrollSnap.getTar()
+            if (self.scrollSnap.isAnimating()):
+                self.scrollSnap.setTargetVal(self.delimitValue(self.scrollSnap.getTar()-1.0))
+            else:
+                self.scrollSnap.setTargetVal(self.delimitValue(round(self.selectionCursorPosition)-1.0))
 
     # get index for the currently selected
     def getSelection(self):
