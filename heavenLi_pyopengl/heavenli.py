@@ -24,9 +24,9 @@ def init():
     if (stateMach['hour'] > 11):
         stateMach['hour'] -= 12
 
-    stateMach['wx'] = glutGet(GLUT_WINDOW_WIDTH)
-    stateMach['wy'] = glutGet(GLUT_WINDOW_HEIGHT)
-    stateMach['w2h'] = stateMach['wx']/stateMach['wy']
+    stateMach['windowDimW'] = glutGet(GLUT_WINDOW_WIDTH)
+    stateMach['windowDimH'] = glutGet(GLUT_WINDOW_HEIGHT)
+    stateMach['w2h'] = stateMach['windowDimW']/stateMach['windowDimH']
 
     print("Initialization Finished")
     return
@@ -201,8 +201,8 @@ def drawTest():
             drawEllipse(
                     tmx,
                     tmy,
-                    quack[i][3]*0.05,
-                    quack[i][3]*0.05,
+                    quack[i][3]*0.125,
+                    quack[i][3]*0.125,
                     w2h,
                     stateMach['testList'][quack[i][0]]
                     )
@@ -239,7 +239,28 @@ def watchTest():
                 tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
                 stateMach['BallPosition'] = (tmx, tmy)
 
-            if (stateMach['Menus']['testMenu'].watch(stateMach)):
+            #if (stateMach['Menus']['testMenu'].watch(stateMach)):
+            if (stateMach['Menus']['testMenu'].watch(filterKeys(stateMach, 
+                [
+                    'CtrlActive',
+                    'currentMouseButtonState',
+                    'cursorVelSmoothed',
+                    'cursorX',
+                    'cursorY',
+                    'cursorXgl',
+                    'cursorYgl',
+                    'drawInfo',
+                    'keyPressed',
+                    'mouseButton',
+                    'mousePressed',
+                    'mouseReleased',
+                    'w2h',
+                    'windowDimW',
+                    'windowDimH'
+                ]
+                    )
+                )
+                ):
                 stateMach['noButtonsPressed'] = False
                 pass
 
@@ -257,7 +278,6 @@ def watchTest():
         print(traceback.format_exc())
         print("Error:", OOF)
     return
-
 
 def drawElements():
     global stateMach
@@ -278,7 +298,7 @@ def drawElements():
             if (stateMach['lamps'][Light].getArn() == 0):
                 pass
                 drawHomeCircle(0.0, 0.0, 
-                        stateMach['wx'], stateMach['wy'], 
+                        stateMach['windowDimW'], stateMach['windowDimH'], 
                         stateMach['lamps'][Light].getNumBulbs(), 
                         stateMach['lamps'][Light].getAngle(), 
                         w2h,
@@ -288,7 +308,7 @@ def drawElements():
             if (stateMach['lamps'][Light].getArn() == 1):
                 pass
                 drawHomeLinear(0.0, 0.0, 
-                        stateMach['wx'], stateMach['wy'],
+                        stateMach['windowDimW'], stateMach['windowDimH'],
                         stateMach['lamps'][Light].getNumBulbs(), 
                         stateMach['lamps'][Light].getAngle(), 
                         w2h,
@@ -665,7 +685,7 @@ def watchColrSettingInput():
     if (watchScreen()):
 
         gctmx = stateMach['UIelements']['GranChanger'].getTarSize()*(24.0/36.0)
-        tmr = min(stateMach['wx'], stateMach['wy']*(12.0/36.0)*0.3)
+        tmr = min(stateMach['windowDimW'], stateMach['windowDimH']*(12.0/36.0)*0.3)
         if (w2h <= 1.0):
             gctmy = stateMach['UIelements']['GranChanger'].getPosY()*w2h
         else:
@@ -732,7 +752,14 @@ def watchColrSettingInput():
             if (w2h < 1.0):
                 tms  *= w2h
 
-            if (watchDot(posX, posY, tms, stateMach['cursorXgl'], stateMach['cursorYgl'], w2h, stateMach['drawInfo'] )
+            if (watchDot(
+                posX, 
+                posY, 
+                tms, 
+                stateMach['cursorXgl'], 
+                stateMach['cursorYgl'], 
+                w2h, 
+                stateMach['drawInfo'] )
                 and
                 stateMach['mousePressed'] == 0
                 ):
@@ -778,7 +805,7 @@ def watchColrSettingInput():
                 stateMach['drawInfo']
                 )
                 and
-                stateMach['currentState'] == 0
+                stateMach['currentMouseButtonState'] == 0
                 ):
                 stateMach['noButtonsPressed'] = False
 
@@ -810,9 +837,9 @@ def watchColrSettingInput():
             stateMach['w2h'],
             stateMach['drawInfo']
             )
-        and
-        stateMach['mousePressed'] == 0
-        ):
+            and
+            stateMach['mousePressed'] == 0
+            ):
             stateMach['noButtonsPressed'] = False
             stateMach['wereColorsTouched'] = False
             if (len(stateMach['lamps']) > 0):
@@ -897,7 +924,7 @@ def watchScreen():
         stateMach['WindowBarHeight'] = glutGet(GLUT_WINDOW_Y) - stateMach['prevWindowPosY'] 
         print("Window Title Bar Height set: " + str(stateMach['WindowBarHeight']))
 
-    if (    stateMach['currentState'] == 0 
+    if (    stateMach['currentMouseButtonState'] == 0 
             or 
             stateMach['mousePressed'] >= 0
             or
@@ -909,8 +936,9 @@ def watchScreen():
     else:
         return False
 
+# Move window when it is being dragged
 def dragWindow():
-    if (    stateMach['currentState'] == 0
+    if (    stateMach['currentMouseButtonState'] == 0
             and
             stateMach['mouseButton'] == 0
             and
@@ -941,6 +969,7 @@ def dragWindow():
             stateMach['Menus'][menu].update(stateMach)
         glutPositionWindow(tmx, tmy)
 
+# function is called when the mouse is being moved while registering button input
 def mouseActive(mouseX, mouseY):
     global stateMach
 
@@ -950,55 +979,59 @@ def mouseActive(mouseX, mouseY):
     # Map cursor coordinates to GL coordinates
     w2h = stateMach['w2h']
     if w2h >= 1.0:
-        stateMach['cursorXgl'] = mapRanges(mouseX, 0, stateMach['wx'], -w2h, w2h)
-        stateMach['cursorYgl'] = mapRanges(mouseY, 0, stateMach['wy'], 1.0, -1.0)
+        stateMach['cursorXgl'] = mapRanges(mouseX, 0, stateMach['windowDimW'], -w2h, w2h)
+        stateMach['cursorYgl'] = mapRanges(mouseY, 0, stateMach['windowDimH'], 1.0, -1.0)
     else:
-        stateMach['cursorXgl'] = mapRanges(mouseX, 0, stateMach['wx'], -1.0, 1.0)
-        stateMach['cursorYgl'] = mapRanges(mouseY, 0, stateMach['wy'], 1/w2h, -1/w2h)
+        stateMach['cursorXgl'] = mapRanges(mouseX, 0, stateMach['windowDimW'], -1.0, 1.0)
+        stateMach['cursorYgl'] = mapRanges(mouseY, 0, stateMach['windowDimH'], 1/w2h, -1/w2h)
 
+# function is called when mouse is moving over window with no input
 def mousePassive(mouseX, mouseY):
     global stateMach
     stateMach['cursorX'] = mouseX
     stateMach['cursorY'] = mouseY
+    #print("quack",glutGetModifiers())
 
     # Map cursor coordinates to GL coordinates
     w2h = stateMach['w2h']
     if w2h >= 1.0:
-        stateMach['cursorXgl'] = mapRanges(mouseX, 0, stateMach['wx'], -w2h, w2h)
-        stateMach['cursorYgl'] = mapRanges(mouseY, 0, stateMach['wy'], 1.0, -1.0)
+        stateMach['cursorXgl'] = mapRanges(mouseX, 0, stateMach['windowDimW'], -w2h, w2h)
+        stateMach['cursorYgl'] = mapRanges(mouseY, 0, stateMach['windowDimH'], 1.0, -1.0)
     else:
-        stateMach['cursorXgl'] = mapRanges(mouseX, 0, stateMach['wx'], -1.0, 1.0)
-        stateMach['cursorYgl'] = mapRanges(mouseY, 0, stateMach['wy'], 1/w2h, -1/w2h)
+        stateMach['cursorXgl'] = mapRanges(mouseX, 0, stateMach['windowDimW'], -1.0, 1.0)
+        stateMach['cursorYgl'] = mapRanges(mouseY, 0, stateMach['windowDimH'], 1/w2h, -1/w2h)
 
+# function is called when mouse buttons are pressed/held/released
 def mouseInteraction(button, state, mouseX, mouseY):
     global stateMach
 
     stateMach['cursorX'] = mouseX
     stateMach['cursorY'] = mouseY
+    #print(glutGetModifiers())
+    decodeModifiers(glutGetModifiers())
 
     # Map cursor coordinates to GL coordinates
     w2h = stateMach['w2h']
     if w2h >= 1.0:
-        stateMach['cursorXgl'] = mapRanges(mouseX, 0, stateMach['wx'], -w2h, w2h)
-        stateMach['cursorYgl'] = mapRanges(mouseY, 0, stateMach['wy'], 1.0, -1.0)
+        stateMach['cursorXgl'] = mapRanges(mouseX, 0, stateMach['windowDimW'], -w2h, w2h)
+        stateMach['cursorYgl'] = mapRanges(mouseY, 0, stateMach['windowDimH'], 1.0, -1.0)
     else:
-        stateMach['cursorXgl'] = mapRanges(mouseX, 0, stateMach['wx'], -1.0, 1.0)
-        stateMach['cursorYgl'] = mapRanges(mouseY, 0, stateMach['wy'], 1/w2h, -1/w2h)
+        stateMach['cursorXgl'] = mapRanges(mouseX, 0, stateMach['windowDimW'], -1.0, 1.0)
+        stateMach['cursorYgl'] = mapRanges(mouseY, 0, stateMach['windowDimH'], 1/w2h, -1/w2h)
 
     # State = 0: button is pressed, low
     # State = 1: button is released, high
-    if (stateMach['currentState'] == 1 and state == 0):
+    if (stateMach['currentMouseButtonState'] == 1 and state == 0):
         stateMach['mousePosAtPressX'] = stateMach['cursorX']
         stateMach['mousePosAtPressY'] = stateMach['cursorY']
-        stateMach['windowHeight'] = stateMach['pynputMouse'].position[1] - (stateMach['windowPosY'] + stateMach['cursorY'])
 
         stateMach['mousePressed'] = button
 
-    if (stateMach['currentState'] == 0 and state > 0):
+    if (stateMach['currentMouseButtonState'] == 0 and state > 0):
         stateMach['noButtonsPressed'] = True
         stateMach['mouseReleased'] = button
 
-    stateMach['currentState'] = state
+    stateMach['currentMouseButtonState'] = state
     if (state == 0):
         stateMach['mouseButton'] = button
     elif (button > 2):
@@ -1006,7 +1039,7 @@ def mouseInteraction(button, state, mouseX, mouseY):
     else:
         stateMach['mouseButton'] = -1
 
-    #print("state: " + str(state) + ", currentState: " + str(stateMach['currentState']))
+    #print("state: " + str(state) + ", currentMouseButtonState: " + str(stateMach['currentMouseButtonState']))
     return
 
 # Convert a vector from Cartesian coordinates to Polar coordinates
@@ -1128,8 +1161,8 @@ def display():
     #stateMach['tDiff'] = 3.14159/stateMach['fps']
     #stateMach['tDiff'] = 6.28318/stateMach['fps']
 
-    drawTestObjects = False
-    #drawTestObjects = True
+    #drawTestObjects = False
+    drawTestObjects = True
     calcCursorVelocity(0)
 
     if (not drawTestObjects):
@@ -1158,10 +1191,21 @@ def display():
     if (stateMach['drawInfo']):
         drawInfo(stateMach)
 
-    if (stateMach['currentState'] != 0):
+    if (stateMach['currentMouseButtonState'] != 0):
         stateMach['mouseButton'] = -1
     stateMach['mousePressed'] = -1
     stateMach['mouseReleased'] = -1
+    stateMach['keyPressed'] = None
+    stateMach['keyReleased'] = None
+    if (stateMach['ShiftActive']):
+        print('ShiftActive')
+    if (stateMach['CtrlActive']):
+        print('CtrlActive')
+    if (stateMach['AltActive']):
+        print('AltActive')
+    stateMach['ShiftActive'] = False
+    stateMach['CtrlActive'] = False
+    stateMach['AltActive'] = False
 
     # Update UI animation
     for key in stateMach['UIelements']:
@@ -1186,12 +1230,32 @@ def idleWindowMinimized():
     plugins.pluginLoader.updatePlugins()
     pass
 
+# Parse byte from glutGetModifiers()
+def decodeModifiers(key):
+    if (    key < 0
+            or 
+            key > 7
+            or
+            type(key) is not int
+            ):
+        return
+    else:
+        if (1&key):
+            stateMach['ShiftActive'] = True
+        if (2&key):
+            stateMach['CtrlActive'] = True
+        if (4&key):
+            stateMach['AltActive'] = True
+        return
+
 # change view angle
 # Respond to user input from "special" keys
 def special(k, x, y):
     global stateMach
 
     Light = 0
+
+    decodeModifiers(glutGetModifiers())
 
     if k == GLUT_KEY_LEFT:
         if (len(stateMach['lamps']) > 0):
@@ -1240,10 +1304,17 @@ def special(k, x, y):
         return
     glutPostRedisplay()
 
+# callback for anytime a normal key is pressed
 def key(ch, x, y):
     global stateMach
     Light = 0
-    if ch == as_8_bit('q'):
+    #print(glutGetModifiers())
+
+    decodeModifiers(glutGetModifiers())
+    tmk = ch.decode("ascii")
+    stateMach['keyPressed'] == tmk
+
+    if tmk == 'q':
         sys.exit(0)
     if ord(ch) == 27: # ESC
         sys.exit(0)
@@ -1290,8 +1361,6 @@ def reshape(width, height):
         stateMach['w2h'] = width/height
     else:
         stateMach['w2h'] = 1
-    stateMach['wx'] = width
-    stateMach['wy'] = height
     stateMach['windowDimW'] = width
     stateMach['windowDimH'] = height
     glViewport(0, 0, width, height)
@@ -1308,14 +1377,14 @@ if __name__ == '__main__':
     global stateMach
     stateMach = {}
     print("Initializing...")
-    stateMach['WindowBarHeight']    = None
-    stateMach['noButtonsPressed']   = True
+    stateMach['WindowBarHeight']    = None                      # height of the window title bar (calibrated, used for window dragging)
+    stateMach['noButtonsPressed']   = True                      
     stateMach['prevHues']           = [None for i in range(6)]
     stateMach['prevSats']           = [None for i in range(6)]
     stateMach['prevVals']           = [None for i in range(6)]
     stateMach['curBulb']            = 0
-    stateMach['faceColor']          = (0.3, 0.3, 0.3, 1.0)
-    stateMach['detailColor']        = (0.9, 0.9, 0.9, 1.0)
+    stateMach['faceColor']          = (0.3, 0.3, 0.3, 1.0)      # Base (background) color for all UI elements
+    stateMach['detailColor']        = (0.9, 0.9, 0.9, 1.0)      # Detail (accent) color for all UI elements
     stateMach['tStart']             = time.time()
     stateMach['t0']                 = time.time()
     stateMach['t1']                 = time.time()
@@ -1326,59 +1395,62 @@ if __name__ == '__main__':
     stateMach['screen']             = 0
     stateMach['masterSwitch']       = False
     stateMach['fps']                = 60
-    stateMach['windowPosX']         = 0
-    stateMach['windowPosY']         = 0
-    stateMach['prevWindowPosX']     = 0
-    stateMach['prevWindowPosY']     = 0
-    stateMach['windowDimW']         = 800
-    stateMach['windowDimH']         = 480
-    stateMach['prevWindowDimW']     = 800
-    stateMach['prevWindowDimH']     = 480
+    stateMach['windowPosX']         = 0                         # current position of the window on the desktop
+    stateMach['windowPosY']         = 0                         # current position of the window on the desktop
+    stateMach['prevWindowPosX']     = 0                         # previous position of the window on the desktop (for returning from fullscreen)
+    stateMach['prevWindowPosY']     = 0                         # previous position of the window on the desktop (for returning from fullscreen)
+    stateMach['windowDimW']         = 800                       # current dimensions of the window
+    stateMach['windowDimH']         = 480                       # current dimensions of the window
+    stateMach['prevWindowDimW']     = 800                       # previous dimensions of the window (for returning from fullscreen)
+    stateMach['prevWindowDimH']     = 480                       # previous dimensions of the window (for returning from fullscreen)
     stateMach['cursorXgl']          = 0
     stateMach['cursorYgl']          = 0
     stateMach['cursorX']            = 0
     stateMach['cursorY']            = 0
     stateMach['prevCursorX']        = 0
     stateMach['prevCursorY']        = 0
-    stateMach['mousePosAtPressX']   = 0
-    stateMach['mousePosAtPressY']   = 0
-    stateMach['isFullScreen']       = False
+    stateMach['mousePosAtPressX']   = 0                         # x-coordinate of the mouse cursor when a button was pressed
+    stateMach['mousePosAtPressY']   = 0                         # y-coordinate of the mouse cursor when a button was pressed
+    stateMach['isFullScreen']       = False                     # whether or not heavenli is running fullscreen
     stateMach['isAnimating']        = False
-    stateMach['wx']                 = 0
-    stateMach['wy']                 = 0
-    stateMach['targetScreen']       = 0
-    stateMach['touchState']         = 1
-    stateMach['currentState']       = 1
-    stateMach['prvState']           = stateMach['touchState']
-    stateMach['targetBulb']         = 0
-    stateMach['frameLimit']         = True
+    stateMach['targetScreen']       = 0                         # target screen to display/watch/animate to
+    stateMach['touchState']         = 1                         # indicates if a touchscreen input is active
+    stateMach['currentMouseButtonState'] = 1                   # indicates a mouse button is being pressed
+    stateMach['prvState']           = stateMach['touchState']   # used for monitoring changes in mouse-button states
+    stateMach['targetBulb']         = 0                         # selected bulb for color picker screen, operates on all bulbs if ==numBulbs
+    stateMach['frameLimit']         = True                      # whether or not to restrict framerate
     stateMach['someVar']            = 0
     stateMach['someInc']            = 0.1
     stateMach['features']           = 4
-    stateMach['numHues']            = 12
+    stateMach['numHues']            = 12                        # number of hues to display on color picker screen
     stateMach['currentHue']         = 0
     stateMach['currentSat']         = 0
     stateMach['currentVal']         = 0
     stateMach['prevHue']            = -1
     stateMach['prevVal']            = -1
     stateMach['prevSat']            = -1
-    stateMach['wereColorsTouched']  = False
+    stateMach['wereColorsTouched']  = False                     # used for registering first-input on the color-picker screen
     stateMach['pynputMouse']        = Controller()
-    stateMach['windowHeight']       = 0
-    stateMach['mousePressed']       = -1
-    stateMach['mouseReleased']      = -1
-    stateMach['mouseButton']        = -1
-    stateMach['drawInfo']           = False
-    stateMach['cursorVelocity']     = (0.0, 0.0)
-    stateMach['prevCurVelMags']     = [0.0 for i in range(9)]
-    stateMach['prevCurVelXs']       = [0.0 for i in range(9)]
-    stateMach['prevCurVelYs']       = [0.0 for i in range(9)]
-    stateMach['cursorVelSmoothed']  = (0.0, 0.0)
-    stateMach['cursorVelSmoothPol'] = (0.0, 0.0)
+    stateMach['mousePressed']       = -1                        # int of the mouse button pressed on the first frame it's registered
+    stateMach['mouseReleased']      = -1                        # int of the released mouse button on the first frame it's registered
+    stateMach['mouseButton']        = -1                        # int of the mouse button currently being pressed/held
+    stateMach['keyPressed']         = None
+    stateMach['keyReleased']        = None
+    stateMach['keyButton']          = None
+    stateMach['ShiftActive']        = False
+    stateMach['CtrlActive']         = False
+    stateMach['AltActive']          = False
+    stateMach['drawInfo']           = False                     # whether or not to draw extra information
+    stateMach['cursorVelocity']     = (0.0, 0.0)                # velocity of the mouse cursor
+    stateMach['prevCurVelMags']     = [0.0 for i in range(9)]   # used for smoothing out mouse cursor velocity over several frames
+    stateMach['prevCurVelXs']       = [0.0 for i in range(9)]   # used for smoothing out mouse cursor velocity over several frames
+    stateMach['prevCurVelYs']       = [0.0 for i in range(9)]   # used for smoothing out mouse cursor velocity over several frames
+    stateMach['cursorVelSmoothed']  = (0.0, 0.0)                # velocity of the mouse cursor smoothed out over several frames
+    stateMach['cursorVelSmoothPol'] = (0.0, 0.0)                # velocity of the mouse cursor smoothed out over several frames in polar coords
     stateMach['BallPosition']       = (0.0, 0.0)
     stateMach['BallVelocity']       = (0.0, 0.0)
-    stateMach['UIelements']         = {}
-    stateMach['Menus']              = {}
+    stateMach['UIelements']         = {}                        # Dictionary of objects used for positioning/animating buttons and what-not
+    stateMach['Menus']              = {}                        # Dictionary of objects for managing drop/slide menus
 
     stateMach['testList'] = []
     stateMach['testList'].append((1.0, 1.0, 0.0, 1.0))  # Yellow
