@@ -40,3 +40,13 @@ def normalizeCursor(prevC, curC):
         return curC - floor(curC)
     else:
         return 0.0
+
+# Copy a dictionary, keeping only selected keys from a list of keys
+def filterKeys(dictionary, keys):
+    tmp = {}
+    tmk = dictionary.keys()
+    for i in range(len(keys)):
+        if (keys[i] in tmk):
+            tmp[keys[i]] = dictionary[keys[i]]
+
+    return tmp
