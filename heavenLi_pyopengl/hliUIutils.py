@@ -21,15 +21,15 @@ def drawInfo(stateMach):
     #infoStr += "\nCursor (GL): " + str(tmx) + ', ' + str(tmy)
     infoStr += "\nCursor (GL): " + str(stateMach['cursorXgl']) + ', ' + str(stateMach['cursorYgl'])
     infoStr += "\nCursor (Desktop): " + str(stateMach['pynputMouse'].position[0]) + ', ' + str(stateMach['pynputMouse'].position[1])
-    infoStr += "\nInput State: " + str(stateMach['currentState'])
+    infoStr += "\nMouse Button Input State: " + str(stateMach['currentMouseButtonState'])
     infoStr += "\nMouse Button: " + str(stateMach['mouseButton'])
     #infoStr += "\nCursor Velocity Raw, Polar Ang: " + str(stateMach['cursorVelocity'][0]) + " deg"
     #infoStr += "\nCursor Velocity Raw, Polar Mag: " + str(stateMach['cursorVelocity'][1]) + " px/s"
     #infoStr += "\nCursor Velocity Smoothed, Polar Ang: " + str(stateMach['cursorVelSmoothPol'][0]) + " deg"
-    infoStr += "\nCursor Velocity Smoothed, Cart X: " + str(stateMach['cursorVelSmoothed'][0])
-    infoStr += "\nCursor Velocity Smoothed, Cart Y: " + str(stateMach['cursorVelSmoothed'][1])
-    infoStr += "\nBall Position: " + str(stateMach['BallPosition'])
-    infoStr += "\nBall Velocity: " + str(stateMach['BallVelocity'])
+    #infoStr += "\nCursor Velocity Smoothed, Cart X: " + str(stateMach['cursorVelSmoothed'][0])
+    #infoStr += "\nCursor Velocity Smoothed, Cart Y: " + str(stateMach['cursorVelSmoothed'][1])
+    #infoStr += "\nBall Position: " + str(stateMach['BallPosition'])
+    #infoStr += "\nBall Velocity: " + str(stateMach['BallVelocity'])
     tmc = ( stateMach['faceColor'][0], 
             stateMach['faceColor'][1], 
             stateMach['faceColor'][2], 
