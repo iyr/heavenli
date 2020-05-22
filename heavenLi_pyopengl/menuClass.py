@@ -138,23 +138,37 @@ class Menu:
         elif (self.menuLayout == 1):
             return constrain(value, 0.0, self.numElements-1.0)
 
-    # Simplify mouse wheel scrolling
-    def scrollButton(self, button):
-        self.selectionCursorVelocity = 0.0
+    # increase number of visible elements
+    def increaseDensity(self):
+        self.numListings = constrain(self.numListings + 2, 3, 7)
+    # decrease number of visible elements
+    def decreaseDensity(self):
+        self.numListings = constrain(self.numListings - 2, 3, 7)
 
+    # Simplify mouse wheel scrolling
+    def scrollButton(self, sm):
+        self.selectionCursorVelocity = 0.0
         # Mouse wheel scroll up
-        if (button == 3):
-            if (self.scrollSnap.isAnimating()):
-                self.scrollSnap.setTargetVal(self.delimitValue(self.scrollSnap.getTar()+1.0))
+        if (sm['mousePressed'] == 3):
+            if (sm['CtrlActive']):
+                self.decreaseDensity()
+                pass
             else:
-                self.scrollSnap.setTargetVal(self.delimitValue(round(self.selectionCursorPosition)+1.0))
+                if (self.scrollSnap.isAnimating()):
+                    self.scrollSnap.setTargetVal(self.delimitValue(self.scrollSnap.getTar()+1.0))
+                else:
+                    self.scrollSnap.setTargetVal(self.delimitValue(round(self.selectionCursorPosition)+1.0))
 
         # Mouse wheel scroll down
-        if (button == 4):
-            if (self.scrollSnap.isAnimating()):
-                self.scrollSnap.setTargetVal(self.delimitValue(self.scrollSnap.getTar()-1.0))
+        if (sm['mousePressed'] == 4):
+            if (sm['CtrlActive']):
+                self.increaseDensity()
+                pass
             else:
-                self.scrollSnap.setTargetVal(self.delimitValue(round(self.selectionCursorPosition)-1.0))
+                if (self.scrollSnap.isAnimating()):
+                    self.scrollSnap.setTargetVal(self.delimitValue(self.scrollSnap.getTar()-1.0))
+                else:
+                    self.scrollSnap.setTargetVal(self.delimitValue(round(self.selectionCursorPosition)-1.0))
 
     # get index for the currently selected
     def getSelection(self):
@@ -236,7 +250,7 @@ class Menu:
                         )
                     ):
                 # Scroll with mouse wheel
-                self.scrollButton(sm['mousePressed'])
+                self.scrollButton(sm)
 
                 # Record position of cursor when left-clicked
                 if (sm['mousePressed'] == 0):
@@ -321,7 +335,7 @@ class Menu:
             ):
 
             # Scroll with mouse wheel
-            self.scrollButton(sm['mousePressed'])
+            self.scrollButton(sm)
 
             # Swipe to scroll
             if (self.isTrackingScroll):
@@ -366,7 +380,7 @@ class Menu:
             return True
 
         # Resolve peculiar edge-case bug
-        if (    sm['currentState'] == 1
+        if (    sm['currentMouseButtonState'] == 1
                 or
                 sm['mousePressed'] != 0):
             self.isTrackingScroll = False
@@ -478,7 +492,7 @@ class Menu:
         tDelta  = time.time()-self.tPhys
 
         # Idle, no input
-        if (sm['currentState'] == 1):
+        if (sm['currentMouseButtonState'] == 1):
 
             # Update Cursor position
             tmp = self.selectionCursorPosition + 2.0*self.selectionCursorVelocity*tDelta + accel*pow(tDelta, 2.0)
