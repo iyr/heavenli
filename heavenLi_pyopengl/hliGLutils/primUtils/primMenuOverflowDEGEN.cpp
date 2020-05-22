@@ -447,7 +447,7 @@ unsigned int drawMenuOverflow(
                   )
                ) {
 
-               // Handle selection of elements start of list
+               // Handle selection of elements at start of list
                if (i == numListings-1-(unsigned int)floor(floatingIndex)) {
                   if (floatingIndex == floor(floatingIndex)) { // Resolve edge-case bug
                      tms = 1.25f;
@@ -498,6 +498,7 @@ unsigned int drawMenuOverflow(
                subIndex,
                verts
                );
+         tms *= 0.75f*3.0f/(float)numListings;
          elementCoords[i*3+0] = mx+(tmr)*cos(degToRad(direction))-tmb*sin(degToRad(direction));
          elementCoords[i*3+1] = my+(tmr)*sin(degToRad(direction))-tmb*cos(degToRad(direction));
          elementCoords[i*3+2] = tms*deployed;
@@ -541,6 +542,7 @@ unsigned int drawMenuOverflow(
                subIndex,
                verts
                );
+         tms *= 0.75f*3.0f/(float)numListings;
          elementCoords[i*3+0] = mx+(tmr)*cos(degToRad(direction))-tmb*sin(degToRad(direction));
          elementCoords[i*3+1] = my+(tmr)*sin(degToRad(direction))-tmb*cos(degToRad(direction));
          elementCoords[i*3+2] = tms*deployed;
@@ -673,9 +675,9 @@ unsigned int drawMenuOverflow(
     */
    subIndex = updatePillGeometry(
          mx+tmo*deployed,
-         mirror*(my+0.85f*pow(deployed, 3.0f)),
-         mx+tmo*deployed-0.20f*deployed,
          mirror*(my+1.00f*pow(deployed, 3.0f)),
+         mx+tmo*deployed-0.20f*deployed,
+         mirror*(my+1.15f*pow(deployed, 3.0f)),
          arrowRad,
          circleSegments/5,
          subIndex,
@@ -684,9 +686,9 @@ unsigned int drawMenuOverflow(
 
    subIndex = updatePillGeometry(
          mx+tmo*deployed,
-         mirror*(my+0.85f*pow(deployed, 3.0f)),
-         mx+tmo*deployed+0.20f*deployed,
          mirror*(my+1.00f*pow(deployed, 3.0f)),
+         mx+tmo*deployed+0.20f*deployed,
+         mirror*(my+1.15f*pow(deployed, 3.0f)),
          arrowRad,
          circleSegments/5,
          subIndex,

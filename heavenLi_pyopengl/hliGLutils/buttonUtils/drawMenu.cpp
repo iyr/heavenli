@@ -116,6 +116,7 @@ void drawMenu(
       drawCall*   MenuClosed     // drawCall object for drawing the menu closed
       ){
 
+   static GLuint prevNumListings = 3;
    GLuint circleSegments = 60;
 
    // Draw single circle when menu closed
@@ -171,7 +172,10 @@ void drawMenu(
       MenuOverflow->setColorQuartet(0, faceColor);
       MenuOverflow->setColorQuartet(1, detailColor);
 
-      if (  MenuOverflow->numVerts == 0   ){
+      if (  MenuOverflow->numVerts == 0   
+            or
+            prevNumListings != numListings
+            ){
 
          vector<GLfloat> verts;
          vector<GLfloat> colrs;
@@ -196,6 +200,7 @@ void drawMenu(
 
          prevDir = direction;
          prevDep = deployed;
+         prevNumListings = numListings;
          MenuOverflow->buildCache(verts.size()/2, verts, colrs);
       }
 
