@@ -240,7 +240,7 @@ class Menu:
                     not self.isTrackingScroll
                     and
                     watchDot(
-                        ofx + cos(radians(ang))*tmx,
+                        (ofx + cos(radians(ang))*tmx)*w2h,
                         ofy + sin(radians(ang))*tmy,
                         tmes,
                         sm['cursorXgl'],
@@ -275,6 +275,10 @@ class Menu:
 
                 return True
 
+        ofwx = ofx
+        if w2h > 1.0:
+            ofwx *= w2h
+
         # Watch Menu Body for scroll / select
         polygon = []
         da  = 90.0-degrees(atan((5.75)+float(self.getIndexDraw())))
@@ -285,10 +289,10 @@ class Menu:
         rady = radius*tms
 
         tmr = radians(ang+45)
-        polygon.append( (ofx+cos(tmr)*radx, ofy+sin(tmr)*rady) )
+        polygon.append( (ofwx+cos(tmr)*radx, ofy+sin(tmr)*rady) )
 
         tmr = radians(ang-45)
-        polygon.append( (ofx+cos(tmr)*radx, ofy+sin(tmr)*rady) )
+        polygon.append( (ofwx+cos(tmr)*radx, ofy+sin(tmr)*rady) )
 
         # Distil Box Corners
         radius  = (5.75)+float(self.getIndexDraw())
@@ -296,14 +300,15 @@ class Menu:
         rady    = radius*tms
 
         tmr = radians(ang-da)
-        polygon.append( (ofx+cos(tmr)*radx, ofy+sin(tmr)*rady) )
+        polygon.append( (ofwx+cos(tmr)*radx, ofy+sin(tmr)*rady) )
 
         tmr = radians(ang+da)
-        polygon.append( (ofx+cos(tmr)*radx, ofy+sin(tmr)*rady) )
+        polygon.append( (ofwx+cos(tmr)*radx, ofy+sin(tmr)*rady) )
         
         # Aspect correct radius for watchdot
         radius *= self.UIelement.getSize()
         if w2h < 1.0:
+            ofwx *= w2h
             ofy = ofy+radius*sin(radians(ang))*w2h
         else:
             ofy = (ofy+radius*sin(radians(ang)))
@@ -323,7 +328,7 @@ class Menu:
                         )
                     or
                     watchDot(
-                        ofx+radius*cos(radians(ang)), 
+                        ofwx+radius*cos(radians(ang)), 
                         ofy,
                         tms,
                         sm['cursorXgl'],
