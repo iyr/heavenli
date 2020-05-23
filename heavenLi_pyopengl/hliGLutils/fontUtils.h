@@ -16,7 +16,8 @@ textAtlas* quack;
 // C/C++ function for drawing text
 void drawText(
       std::string inputString,   // string of text draw
-      GLfloat     alignment,     // 0.0=left, 0.5=center, 1.0=right
+      GLfloat     horiAlignment, // 0.0=left, 0.5=center, 1.0=right
+      GLfloat     vertAlignment, // 0.0=bottom, 0.5=center, 1.0=top
       GLfloat     gx,            // X position
       GLfloat     gy,            // Y position
       GLfloat     sx,            // X scale
@@ -32,7 +33,8 @@ void drawText(
 // C/C++ overload for drawing text, no background
 void drawText(
       std::string inputString,   // string of text draw
-      GLfloat     alignment,     // 0.0=left, 0.5=center, 1.0=right
+      GLfloat     horiAlignment, // 0.0=left, 0.5=center, 1.0=right
+      GLfloat     vertAlignment, // 0.0=bottom, 0.5=center, 1.0=top
       GLfloat     gx,            // X position
       GLfloat     gy,            // Y position
       GLfloat     sx,            // X scale

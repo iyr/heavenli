@@ -13,15 +13,16 @@ PyObject* drawText_hliGLutils(PyObject* self, PyObject* args) {
    PyObject* faceColorPyTup;
    PyObject* PyString;
 
-   GLfloat gx, gy, sx, sy, w2h, alignment;
+   GLfloat gx, gy, sx, sy, w2h, horiAlignment, vertAlignment;
    GLfloat textColor[4];
    GLfloat faceColor[4];
 
    // Parse Inputs
    if ( !PyArg_ParseTuple(args,
-            "OffffffOO",
+            "OfffffffOO",
             &PyString,
-            &alignment,
+            &horiAlignment,
+            &vertAlignment,
             &gx, &gy,
             &sx, &sy,
             &w2h,
@@ -55,7 +56,8 @@ PyObject* drawText_hliGLutils(PyObject* self, PyObject* args) {
 
    drawText(
          inputString,
-         alignment,
+         horiAlignment,
+         vertAlignment, // 0.0=bottom, 0.5=center, 1.0=top
          gx, gy,
          sx, sy,
          w2h,
@@ -98,7 +100,8 @@ PyObject* drawText_hliGLutils(PyObject* self, PyObject* args) {
 
 void drawText(
       std::string inputString,   // string of text draw
-      GLfloat     alignment,     // 0.0=left, 0.5=center, 1.0=right
+      GLfloat     horiAlignment, // 0.0=left, 0.5=center, 1.0=right
+      GLfloat     vertAlignment, // 0.0=bottom, 0.5=center, 1.0=top
       GLfloat     gx,            // X position
       GLfloat     gy,            // Y position
       GLfloat     sx,            // X scale
@@ -111,7 +114,8 @@ void drawText(
       drawCall*   textBackdrop   // pointer to input drawCall to write text backdrop
       ){
 
-   static GLfloat prevAlignment;
+   static GLfloat prevHoriAlignment,
+                  prevVertAlignment;
    GLfloat ao=0.0f;
    textLine->setDrawType(GL_TRIANGLES);
    textLine->setNumColors(1);
@@ -135,7 +139,8 @@ void drawText(
       defineString(
             0.0f, 0.0f,
             inputString,
-            alignment,
+            horiAlignment,
+            vertAlignment,
             quack,
             textColor,
             verts, texuv, colrs);
@@ -166,7 +171,8 @@ void drawText(
             bgverts,
             bgcolrs);
 
-      prevAlignment     = alignment;
+      prevHoriAlignment = horiAlignment;
+      prevVertAlignment = vertAlignment;
       textLine->text    = inputString;
       textLine->texID   = quack->tex;
       textLine->buildCache(verts.size()/2, verts, texuv, colrs);
@@ -174,7 +180,8 @@ void drawText(
    }
 
    if (  textLine->text.compare(inputString) != 0  ||
-         prevAlignment != alignment                ){
+         prevVertAlignment != vertAlignment        ||
+         prevHoriAlignment != horiAlignment        ){
 
       GLfloat minX = (GLfloat)NULL, minY = (GLfloat)NULL, maxX = (GLfloat)NULL, maxY = (GLfloat)NULL;
       const char* inputChars = inputString.c_str();
@@ -191,7 +198,8 @@ void drawText(
       index = updateString(
             0.0f, 0.0f,
             inputString,
-            alignment,
+            horiAlignment,
+            vertAlignment,
             atlas,
             index,
             textLine->coordCache,
@@ -227,7 +235,8 @@ void drawText(
             index,
             textBackdrop->coordCache);
 
-      prevAlignment = alignment;
+      prevHoriAlignment = horiAlignment;
+      prevVertAlignment = vertAlignment;
       textLine->updateTexUVCache();
       textLine->updateCoordCache();
       textBackdrop->updateCoordCache();
@@ -259,7 +268,8 @@ void drawText(
 
 void drawText(
       std::string inputString,   // string of text draw
-      GLfloat     alignment,     // 0.0=left, 0.5=center, 1.0=right
+      GLfloat     horiAlignment,     // 0.0=left, 0.5=center, 1.0=right
+      GLfloat     vertAlignment, // 0.0=bottom, 0.5=center, 1.0=top
       GLfloat     gx,            // X position
       GLfloat     gy,            // Y position
       GLfloat     sx,            // X scale
@@ -275,7 +285,8 @@ void drawText(
    textLine->setDrawType(GL_TRIANGLES);
    textLine->setNumColors(1);
 
-   static GLfloat prevAlignment  =  -1.0f;
+   static GLfloat prevHoriAlignment = -1.0f,
+                  prevVertAlignment = -1.0f;
    static GLuint  prevStringLen  =  0;
 
    GLuint stringLen = inputString.size();
@@ -296,20 +307,23 @@ void drawText(
       defineString(
             0.0f, 0.0f,
             inputString,
-            alignment,
+            horiAlignment,
+            vertAlignment,
             quack,
             textColor,
             verts, texuv, colrs);
 
       prevStringLen     = stringLen;
-      prevAlignment     = alignment;
+      prevHoriAlignment = horiAlignment;
+      prevVertAlignment = vertAlignment;
       textLine->text    = inputString;
       textLine->texID   = quack->tex;
       textLine->buildCache(verts.size()/2, verts, texuv, colrs);
    }
 
    if (  textLine->text.compare(inputString) != 0  ||
-         prevAlignment != alignment                ){
+         prevVertAlignment != vertAlignment        ||
+         prevHoriAlignment != horiAlignment        ){
 
       for (unsigned int i = stringLen*6; i < textLine->text.size()*6; i++){
          textLine->coordCache[i*2+0] = 0.0f;
@@ -323,14 +337,16 @@ void drawText(
       index = updateString(
             0.0f, 0.0f,
             inputString,
-            alignment,
+            horiAlignment,
+            vertAlignment,
             atlas,
             index,
             textLine->coordCache,
             textLine->texuvCache);
 
       index = 0;
-      prevAlignment = alignment;
+      prevHoriAlignment = horiAlignment;
+      prevVertAlignment = vertAlignment;
 
       textLine->updateTexUVCache();
       textLine->updateCoordCache();
