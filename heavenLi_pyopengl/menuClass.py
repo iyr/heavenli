@@ -233,14 +233,17 @@ class Menu:
         for i in range(self.numListings):
             tmx = (1.5 + endOffset + i*elementSpacing)*self.UIelement.getTarSize()
             tmy = (1.5 + endOffset + i*elementSpacing)*self.UIelement.getTarSize()
+            ofwx = cos(radians(ang))*tmx
             if w2h < 1.0:
                 tmy *= w2h
+                ofwx *= w2h
             if (    self.isOpen()
                     and
                     not self.isTrackingScroll
                     and
                     watchDot(
-                        (ofx + cos(radians(ang))*tmx)*w2h,
+                        #(ofx + cos(radians(ang))*tmx)*w2h,
+                        ofx*w2h + ofwx,
                         ofy + sin(radians(ang))*tmy,
                         tmes,
                         sm['cursorXgl'],
@@ -308,9 +311,10 @@ class Menu:
         # Aspect correct radius for watchdot
         radius *= self.UIelement.getSize()
         if w2h < 1.0:
-            ofwx *= w2h
+            ofwx = (ofwx+radius*cos(radians(ang)))*w2h
             ofy = ofy+radius*sin(radians(ang))*w2h
         else:
+            ofwx = (ofwx+radius*cos(radians(ang)))
             ofy = (ofy+radius*sin(radians(ang)))
 
         # Watch body for input
@@ -328,7 +332,8 @@ class Menu:
                         )
                     or
                     watchDot(
-                        ofwx+radius*cos(radians(ang)), 
+                        #ofwx+radius*cos(radians(ang)), 
+                        ofwx,
                         ofy,
                         tms,
                         sm['cursorXgl'],
