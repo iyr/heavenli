@@ -1,8 +1,198 @@
+// Helper function for define the relative positon of elements
+
+void defineElementCoords(
+      float          direction,
+      float          deployed,
+      float          floatingIndex,
+      float          scrollCursor,
+      //float          w2h,
+      unsigned int   numElements,
+      unsigned int   menuLayout,
+      unsigned int   numListings,
+      float*         glCoords,
+      float*         elementCoords
+      ){
+   float mx          = 0.0f,              // Origin of Menu x coord
+         my          = 0.0f,                 // Origin of Menu y coord
+         endOffset   = 1.0f/(float)(numListings-1),   // distance from last element to end of menu
+         diffElements = floor((float)numListings*0.5f),  // number of elements that straddle selected element
+         elementSpacing = (6.0f-1.5f-endOffset*2.0f)/(float)(numListings-1);  // distance between elements
+
+   // Flip selection arrow, scrollbar based on direction of menu
+   float mirror = 1.0f;
+   if (  (  
+            direction <= 135.0f
+            &&
+            direction >= -1.0f
+         )
+         ||
+         (
+            direction <= 361.0f
+            &&
+            direction >= 315.0f
+         )
+      ){
+      mirror = 1.0f;
+   } else {
+      mirror = -1.0f;
+   }
+   if (  (menuLayout == 1 and floatingIndex < diffElements)
+         or 
+         (menuLayout == 1 and floatingIndex >= (float)(numElements-1)-diffElements)
+         or
+         abs(scrollCursor) == 0.0f
+         ){    // Avoid extra ops when not animating by drawing diamonds statically
+      float tms = 1.0f;
+      float tmr, tmb=0.0f;
+      for (unsigned int i = 0; i < numListings+1; i++) {
+         tms = 1.0f;
+
+         tmb = 0.0f;
+         tmr = ((1.5f+endOffset) + (float)i*elementSpacing)*deployed;
+
+         if (i == numListings) {
+            tms = 0.0f;
+         } 
+
+         if (menuLayout == 0) {
+            if (i == (unsigned int)round((float)numListings*0.5f)){
+               tmr = ((1.5f+endOffset) + (float)i*elementSpacing)*deployed;
+               tms = 1.0f;
+               tmb = 0.0f;
+            } 
+            if (i+1 == (unsigned int)round((float)numListings*0.5f)){
+               tmr = ((1.5f+endOffset) + (float)i*elementSpacing)*deployed;
+               tms = 1.25f;
+               tmb = 0.1f;
+            }
+         }
+
+         if (menuLayout == 1) {
+            // Handle selection of elements in middle
+            if (  (
+                  floatingIndex >= diffElements
+                  and
+                  floatingIndex <= (float)(numElements-1)-diffElements
+                  )
+                  ){
+               if (i == (unsigned int)round((float)numListings*0.5f)){
+                  tms = 1.0f;
+                  tmb = 0.0f;
+               } 
+               if (i+1 == (unsigned int)round((float)numListings*0.5f)){
+                  tms = 1.25f;
+                  tmb = 0.1f;
+               }
+            }
+
+            // Handle selection of elements on ends
+            if (  (
+                  floatingIndex < diffElements
+                  or
+                  floatingIndex >= (float)(numElements-1)-diffElements
+                  )
+               ) {
+
+               // Handle selection of elements at start of list
+               if (i == numListings-1-(unsigned int)floor(floatingIndex)) {
+                  if (floatingIndex == floor(floatingIndex)) { // Resolve edge-case bug
+                     tms = 1.25f;
+                     tmb = 0.1f;
+                  } else {
+                     tms = 1.0f+0.25f*(1.0f-scrollCursor);
+                     tmb = 0.1f*(1.0f-scrollCursor);
+                  }
+               }
+               if (i+1 == numListings-1-(unsigned int)floor(floatingIndex)) {
+                  if (floatingIndex == floor(floatingIndex)) { // Resolve edge-case bug
+                     tms = 1.0f;
+                     tmb = 0.0f;
+                  } else {
+                     tms = 1.0f+0.25f*(scrollCursor);
+                     tmb = 0.1f*(scrollCursor);
+                  }
+               }
+
+               // Handle selection of elements at end of list
+               if (i == numElements-1-(unsigned int)floor(floatingIndex)) {
+                  if (floatingIndex == floor(floatingIndex)) { // Resolve edge-case bug
+                     tms = 1.25f;
+                     tmb = 0.1f;
+                  } else {
+                     tms = 1.0f+0.25f*(1.0f-scrollCursor);
+                     tmb = 0.1f*(1.0f-scrollCursor);
+                  }
+               }
+               if (i+1 == numElements-1-(unsigned int)floor(floatingIndex)) {
+                  if (floatingIndex == floor(floatingIndex)) { // Resolve edge-case bug
+                     tms = 1.0f;
+                     tmb = 0.0f;
+                  } else {
+                     tms = 1.0f+0.25f*(scrollCursor);
+                     tmb = 0.1f*(scrollCursor);
+                  }
+               }
+            }
+         }
+         tms *= 0.75f*3.0f/(float)numListings;
+         elementCoords[i*3+0] = mx+(tmr)*cos(degToRad(direction))+mirror*tmb*sin(degToRad(-direction));
+         elementCoords[i*3+1] = my+(tmr)*sin(degToRad(direction))+mirror*tmb*cos(degToRad(-direction));
+         elementCoords[i*3+2] = tms*deployed;
+
+         glCoords[i*3+0] = mx+tmr;
+         glCoords[i*3+1] = my+tmb;
+         glCoords[i*3+2] = tms;
+      }
+   } else {    // Draw animated element diamonds
+      float tms = 1.0f;
+      float tmr, tma, tmb=0.0f;
+      for (unsigned int i = 0; i < numListings+1; i++) {
+         tmb = 0.0f;
+         tms = 1.0f;
+         tmr = ((1.5f+endOffset) + ((float)i+scrollCursor-1.0f)*elementSpacing)*deployed;
+
+         // Special animation curves for selection case listings
+         if (i == (unsigned int)round((float)numListings*0.5f)){  
+            tms = 1.0f+0.25f*(1.0f-scrollCursor);
+            tmb = 0.1f*(1.0f-scrollCursor);
+         } 
+         if (i+1 == (unsigned int)round((float)numListings*0.5f)){
+            tms = 1.0f+0.25f*(scrollCursor);
+            tmb = 0.1f*(scrollCursor);
+         } 
+
+         // Special animation curves for end-case listings
+         if (i == 0) {
+            tma = -3.0f*pow(scrollCursor, 2.0f) + 4.0f*scrollCursor;
+            tms = scrollCursor;
+            tmr = ((1.5f+endOffset) + ((float)i - tma + 1.0f)*elementSpacing)*deployed;
+         } 
+         if (i == numListings) {
+            tms -= abs(scrollCursor);
+            tma = -3.0f*pow(1.0f-scrollCursor, 2.0f) + 4.0f*(1.0f-scrollCursor);
+            tmr = ((1.5f+endOffset) + ((float)i + tma - 2.0f)*elementSpacing)*deployed;
+         }
+
+         tms *= 0.75f*3.0f/(float)numListings;
+         elementCoords[i*3+0] = mx+(tmr)*cos(degToRad(direction))+mirror*tmb*sin(degToRad(-direction));
+         elementCoords[i*3+1] = my+(tmr)*sin(degToRad(direction))+mirror*tmb*cos(degToRad(-direction));
+         elementCoords[i*3+2] = tms*deployed;
+
+         glCoords[i*3+0] = mx+tmr;
+         glCoords[i*3+1] = my+tmb;
+         glCoords[i*3+2] = tms;
+      }
+   }
+
+   return;
+}
+
+
 /*
  * Defines a drop menu for 4 or more listings
  */
 
-unsigned int drawMenuOverflow(
+unsigned int defineMenuOverflow(
       float          direction,     // Direction, in degrees, the menu slides out to
       float          deployed,      // 0.0=closed, 1.0=completely open
       float          floatingIndex, // index of the selected element, used for scroll bar
@@ -25,6 +215,7 @@ unsigned int drawMenuOverflow(
          tmo,                                   // local coordinate offset
          arrowRad    = 0.05f*pow(deployed, 2.0f),  // arrow thickness
          endOffset   = 1.0f/(float)(numListings-1),   // distance from last element to end of menu
+         diffElements = floor((float)numListings*0.5f),  // number of elements that straddle selected element
          elementSpacing = ((6.0f-endOffset)-(1.5f+endOffset))/(float)(numListings-1);  // distance between elements
 
    tmo = 5.75f+(float)drawIndex;
@@ -47,63 +238,33 @@ unsigned int drawMenuOverflow(
    /*
     * Element Diamonds
     */
-   if (  (menuLayout == 1 and floatingIndex < 1.0f)
-         or 
-         (menuLayout == 1 and floatingIndex >= numElements-2.0f)
-         or
-         abs(scrollCursor) == 0.0f
-         ){    // Avoid extra ops when not animating by drawing diamonds statically
-      float tms = 1.0f;
-      float tmr;
-      for (unsigned int i = 0; i < numListings+1; i++) {
-         tmr = ((1.5f+endOffset) + (float)i*elementSpacing + (float)drawIndex)*deployed;
-         if (i == numListings)
-            tms = 0.0f;
-         defineEllipse(
-               mx + ((1.5f+endOffset) + (float)i*elementSpacing + (float)drawIndex)*deployed,
-               my,
-               0.1f*tms,
-               0.1f*tms,
-               2,
-               detailColor,
-               verts,
-               colrs
-               );
-         elementCoords[i*3+0] = mx+tmr*cos(degToRad(direction));
-         elementCoords[i*3+1] = my+tmr*sin(degToRad(direction));
-         elementCoords[i*3+2] = tms*deployed;
-      }
-   } else {    // Draw animated element diamonds
-      float tms = 1.0f;
-      float tmr, tma;
-      for (unsigned int i = 0; i < numListings+1; i++) {
 
-         if (i == 0) {  // Special animation curve for end-case listings
-            tms = scrollCursor;
-            tma = -3.0f*pow(scrollCursor, 2.0f) + 4.0f*scrollCursor;
-            tmr = ((1.5f+endOffset) + ((float)i - tma + 1.0f)*elementSpacing + (float)drawIndex)*deployed;
-         } else if (i == numListings) {   // Special animation curve for end-case listings
-            tms -= abs(scrollCursor);
-            tma = -3.0f*pow(1.0f-scrollCursor, 2.0f) + 4.0f*(1.0f-scrollCursor);
-            tmr = ((1.5f+endOffset) + ((float)i + tma - 2.0f)*elementSpacing + (float)drawIndex)*deployed;
-         } else {
-            tms = 1.0f;
-            tmr = ((1.5f+endOffset) + ((float)i + scrollCursor - 1.0f)*elementSpacing + (float)drawIndex)*deployed;
-         }
-         defineEllipse(
-               mx+tmr,
-               my,
-               0.1f*tms,
-               0.1f*tms,
-               2,
-               detailColor,
-               verts,
-               colrs
-               );
-         elementCoords[i*3+0] = mx+tmr*cos(degToRad(direction));
-         elementCoords[i*3+1] = my+tmr*sin(degToRad(direction));
-         elementCoords[i*3+2] = tms*deployed;
-      }
+   float* glCoords = new float[(numListings+1)*3];
+
+   defineElementCoords(
+      direction,
+      deployed,
+      floatingIndex,
+      scrollCursor,
+      //w2h,
+      numElements,
+      menuLayout,
+      numListings,
+      glCoords,
+      elementCoords
+      );
+
+   for (unsigned int i = 0; i < numListings+1; i++){
+      defineEllipse(
+            glCoords[i*3+0],
+            glCoords[i*3+1],
+            0.1f*glCoords[i*3+2],
+            0.1f*glCoords[i*3+2],
+            2,
+            detailColor,
+            verts,
+            colrs
+            );
    }
    
    /*
@@ -114,25 +275,31 @@ unsigned int drawMenuOverflow(
    else 
    if (menuLayout == 1) {
       tmo = 3.75f;
-      if (floatingIndex < 1.0f) {
-         tmo = 5.5f-elementSpacing*scrollCursor;
-      } else if (floatingIndex > (float)numElements-2.0f) {
-         tmo = 3.75f-elementSpacing*scrollCursor;
+      if (floatingIndex < diffElements) {
+         if (floor(floatingIndex) == floatingIndex)   // Resolve edge-case bug
+            tmo = 3.75f+ceil(diffElements-floatingIndex)*elementSpacing;
+         else
+            tmo = 3.75f+elementSpacing*(1.0f-scrollCursor)+ceil(diffElements-1.000f-floatingIndex)*elementSpacing;
+      } else if (floatingIndex > (float)numElements-1.0f-diffElements) {
+         if (floor(floatingIndex) == floatingIndex)   // Resolve edge-case bug
+            tmo = 3.75f+ceil(numElements-diffElements-1.0f-floatingIndex)*elementSpacing;
+         else
+            tmo = 3.75f+elementSpacing*(1.0f-scrollCursor)+ceil(numElements-diffElements-2.0f-floatingIndex)*elementSpacing;
       } else {
          tmo = 3.75f;
       }
 
-      if (scrollCursor == 0.0f) {
-         if (floatingIndex == 1.0f) {
+      if (scrollCursor == 0.0f) {   // Resolve edge-case bug
+         if (floatingIndex == diffElements) {
             tmo = 3.75f;
-         } else if (floatingIndex == (float)numElements-1.0f) {
-            tmo = (1.5f+endOffset);
          }
       }
    }
    
    // Flip selection arrow, scrollbar based on direction of menu
-   float mirror = 1.0f;
+   float mirror = 1.0f,
+         theta0 = 270.0f,
+         theta1 = 360.0f;
    if (  (  
             direction <= 135.0f
             &&
@@ -147,6 +314,8 @@ unsigned int drawMenuOverflow(
       ){
       mirror = 1.0f;
    } else {
+      theta0 = 0.0f;
+      theta1 = 90.0f;
       mirror = -1.0f;
    }
 
@@ -159,8 +328,8 @@ unsigned int drawMenuOverflow(
          mx+6.25f*deployed,            // x-position
          mirror*(my-1.125f*deployed),  // y-position
          0.0f, 0.0f,                   // x,y inner radii
-         270.0f,                       // arch start in degrees
-         360.0f,                       // arch end in degrees
+         theta0,                       // arch start in degrees
+         theta1,                       // arch end in degrees
          0.125f,                       // arch outer radius
          circleSegments/5,
          faceColor,
@@ -168,12 +337,15 @@ unsigned int drawMenuOverflow(
          colrs
          );
 
+         theta0 -= 90.0f*mirror;
+         theta1 -= 90.0f*mirror;
+
    defineArch(
          mx+1.25f*deployed,            // x-position
          mirror*(my-1.125f*deployed),  // y-position
          0.0f, 0.0f,                   // x,y inner radii
-         180.0f,                       // arch start in degrees
-         270.0f,                       // arch end in degrees
+         theta0,                       // arch start in degrees
+         theta1,                       // arch end in degrees
          0.125f,                       // arch outer radius
          circleSegments/5,
          faceColor,
@@ -346,7 +518,7 @@ unsigned int drawMenuOverflow(
    return verts.size()/2;
 }
 
-unsigned int drawMenuOverflow(
+unsigned int updateMenuOverflowGeometry(
       float          direction,     // Direction, in degrees, the menu slides out to
       float          deployed,      // 0.0=closed, 1.0=completely open
       float          floatingIndex, // index of the selected element, used for scroll bar
@@ -391,162 +563,32 @@ unsigned int drawMenuOverflow(
    /*
     * Element Diamonds
     */
-   if (  (menuLayout == 1 and floatingIndex < diffElements)
-         or 
-         (menuLayout == 1 and floatingIndex >= (float)(numElements-1)-diffElements)
-         or
-         abs(scrollCursor) == 0.0f
-         ){    // Avoid extra ops when not animating by drawing diamonds statically
-      float tms = 1.0f;
-      float tmr, tmb=0.0f;
-      for (unsigned int i = 0; i < numListings+1; i++) {
-         tms = 1.0f;
 
-         tmb = 0.0f;
-         tmr = ((1.5f+endOffset) + (float)i*elementSpacing + (float)drawIndex)*deployed;
-         if (i == numListings) {
-            tms = 0.0f;
-         } 
+   float* glCoords = new float[(numListings+1)*3];
 
-         if (menuLayout == 0) {
-            if (i == (unsigned int)round((float)numListings*0.5f)){
-               tmr = ((1.5f+endOffset) + (float)i*elementSpacing + (float)drawIndex)*deployed;
-               tms = 1.0f;
-               tmb = 0.0f;
-            } 
-            if (i+1 == (unsigned int)round((float)numListings*0.5f)){
-               tmr = ((1.5f+endOffset) + (float)i*elementSpacing + (float)drawIndex)*deployed;
-               tms = 1.25f;
-               tmb = 0.1f;
-            }
-         }
+   defineElementCoords(
+      direction,
+      deployed,
+      floatingIndex,
+      scrollCursor,
+      //w2h,
+      numElements,
+      menuLayout,
+      numListings,
+      glCoords,
+      elementCoords
+      );
 
-         if (menuLayout == 1) {
-            // Handle selection of elements in middle
-            if (  (
-                  floatingIndex >= diffElements
-                  and
-                  floatingIndex <= (float)(numElements-1)-diffElements
-                  )
-                  ){
-               if (i == (unsigned int)round((float)numListings*0.5f)){
-                  tms = 1.0f;
-                  tmb = 0.0f;
-               } 
-               if (i+1 == (unsigned int)round((float)numListings*0.5f)){
-                  tms = 1.25f;
-                  tmb = 0.1f;
-               }
-            }
-
-            // Handle selection of elements on ends
-            if (  (
-                  floatingIndex < diffElements
-                  or
-                  floatingIndex >= (float)(numElements-1)-diffElements
-                  )
-               ) {
-
-               // Handle selection of elements at start of list
-               if (i == numListings-1-(unsigned int)floor(floatingIndex)) {
-                  if (floatingIndex == floor(floatingIndex)) { // Resolve edge-case bug
-                     tms = 1.25f;
-                     tmb = 0.1f;
-                  } else {
-                     tms = 1.0f+0.25f*(1.0f-scrollCursor);
-                     tmb = 0.1f*(1.0f-scrollCursor);
-                  }
-               }
-               if (i+1 == numListings-1-(unsigned int)floor(floatingIndex)) {
-                  if (floatingIndex == floor(floatingIndex)) { // Resolve edge-case bug
-                     tms = 1.0f;
-                     tmb = 0.0f;
-                  } else {
-                     tms = 1.0f+0.25f*(scrollCursor);
-                     tmb = 0.1f*(scrollCursor);
-                  }
-               }
-
-               // Handle selection of elements at end of list
-               if (i == numElements-1-(unsigned int)floor(floatingIndex)) {
-                  if (floatingIndex == floor(floatingIndex)) { // Resolve edge-case bug
-                     tms = 1.25f;
-                     tmb = 0.1f;
-                  } else {
-                     tms = 1.0f+0.25f*(1.0f-scrollCursor);
-                     tmb = 0.1f*(1.0f-scrollCursor);
-                  }
-               }
-               if (i+1 == numElements-1-(unsigned int)floor(floatingIndex)) {
-                  if (floatingIndex == floor(floatingIndex)) { // Resolve edge-case bug
-                     tms = 1.0f;
-                     tmb = 0.0f;
-                  } else {
-                     tms = 1.0f+0.25f*(scrollCursor);
-                     tmb = 0.1f*(scrollCursor);
-                  }
-               }
-            }
-         }
-
-         subIndex = updateEllipseGeometry(
-               mx+tmr, 
-               my+tmb,
-               0.1f*tms,
-               0.1f*tms,
-               2,
-               subIndex,
-               verts
-               );
-         tms *= 0.75f*3.0f/(float)numListings;
-         elementCoords[i*3+0] = mx+(tmr)*cos(degToRad(direction))-tmb*sin(degToRad(direction));
-         elementCoords[i*3+1] = my+(tmr)*sin(degToRad(direction))-tmb*cos(degToRad(direction));
-         elementCoords[i*3+2] = tms*deployed;
-      }
-   } else {    // Draw animated element diamonds
-      float tms = 1.0f;
-      float tmr, tma, tmb=0.0f;
-      for (unsigned int i = 0; i < numListings+1; i++) {
-         tmb = 0.0f;
-         tms = 1.0f;
-         tmr = ((1.5f+endOffset) + ((float)i+scrollCursor-1.0f)*elementSpacing + (float)drawIndex)*deployed;
-
-         // Special animation curves for selection case listings
-         if (i == (unsigned int)round((float)numListings*0.5f)){  
-            tms = 1.0f+0.25f*(1.0f-scrollCursor);
-            tmb = 0.1f*(1.0f-scrollCursor);
-         } 
-         if (i+1 == (unsigned int)round((float)numListings*0.5f)){
-            tms = 1.0f+0.25f*(scrollCursor);
-            tmb = 0.1f*(scrollCursor);
-         } 
-
-         // Special animation curves for end-case listings
-         if (i == 0) {
-            tma = -3.0f*pow(scrollCursor, 2.0f) + 4.0f*scrollCursor;
-            tms = scrollCursor;
-            tmr = ((1.5f+endOffset) + ((float)i - tma + 1.0f)*elementSpacing + (float)drawIndex)*deployed;
-         } 
-         if (i == numListings) {
-            tms -= abs(scrollCursor);
-            tma = -3.0f*pow(1.0f-scrollCursor, 2.0f) + 4.0f*(1.0f-scrollCursor);
-            tmr = ((1.5f+endOffset) + ((float)i + tma - 2.0f)*elementSpacing + (float)drawIndex)*deployed;
-         }
-
-         subIndex = updateEllipseGeometry(
-               mx+tmr,
-               my+tmb,
-               0.1f*tms,
-               0.1f*tms,
-               2,
-               subIndex,
-               verts
-               );
-         tms *= 0.75f*3.0f/(float)numListings;
-         elementCoords[i*3+0] = mx+(tmr)*cos(degToRad(direction))-tmb*sin(degToRad(direction));
-         elementCoords[i*3+1] = my+(tmr)*sin(degToRad(direction))-tmb*cos(degToRad(direction));
-         elementCoords[i*3+2] = tms*deployed;
-      }
+   for (unsigned int i = 0; i < numListings+1; i++){
+      subIndex = updateEllipseGeometry(
+            glCoords[i*3+0],
+            glCoords[i*3+1],
+            0.1f*glCoords[i*3+2],
+            0.1f*glCoords[i*3+2],
+            2,
+            subIndex,
+            verts
+            );
    }
    
    /*
@@ -580,7 +622,9 @@ unsigned int drawMenuOverflow(
    }
    
    // Flip selection arrow, scrollbar based on direction of menu
-   float mirror = 1.0f;
+   float mirror = 1.0f,
+         theta0 = 270.0f,
+         theta1 = 360.0f;
    if (  (  
             direction <= 135.0f
             &&
@@ -595,6 +639,8 @@ unsigned int drawMenuOverflow(
       ){
       mirror = 1.0f;
    } else {
+      theta0 = 0.0f;
+      theta1 = 90.0f;
       mirror = -1.0f;
    }
 
@@ -608,20 +654,23 @@ unsigned int drawMenuOverflow(
          mx+6.25f*deployed,            // x-position
          mirror*(my-1.125f*deployed),  // y-position
          0.0f, 0.0f,                   // x,y inner radii
-         270.0f,                       // arch start in degrees
-         360.0f,                       // arch end in degrees
+         theta0,                       // arch start in degrees
+         theta1,                       // arch end in degrees
          0.125f,                       // arch outer radius
          circleSegments/5,
          subIndex,
          verts
          );
 
+         theta0 -= 90.0f*mirror;
+         theta1 -= 90.0f*mirror;
+
    subIndex = updateArchGeometry(
          mx+1.25f*deployed,            // x-position
          mirror*(my-1.125f*deployed),  // y-position
          0.0f, 0.0f,                   // x,y inner radii
-         180.0f,                       // arch start in degrees
-         270.0f,                       // arch end in degrees
+         theta0,                       // arch start in degrees
+         theta1,                       // arch end in degrees
          0.125f,                       // arch outer radius
          circleSegments/5,
          subIndex,
@@ -784,7 +833,7 @@ unsigned int drawMenuOverflow(
    return subIndex;
 }
 
-unsigned int drawMenuOverflow(
+unsigned int updateMenuOverflowColors(
       unsigned int   circleSegments,// number of polygon segments
       unsigned int   numListings,   // number of elements to display at once
       float*         faceColor,     // Main color for the body of the menu
