@@ -34,7 +34,7 @@ def drawInfo(stateMach):
             stateMach['faceColor'][1], 
             stateMach['faceColor'][2], 
             stateMach['faceColor'][3]/2)
-    drawText(infoStr, 0.0, -1.0, 0.85, 0.25, 0.25, stateMach['w2h'], stateMach['detailColor'], tmc)
+    drawText(infoStr, 0.0, 0.0, -1.0, 0.85, 0.25, 0.25, stateMach['w2h'], stateMach['detailColor'], tmc)
 
 # Check if user is clicking in arbitrary polygon defined by list of tuples of points
 def watchPolygon(cxgl, cygl, polygon, w2h, drawInfo):#, point):
