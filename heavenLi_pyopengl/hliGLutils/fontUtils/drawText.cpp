@@ -111,6 +111,7 @@ void drawText(
       drawCall*   textBackdrop   // pointer to input drawCall to write text backdrop
       ){
 
+   static GLfloat prevAlignment;
    GLfloat ao=0.0f;
    textLine->setDrawType(GL_TRIANGLES);
    textLine->setNumColors(1);
@@ -165,13 +166,15 @@ void drawText(
             bgverts,
             bgcolrs);
 
-      textLine->text  = inputString;
-      textLine->texID = quack->tex;
+      prevAlignment     = alignment;
+      textLine->text    = inputString;
+      textLine->texID   = quack->tex;
       textLine->buildCache(verts.size()/2, verts, texuv, colrs);
       textBackdrop->buildCache(bgverts.size()/2, bgverts, bgcolrs);
    }
 
-   if (  textLine->text.compare(inputString) != 0 ){
+   if (  textLine->text.compare(inputString) != 0  ||
+         prevAlignment != alignment                ){
 
       GLfloat minX = (GLfloat)NULL, minY = (GLfloat)NULL, maxX = (GLfloat)NULL, maxY = (GLfloat)NULL;
       const char* inputChars = inputString.c_str();
@@ -196,6 +199,10 @@ void drawText(
 
       index = 0;
 
+      for (unsigned int i = 0; i < textLine->text.size(); i++)
+         index = updateQuadColor(textColor, index, textLine->colorCache);
+      textLine->updateColorCache();
+
       for (unsigned int i = 0; i < stringLen*6; i++){
 
          // only update extrema for characters with metrics
@@ -211,6 +218,7 @@ void drawText(
          }
       }
 
+      index = 0;
       index = updateRoundRect(
             minX*1.05f, maxY*1.05f,
             maxX*1.05f, minY*1.05f,
@@ -219,6 +227,7 @@ void drawText(
             index,
             textBackdrop->coordCache);
 
+      prevAlignment = alignment;
       textLine->updateTexUVCache();
       textLine->updateCoordCache();
       textBackdrop->updateCoordCache();
@@ -243,6 +252,105 @@ void drawText(
    textBackdrop->updateMVP(gx, gy, sx*0.007f, sy*0.007f, ao, w2h);
 
    textBackdrop->draw();
+   textLine->draw();
+
+   return;
+}
+
+void drawText(
+      std::string inputString,   // string of text draw
+      GLfloat     alignment,     // 0.0=left, 0.5=center, 1.0=right
+      GLfloat     gx,            // X position
+      GLfloat     gy,            // Y position
+      GLfloat     sx,            // X scale
+      GLfloat     sy,            // Y scale
+      GLfloat     w2h,           // width to height ration
+      textAtlas*  atlas,         // texture atlas to draw characters from
+      GLfloat*    textColor,     // color of text
+      GLfloat*    faceColor,     // color of backdrop
+      drawCall*   textLine       // pointer to input drawCall to write text
+      ){
+
+   GLfloat ao=0.0f;
+   textLine->setDrawType(GL_TRIANGLES);
+   textLine->setNumColors(1);
+
+   static GLfloat prevAlignment  =  -1.0f;
+   static GLuint  prevStringLen  =  0;
+
+   GLuint stringLen = inputString.size();
+
+   textLine->setColorQuartet(0, textColor);
+
+   if (  textLine->numVerts   == 0        ||
+         textLine->numVerts/6 < stringLen ||
+         prevStringLen        < stringLen ){
+
+      std::vector <GLfloat> verts;
+      std::vector <GLfloat> colrs;
+      std::vector <GLfloat> texuv;
+
+      //std::vector <GLfloat> bgverts;
+      //std::vector <GLfloat> bgcolrs;
+
+      defineString(
+            0.0f, 0.0f,
+            inputString,
+            alignment,
+            quack,
+            textColor,
+            verts, texuv, colrs);
+
+      prevStringLen     = stringLen;
+      prevAlignment     = alignment;
+      textLine->text    = inputString;
+      textLine->texID   = quack->tex;
+      textLine->buildCache(verts.size()/2, verts, texuv, colrs);
+   }
+
+   if (  textLine->text.compare(inputString) != 0  ||
+         prevAlignment != alignment                ){
+
+      for (unsigned int i = stringLen*6; i < textLine->text.size()*6; i++){
+         textLine->coordCache[i*2+0] = 0.0f;
+         textLine->coordCache[i*2+1] = 0.0f;
+         textLine->texuvCache[i*2+0] = 0.0f;
+         textLine->texuvCache[i*2+1] = 0.0f;
+      }
+
+      GLuint index = 0;
+
+      index = updateString(
+            0.0f, 0.0f,
+            inputString,
+            alignment,
+            atlas,
+            index,
+            textLine->coordCache,
+            textLine->texuvCache);
+
+      index = 0;
+      prevAlignment = alignment;
+
+      textLine->updateTexUVCache();
+      textLine->updateCoordCache();
+      textLine->text = inputString;
+      for (unsigned int i = 0; i < textLine->text.size(); i++)
+         index = updateQuadColor(textColor, index, textLine->colorCache);
+
+      textLine->updateColorCache();
+   }
+
+   if (textLine->colorsChanged){
+
+      GLuint index = 0;
+      for (unsigned int i = 0; i < textLine->text.size(); i++)
+         index = updateQuadColor(textColor, index, textLine->colorCache);
+
+      textLine->updateColorCache();
+   }
+
+   textLine->updateMVP(gx, gy, sx*0.007f, sy*0.007f, ao, w2h);
    textLine->draw();
 
    return;
