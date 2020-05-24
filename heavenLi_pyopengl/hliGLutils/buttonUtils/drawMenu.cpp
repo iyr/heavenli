@@ -1,6 +1,7 @@
 using namespace std;
 
 extern std::map<std::string, drawCall> drawCalls;
+extern textAtlas* quack;
 
 PyObject* drawMenu_hliGLutils(PyObject* self, PyObject* args) {
    PyObject*   faceColorPyTup;
@@ -50,6 +51,9 @@ PyObject* drawMenu_hliGLutils(PyObject* self, PyObject* args) {
    //if (drawCalls.count("MenuNormal") <= 0)
       //drawCalls.insert(std::make_pair("MenuNormal", drawCall()));
    //drawCall* MenuNormal = &drawCalls["MenuNormal"];
+   if (drawCalls.count("MenuIndex") <= 0)
+      drawCalls.insert(std::make_pair("MenuIndex", drawCall()));
+   drawCall* MenuIndex = &drawCalls["MenuIndex"];
    if (drawCalls.count("MenuOverflow") <= 0)
       drawCalls.insert(std::make_pair("MenuOverflow", drawCall()));
    drawCall* MenuOverflow = &drawCalls["MenuOverflow"];
@@ -74,6 +78,7 @@ PyObject* drawMenu_hliGLutils(PyObject* self, PyObject* args) {
          w2h,           // width to height ratio
          faceColor,     // Main color for the body of the menu
          detailColor,   // scroll bar, 
+         MenuIndex,
          MenuOverflow,  // drawCall object for drawing the menu open
          MenuClosed     // drawCall object for drawing the menu closed
          );
@@ -92,9 +97,6 @@ PyObject* drawMenu_hliGLutils(PyObject* self, PyObject* args) {
    return py_list;
 }
 
-GLfloat  prevDep,
-         prevDir;
-
 void drawMenu(
       GLfloat     gx, 
       GLfloat     gy,            // Menu Position
@@ -112,12 +114,19 @@ void drawMenu(
       GLfloat*    faceColor,     // Main color for the body of the menu
       GLfloat*    detailColor,   // scroll bar, 
       //drawCall*   MenuNormal,    //
+      drawCall*   MenuIndex,     // drawCall object for drawing menu index
       drawCall*   MenuOverflow,  // drawCall object for drawing the menu open
       drawCall*   MenuClosed     // drawCall object for drawing the menu closed
       ){
 
-   static GLuint prevNumListings = 3;
-   GLuint circleSegments = 60;
+   static GLfloat prevDep,
+                  prevDir,
+                  prevScr,
+                  prevFlc;
+
+   static GLuint  prevNumListings   = 3;
+   GLuint         circleSegments    = 60;
+   static GLboolean prevIndexDraw   = false;
 
    // Draw single circle when menu closed
    if (deployed <= 0.0001) {
@@ -180,7 +189,7 @@ void drawMenu(
          vector<GLfloat> verts;
          vector<GLfloat> colrs;
 
-         drawMenuOverflow(
+         defineMenuOverflow(
             direction,     // Direction, in degrees, the menu slides out to
             deployed,      // 0.0=closed, 1.0=completely open
             floatingIndex, // index of the selected element, used for scroll bar
@@ -200,14 +209,20 @@ void drawMenu(
 
          prevDir = direction;
          prevDep = deployed;
+         prevScr = scrollCursor;
+         prevFlc = floatingIndex;
          prevNumListings = numListings;
+         prevIndexDraw = drawIndex;
          MenuOverflow->buildCache(verts.size()/2, verts, colrs);
       }
 
-      if (  prevDep  != deployed    ||
-            prevDir  != direction   ){  
+      if (  prevDep        != deployed       ||
+            prevDir        != direction      ||
+            prevScr        != scrollCursor   ||
+            prevFlc        != floatingIndex  ||
+            prevIndexDraw  != drawIndex      ){
          GLuint index = 0;
-         index = drawMenuOverflow(
+         index = updateMenuOverflowGeometry(
                direction,     // Direction, in degrees, the menu slides out to
                deployed,      // 0.0=closed, 1.0=completely open
                floatingIndex, // index of the selected element, used for scroll bar
@@ -222,12 +237,32 @@ void drawMenu(
                index,
                MenuOverflow->coordCache
          );
+
+         prevDep = deployed;
+         prevDir = direction;
+         prevScr = scrollCursor;
+         prevFlc = floatingIndex;
          MenuOverflow->updateCoordCache();
+      } else {
+         float* tml = new float[(numListings+1)*3];
+         defineElementCoords(
+            direction,
+            deployed,
+            floatingIndex,
+            scrollCursor,
+            numElements,
+            menuLayout,
+            numListings,
+            tml,
+            elementCoords
+            );
       }
 
-      if (  MenuOverflow->colorsChanged ){
+      if (  MenuOverflow->colorsChanged   ||
+            prevIndexDraw != drawIndex    ){
          GLuint index = 0;
-         drawMenuOverflow(
+         index = updateMenuOverflowColors(
+            drawIndex,
             circleSegments,
             numListings,   // number of listings to display
             faceColor,     // Main color for the body of the menu
@@ -235,6 +270,7 @@ void drawMenu(
             index,
             MenuOverflow->colorCache
             );
+         prevIndexDraw = drawIndex;
          MenuOverflow->updateColorCache();
       }
 
@@ -242,5 +278,50 @@ void drawMenu(
       MenuOverflow->draw();
    }
 
+   // Draw text objects indicating floatingIndex, numElements
+   if (drawIndex and deployed > 0.0f) {
+      float tma = degToRad(direction);
+      float tmx = scale*(7.00f*cos(tma)+0.5f*sin(-tma))*deployed,   // text location, X
+            tmy = scale*(7.00f*sin(tma)+0.5f*cos(-tma))*deployed;   // text location, Y
+      if (w2h < 1.0f)
+         tmy *= w2h;
+      else
+         tmx /= w2h;
+      int tme = constrain(numElements, 0, 999);
+
+      std::string inputString = std::to_string(constrain((int)round(floatingIndex+1.0f), 0, tme));
+      drawText(
+            inputString,            // string to render
+            0.5f,                   // Horizontal Alignment
+            0.5f,                   // Vertical Alignment
+            gx+tmx, gy+tmy,         // Text position
+            2.5f*scale, 2.5f*scale, // Text scale
+            w2h,
+            quack,                  // Text atlas
+            detailColor,
+            faceColor,
+            MenuIndex               // drawCall to write to
+            );
+
+      tmx = scale*(7.00f*cos(tma)-0.5f*sin(-tma))*deployed;   // text location, X
+      tmy = scale*(7.00f*sin(tma)-0.5f*cos(-tma))*deployed;   // text location, Y
+      if (w2h < 1.0f)
+         tmy *= w2h;
+      else
+         tmx /= w2h;
+      inputString = std::to_string(tme);
+      drawText(
+            inputString,            // string to render
+            0.5f,                   // Horizontal Alignment
+            0.5f,                   // Vertical Alignment
+            gx+tmx, gy+tmy,         // Text position
+            2.5f*scale, 2.5f*scale, // Text scale
+            w2h,
+            quack,                  // Text atlas
+            faceColor,
+            detailColor,
+            MenuIndex               // drawCall to write to
+            );
+   }
    return;
 }

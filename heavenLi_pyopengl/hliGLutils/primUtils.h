@@ -13,6 +13,34 @@ float constrain(
       return value;
 }
 
+/*
+unsigned int constrain(
+      unsigned int value,   // Input value to constrain
+      unsigned int min,     // Minimum
+      unsigned int max      // Maximum
+      ) {
+   if (value > max)
+      return max;
+   else if (value < min)
+      return min;
+   else
+      return value;
+}
+*/
+
+int constrain(
+      int value,   // Input value to constrain
+      int min,     // Minimum
+      int max      // Maximum
+      ) {
+   if (value > max)
+      return max;
+   else if (value < min)
+      return min;
+   else
+      return value;
+}
+
 float rangeShift(
       float value,   // Input value to shift
       float oldMin,  // Input value range minimum

@@ -5,7 +5,6 @@ void defineElementCoords(
       float          deployed,
       float          floatingIndex,
       float          scrollCursor,
-      //float          w2h,
       unsigned int   numElements,
       unsigned int   menuLayout,
       unsigned int   numListings,
@@ -246,7 +245,6 @@ unsigned int defineMenuOverflow(
       deployed,
       floatingIndex,
       scrollCursor,
-      //w2h,
       numElements,
       menuLayout,
       numListings,
@@ -515,6 +513,28 @@ unsigned int defineMenuOverflow(
          colrs
          );
 
+   if (drawIndex) {
+      float tmx = 7.00f*deployed,   // text location, X
+            tmy = -0.5f*deployed;   // text location, Y
+      defineEllipse(
+            tmx, tmy,
+            0.45f, 0.45f,
+            circleSegments/2,
+            detailColor,
+            verts,
+            colrs
+            );
+   } else {
+      defineEllipse(
+            0.0f, 0.0f,
+            0.0f, 0.0f,
+            circleSegments/2,
+            detailColor,
+            verts,
+            colrs
+            );
+   }
+
    return verts.size()/2;
 }
 
@@ -571,7 +591,6 @@ unsigned int updateMenuOverflowGeometry(
       deployed,
       floatingIndex,
       scrollCursor,
-      //w2h,
       numElements,
       menuLayout,
       numListings,
@@ -830,10 +849,31 @@ unsigned int updateMenuOverflowGeometry(
          verts
          );
 
+   if (drawIndex) {
+      float tmx = 7.00f*deployed,   // text location, X
+            tmy = -0.5f*deployed;   // text location, Y
+      subIndex = updateEllipseGeometry(
+            tmx, tmy,
+            0.45f, 0.45f,
+            circleSegments/2,
+            subIndex,
+            verts
+            );
+   } else {
+      subIndex = updateEllipseGeometry(
+            0.0f, 0.0f,
+            0.0f, 0.0f,
+            circleSegments/2,
+            subIndex,
+            verts
+            );
+   }
+
    return subIndex;
 }
 
 unsigned int updateMenuOverflowColors(
+      bool           drawIndex,
       unsigned int   circleSegments,// number of polygon segments
       unsigned int   numListings,   // number of elements to display at once
       float*         faceColor,     // Main color for the body of the menu
@@ -951,6 +991,20 @@ unsigned int updateMenuOverflowColors(
          subIndex,
          colrs
          );
-
+   if (drawIndex) {
+      subIndex = updateEllipseColor(
+            circleSegments/2,
+            detailColor,
+            subIndex,
+            colrs
+            );
+   } else {
+      subIndex = updateEllipseColor(
+            circleSegments/2,
+            detailColor,
+            subIndex,
+            colrs
+            );
+   }
    return subIndex;
 }
