@@ -3,7 +3,7 @@
 using namespace std;
 
 extern std::map<std::string, drawCall> drawCalls;
-//extern std::map<std::string, textAtlas*> textFonts;
+//extern std::map<std::string, textAtlas> textFonts;
 
 extern textAtlas* quack;
 

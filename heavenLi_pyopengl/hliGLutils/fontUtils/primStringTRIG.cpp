@@ -3,7 +3,6 @@
  */
 
 using namespace std;
-extern textAtlas* quack;
 
 unsigned int defineString(
       float       x,             // x-postion
