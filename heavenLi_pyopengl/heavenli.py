@@ -75,8 +75,9 @@ def framerate():
 def drawTest():
     try:
         #stateMach['Menus']['testMenu'].setAng(360.0*stateMach['someVar']/100.0)
+        #stateMach['Menus']['testMenu'].setAng(00.0)
         stateMach['Menus']['testMenu'].setAng(90.0)
-        stateMach['Menus']['testMenu'].setLayout(1)
+        #stateMach['Menus']['testMenu'].setLayout(1)
         w2h = stateMach['w2h']
 
         # test color that changes over time
@@ -192,10 +193,11 @@ def drawTest():
             tmx = quack[i][1]*stateMach['Menus']['testMenu'].UIelement.getSize()
             tmy = quack[i][2]*stateMach['Menus']['testMenu'].UIelement.getSize()
 
-            tmx += stateMach['Menus']['testMenu'].UIelement.getPosX()
             if w2h < 1.0:
+                tmx += stateMach['Menus']['testMenu'].UIelement.getPosX()
                 tmy += stateMach['Menus']['testMenu'].UIelement.getPosY()/w2h
             else:
+                tmx += stateMach['Menus']['testMenu'].UIelement.getPosX()*w2h
                 tmy += stateMach['Menus']['testMenu'].UIelement.getPosY()
 
             drawEllipse(
@@ -212,6 +214,8 @@ def drawTest():
         tmy = stateMach['Menus']['testMenu'].UIelement.getPosY()
         if w2h < 1.0:
             tmy /= w2h
+        else:
+            tmx *= w2h
         drawEllipse(
                 tmx,
                 tmy,
@@ -1283,6 +1287,9 @@ def special(k, x, y):
     elif k == GLUT_KEY_F3:
         stateMach['drawInfo'] = not stateMach['drawInfo']
 
+    elif k == GLUT_KEY_F10:
+        makeFont()
+
     elif k == GLUT_KEY_F11:
         if stateMach['isFullScreen'] == False:
             stateMach['prevWindowPosX'] = glutGet(GLUT_WINDOW_X)
@@ -1461,7 +1468,7 @@ if __name__ == '__main__':
     stateMach['testList'].append((0.0, 1.0, 0.0, 1.0))  # Green
     stateMach['testList'].append((0.4, 0.0, 1.0, 1.0))  # Purple
     stateMach['testList'].append((1.0, 0.4, 0.0, 1.0))  # Orange
-    for i in range(64):
+    for i in range(10):
         stateMach['testList'].append((
             random.random(),
             random.random(),
@@ -1470,18 +1477,18 @@ if __name__ == '__main__':
             ))
 
     stateMach['Menus']['testMenu']  = Menu()
-    #stateMach['Menus']['testMenu'].setIndexDraw(True)
-    stateMach['Menus']['testMenu'].setIndexDraw(False)
+    stateMach['Menus']['testMenu'].setIndexDraw(True)
+    #stateMach['Menus']['testMenu'].setIndexDraw(False)
     #stateMach['Menus']['testMenu'].setAng(45.0)
     stateMach['Menus']['testMenu'].setAng(0)
 
     stateMach['Menus']['testMenu'].UIelement.setTarSize(0.15)
     #stateMach['Menus']['testMenu'].UIelement.setTarSize(0.2)
     stateMach['Menus']['testMenu'].UIelement.setAccel(0.125)
-    #stateMach['Menus']['testMenu'].UIelement.setTarPosX(-0.775)
-    #stateMach['Menus']['testMenu'].UIelement.setTarPosY(-0.775)
-    stateMach['Menus']['testMenu'].UIelement.setTarPosX(0.0)
-    stateMach['Menus']['testMenu'].UIelement.setTarPosY(-0.5)
+    stateMach['Menus']['testMenu'].UIelement.setTarPosX(-0.775)
+    stateMach['Menus']['testMenu'].UIelement.setTarPosY(-0.775)
+    #stateMach['Menus']['testMenu'].UIelement.setTarPosX(-0.0)
+    #stateMach['Menus']['testMenu'].UIelement.setTarPosY(-0.0)
     stateMach['Menus']['testMenu'].setNumElements(len(stateMach['testList']))
 
     # Setup UI animation objects, initial parameters
