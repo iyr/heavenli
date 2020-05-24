@@ -118,7 +118,8 @@ PyObject* drawIcon_hliGLutils(PyObject* self, PyObject* args){
 
    drawText(
          inputString,
-         0.5f,
+         0.5f,          // horizontal text alignment
+         0.0f,          // vertical text alignment
          gx, gy,
          scale*2.0f, scale*2.0f,
          w2h,
