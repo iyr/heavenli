@@ -170,6 +170,10 @@ class Menu:
                 else:
                     self.scrollSnap.setTargetVal(self.delimitValue(round(self.selectionCursorPosition)-1.0))
 
+        # Toggle index drawing
+        if (sm['mousePressed'] == 1):
+            self.dispIndex = not self.dispIndex
+
     # get index for the currently selected
     def getSelection(self):
         #return rollover(round(self.selectionCursorPosition), self.numElements)
@@ -349,10 +353,14 @@ class Menu:
 
             # Swipe to scroll
             if (self.isTrackingScroll):
+                endOffset   = 1.0/float(self.numListings-1)                         # distance from last element to end of menu
+                #diffElements = floor(float(self.numListings*0.5))                   # number of elements that straddle selected element
+                elementSpacing = (6.0-1.5-endOffset*2.0)/float(self.numListings-1)  # distance between elements
+                
                 tmx = mapRanges(sm['cursorX'], 0, sm['windowDimW'], -w2h, w2h) - self.mouseCursorAtPressX
                 tmy = mapRanges(sm['cursorY'], 0, sm['windowDimH'], 1.0, -1.0) - self.mouseCursorAtPressY
-                tmx /= 1.75*self.UIelement.getTarSize()
-                tmy /= 1.75*self.UIelement.getTarSize()
+                tmx /= elementSpacing*self.UIelement.getTarSize()
+                tmy /= elementSpacing*self.UIelement.getTarSize()
                 tmx += self.UIelement.getPosX()*self.UIelement.getSize()
                 tmy += self.UIelement.getPosY()*self.UIelement.getSize()
                 radAng = radians(self.angle)
