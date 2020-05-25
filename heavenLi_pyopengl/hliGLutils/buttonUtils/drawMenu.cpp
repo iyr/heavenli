@@ -1,7 +1,10 @@
 using namespace std;
 
 extern std::map<std::string, drawCall> drawCalls;
-extern textAtlas* quack;
+extern std::map<std::string, textAtlas> textFonts;
+extern std::string selectedAtlas;
+
+//extern textAtlas* quack;
 
 PyObject* drawMenu_hliGLutils(PyObject* self, PyObject* args) {
    PyObject*   faceColorPyTup;
@@ -9,15 +12,37 @@ PyObject* drawMenu_hliGLutils(PyObject* self, PyObject* args) {
    PyObject*   detailColorPyTup;
    PyObject*   py_list;
    PyObject*   py_tuple;
+   PyObject*   Params;
    //PyObject*   py_float;
    GLfloat     gx, gy, scale, w2h, deployed, direction, floatingIndex, scrollCursor;
-   GLuint      numElements, menuLayout, numListings;
-   GLint       drawIndex;
+   GLuint      numElements, menuLayout, numListings; 
+   GLboolean   drawIndex;
    GLfloat     faceColor[4];
    GLfloat     detailColor[4];
    GLfloat*    elementCoords = NULL;
 
    // Parse Inputs
+   if ( !PyArg_ParseTuple(args, "O", &Params ) )
+   {
+      Py_RETURN_NONE;
+   }
+
+   gx             = (GLfloat)PyFloat_AsDouble(PyDict_GetItem(Params, PyUnicode_FromString("gx")));
+   gy             = (GLfloat)PyFloat_AsDouble(PyDict_GetItem(Params, PyUnicode_FromString("gy")));
+   scale          = (GLfloat)PyFloat_AsDouble(PyDict_GetItem(Params, PyUnicode_FromString("scale")));
+   direction      = (GLfloat)PyFloat_AsDouble(PyDict_GetItem(Params, PyUnicode_FromString("direction")));
+   deployed       = (GLfloat)PyFloat_AsDouble(PyDict_GetItem(Params, PyUnicode_FromString("deployed")));
+   floatingIndex  = (GLfloat)PyFloat_AsDouble(PyDict_GetItem(Params, PyUnicode_FromString("floatingIndex")));
+   scrollCursor   = (GLfloat)PyFloat_AsDouble(PyDict_GetItem(Params, PyUnicode_FromString("scrollCursor")));
+   numElements    = (GLuint)PyLong_AsLong(PyDict_GetItem(Params, PyUnicode_FromString("numElements")));
+   numListings    = (GLuint)PyLong_AsLong(PyDict_GetItem(Params, PyUnicode_FromString("numListings")));
+   menuLayout     = (GLuint)PyLong_AsLong(PyDict_GetItem(Params, PyUnicode_FromString("menuLayout")));
+   drawIndex      = (GLboolean)PyLong_AsLong(PyDict_GetItem(Params, PyUnicode_FromString("drawIndex")));
+   w2h            = (GLfloat)PyFloat_AsDouble(PyDict_GetItem(Params, PyUnicode_FromString("w2h")));
+   faceColorPyTup    = PyDict_GetItem(Params, PyUnicode_FromString("faceColor"));
+   detailColorPyTup  = PyDict_GetItem(Params, PyUnicode_FromString("detailColor"));
+
+   /*
    if ( !PyArg_ParseTuple(args,
             "fffffffIIIpfOO",//O",
             &gx, &gy,         // Menu Position
@@ -37,6 +62,7 @@ PyObject* drawMenu_hliGLutils(PyObject* self, PyObject* args) {
    {
       Py_RETURN_NONE;
    }
+   */
 
    faceColor[0] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 0));
    faceColor[1] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 1));
@@ -118,6 +144,7 @@ void drawMenu(
       drawCall*   MenuOverflow,  // drawCall object for drawing the menu open
       drawCall*   MenuClosed     // drawCall object for drawing the menu closed
       ){
+   textAtlas* tmAt = &textFonts[selectedAtlas];
 
    static GLfloat prevDep,
                   prevDir,
@@ -295,9 +322,9 @@ void drawMenu(
             0.5f,                   // Horizontal Alignment
             0.5f,                   // Vertical Alignment
             gx+tmx, gy+tmy,         // Text position
-            2.5f*scale, 2.5f*scale, // Text scale
+            1.5f*scale, 1.5f*scale, // Text scale
             w2h,
-            quack,                  // Text atlas
+            tmAt,                  // Text atlas
             detailColor,
             faceColor,
             MenuIndex               // drawCall to write to
@@ -315,9 +342,9 @@ void drawMenu(
             0.5f,                   // Horizontal Alignment
             0.5f,                   // Vertical Alignment
             gx+tmx, gy+tmy,         // Text position
-            2.5f*scale, 2.5f*scale, // Text scale
+            1.5f*scale, 1.5f*scale, // Text scale
             w2h,
-            quack,                  // Text atlas
+            tmAt,                  // Text atlas
             faceColor,
             detailColor,
             MenuIndex               // drawCall to write to

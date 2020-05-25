@@ -630,21 +630,24 @@ class Menu:
         while tmc < 0.0:
             tmc += self.numElements
         #print(self.selectionCursorVelocity, self.selectionCursorPosition, self.selectedElement, self.scrollSnap.getTar(), self.scrollSnap.getVal())
-        self.elementCoords = drawMenu(
-                mx,
-                my,
-                tms,
-                self.angle,
-                self.deployed.getVal(),
-                tmc,
-                scrollCursor,
-                self.numElements,
-                self.menuLayout,
-                self.numListings,
-                self.dispIndex,
-                w2h,
-                stateMach['faceColor'],
-                stateMach['detailColor']
-                )
+
+        Params = {
+                "gx":mx,
+                "gy":my,
+                "scale":tms,
+                "direction":self.angle,
+                "deployed":self.deployed.getVal(),
+                "floatingIndex":tmc,
+                "scrollCursor":scrollCursor,
+                "numElements":self.numElements,
+                "menuLayout":self.menuLayout,
+                "numListings":self.numListings,
+                "drawIndex":self.dispIndex,
+                "w2h":w2h,
+                "faceColor":stateMach['faceColor'],
+                "detailColor":stateMach['detailColor'],
+                }
+
+        self.elementCoords = drawMenu(Params)
 
         return
