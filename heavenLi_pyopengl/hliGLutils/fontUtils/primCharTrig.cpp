@@ -55,24 +55,29 @@ unsigned int defineChar(
    verts.push_back( x2 + w);
    verts.push_back(-y2 - h);
 
+   float xTexOffset  = 1.0f/(2.0f*texWidth),
+         yTexOffset  = 1.0f/(2.0f*texHeight),
+         wRatio      = w/texWidth,
+         hRatio      = h/texHeight;
+
    // P
-   texuv.push_back(texOffsetX);
-   texuv.push_back(texOffsetY);
+   texuv.push_back(texOffsetX + xTexOffset);
+   texuv.push_back(texOffsetY + yTexOffset);
    // Q
-   texuv.push_back(texOffsetX + w / texWidth);
-   texuv.push_back(texOffsetY);
+   texuv.push_back(texOffsetX - xTexOffset + wRatio);
+   texuv.push_back(texOffsetY + yTexOffset);
    // R
-   texuv.push_back(texOffsetX);
-   texuv.push_back(texOffsetY + h / texHeight);
+   texuv.push_back(texOffsetX + xTexOffset);
+   texuv.push_back(texOffsetY - yTexOffset + hRatio);
    // Q
-   texuv.push_back(texOffsetX + w / texWidth);
-   texuv.push_back(texOffsetY);
+   texuv.push_back(texOffsetX - xTexOffset + wRatio);
+   texuv.push_back(texOffsetY + yTexOffset);
    // R
-   texuv.push_back(texOffsetX);
-   texuv.push_back(texOffsetY + h / texHeight);
+   texuv.push_back(texOffsetX + xTexOffset);
+   texuv.push_back(texOffsetY - yTexOffset + hRatio);
    // S
-   texuv.push_back(texOffsetX + w / texWidth);
-   texuv.push_back(texOffsetY + h / texHeight);
+   texuv.push_back(texOffsetX - xTexOffset + wRatio);
+   texuv.push_back(texOffsetY - yTexOffset + hRatio);
 
    colrs.push_back(color[0]);   colrs.push_back(color[1]);   colrs.push_back(color[2]);   colrs.push_back(color[3]);
    colrs.push_back(color[0]);   colrs.push_back(color[1]);   colrs.push_back(color[2]);   colrs.push_back(color[3]);
@@ -118,42 +123,47 @@ unsigned int updateChar(
    texHeight   = (float)atlas->textureHeight;
 
    // P
-   verts[vertIndex+0] =  x2;
-   verts[vertIndex+1] = -y2;
+   verts[vertIndex+0]   =  x2;
+   verts[vertIndex+1]   = -y2;
    // Q
-   verts[vertIndex+2] =  x2 + w;
-   verts[vertIndex+3] = -y2;
+   verts[vertIndex+2]   =  x2 + w;
+   verts[vertIndex+3]   = -y2;
    // R
-   verts[vertIndex+4] =  x2;
-   verts[vertIndex+5] = -y2 - h;
+   verts[vertIndex+4]   =  x2;
+   verts[vertIndex+5]   = -y2 - h;
    // Q
-   verts[vertIndex+6] =  x2 + w;
-   verts[vertIndex+7] = -y2;
+   verts[vertIndex+6]   =  x2 + w;
+   verts[vertIndex+7]   = -y2;
    // R
-   verts[vertIndex+8] =  x2;
-   verts[vertIndex+9] = -y2 - h;
+   verts[vertIndex+8]   =  x2;
+   verts[vertIndex+9]   = -y2 - h;
    // S
-   verts[vertIndex+10] =  x2 + w;
-   verts[vertIndex+11] = -y2 - h;
+   verts[vertIndex+10]  =  x2 + w;
+   verts[vertIndex+11]  = -y2 - h;
+
+   float xTexOffset  = 1.0f/(2.0f*texWidth),
+         yTexOffset  = 1.0f/(2.0f*texHeight),
+         wRatio      = w/texWidth,
+         hRatio      = h/texHeight;
 
    // P
-   texuv[vertIndex+0] = texOffsetX;
-   texuv[vertIndex+1] = texOffsetY;
+   texuv[vertIndex+0]   = texOffsetX + xTexOffset;
+   texuv[vertIndex+1]   = texOffsetY + yTexOffset;
    // Q
-   texuv[vertIndex+2] = texOffsetX + w / texWidth;
-   texuv[vertIndex+3] = texOffsetY;
+   texuv[vertIndex+2]   = texOffsetX - xTexOffset + wRatio;
+   texuv[vertIndex+3]   = texOffsetY + yTexOffset;
    // R
-   texuv[vertIndex+4] = texOffsetX;
-   texuv[vertIndex+5] = texOffsetY + h / texHeight;
+   texuv[vertIndex+4]   = texOffsetX + xTexOffset;
+   texuv[vertIndex+5]   = texOffsetY - yTexOffset + hRatio;
    // Q
-   texuv[vertIndex+6] = texOffsetX + w / texWidth;
-   texuv[vertIndex+7] = texOffsetY;
+   texuv[vertIndex+6]   = texOffsetX - xTexOffset + wRatio;
+   texuv[vertIndex+7]   = texOffsetY + yTexOffset;
    // R
-   texuv[vertIndex+8] = texOffsetX;
-   texuv[vertIndex+9] = texOffsetY + h / texHeight;
+   texuv[vertIndex+8]   = texOffsetX + xTexOffset;
+   texuv[vertIndex+9]   = texOffsetY - yTexOffset + hRatio;
    // S
-   texuv[vertIndex+10] = texOffsetX + w / texWidth;
-   texuv[vertIndex+11] = texOffsetY + h / texHeight;
+   texuv[vertIndex+10]  = texOffsetX - xTexOffset + wRatio;
+   texuv[vertIndex+11]  = texOffsetY - yTexOffset + hRatio;
 
    vertIndex += 12;
 
