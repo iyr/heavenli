@@ -1157,7 +1157,7 @@ def calcCursorVelocity(millis):
 def display():
     global stateMach
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    glClear(GL_COLOR_BUFFER_BIT)# | GL_DEPTH_BUFFER_BIT)
 
     #stateMach['tDiff'] = 0.70568/stateMach['fps']
     #stateMach['tDiff'] = 1.30568/stateMach['fps']
@@ -1262,20 +1262,30 @@ def special(k, x, y):
     decodeModifiers(glutGetModifiers())
 
     if k == GLUT_KEY_LEFT:
-        if (len(stateMach['lamps']) > 0):
-            stateMach['lamps'][Light].setAngle(stateMach['lamps'][Light].getAngle() + 5)
+        stateMach['textBaseScalar'] -= 0.05
+        pass
+        #if (len(stateMach['lamps']) > 0):
+            #stateMach['lamps'][Light].setAngle(stateMach['lamps'][Light].getAngle() + 5)
 
     elif k == GLUT_KEY_RIGHT:
-        if (len(stateMach['lamps']) > 0):
-            stateMach['lamps'][Light].setAngle(stateMach['lamps'][Light].getAngle() - 5)
+        stateMach['textBaseScalar'] += 0.05
+        pass
+        #if (len(stateMach['lamps']) > 0):
+            #stateMach['lamps'][Light].setAngle(stateMach['lamps'][Light].getAngle() - 5)
 
     elif k == GLUT_KEY_UP:
-        if (len(stateMach['lamps']) > 0):
-            stateMach['lamps'][Light].setNumBulbs(stateMach['lamps'][Light].getNumBulbs()+1)
+        stateMach['textGlyphRes'] += 1
+        stateMach['textDPIscalar'] = 32.0/float(stateMach['textGlyphRes'])
+        makeFont(fontFile="fonts/expressway_regular.ttf", numChars=128, size=stateMach['textGlyphRes'])
+        #if (len(stateMach['lamps']) > 0):
+            #stateMach['lamps'][Light].setNumBulbs(stateMach['lamps'][Light].getNumBulbs()+1)
 
     elif k == GLUT_KEY_DOWN:
-        if (len(stateMach['lamps']) > 0):
-            stateMach['lamps'][Light].setNumBulbs(stateMach['lamps'][Light].getNumBulbs()-1)
+        stateMach['textGlyphRes'] -= 1
+        stateMach['textDPIscalar'] = 32.0/float(stateMach['textGlyphRes'])
+        makeFont(fontFile="fonts/expressway_regular.ttf", numChars=128, size=stateMach['textGlyphRes'])
+        #if (len(stateMach['lamps']) > 0):
+            #stateMach['lamps'][Light].setNumBulbs(stateMach['lamps'][Light].getNumBulbs()-1)
 
     elif k == GLUT_KEY_F1:
         if stateMach['targetScreen'] == 0:
@@ -1384,6 +1394,9 @@ if __name__ == '__main__':
     global stateMach
     stateMach = {}
     print("Initializing...")
+    stateMach['textGlyphRes']       = 32                        # base vertical resolution in pixels of character glyphs
+    stateMach['textDPIscalar']      = 1.0                       # scalar for adjusting text resolution with respect to screen resolution
+    stateMach['textBaseScalar']     = 1.0                       # scalar for adjusting text size based on user-defined setting
     stateMach['WindowBarHeight']    = None                      # height of the window title bar (calibrated, used for window dragging)
     stateMach['noButtonsPressed']   = True                      
     stateMach['prevHues']           = [None for i in range(6)]
@@ -1581,7 +1594,8 @@ if __name__ == '__main__':
     glutMouseFunc(mouseInteraction)
     glutMotionFunc(mouseActive)
     glutPassiveMotionFunc(mousePassive)
-    glEnable(GL_LINE_SMOOTH)
+    glEnable(GL_LINE_SMOOTH)# | GL_DEPTH_TEST)
+    #glDepthFunc(GL_EQUAL);
 
     init()
 
