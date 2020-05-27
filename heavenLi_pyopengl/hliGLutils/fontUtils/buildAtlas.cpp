@@ -12,7 +12,9 @@
 #include <map>
 
 using namespace std;
-extern textAtlas* quack;
+//extern textAtlas* quack;
+extern std::map<std::string, textAtlas> textFonts;
+extern std::string selectedAtlas;
 
 PyObject* buildAtlas_hliGLutils(PyObject* self, PyObject *args) {
 
@@ -64,10 +66,10 @@ PyObject* buildAtlas_hliGLutils(PyObject* self, PyObject *args) {
       glyphData[c].advanceY      = (GLfloat)PyFloat_AsDouble(PyAttr);
 
       PyAttr = PyObject_GetAttrString(PyChar, "bearingX");
-      glyphData[c].bearingX      = (GLfloat)PyFloat_AsDouble(PyAttr);
+      glyphData[c].bearingX      = (GLfloat)PyFloat_AsDouble(PyAttr);//+2.0f;
 
       PyAttr = PyObject_GetAttrString(PyChar, "bearingY");
-      glyphData[c].bearingY      = (GLfloat)PyFloat_AsDouble(PyAttr);
+      glyphData[c].bearingY      = (GLfloat)PyFloat_AsDouble(PyAttr);//+2.0f;
 
       PyAttr = PyObject_GetAttrString(PyChar, "bearingTop");
       glyphData[c].bearingTop    = (GLfloat)PyFloat_AsDouble(PyAttr);
@@ -77,7 +79,8 @@ PyObject* buildAtlas_hliGLutils(PyObject* self, PyObject *args) {
 
       PyBitmap = PyObject_GetAttrString(PyChar, "bitmap");
       unsigned int bufferLength;
-      bufferLength = PyList_Size(PyBitmap);
+      //bufferLength = PyList_Size(PyBitmap);
+      bufferLength = glyphData[c].bearingX*glyphData[c].bearingY;
       GLubyte* tmb = new GLubyte[bufferLength*4];
 
       for (unsigned int i = 0; i < bufferLength; i++) {
@@ -91,7 +94,17 @@ PyObject* buildAtlas_hliGLutils(PyObject* self, PyObject *args) {
       glyphData[c].bitmap = tmb;      
    }
 
-   quack = new textAtlas(inputString, numChars, size, glyphData);
+   if (textFonts.empty())
+      selectedAtlas = inputString;
+   if (textFonts.count(inputString) <= 0)
+      textFonts.insert(std::make_pair(inputString, textAtlas()));
+   else {
+      textFonts.erase(inputString);
+      textFonts.insert(std::make_pair(inputString, textAtlas()));
+   }
+
+   textAtlas* ta = &textFonts[inputString];
+   ta->makeAtlas(inputString, numChars, size, glyphData);
 
    Py_RETURN_NONE;
 }

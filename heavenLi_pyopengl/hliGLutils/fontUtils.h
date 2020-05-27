@@ -11,7 +11,9 @@
 #include "fontUtils/primStringTRIG.cpp"   // Provides a high-order primitive for drawing strings
 
 //std::vector<textAtlas> fontAtlases;            // Used to store all generated fonts
-textAtlas* quack;
+//textAtlas* quack;
+extern std::map<std::string, textAtlas> textFonts;
+extern std::string selectedAtlas;
 
 // C/C++ function for drawing text
 void drawText(

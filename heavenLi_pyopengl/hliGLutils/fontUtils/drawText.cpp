@@ -3,9 +3,8 @@
 using namespace std;
 
 extern std::map<std::string, drawCall> drawCalls;
-//extern std::map<std::string, textAtlas> textFonts;
-
-extern textAtlas* quack;
+extern std::map<std::string, textAtlas> textFonts;
+extern std::string selectedAtlas;
 
 // Python 3 function for drawing text
 PyObject* drawText_hliGLutils(PyObject* self, PyObject* args) {
@@ -13,7 +12,11 @@ PyObject* drawText_hliGLutils(PyObject* self, PyObject* args) {
    PyObject* faceColorPyTup;
    PyObject* PyString;
 
-   GLfloat gx, gy, sx, sy, w2h, horiAlignment, vertAlignment;
+   GLfloat gx, gy, 
+           sx, sy, 
+           w2h, 
+           horiAlignment, 
+           vertAlignment;
    GLfloat textColor[4];
    GLfloat faceColor[4];
 
@@ -61,7 +64,8 @@ PyObject* drawText_hliGLutils(PyObject* self, PyObject* args) {
          gx, gy,
          sx, sy,
          w2h,
-         quack,
+         &textFonts[selectedAtlas],
+         //tmAt,
          textColor,
          faceColor,
          textLine,
@@ -114,6 +118,7 @@ void drawText(
       drawCall*   textBackdrop   // pointer to input drawCall to write text backdrop
       ){
 
+   //textAtlas* tmAt = &textFonts[selectedAtlas];
    static GLfloat prevHoriAlignment,
                   prevVertAlignment;
    GLfloat ao=0.0f;
@@ -141,7 +146,7 @@ void drawText(
             inputString,
             horiAlignment,
             vertAlignment,
-            quack,
+            atlas,
             textColor,
             verts, texuv, colrs);
 
@@ -174,7 +179,7 @@ void drawText(
       prevHoriAlignment = horiAlignment;
       prevVertAlignment = vertAlignment;
       textLine->text    = inputString;
-      textLine->texID   = quack->tex;
+      textLine->texID   = atlas->tex;
       textLine->buildCache(verts.size()/2, verts, texuv, colrs);
       textBackdrop->buildCache(bgverts.size()/2, bgverts, bgcolrs);
    }
@@ -281,6 +286,7 @@ void drawText(
       drawCall*   textLine       // pointer to input drawCall to write text
       ){
 
+   //textAtlas* tmAt = &textFonts[selectedAtlas];
    GLfloat ao=0.0f;
    textLine->setDrawType(GL_TRIANGLES);
    textLine->setNumColors(1);
@@ -309,7 +315,7 @@ void drawText(
             inputString,
             horiAlignment,
             vertAlignment,
-            quack,
+            atlas,
             textColor,
             verts, texuv, colrs);
 
@@ -317,7 +323,7 @@ void drawText(
       prevHoriAlignment = horiAlignment;
       prevVertAlignment = vertAlignment;
       textLine->text    = inputString;
-      textLine->texID   = quack->tex;
+      textLine->texID   = atlas->tex;
       textLine->buildCache(verts.size()/2, verts, texuv, colrs);
    }
 
