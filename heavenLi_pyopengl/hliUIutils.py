@@ -14,7 +14,7 @@ def drawInfo(stateMach):
     infoStr += "\nFPS: " + str(int(stateMach['fps']))
     infoStr += "\nResolution: " + str(stateMach['windowDimW'])+", "+str(stateMach['windowDimH'])
     infoStr += "\nwidth to height: " + str(w2h)
-    infoStr += "\nwindow posigion: " + str(stateMach['windowPosX'])+", "+str(stateMach['windowPosY'])
+    infoStr += "\nwindow position: " + str(stateMach['windowPosX'])+", "+str(stateMach['windowPosY'])
     infoStr += "\nCursor: " + str(stateMach['cursorX']) + ', ' + str(stateMach['cursorY'])
     #tmx = mapRanges(stateMach['cursorX'], 0, stateMach['windowDimW'], -w2h, w2h)
     #tmy = mapRanges(stateMach['cursorY'], 0, stateMach['windowDimH'], 1.0, -1.0)
@@ -30,11 +30,15 @@ def drawInfo(stateMach):
     #infoStr += "\nCursor Velocity Smoothed, Cart Y: " + str(stateMach['cursorVelSmoothed'][1])
     #infoStr += "\nBall Position: " + str(stateMach['BallPosition'])
     #infoStr += "\nBall Velocity: " + str(stateMach['BallVelocity'])
+    infoStr += "\ntextBaseScalar: " + str(stateMach['textBaseScalar'])
+    infoStr += "\ntextDPIscalar: " + str(stateMach['textDPIscalar'])
+    infoStr += "\ntextGlyphRes: " + str(stateMach['textGlyphRes'])
     tmc = ( stateMach['faceColor'][0], 
             stateMach['faceColor'][1], 
             stateMach['faceColor'][2], 
             stateMach['faceColor'][3]/2)
-    drawText(infoStr, 0.0, 0.0, -1.0, 0.85, 0.25, 0.25, stateMach['w2h'], stateMach['detailColor'], tmc)
+    drawText(infoStr, 0.0, 0.0, -1.0, 0.85, 0.25*stateMach['textDPIscalar']*stateMach['textBaseScalar'], 0.25*stateMach['textDPIscalar']*stateMach['textBaseScalar'], stateMach['w2h'], stateMach['detailColor'], tmc)
+    #drawText(infoStr, 0.0, 0.0, -1.0, 0.85, 0.25*stateMach['textDPIscalar'], 0.25*stateMach['textDPIscalar'], stateMach['w2h'], stateMach['detailColor'], tmc)
 
 # Check if user is clicking in arbitrary polygon defined by list of tuples of points
 def watchPolygon(cxgl, cygl, polygon, w2h, drawInfo):#, point):
