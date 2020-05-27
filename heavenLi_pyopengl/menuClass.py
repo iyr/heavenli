@@ -71,6 +71,9 @@ class Menu:
         # (experimental) number of listings to display
         self.numListings = 7
 
+        # cursor for animating transitions between elements
+        self.scrollCursor = 0.0
+
     # change menu layout
     def setLayout(self, layout):
         if layout == 0:
@@ -223,11 +226,15 @@ class Menu:
 
         # Convenience Variables
         ang     = self.getAng()
+        ofax    = cos(radians(ang))
+        ofay    = sin(radians(ang))
         ofx     = self.UIelement.getTarPosX()
         ofy     = self.UIelement.getTarPosY()
         thr     = 0.1*self.UIelement.getSize()
         diff    = floor(self.numListings/2)
-        tmes    = 0.125
+        #tmes    = 0.15#0.125
+        #tmes    = 0.15*0.75*3.0/float(self.numListings)
+        tmes    = 0.3375/float(self.numListings)
         endOffset   = 1.0/(self.numListings-1.0)
         elementSpacing  = ((6.0-endOffset)-(1.5+endOffset))/(self.numListings-1.0)
         if w2h < 1.0:
@@ -237,7 +244,7 @@ class Menu:
         for i in range(self.numListings):
             tmx = (1.5 + endOffset + i*elementSpacing)*self.UIelement.getTarSize()
             tmy = (1.5 + endOffset + i*elementSpacing)*self.UIelement.getTarSize()
-            ofwx = cos(radians(ang))*tmx
+            ofwx = ofax*tmx
             if w2h < 1.0:
                 tmy *= w2h
                 ofwx *= w2h
@@ -248,7 +255,7 @@ class Menu:
                     watchDot(
                         #(ofx + cos(radians(ang))*tmx)*w2h,
                         ofx*w2h + ofwx,
-                        ofy + sin(radians(ang))*tmy,
+                        ofy + ofay*tmy,
                         tmes,
                         sm['cursorXgl'],
                         sm['cursorYgl'],
@@ -315,11 +322,11 @@ class Menu:
         # Aspect correct radius for watchdot
         radius *= self.UIelement.getSize()
         if w2h < 1.0:
-            ofwx = (ofwx+radius*cos(radians(ang)))*w2h
-            ofy = ofy+radius*sin(radians(ang))*w2h
+            ofwx = (ofwx+radius*ofax)*w2h
+            ofy = ofy+radius*ofay*w2h
         else:
-            ofwx = (ofwx+radius*cos(radians(ang)))
-            ofy = (ofy+radius*sin(radians(ang)))
+            ofwx = (ofwx+radius*ofax)
+            ofy = (ofy+radius*ofay)
 
         # Watch body for input
         if (    self.isOpen()
@@ -336,7 +343,6 @@ class Menu:
                         )
                     or
                     watchDot(
-                        #ofwx+radius*cos(radians(ang)), 
                         ofwx,
                         ofy,
                         tms,
@@ -363,9 +369,8 @@ class Menu:
                 tmy /= elementSpacing*self.UIelement.getTarSize()
                 tmx += self.UIelement.getPosX()*self.UIelement.getSize()
                 tmy += self.UIelement.getPosY()*self.UIelement.getSize()
-                radAng = radians(self.angle)
                 self.selectionCursorPosition = self.delimitValue(
-                        tmx*cos(radAng) + tmy*sin(radAng) + self.prevSelectionCursorPosition
+                        tmx*ofax + tmy*ofay + self.prevSelectionCursorPosition
                         )
         
             # Add mouse cursor's velocity to menu cursor's velocity (kinetic scrolling)
@@ -375,8 +380,8 @@ class Menu:
 
                 # normalize velocity to menu's slide-out direction
                 tmv = (
-                    (4.0*sm['cursorVelSmoothed'][0]*cos(self.angle)) + 
-                    (4.0*sm['cursorVelSmoothed'][1]*sin(self.angle))
+                    (4.0*sm['cursorVelSmoothed'][0]*ofax) + 
+                    (4.0*sm['cursorVelSmoothed'][1]*ofay)
                 )
                 self.selectionCursorVelocity += tmv
 
@@ -614,12 +619,12 @@ class Menu:
         tms = self.UIelement.getSize()
         mx = self.UIelement.getTarPosX()
         my = self.UIelement.getTarPosY()
-        scrollCursor = normalizeCursor(
+        self.scrollCursor = normalizeCursor(
                 self.prevSelectionCursorPosition, 
                 self.selectionCursorPosition
                 )
-        if scrollCursor < 0.0:
-            scrollCursor += 1.0
+        if self.scrollCursor < 0.0:
+            self.scrollCursor += 1.0
 
         tmc = 0.0
         tmc = self.selectionCursorPosition
@@ -638,7 +643,7 @@ class Menu:
                 "direction":self.angle,
                 "deployed":self.deployed.getVal(),
                 "floatingIndex":tmc,
-                "scrollCursor":scrollCursor,
+                "scrollCursor":self.scrollCursor,
                 "numElements":self.numElements,
                 "menuLayout":self.menuLayout,
                 "numListings":self.numListings,
