@@ -3,7 +3,7 @@
 GLuint buildShader(const GLchar* vertexSource, const GLchar* fragmentSource);
 std::vector<std::string> drawQue;
 std::map<std::string, drawCall>     drawCalls;
-std::map<std::string, textAtlas*>   textFonts;
+std::map<std::string, textAtlas>    textFonts;
 std::map<std::string, GLuint>       shaders;
 std::string selectedAtlas;
 GLuint   whiteTex;

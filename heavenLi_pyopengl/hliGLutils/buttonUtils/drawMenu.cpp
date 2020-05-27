@@ -307,8 +307,9 @@ void drawMenu(
 
    // Draw text objects indicating floatingIndex, numElements
    if (drawIndex and deployed > 0.0f) {
-      float tma = degToRad(direction);
-      float tmx = scale*(7.00f*cos(tma)+0.5f*sin(-tma))*deployed,   // text location, X
+      float tma = degToRad(direction),
+            textDPIscalar = 32.0f/(float)tmAt->faceSize,
+            tmx = scale*(7.00f*cos(tma)+0.5f*sin(-tma))*deployed,   // text location, X
             tmy = scale*(7.00f*sin(tma)+0.5f*cos(-tma))*deployed;   // text location, Y
       if (w2h < 1.0f)
          tmy *= w2h;
@@ -318,16 +319,17 @@ void drawMenu(
 
       std::string inputString = std::to_string(constrain((int)round(floatingIndex+1.0f), 0, tme));
       drawText(
-            inputString,            // string to render
-            0.5f,                   // Horizontal Alignment
-            0.5f,                   // Vertical Alignment
-            gx+tmx, gy+tmy,         // Text position
-            1.5f*scale, 1.5f*scale, // Text scale
+            inputString,               // string to render
+            0.5f,                      // Horizontal Alignment
+            0.5f,                      // Vertical Alignment
+            gx+tmx, gy+tmy,            // Text position
+            3.0f*scale*textDPIscalar, 
+            3.0f*scale*textDPIscalar,  // Text scale
             w2h,
-            tmAt,                  // Text atlas
+            tmAt,                      // Text atlas
             detailColor,
             faceColor,
-            MenuIndex               // drawCall to write to
+            MenuIndex                  // drawCall to write to
             );
 
       tmx = scale*(7.00f*cos(tma)-0.5f*sin(-tma))*deployed;   // text location, X
@@ -338,16 +340,17 @@ void drawMenu(
          tmx /= w2h;
       inputString = std::to_string(tme);
       drawText(
-            inputString,            // string to render
-            0.5f,                   // Horizontal Alignment
-            0.5f,                   // Vertical Alignment
-            gx+tmx, gy+tmy,         // Text position
-            1.5f*scale, 1.5f*scale, // Text scale
+            inputString,               // string to render
+            0.5f,                      // Horizontal Alignment
+            0.5f,                      // Vertical Alignment
+            gx+tmx, gy+tmy,            // Text position
+            3.0f*scale*textDPIscalar, 
+            3.0f*scale*textDPIscalar,  // Text scale
             w2h,
-            tmAt,                  // Text atlas
+            tmAt,                      // Text atlas
             faceColor,
             detailColor,
-            MenuIndex               // drawCall to write to
+            MenuIndex                  // drawCall to write to
             );
    }
    return;

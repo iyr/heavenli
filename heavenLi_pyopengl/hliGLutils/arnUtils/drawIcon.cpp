@@ -3,8 +3,10 @@
 
 using namespace std;
 extern float offScreen;
-extern textAtlas* quack;
+//extern textAtlas* quack;
 extern std::map<std::string, drawCall> drawCalls;
+extern std::map<std::string, textAtlas> textFonts;
+extern std::string selectedAtlas;
 //extern std::map<std::string, textAtlas*> textFonts;
 
 /*
@@ -28,6 +30,7 @@ PyObject* drawIcon_hliGLutils(PyObject* self, PyObject* args){
    GLfloat     faceColor[4];
    GLfloat     gx, gy, scale, ao, w2h;
    GLuint      numBulbs, features, arn;
+   //textAtlas* tmAt = &textFonts[selectedAtlas];
 
    if (!PyArg_ParseTuple(args,
             "fffIOIOOIffO",
@@ -123,7 +126,8 @@ PyObject* drawIcon_hliGLutils(PyObject* self, PyObject* args){
          gx, gy,
          scale*2.0f, scale*2.0f,
          w2h,
-         quack,         // texture atlas to draw characters from
+         //tmAt,         // texture atlas to draw characters from
+         &textFonts[selectedAtlas],
          detailColor,
          faceColor,
          arnIconText,
