@@ -8,7 +8,7 @@ def makeFont(fontFile="fonts/expressway_regular.ttf", numChars=128, size=32):
     face.set_char_size(size*64)
     Characters = []
     faceName=fontFile[6:20]
-    print(faceName)
+    #print(faceName)
     print("Generating Glyph Set for "+ faceName +" at size: "+ str(size))
 
     class Character:
@@ -37,6 +37,8 @@ def makeFont(fontFile="fonts/expressway_regular.ttf", numChars=128, size=32):
 
         cglyph.bitmap = fglyph.bitmap.buffer
         cglyph.binChar = c
+        #if (c == 5):
+            #print(len(cglyph.bitmap), cglyph.bearingX*cglyph.bearingY)
 
         Characters.append(cglyph)
         #print(
@@ -50,5 +52,5 @@ def makeFont(fontFile="fonts/expressway_regular.ttf", numChars=128, size=32):
         #", bearingLeft: " + str(cglyph.bearingLeft)
         #)
 
-    print("faceSize: " + str(size))
+    #print("faceSize: " + str(size))
     buildAtlas(faceName, numChars, size, Characters)
