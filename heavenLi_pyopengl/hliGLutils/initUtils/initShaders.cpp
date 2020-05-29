@@ -1,20 +1,6 @@
 GLuint   shaderProgram;
 GLint    uniform_tex;
 extern GLuint     whiteTex;
-//extern GLubyte*   blankTexture;
-
-/*
-typedef struct {
-   GLuint   shaderProgram;
-
-   GLint    vertCoord;
-   GLint    vertColor;
-
-   GLint    vertSampler;
-
-   GLuint   textureID;
-}
-*/
 
 // Shader halper function
 GLuint LoadShader(const GLchar *shadersrc, GLenum type) {
@@ -48,7 +34,8 @@ GLuint LoadShader(const GLchar *shadersrc, GLenum type) {
          char *infoLog = new char[infoLen];
 
          glGetShaderInfoLog(shader, infoLen, NULL, infoLog);
-         printf("Shader Compilation Failed :(  \n%s\n", infoLog);
+         if (type == GL_VERTEX_SHADER) printf("Vertex Shader Compilation Failed :(  \n%s\n", infoLog);
+         if (type == GL_FRAGMENT_SHADER) printf("Fragment Shader Compilation Failed :(  \n%s\n", infoLog);
          delete [] infoLog;
       }
 
@@ -56,7 +43,8 @@ GLuint LoadShader(const GLchar *shadersrc, GLenum type) {
       return 0;
    }
 
-   printf("Shader Compiled Successfully\n");
+   if (type == GL_VERTEX_SHADER) printf("Vertex Shader Compiled Successfully\n");
+   if (type == GL_FRAGMENT_SHADER) printf("Fragment Shader Compiled Successfully\n");
    return shader;
 }
 
