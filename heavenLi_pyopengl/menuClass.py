@@ -1,5 +1,5 @@
 from hliUIutils import UIparam, UIelement, watchDot, watchBox, watchPolygon
-from hliGLutils import *
+from hliGLutils import drawMenu
 from rangeUtils import *
 from math import degrees, atan, sin, cos, sqrt, radians, hypot
 import time
@@ -10,7 +10,7 @@ class Menu:
     def __init__(self):
 
         # Type of drop menu
-        self.menuLayout = 0   # 0: Carousel that loops back on itself
+        self.menuLayout = 0 # 0: Carousel that loops back on itself
                             # 1: Linear Strip that stops at two ends
                             # 2: Range slider(?)
 
@@ -41,6 +41,10 @@ class Menu:
         # Which angle, in degrees about the unit circle, the menu slides out, for animation/drawing
         self.angle = 0.0
 
+        # True == element is selected by scrolling to it
+        # False == element is selected by clicking it discretely 
+        self.selectFromScroll = False
+
         # Whether or not to display the index of the element
         self.dispIndex = True
 
@@ -69,7 +73,7 @@ class Menu:
         self.tPhys = time.time()
 
         # (experimental) number of listings to display
-        self.numListings = 7
+        self.numListings = 3
 
         # cursor for animating transitions between elements
         self.scrollCursor = 0.0
@@ -95,7 +99,12 @@ class Menu:
 
         diff = floor(self.numListings/2.0)
         tmc = self.delimitValue(self.selectionCursorPosition)
-        #tmc = constrain(self.selectionCursorPosition, 1.0, self.numElements-2.0)
+
+        if (self.numElements <= 3):
+            for i in range(self.numElements):
+                indices.append(i)
+            return indices
+
         if (self.menuLayout == 0):
             for i in range(
                     floor(tmc - diff),
@@ -136,10 +145,10 @@ class Menu:
 
     # restrict value range based on menu type, convenice function
     def delimitValue(self, value):
-        if (self.menuLayout == 0):
-            return value
-        elif (self.menuLayout == 1):
+        if (self.menuLayout == 1 or self.numElements <= 3):
             return constrain(value, 0.0, self.numElements-1.0)
+        elif (self.menuLayout == 0):
+            return value
 
     # increase number of visible elements
     def increaseDensity(self):
@@ -175,7 +184,12 @@ class Menu:
 
         # Toggle index drawing
         if (sm['mousePressed'] == 1):
-            self.dispIndex = not self.dispIndex
+            if (sm['ShiftActive']):
+                self.selectFromScroll = not self.selectFromScroll
+            elif (sm['AltActive']):
+                self.menuLayout = int(not bool(self.menuLayout))
+            else:
+                self.dispIndex = not self.dispIndex
 
     # get index for the currently selected
     def getSelection(self):
@@ -232,8 +246,6 @@ class Menu:
         ofy     = self.UIelement.getTarPosY()
         thr     = 0.1*self.UIelement.getSize()
         diff    = floor(self.numListings/2)
-        #tmes    = 0.15#0.125
-        #tmes    = 0.15*0.75*3.0/float(self.numListings)
         tmes    = 0.3375/float(self.numListings)
         endOffset   = 1.0/(self.numListings-1.0)
         elementSpacing  = ((6.0-endOffset)-(1.5+endOffset))/(self.numListings-1.0)
@@ -253,7 +265,6 @@ class Menu:
                     not self.isTrackingScroll
                     and
                     watchDot(
-                        #(ofx + cos(radians(ang))*tmx)*w2h,
                         ofx*w2h + ofwx,
                         ofy + ofay*tmy,
                         tmes,
@@ -270,13 +281,17 @@ class Menu:
                 if (sm['mousePressed'] == 0):
                     self.mouseCursorAtPressX = mapRanges(sm['cursorX'], 0, sm['windowDimW'], -w2h, w2h)
                     self.mouseCursorAtPressY = mapRanges(sm['cursorY'], 0, sm['windowDimH'], 1.0, -1.0)
-                    self.prevSelectionCursorPosition = self.selectionCursorPosition
+                    #self.prevSelectionCursorPosition = self.selectionCursorPosition
+                    self.prevSelectionCursorPosition = self.scrollSnap.getVal()
 
                 if (sm['mouseReleased'] == 0):
                     #self.selectionCursorVelocity = 0.0
                     tml = self.cursor2indices(1.0)
+                    #self.scrollSnap.setValue(self.scrollSnap.getTar())
                     self.scrollSnap.setTargetVal(tml[self.numListings-1-i])
                     #self.scrollSnap.setTargetVal(self.delimitValue(self.scrollSnap.getTar()-1.0))
+                    if (not self.selectFromScroll):
+                        self.selectedElement = rollover(round(self.delimitValue(self.scrollSnap.getTar())), self.numElements)
 
                 # Swipe to scroll if cursor is dragged
                 dfx = mapRanges(sm['cursorX'], 0, sm['windowDimW'], -w2h, w2h) - self.mouseCursorAtPressX
@@ -284,6 +299,8 @@ class Menu:
                 if (    hypot(dfx, dfy) > thr
                         and
                         sm['mouseButton'] == 0
+                        and
+                        self.numElements > 3
                         ):
                     self.isTrackingScroll = True
 
@@ -329,7 +346,7 @@ class Menu:
             ofy = (ofy+radius*ofay)
 
         # Watch body for input
-        if (    self.isOpen()
+        if (    self.deployed.getTar() == 1.0   # Allow user to scroll while menu is opening
                 and
                 (
                     self.isTrackingScroll
@@ -358,7 +375,10 @@ class Menu:
             self.scrollButton(sm)
 
             # Swipe to scroll
-            if (self.isTrackingScroll):
+            if (    self.isTrackingScroll   
+                    and
+                    self.numElements > 3
+                    ):
                 endOffset   = 1.0/float(self.numListings-1)                         # distance from last element to end of menu
                 #diffElements = floor(float(self.numListings*0.5))                   # number of elements that straddle selected element
                 elementSpacing = (6.0-1.5-endOffset*2.0)/float(self.numListings-1)  # distance between elements
@@ -374,7 +394,8 @@ class Menu:
                         )
         
             # Add mouse cursor's velocity to menu cursor's velocity (kinetic scrolling)
-            if (sm['mouseReleased'] == 0):
+            if (    sm['mouseReleased'] == 0
+                    ):
                 #if (not self.scrollSnap.isAnimating()):
                 self.isTrackingScroll = False
 
@@ -578,16 +599,15 @@ class Menu:
                 self.selectionCursorVelocity = tmv
 
         # Update Index of the element ultimately returned, always a whole number
-        if (self.scrollSnap.isTargetReached()):
-            self.selectedElement = rollover(round(self.delimitValue(self.selectionCursorPosition)), self.numElements)
-        else:
-            self.selectedElement = rollover(round(self.delimitValue(self.scrollSnap.getTar())), self.numElements)
+        if (self.selectFromScroll):
+            if (self.scrollSnap.isTargetReached()):
+                self.selectedElement = rollover(round(self.delimitValue(self.selectionCursorPosition)), self.numElements)
+            else:
+                self.selectedElement = rollover(round(self.delimitValue(self.scrollSnap.getTar())), self.numElements)
 
         # Detect changes in selected element
         if (self.prevSelectedElement != self.selectedElement):
-            #self.scrollSnap.setTargetVal(self.selectedElement)
-            #self.scrollSnap.setValue(self.selectedElement)
-            #print(self.selectedElement, self.selectionCursorPosition)
+            #print(self.selectedElement)
             self.prevSelectedElement = self.selectedElement
 
         # Update Timer
@@ -635,6 +655,9 @@ class Menu:
         while tmc < 0.0:
             tmc += self.numElements
         #print(self.selectionCursorVelocity, self.selectionCursorPosition, self.selectedElement, self.scrollSnap.getTar(), self.scrollSnap.getVal())
+        tmml = self.menuLayout
+        if (self.numElements < 4):
+            tmml = 1
 
         Params = {
                 "gx":mx,
@@ -644,10 +667,12 @@ class Menu:
                 "deployed":self.deployed.getVal(),
                 "floatingIndex":tmc,
                 "scrollCursor":self.scrollCursor,
+                "selectedElement":self.selectedElement,
                 "numElements":self.numElements,
-                "menuLayout":self.menuLayout,
+                "menuLayout":tmml,
                 "numListings":self.numListings,
                 "drawIndex":self.dispIndex,
+                "selectFromScroll":self.selectFromScroll,
                 "w2h":w2h,
                 "faceColor":stateMach['faceColor'],
                 "detailColor":stateMach['detailColor'],
