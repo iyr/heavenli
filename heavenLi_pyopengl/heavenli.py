@@ -246,6 +246,7 @@ def watchTest():
             #if (stateMach['Menus']['testMenu'].watch(stateMach)):
             if (stateMach['Menus']['testMenu'].watch(filterKeys(stateMach, 
                 [
+                    'AltActive',
                     'CtrlActive',
                     'currentMouseButtonState',
                     'cursorVelSmoothed',
@@ -258,6 +259,7 @@ def watchTest():
                     'mouseButton',
                     'mousePressed',
                     'mouseReleased',
+                    'ShiftActive',
                     'w2h',
                     'windowDimW',
                     'windowDimH'
@@ -1197,19 +1199,14 @@ def display():
 
     if (stateMach['currentMouseButtonState'] != 0):
         stateMach['mouseButton'] = -1
-    stateMach['mousePressed'] = -1
-    stateMach['mouseReleased'] = -1
-    stateMach['keyPressed'] = None
-    stateMach['keyReleased'] = None
-    if (stateMach['ShiftActive']):
-        print('ShiftActive')
-    if (stateMach['CtrlActive']):
-        print('CtrlActive')
-    if (stateMach['AltActive']):
-        print('AltActive')
-    stateMach['ShiftActive'] = False
-    stateMach['CtrlActive'] = False
-    stateMach['AltActive'] = False
+
+    stateMach['keyPressed']     = None
+    stateMach['keyReleased']    = None
+    stateMach['mousePressed']   = -1
+    stateMach['mouseReleased']  = -1
+    stateMach['ShiftActive']    = False
+    stateMach['CtrlActive']     = False
+    stateMach['AltActive']      = False
 
     # Update UI animation
     for key in stateMach['UIelements']:
@@ -1380,6 +1377,9 @@ def reshape(width, height):
         stateMach['w2h'] = 1
     stateMach['windowDimW'] = width
     stateMach['windowDimH'] = height
+    stateMach['textGlyphRes'] = int(height/15)
+    stateMach['textDPIscalar'] = 32.0/float(stateMach['textGlyphRes'])
+    makeFont(fontFile="fonts/expressway_regular.ttf", numChars=128, size=stateMach['textGlyphRes'])
     glViewport(0, 0, width, height)
 
 # Only Render if the window (any pixel of it at all) is visible
@@ -1479,9 +1479,9 @@ if __name__ == '__main__':
     stateMach['testList'].append((1.0, 0.0, 0.0, 1.0))  # Red
     stateMach['testList'].append((0.0, 0.0, 1.0, 1.0))  # Blue
     stateMach['testList'].append((0.0, 1.0, 0.0, 1.0))  # Green
-    stateMach['testList'].append((0.4, 0.0, 1.0, 1.0))  # Purple
-    stateMach['testList'].append((1.0, 0.4, 0.0, 1.0))  # Orange
-    for i in range(10):
+    #stateMach['testList'].append((0.4, 0.0, 1.0, 1.0))  # Purple
+    #stateMach['testList'].append((1.0, 0.4, 0.0, 1.0))  # Orange
+    for i in range(0):
         stateMach['testList'].append((
             random.random(),
             random.random(),
@@ -1616,7 +1616,8 @@ if __name__ == '__main__':
         print("GL_RENDERER   = ", glGetString(GL_RENDERER))
         print("GL_VERSION    = ", glGetString(GL_VERSION))
         print("GL_VENDOR     = ", glGetString(GL_VENDOR))
-        print("GL_EXTENSIONS = ", glGetString(GL_EXTENSIONS))
         print("GL_SHADING_LANGUAGE_VERSION = ", glGetString(GL_SHADING_LANGUAGE_VERSION))
+        glext = str(glGetString(GL_EXTENSIONS))
+        print("GL_EXTENSIONS = ", glext.replace(" ", "\n"))
 
     glutMainLoop()
