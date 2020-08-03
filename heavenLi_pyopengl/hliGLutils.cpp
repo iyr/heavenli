@@ -25,6 +25,7 @@
 #include "hliGLutils/primUtils.h"      // Library of Geometric Primitives for drawing shapes
 #include "hliGLutils/fontUtils.h"      // Helper utilities for loading fonts and drawing text
 #include "hliGLutils/initUtils.h"      // Utilities usually run once that stage/setup/initialize objects
+#include "hliGLutils/metaUtils.h"
 
 #include "hliGLutils/buttonUtils.h"    // Utilities for drawing UI elements
 #include "hliGLutils/arnUtils.h"       // Dynamic iconography draw code
@@ -56,6 +57,8 @@ PyObject* drawIcon_hliGLutils       (PyObject* self, PyObject* args);
 
 PyObject* drawMenu_hliGLutils       (PyObject* self, PyObject* args);
 
+PyObject* drawImageSquare_hliGLutils(PyObject* self, PyObject* args);
+
 PyObject* drawArrow_hliGLutils      (PyObject* self, PyObject* args);
 PyObject* drawBulbButton_hliGLutils (PyObject* self, PyObject* args);
 PyObject* drawClock_hliGLutils      (PyObject* self, PyObject* args);
@@ -64,6 +67,8 @@ PyObject* drawConfirm_hliGLutils    (PyObject* self, PyObject* args);
 PyObject* drawGranChanger_hliGLutils(PyObject* self, PyObject* args);
 PyObject* drawHueRing_hliGLutils    (PyObject* self, PyObject* args);
 PyObject* drawPrim_hliGLutils       (PyObject* self, PyObject* args);
+
+PyObject* doesDrawCallExist_hliGLutils(PyObject* self, PyObject* args);
 
 /*
  * Python Method Definitions
@@ -87,6 +92,8 @@ static PyMethodDef hliGLutils_methods[] = {
 
    { "drawMenu",        (PyCFunction)drawMenu_hliGLutils,         METH_VARARGS },
 
+   { "drawImageSquare", (PyCFunction)drawImageSquare_hliGLutils,  METH_VARARGS },
+
    { "drawArrow",       (PyCFunction)drawArrow_hliGLutils,        METH_VARARGS },
    { "drawBulbButton",  (PyCFunction)drawBulbButton_hliGLutils,   METH_VARARGS },
    { "drawClock",       (PyCFunction)drawClock_hliGLutils,        METH_VARARGS },
@@ -95,6 +102,8 @@ static PyMethodDef hliGLutils_methods[] = {
    { "drawGranChanger", (PyCFunction)drawGranChanger_hliGLutils,  METH_VARARGS },
    { "drawHueRing",     (PyCFunction)drawHueRing_hliGLutils,      METH_VARARGS },
    { "drawPrim",        (PyCFunction)drawPrim_hliGLutils,         METH_VARARGS },
+
+   { "doesDrawCallExist",(PyCFunction)doesDrawCallExist_hliGLutils, METH_VARARGS},
 
    { NULL, NULL, 0, NULL}
 };
