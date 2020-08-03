@@ -69,4 +69,16 @@ void drawMenu(
       drawCall*   MenuOpen,         // drawCall object for drawing the menu open
       drawCall*   MenuClosed        // drawCall object for drawing the menu closed
       );
+
 #include "buttonUtils/drawMenu.cpp"
+
+void drawImageSquare(
+      GLfloat     gx, 
+      GLfloat     gy,
+      GLfloat     ao,
+      GLfloat     scale,
+      GLfloat     w2h,
+      GLfloat*    color,
+      drawCall*   image
+      );
+#include "buttonUtils/drawImageSquare.cpp"

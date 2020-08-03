@@ -258,6 +258,8 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
 
    // Unbind Buffer Object
    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+   printf("Finished building buffers\n");
    return;
 };
 /*

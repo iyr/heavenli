@@ -69,6 +69,8 @@ float rangeShift(
 #include "primUtils/primBulbDEGEN.cpp"
 #include "primUtils/primMenuOverflowDEGEN.cpp"
 
+#include "primUtils/primTexQuadDEGEN.cpp"
+
 #include "primUtils/drawArch.cpp"
 #include "primUtils/drawEllipse.cpp"
 #include "primUtils/drawPill.cpp"
