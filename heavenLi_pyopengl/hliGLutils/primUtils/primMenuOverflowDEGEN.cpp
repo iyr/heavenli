@@ -1,16 +1,16 @@
 // Helper function for define the relative positon of elements
 
 void defineElementCoords(
-      float          direction,
-      float          deployed,
-      float          floatingIndex,
-      float          scrollCursor,
-      unsigned int   numElements,
-      unsigned int   menuLayout,
-      unsigned int   numListings,
-      bool           selectFromScroll,
-      float*         glCoords,
-      float*         elementCoords
+      float          direction,        // Direction menu slides out (degrees, unit circle)
+      float          deployed,         // animation cursor for menu slide-out (0.0==closed)
+      float          floatingIndex,    // index of currently selected index
+      float          scrollCursor,     // animation cursor for scrolling
+      unsigned int   numElements,      // number of list elements
+      unsigned int   menuLayout,       // linear/circular
+      unsigned int   numListings,      // number of elements to display at any given time
+      bool           selectFromScroll, // whether or not elements are selected by merely scrolling to them
+      float*         glCoords,         // base, unmodified coordinates
+      float*         elementCoords     // element coordinates rotated by direction
       ){
    float mx          = 0.0f,              // Origin of Menu x coord
          my          = 0.0f,                 // Origin of Menu y coord
@@ -36,12 +36,14 @@ void defineElementCoords(
    } else {
       mirror = -1.0f;
    }
+
+   // Avoid extra ops when not animating by drawing diamonds statically
    if (  (menuLayout == 1 && floatingIndex < diffElements)
          || 
          (menuLayout == 1 && floatingIndex >= (float)(numElements-1)-diffElements)
          ||
          abs(scrollCursor) == 0.0f
-         ){    // Avoid extra ops when not animating by drawing diamonds statically
+         ){    
       float tms = 1.0f;
       float tmr, tmb=0.0f;
       for (unsigned int i = 0; i < numListings+1; i++) {
@@ -58,8 +60,8 @@ void defineElementCoords(
             } 
             if (i+1 == (unsigned int)round((float)numListings*0.5f)){
                tmr = ((1.5f+endOffset) + (float)i*elementSpacing)*deployed;
-               tms = 1.0f + 0.25f*(float)selectFromScroll*(float)selectFromScroll;
-               tmb = 0.1f*(float)selectFromScroll;
+               tms = 1.0f+0.25f*(float)selectFromScroll*(float)selectFromScroll;
+               tmb =       0.1f*(float)selectFromScroll;
             }
          }
 
@@ -76,8 +78,8 @@ void defineElementCoords(
                   tmb = 0.0f;
                } 
                if (i+1 == (unsigned int)round((float)numListings*0.5f)){
-                  tms = 1.0f + 0.25f*(float)selectFromScroll;
-                  tmb = 0.1f*(float)selectFromScroll;
+                  tms = 1.0f+0.25f*(float)selectFromScroll;
+                  tmb =       0.1f*(float)selectFromScroll;
                }
             }
             // Handle selection of elements on ends
@@ -92,52 +94,52 @@ void defineElementCoords(
                // Handle selection of elements at start of list
                if (  i == numListings-1-(unsigned int)floor(floatingIndex)
                      &&
-                     i >= floor(diffElements)   // Resolve edge-case bug
+                     i >= floor(diffElements)                  // Resolve edge-case bug
                      ){
                   if (floatingIndex == floor(floatingIndex)) { // Resolve edge-case bug
-                     tms = 1.0f + 0.25f*(float)selectFromScroll;
-                     tmb = 0.1f*(float)selectFromScroll;
+                     tms = 1.0f+0.25f*(float)selectFromScroll;
+                     tmb =       0.1f*(float)selectFromScroll;
                   } else {
                      tms = 1.0f+0.25f*(1.0f-scrollCursor)*(float)selectFromScroll;
-                     tmb = 0.1f*(1.0f-scrollCursor)*(float)selectFromScroll;
+                     tmb =       0.1f*(1.0f-scrollCursor)*(float)selectFromScroll;
                   }
                }
                if (  i+1 == numListings-1-(unsigned int)floor(floatingIndex)
                      &&
-                     i >= floor(diffElements)   // Resolve edge-case bug
+                     i >= floor(diffElements)                  // Resolve edge-case bug
                      ){
                   if (floatingIndex == floor(floatingIndex)) { // Resolve edge-case bug
                      tms = 1.0f;
                      tmb = 0.0f;
                   } else {
                      tms = 1.0f+0.25f*(scrollCursor)*(float)selectFromScroll;
-                     tmb = 0.1f*(scrollCursor)*(float)selectFromScroll;
+                     tmb =       0.1f*(scrollCursor)*(float)selectFromScroll;
                   }
                }
 
                // Handle selection of elements at end of list
                if (  i == numElements-1-(unsigned int)floor(floatingIndex)
                      &&
-                     i <= floor(diffElements)   // Resolve edge-case bug
+                     i <= floor(diffElements)                  // Resolve edge-case bug
                      ){
                   if (floatingIndex == floor(floatingIndex)) { // Resolve edge-case bug
-                     tms = 1.0f + 0.25f*(float)selectFromScroll;
-                     tmb = 0.1f*(float)selectFromScroll;
+                     tms = 1.0f+0.25f*(float)selectFromScroll;
+                     tmb =       0.1f*(float)selectFromScroll;
                   } else {
                      tms = 1.0f+0.25f*(1.0f-scrollCursor)*(float)selectFromScroll;
-                     tmb = 0.1f*(1.0f-scrollCursor)*(float)selectFromScroll;
+                     tmb =       0.1f*(1.0f-scrollCursor)*(float)selectFromScroll;
                   }
                }
                if (  i+1 == numElements-1-(unsigned int)floor(floatingIndex)
                      &&
-                     i+1 <= floor(diffElements) // Resolve edge-case bug
+                     i+1 <= floor(diffElements)                // Resolve edge-case bug
                      ){
                   if (floatingIndex == floor(floatingIndex)) { // Resolve edge-case bug
                      tms = 1.0f;
                      tmb = 0.0f;
                   } else {
                      tms = 1.0f+0.25f*(scrollCursor)*(float)selectFromScroll;
-                     tmb = 0.1f*(scrollCursor)*(float)selectFromScroll;
+                     tmb =       0.1f*(scrollCursor)*(float)selectFromScroll;
                   }
                }
             }
@@ -153,7 +155,9 @@ void defineElementCoords(
          glCoords[i*3+1] = my+tmb;
          glCoords[i*3+2] = tms;
       }
-   } else {    // Draw animated element diamonds
+   } 
+   else  // Draw animated element diamonds 
+   {    
       float tms = 1.0f;
       float tmr, tma, tmb=0.0f;
       for (unsigned int i = 0; i < numListings+1; i++) {
@@ -164,11 +168,11 @@ void defineElementCoords(
          // Special animation curves for selection case listings
          if (i == (unsigned int)round((float)numListings*0.5f)){  
             tms = 1.0f+0.25f*(1.0f-scrollCursor)*(float)selectFromScroll;
-            tmb = 0.1f*(1.0f-scrollCursor)*(float)selectFromScroll;
+            tmb =       0.1f*(1.0f-scrollCursor)*(float)selectFromScroll;
          } 
          if (i+1 == (unsigned int)round((float)numListings*0.5f)){
             tms = 1.0f+0.25f*(scrollCursor)*(float)selectFromScroll;
-            tmb = 0.1f*(scrollCursor)*(float)selectFromScroll;
+            tmb =       0.1f*(scrollCursor)*(float)selectFromScroll;
          } 
 
          // Special animation curves for end-case listings
@@ -178,8 +182,8 @@ void defineElementCoords(
             tmr = ((1.5f+endOffset) + ((float)i - tma + 1.0f)*elementSpacing)*deployed;
          } 
          if (i == numListings) {
-            tms -= abs(scrollCursor);
             tma = -3.0f*pow(1.0f-scrollCursor, 2.0f) + 4.0f*(1.0f-scrollCursor);
+            tms -= abs(scrollCursor);
             tmr = ((1.5f+endOffset) + ((float)i + tma - 2.0f)*elementSpacing)*deployed;
          }
 
@@ -300,15 +304,17 @@ unsigned int defineMenuOverflow(
    if (menuLayout == 1) {
       tmo = 3.75f;
       if (floatingIndex < diffElements) {
-         if (floor(floatingIndex) == floatingIndex)   // Resolve edge-case bug
-            tmo = 3.75f+ceil(diffElements-floatingIndex)*elementSpacing;
+         // Resolve edge-case bug
+         if (floor(floatingIndex) == floatingIndex)
+            tmo = 3.75f+ceil(diffElements-0.0f-floatingIndex)*elementSpacing;
          else
-            tmo = 3.75f+elementSpacing*(1.0f-scrollCursor)+ceil(diffElements-1.000f-floatingIndex)*elementSpacing;
+            tmo = 3.75f+ceil(diffElements-1.0f-floatingIndex)*elementSpacing+elementSpacing*(1.0f-scrollCursor);
       } else if (floatingIndex > (float)numElements-1.0f-diffElements) {
-         if (floor(floatingIndex) == floatingIndex)   // Resolve edge-case bug
+         // Resolve edge-case bug
+         if (floor(floatingIndex) == floatingIndex)
             tmo = 3.75f+ceil(numElements-diffElements-1.0f-floatingIndex)*elementSpacing;
          else
-            tmo = 3.75f+elementSpacing*(1.0f-scrollCursor)+ceil(numElements-diffElements-2.0f-floatingIndex)*elementSpacing;
+            tmo = 3.75f+ceil(numElements-diffElements-2.0f-floatingIndex)*elementSpacing+elementSpacing*(1.0f-scrollCursor);
       } else {
          tmo = 3.75f;
       }
