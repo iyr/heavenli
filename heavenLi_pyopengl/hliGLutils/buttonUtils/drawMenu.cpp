@@ -228,7 +228,7 @@ void drawMenu(
       MenuOverflow->setColorQuartet(1, detailColor);
 
       if (  MenuOverflow->numVerts == 0   
-            or
+            ||
             prevNumListings != numListings
             ){
 
@@ -333,8 +333,9 @@ void drawMenu(
    }
 
    // Draw text objects indicating floatingIndex, numElements
-   if (drawIndex and deployed > 0.0f) {
-      float tma = degToRad(direction),
+   if (  drawIndex         && 
+         deployed > 0.0f   ){
+      float tma = (float)degToRad(direction),
             textDPIscalar = 32.0f/(float)tmAt->faceSize,
             tmx = scale*(6.75f*cos(tma)+0.5f*sin(-tma))*deployed,   // text location, X
             tmy = scale*(6.75f*sin(tma)+0.5f*cos(-tma)+0.25f*(float)overFlow)*deployed;   // text location, Y
