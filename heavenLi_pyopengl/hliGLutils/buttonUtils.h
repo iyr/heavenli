@@ -82,3 +82,14 @@ void drawImageSquare(
       drawCall*   image
       );
 #include "buttonUtils/drawImageSquare.cpp"
+
+void drawImageCircle(
+      GLfloat     gx, 
+      GLfloat     gy,
+      GLfloat     ao,
+      GLfloat     scale,
+      GLfloat     w2h,
+      GLfloat*    color,
+      drawCall*   image
+      );
+#include "buttonUtils/drawImageCircle.cpp"

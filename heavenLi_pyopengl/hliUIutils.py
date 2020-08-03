@@ -605,7 +605,18 @@ def drawImage(
                 color
                 )
     elif (shape == "circle"):
-        drawImageSquare(
+        drawImageCircle(
+                imagePath,
+                flat_arr_list,
+                0.0, 0.0,
+                0.0,
+                0.75,
+                xRes, yRes,
+                w2h,
+                color
+                )
+    else:
+        drawImageCircle(
                 imagePath,
                 flat_arr_list,
                 0.0, 0.0,

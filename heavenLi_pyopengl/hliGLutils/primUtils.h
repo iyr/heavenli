@@ -70,6 +70,7 @@ float rangeShift(
 #include "primUtils/primMenuOverflowDEGEN.cpp"
 
 #include "primUtils/primTexQuadDEGEN.cpp"
+#include "primUtils/primTexEllipseDEGEN.cpp"
 
 #include "primUtils/drawArch.cpp"
 #include "primUtils/drawEllipse.cpp"

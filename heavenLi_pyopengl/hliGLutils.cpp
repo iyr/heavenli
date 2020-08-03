@@ -58,6 +58,7 @@ PyObject* drawIcon_hliGLutils       (PyObject* self, PyObject* args);
 PyObject* drawMenu_hliGLutils       (PyObject* self, PyObject* args);
 
 PyObject* drawImageSquare_hliGLutils(PyObject* self, PyObject* args);
+PyObject* drawImageCircle_hliGLutils(PyObject* self, PyObject* args);
 
 PyObject* drawArrow_hliGLutils      (PyObject* self, PyObject* args);
 PyObject* drawBulbButton_hliGLutils (PyObject* self, PyObject* args);
@@ -93,6 +94,7 @@ static PyMethodDef hliGLutils_methods[] = {
    { "drawMenu",        (PyCFunction)drawMenu_hliGLutils,         METH_VARARGS },
 
    { "drawImageSquare", (PyCFunction)drawImageSquare_hliGLutils,  METH_VARARGS },
+   { "drawImageCircle", (PyCFunction)drawImageCircle_hliGLutils,  METH_VARARGS },
 
    { "drawArrow",       (PyCFunction)drawArrow_hliGLutils,        METH_VARARGS },
    { "drawBulbButton",  (PyCFunction)drawBulbButton_hliGLutils,   METH_VARARGS },
