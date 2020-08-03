@@ -36,10 +36,10 @@ void defineElementCoords(
    } else {
       mirror = -1.0f;
    }
-   if (  (menuLayout == 1 and floatingIndex < diffElements)
-         or 
-         (menuLayout == 1 and floatingIndex >= (float)(numElements-1)-diffElements)
-         or
+   if (  (menuLayout == 1 && floatingIndex < diffElements)
+         || 
+         (menuLayout == 1 && floatingIndex >= (float)(numElements-1)-diffElements)
+         ||
          abs(scrollCursor) == 0.0f
          ){    // Avoid extra ops when not animating by drawing diamonds statically
       float tms = 1.0f;
@@ -67,7 +67,7 @@ void defineElementCoords(
             // Handle selection of elements in middle
             if (  (
                   floatingIndex >= diffElements
-                  and
+                  &&
                   floatingIndex <= (float)(numElements-1)-diffElements
                   )
                   ){
@@ -83,7 +83,7 @@ void defineElementCoords(
             // Handle selection of elements on ends
             if (  (
                   floatingIndex < diffElements
-                  or
+                  ||
                   floatingIndex > (float)(numElements-1)-diffElements
                   )
                ) {
@@ -91,7 +91,7 @@ void defineElementCoords(
 
                // Handle selection of elements at start of list
                if (  i == numListings-1-(unsigned int)floor(floatingIndex)
-                     and
+                     &&
                      i >= floor(diffElements)   // Resolve edge-case bug
                      ){
                   if (floatingIndex == floor(floatingIndex)) { // Resolve edge-case bug
@@ -103,7 +103,7 @@ void defineElementCoords(
                   }
                }
                if (  i+1 == numListings-1-(unsigned int)floor(floatingIndex)
-                     and
+                     &&
                      i >= floor(diffElements)   // Resolve edge-case bug
                      ){
                   if (floatingIndex == floor(floatingIndex)) { // Resolve edge-case bug
@@ -117,7 +117,7 @@ void defineElementCoords(
 
                // Handle selection of elements at end of list
                if (  i == numElements-1-(unsigned int)floor(floatingIndex)
-                     and
+                     &&
                      i <= floor(diffElements)   // Resolve edge-case bug
                      ){
                   if (floatingIndex == floor(floatingIndex)) { // Resolve edge-case bug
@@ -129,7 +129,7 @@ void defineElementCoords(
                   }
                }
                if (  i+1 == numElements-1-(unsigned int)floor(floatingIndex)
-                     and
+                     &&
                      i+1 <= floor(diffElements) // Resolve edge-case bug
                      ){
                   if (floatingIndex == floor(floatingIndex)) { // Resolve edge-case bug
@@ -145,8 +145,8 @@ void defineElementCoords(
          if (i == numListings) tms = 0.0f;
 
          tms *= 0.75f*3.0f/(float)numListings;
-         elementCoords[i*3+0] = mx+(tmr)*cos(degToRad(direction))+mirror*tmb*sin(degToRad(-direction));
-         elementCoords[i*3+1] = my+(tmr)*sin(degToRad(direction))+mirror*tmb*cos(degToRad(-direction));
+         elementCoords[i*3+0] = (float)(mx+(tmr)*cos(degToRad(direction))+mirror*tmb*sin(degToRad(-direction)));
+         elementCoords[i*3+1] = (float)(my+(tmr)*sin(degToRad(direction))+mirror*tmb*cos(degToRad(-direction)));
          elementCoords[i*3+2] = tms*deployed;
 
          glCoords[i*3+0] = mx+tmr;
@@ -184,8 +184,8 @@ void defineElementCoords(
          }
 
          tms *= 0.75f*3.0f/(float)numListings;
-         elementCoords[i*3+0] = mx+(tmr)*cos(degToRad(direction))+mirror*tmb*sin(degToRad(-direction));
-         elementCoords[i*3+1] = my+(tmr)*sin(degToRad(direction))+mirror*tmb*cos(degToRad(-direction));
+         elementCoords[i*3+0] = (float)(mx+(tmr)*cos(degToRad(direction))+mirror*tmb*sin(degToRad(-direction)));
+         elementCoords[i*3+1] = (float)(my+(tmr)*sin(degToRad(direction))+mirror*tmb*cos(degToRad(-direction)));
          elementCoords[i*3+2] = tms*deployed;
 
          glCoords[i*3+0] = mx+tmr;

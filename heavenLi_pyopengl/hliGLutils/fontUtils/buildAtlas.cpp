@@ -80,7 +80,7 @@ PyObject* buildAtlas_hliGLutils(PyObject* self, PyObject *args) {
       PyBitmap = PyObject_GetAttrString(PyChar, "bitmap");
       unsigned int bufferLength;
       //bufferLength = PyList_Size(PyBitmap);
-      bufferLength = glyphData[c].bearingX*glyphData[c].bearingY;
+      bufferLength = (unsigned int)(glyphData[c].bearingX*glyphData[c].bearingY);
       GLubyte* tmb = new GLubyte[bufferLength*4];
 
       for (unsigned int i = 0; i < bufferLength; i++) {

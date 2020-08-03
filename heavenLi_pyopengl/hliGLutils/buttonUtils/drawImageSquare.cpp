@@ -49,7 +49,7 @@ PyObject* drawImageSquare_hliGLutils(PyObject* self, PyObject* args) {
    if (copyBuffer) {
       printf("building image texture...\n");
       unsigned int bufferLength;
-      bufferLength = xRes*yRes;
+      bufferLength = (unsigned int)(xRes*yRes);
       GLubyte* tmb = new GLubyte[bufferLength*4];
       PyObject* rpx;
       PyObject* gpx;
@@ -75,7 +75,7 @@ PyObject* drawImageSquare_hliGLutils(PyObject* self, PyObject* args) {
       glBindTexture(GL_TEXTURE_2D, image->texID);
       glUniform1i(uniform_tex, 0);
 
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, xRes, yRes, 0, GL_RGBA, GL_UNSIGNED_BYTE, tmb);
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (unsigned int)xRes, (unsigned int)yRes, 0, GL_RGBA, GL_UNSIGNED_BYTE, tmb);
       glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
       //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
