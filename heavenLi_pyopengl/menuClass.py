@@ -288,7 +288,11 @@ class Menu:
                     #self.selectionCursorVelocity = 0.0
                     tml = self.cursor2indices(1.0)
                     #self.scrollSnap.setValue(self.scrollSnap.getTar())
-                    self.scrollSnap.setTargetVal(tml[self.numListings-1-i])
+                    if (    self.numListings > 2
+                            and
+                            self.numElements > 2
+                            ):
+                        self.scrollSnap.setTargetVal(tml[self.numListings-1-i])
                     #self.scrollSnap.setTargetVal(self.delimitValue(self.scrollSnap.getTar()-1.0))
                     if (not self.selectFromScroll):
                         self.selectedElement = rollover(round(self.delimitValue(self.scrollSnap.getTar())), self.numElements)
@@ -670,8 +674,8 @@ class Menu:
                 "selectedElement":self.selectedElement,
                 "numElements":self.numElements,
                 "menuLayout":tmml,
-                "numListings":self.numListings,
-                "drawIndex":self.dispIndex,
+                "numListings":min(self.numListings, self.numElements),
+                "drawIndex":(self.dispIndex and self.numListings > 3),
                 "selectFromScroll":self.selectFromScroll,
                 "w2h":w2h,
                 "faceColor":stateMach['faceColor'],
