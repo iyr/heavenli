@@ -1,11 +1,8 @@
 #!/usr/bin/python3
 
 print("Now Loading...")
-from hliImports import *
+from hliUIutils import *
 from lampClass import *
-print("All Imports Loaded...")
-
-#import profile
 
 def init():
     global stateMach
@@ -89,6 +86,14 @@ def drawTest():
             tmx /= w2h
             tmy /= w2h
 
+        drawEllipse(
+                tmx,
+                tmy,
+                10.1, 10.1,
+                w2h,
+                (0.1, 0.1, 0.1, 1.0)
+                )
+
         # Draw Purple Ball
         drawEllipse(
                 tmx,
@@ -98,6 +103,17 @@ def drawTest():
                 #(0.42, 0.0, 0.85, 1.0)
                 stateMach['testList'][stateMach['Menus']['testMenu'].getSelection()]
                 )
+
+        #drawImage(
+            #'joystick.jpg',
+            #0.0, 0.0,
+            #0.0,
+            #0.75,
+            #w2h,
+            #"square",
+            #(1.0, (stateMach['someVar']/100), 1.0, 0.5),
+            #False
+            #)
 
         cDrag  = 1.0
         accelX = -stateMach['BallVelocity'][0]*cDrag
@@ -230,6 +246,7 @@ def drawTest():
     except Exception as OOF:
         print(traceback.format_exc())
         print("Error:", OOF)
+        #quit()
     return
 
 def watchTest():
