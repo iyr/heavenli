@@ -21,7 +21,9 @@ def constrain(val, min_val, max_val):
 
 # Used to safely index list objects with supercritical index values
 def rollover(index, length):
-    if (index >= 0) and (index < length):
+    if (length <= 0):
+        return 0
+    elif (index >= 0) and (index < length):
         return index
     elif (index >= length):
         while (index >= length):
