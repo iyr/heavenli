@@ -67,7 +67,10 @@ float rangeShift(
 
 #include "primUtils/primColorWheelDEGEN.cpp"
 #include "primUtils/primBulbDEGEN.cpp"
+
+#include "primUtils/defineElementCoords.cpp"
 #include "primUtils/primMenuOverflowDEGEN.cpp"
+#include "primUtils/primMenuNormalDEGEN.cpp"
 
 #include "primUtils/primTexQuadDEGEN.cpp"
 #include "primUtils/primTexEllipseDEGEN.cpp"
