@@ -66,7 +66,8 @@ void drawMenu(
       GLfloat*    faceColor,        // Main color for the body of the menu
       GLfloat*    detailColor,      // scroll bar, arrow colors
       drawCall*   MenuIndex,        // drawCall object for drawing menu index
-      drawCall*   MenuOpen,         // drawCall object for drawing the menu open
+      drawCall*   MenuOverflow,     // drawCall object for drawing the menu open
+      drawCall*   MenuNormal,       // drawCall object for drawing the menu open
       drawCall*   MenuClosed        // drawCall object for drawing the menu closed
       );
 
