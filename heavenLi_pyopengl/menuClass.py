@@ -76,18 +76,18 @@ class Menu:
         self.scrollCursor = 0.0
 
         # pointer to the list the menu will be operating on
-        self.list = None
+        self.menuData = None
 
-    def setList(self, List):
-        self.list = List
+    # avoid routines that copy python objects,
+    # otherwise, this may be used to update the menu
+    def setData(self, dataPtr):
+        self.menuData = dataPtr
 
     # change menu layout
     def setLayout(self, layout):
         if layout == 0:
             self.menuLayout = 0
         elif layout == 1:
-            #if (self.selectionCursorPosition == 0.0):
-                #self.selectionCursorPosition = 1.0
             self.menuLayout = 1
         elif layout == 1:
             self.menuLayout = 2
@@ -207,17 +207,41 @@ class Menu:
             else:
                 self.dispIndex = not self.dispIndex
 
+    # Get key by index of a list of keys
+    def getKeyByIndex(self, index):
+        if (type(self.menuData) == dict): 
+            tmk = list(self.menuData.keys())
+            tmk.sort()
+            return tmk[index]
+            
+    # Get key of the currently selected element
+    def getSelectedKey(self):
+        if (type(self.menuData) == dict): 
+            tmk = list(self.menuData.keys())
+            tmk.sort()
+            return tmk[self.getSelection()]
+
     # get python object for currently selected element
     def getSelectedElement(self):
         if (self.getNumElements() > 0):
-            return self.list[self.getSelection()]
+            if (type(self.menuData) == list):
+                return self.menuData[self.getSelection()]
+            elif (type(self.menuData) == dict):
+                return self.menuData[self.getSelectedKey()]
+            else:
+                return None
         else:
             return None
 
     # get python object for received list index
     def getElementByIndex(self, index):
         if (self.getNumElements() > 0):
-            return self.list[index]
+            if (type(self.menuData) == list):
+                return self.menuData[index]
+            elif (type(self.menuData) == dict):
+                return self.menuData[self.getKeyByIndex(index)]
+            else:
+                return None
         else:
             return None
 
@@ -232,7 +256,7 @@ class Menu:
 
     # Get number of elements menu is managing
     def getNumElements(self):
-        return len(self.list)
+        return len(self.menuData)
 
     # Get Menu deployment angle
     def getAng(self):

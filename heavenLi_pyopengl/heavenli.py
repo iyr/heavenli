@@ -1355,9 +1355,11 @@ def key(ch, x, y):
     stateMach['keyPressed'] == tmk
 
     if tmk == 'q':
-        sys.exit(0)
+        quit()
+        #sys.exit(0)
     if ord(ch) == 27: # ESC
-        sys.exit(0)
+        quit()
+        #sys.exit(0)
 
     if ch == as_8_bit('a'):
         if (len(stateMach['lamps']) > 0):
@@ -1537,10 +1539,8 @@ if __name__ == '__main__':
     stateMach['Menus']['testMenu'].UIelement.setAccel(0.125)
     stateMach['Menus']['testMenu'].UIelement.setTarPosX(-0.775)
     stateMach['Menus']['testMenu'].UIelement.setTarPosY(-0.775)
-    #stateMach['Menus']['testMenu'].UIelement.setTarPosX(-0.0)
-    #stateMach['Menus']['testMenu'].UIelement.setTarPosY(-0.0)
-    #stateMach['Menus']['testMenu'].setNumElements(len(stateMach['testList']))
-    stateMach['Menus']['testMenu'].setList(stateMach['testList'])
+    #stateMach['Menus']['testMenu'].setData(stateMach['testList'])
+    stateMach['Menus']['testMenu'].setData(stateMach['Colors'])
 
     # Setup UI animation objects, initial parameters
 
