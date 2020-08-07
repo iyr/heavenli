@@ -64,7 +64,7 @@ def framerate():
 
     if stateMach['frameLimit'] and (stateMach['fps'] > 66):
         pass
-        time.sleep(0.015)
+        time.sleep(0.016)
 
     return
 
@@ -95,13 +95,15 @@ def drawTest():
                 )
 
         # Draw Purple Ball
+        tmc = stateMach['Menus']['testMenu'].getSelectedElement()
+        if (tmc is None):
+            tmc = (0.7, 0.7, 0.7, 1.0)
         drawEllipse(
                 tmx,
                 tmy,
                 0.1, 0.1,
                 w2h,
-                #(0.42, 0.0, 0.85, 1.0)
-                stateMach['testList'][stateMach['Menus']['testMenu'].getSelection()]
+                tmc
                 )
 
         #drawImage(
@@ -202,28 +204,22 @@ def drawTest():
         stateMach['Menus']['testMenu'].draw(stateMach)
 
         # Get relative positions / sizes of visible elements
-        quack = stateMach['Menus']['testMenu'].getElements()
+        quack = stateMach['Menus']['testMenu'].getElements(w2h)
 
         # Loop through drawing menu elements, draw first and last elements before middle elements for proper z-layering draw-order
-        for i in range(-1, len(quack)-1):
-            tmx = quack[i][1]*stateMach['Menus']['testMenu'].UIelement.getSize()
-            tmy = quack[i][2]*stateMach['Menus']['testMenu'].UIelement.getSize()
+        if (quack is not None):
+            for i in range(-1, len(quack)-1):
+                tmx = quack[i][1]
+                tmy = quack[i][2]
 
-            if w2h < 1.0:
-                tmx += stateMach['Menus']['testMenu'].UIelement.getPosX()
-                tmy += stateMach['Menus']['testMenu'].UIelement.getPosY()/w2h
-            else:
-                tmx += stateMach['Menus']['testMenu'].UIelement.getPosX()*w2h
-                tmy += stateMach['Menus']['testMenu'].UIelement.getPosY()
-
-            drawEllipse(
-                    tmx,
-                    tmy,
-                    quack[i][3]*0.125,
-                    quack[i][3]*0.125,
-                    w2h,
-                    stateMach['testList'][quack[i][0]]
-                    )
+                drawEllipse(
+                        tmx,
+                        tmy,
+                        quack[i][3],
+                        quack[i][3],
+                        w2h,
+                        stateMach['Menus']['testMenu'].getElementByIndex(quack[i][0])
+                        )
 
         # Draw selected element in menu core
         tmx = stateMach['Menus']['testMenu'].UIelement.getPosX()
@@ -232,14 +228,17 @@ def drawTest():
             tmy /= w2h
         else:
             tmx *= w2h
-        drawEllipse(
-                tmx,
-                tmy,
-                stateMach['Menus']['testMenu'].UIelement.getSize()*0.7,
-                stateMach['Menus']['testMenu'].UIelement.getSize()*0.7,
-                w2h,
-                stateMach['testList'][stateMach['Menus']['testMenu'].getSelection()]
-                )
+
+        tmc = stateMach['Menus']['testMenu'].getSelectedElement()
+        if (tmc is not None):
+            drawEllipse(
+                    tmx,
+                    tmy,
+                    stateMach['Menus']['testMenu'].UIelement.getSize()*0.7,
+                    stateMach['Menus']['testMenu'].UIelement.getSize()*0.7,
+                    w2h,
+                    tmc
+                    )
 
         pass
 
@@ -989,6 +988,7 @@ def dragWindow():
 
         for menu in stateMach['Menus']:
             stateMach['Menus'][menu].close()
+            #stateMach['Menus'][menu].update(stateMach)
             stateMach['Menus'][menu].update(stateMach)
         glutPositionWindow(tmx, tmy)
 
@@ -1184,8 +1184,8 @@ def display():
     #stateMach['tDiff'] = 3.14159/stateMach['fps']
     #stateMach['tDiff'] = 6.28318/stateMach['fps']
 
-    #drawTestObjects = False
-    drawTestObjects = True
+    drawTestObjects = False
+    #drawTestObjects = True
     calcCursorVelocity(0)
 
     if (not drawTestObjects):
@@ -1289,15 +1289,24 @@ def special(k, x, y):
 
     elif k == GLUT_KEY_UP:
         stateMach['textGlyphRes'] += 1
-        stateMach['textDPIscalar'] = 32.0/float(stateMach['textGlyphRes'])
-        makeFont(fontFile="fonts/expressway_regular.ttf", numChars=128, size=stateMach['textGlyphRes'])
+        
+        stateMach['testList'].append((
+            random.random(),
+            random.random(),
+            random.random(),
+            1.0
+            ))
+        #stateMach['textDPIscalar'] = 32.0/float(stateMach['textGlyphRes'])
+        #makeFont(fontFile="fonts/expressway_regular.ttf", numChars=128, size=stateMach['textGlyphRes'])
         #if (len(stateMach['lamps']) > 0):
             #stateMach['lamps'][Light].setNumBulbs(stateMach['lamps'][Light].getNumBulbs()+1)
 
     elif k == GLUT_KEY_DOWN:
         stateMach['textGlyphRes'] -= 1
-        stateMach['textDPIscalar'] = 32.0/float(stateMach['textGlyphRes'])
-        makeFont(fontFile="fonts/expressway_regular.ttf", numChars=128, size=stateMach['textGlyphRes'])
+        if (len(stateMach['testList']) > 0):
+            del stateMach['testList'][-1]
+        #stateMach['textDPIscalar'] = 32.0/float(stateMach['textGlyphRes'])
+        #makeFont(fontFile="fonts/expressway_regular.ttf", numChars=128, size=stateMach['textGlyphRes'])
         #if (len(stateMach['lamps']) > 0):
             #stateMach['lamps'][Light].setNumBulbs(stateMach['lamps'][Light].getNumBulbs()-1)
 
@@ -1489,13 +1498,24 @@ if __name__ == '__main__':
     stateMach['UIelements']         = {}                        # Dictionary of objects used for positioning/animating buttons and what-not
     stateMach['Menus']              = {}                        # Dictionary of objects for managing drop/slide menus
 
+
+    stateMach['Colors'] = {}
+    stateMach['Colors']['Black']    = (0.0, 0.0, 0.0, 1.0)
+    stateMach['Colors']['White']    = (1.0, 1.0, 1.0, 1.0)
+    stateMach['Colors']['Yellow']   = (1.0, 1.0, 0.0, 1.0)
+    stateMach['Colors']['Magenta']  = (1.0, 0.0, 1.0, 1.0)
+    stateMach['Colors']['Cyan']     = (0.0, 1.0, 1.0, 1.0)
+    stateMach['Colors']['Blue']     = (0.0, 0.0, 1.0, 1.0)
+    stateMach['Colors']['Green']    = (0.0, 1.0, 0.0, 1.0)
+    stateMach['Colors']['Red']      = (1.0, 0.0, 0.0, 1.0)
+
     stateMach['testList'] = []
     stateMach['testList'].append((1.0, 1.0, 0.0, 1.0))  # Yellow
-    stateMach['testList'].append((1.0, 0.0, 1.0, 1.0))  # Magenta
-    stateMach['testList'].append((0.0, 1.0, 1.0, 1.0))  # Cyan
-    stateMach['testList'].append((1.0, 0.0, 0.0, 1.0))  # Red
-    stateMach['testList'].append((0.0, 0.0, 1.0, 1.0))  # Blue
-    stateMach['testList'].append((0.0, 1.0, 0.0, 1.0))  # Green
+    #stateMach['testList'].append((1.0, 0.0, 1.0, 1.0))  # Magenta
+    #stateMach['testList'].append((0.0, 1.0, 1.0, 1.0))  # Cyan
+    #stateMach['testList'].append((1.0, 0.0, 0.0, 1.0))  # Red
+    #stateMach['testList'].append((0.0, 0.0, 1.0, 1.0))  # Blue
+    #stateMach['testList'].append((0.0, 1.0, 0.0, 1.0))  # Green
     #stateMach['testList'].append((0.4, 0.0, 1.0, 1.0))  # Purple
     #stateMach['testList'].append((1.0, 0.4, 0.0, 1.0))  # Orange
     for i in range(0):
@@ -1519,7 +1539,8 @@ if __name__ == '__main__':
     stateMach['Menus']['testMenu'].UIelement.setTarPosY(-0.775)
     #stateMach['Menus']['testMenu'].UIelement.setTarPosX(-0.0)
     #stateMach['Menus']['testMenu'].UIelement.setTarPosY(-0.0)
-    stateMach['Menus']['testMenu'].setNumElements(len(stateMach['testList']))
+    #stateMach['Menus']['testMenu'].setNumElements(len(stateMach['testList']))
+    stateMach['Menus']['testMenu'].setList(stateMach['testList'])
 
     # Setup UI animation objects, initial parameters
 

@@ -11,7 +11,7 @@ PyObject* drawMenu_hliGLutils(PyObject* self, PyObject* args) {
    PyObject*   py_list;
    PyObject*   py_tuple;
    PyObject*   Params;
-   //PyObject*   py_float;
+
    GLfloat     gx, gy, scale, w2h, deployed, direction, floatingIndex, scrollCursor;
    GLuint      numElements, menuLayout, numListings, selectedElement = 0;
    GLboolean   drawIndex, selectFromScroll;
@@ -42,28 +42,6 @@ PyObject* drawMenu_hliGLutils(PyObject* self, PyObject* args) {
    faceColorPyTup    = PyDict_GetItem(Params, PyUnicode_FromString("faceColor"));
    detailColorPyTup  = PyDict_GetItem(Params, PyUnicode_FromString("detailColor"));
 
-   /*
-   if ( !PyArg_ParseTuple(args,
-            "fffffffIIIpfOO",//O",
-            &gx, &gy,         // Menu Position
-            &scale,           // Menu Size
-            &direction,       // Direction, in degrees about the unit circle, the menu slides out to
-            &deployed,        // 0.0=closed, 1.0=completely open
-            &floatingIndex,   // index of the selected element, used for scroll bar
-            &scrollCursor,    // animation cursor for element motion during scrolling
-            &numElements,     // number of elements
-            &menuLayout,      // 0=carousel w/ rollover, 1=linear strip w/ terminals, 2=value slider w/ min/max
-            &numListings,     // (experimental) number of listings to display
-            &drawIndex,       // whether or not to draw the index over the number of elements
-            &w2h,             //
-            &faceColorPyTup,
-            &detailColorPyTup
-            ) )
-   {
-      Py_RETURN_NONE;
-   }
-   */
-
    faceColor[0] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 0));
    faceColor[1] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 1));
    faceColor[2] = (GLfloat)PyFloat_AsDouble(PyTuple_GetItem(faceColorPyTup, 2));
@@ -76,13 +54,19 @@ PyObject* drawMenu_hliGLutils(PyObject* self, PyObject* args) {
 
    if (drawCalls.count("MenuIndex") <= 0)
       drawCalls.insert(std::make_pair("MenuIndex", drawCall()));
-   drawCall* MenuIndex = &drawCalls["MenuIndex"];
+   drawCall* MenuIndex     = &drawCalls["MenuIndex"];
+
    if (drawCalls.count("MenuOverflow") <= 0)
       drawCalls.insert(std::make_pair("MenuOverflow", drawCall()));
-   drawCall* MenuOverflow = &drawCalls["MenuOverflow"];
+   drawCall* MenuOverflow  = &drawCalls["MenuOverflow"];
+
+   if (drawCalls.count("MenuNormal") <= 0)
+      drawCalls.insert(std::make_pair("MenuNormal", drawCall()));
+   drawCall* MenuNormal    = &drawCalls["MenuNormal"];
+
    if (drawCalls.count("MenuClosed") <= 0)
       drawCalls.insert(std::make_pair("MenuClosed", drawCall()));
-   drawCall* MenuClosed = &drawCalls["MenuClosed"];
+   drawCall* MenuClosed    = &drawCalls["MenuClosed"];
 
    elementCoords = new GLfloat[3*(numListings+1)];
 
@@ -103,8 +87,9 @@ PyObject* drawMenu_hliGLutils(PyObject* self, PyObject* args) {
          w2h,              // width to height ratio
          faceColor,        // Main color for the body of the menu
          detailColor,      // scroll bar, 
-         MenuIndex,
+         MenuIndex,        // drawCall object for drawing a numeric index of elements
          MenuOverflow,     // drawCall object for drawing the menu open
+         MenuNormal,       // drawCall object for drawing the menu open
          MenuClosed        // drawCall object for drawing the menu closed
          );
 
@@ -142,8 +127,10 @@ void drawMenu(
       GLfloat*    detailColor,      // scroll bar, 
       drawCall*   MenuIndex,        // drawCall object for drawing menu index
       drawCall*   MenuOverflow,     // drawCall object for drawing the menu open
+      drawCall*   MenuNormal,       // drawCall object for drawing the menu open
       drawCall*   MenuClosed        // drawCall object for drawing the menu closed
       ){
+
    textAtlas* tmAt = &textFonts[selectedAtlas];
 
    static GLfloat prevDep,
@@ -152,6 +139,7 @@ void drawMenu(
                   prevFlc;
 
    static GLuint  prevNumListings   = 3,
+                  prevNumElements   = -1,
                   prevMenuLayout    = -1;
    GLuint         circleSegments    = 60;
    static GLboolean prevIndexDraw   = false,
@@ -161,17 +149,6 @@ void drawMenu(
    if (numListings < numElements) {
       overFlow = true;
    }
-
-   /*
-   if (  numElements > 3   ||
-         overFlow          ){
-      tmo = 5.75f+(float)drawIndex;
-   } else {
-      if (numElements == 3) tmo = 5.50f+(float)drawIndex;    
-      if (numElements == 2) tmo = 3.75f+(float)drawIndex;    
-      if (numElements == 1) tmo = 2.00f+(float)drawIndex;
-   }
-   */
 
    // Draw single circle when menu closed
    if (deployed <= 0.0001) {
@@ -219,18 +196,111 @@ void drawMenu(
       MenuClosed->updateMVP(gx, gy, scale, scale, -direction, w2h);
       MenuClosed->draw();
    } 
-   //else if (numElements > numListings) // Draw Menu Body w/ elements+scrollbar when open
-   else if (true) // Draw Menu Body w/ elements+scrollbar when open
-   {
-      //GLfloat arrowRad = 0.05f*pow(deployed, 2.0f);
+   // Draw Menu Body w/ just elements
+   else if (
+         numElements < 4
+         ){
+      MenuNormal->setNumColors(2);
+      MenuNormal->setColorQuartet(0, faceColor);
+      MenuNormal->setColorQuartet(1, detailColor);
+
+      if (  MenuNormal->numVerts == 0        ||
+            prevNumElements != numElements   ){
+         vector<GLfloat> verts;
+         vector<GLfloat> colrs;
+
+         defineMenuNormal(
+            direction,        // Direction, in degrees, the menu slides out to
+            deployed,         // 0.0=closed, 1.0=completely open
+            floatingIndex,    // index of the selected element, used for scroll bar
+            scrollCursor,     // animation cursor for element motion during scrolling: -1.0 to 1.0
+            numElements,      // number of elements
+            circleSegments,
+            selectFromScroll,
+            elementCoords,    // Relative coordinates of Menu elements
+            w2h,              // width to height ratio
+            faceColor,        // Main color for the body of the menu
+            detailColor,      // scroll bar, 
+            verts,            // Input Vector of x,y coordinates
+            colrs             // Input Vector of r,g,b values
+            );
+
+         prevDir = direction;
+         prevDep = deployed;
+         prevScr = scrollCursor;
+         prevFlc = floatingIndex;
+         prevNumElements = numElements;
+         MenuNormal->buildCache(verts.size()/2, verts, colrs);
+      }
+
+      if (  prevDep        != deployed       ||
+            prevScr        != scrollCursor   ||
+            prevFlc        != floatingIndex  ||
+            prevDir        != direction      ||
+            prevSelectFromScroll != selectFromScroll  ){
+         GLuint index = 0;
+         index = updateMenuNormalGeometry(
+               direction,     // Direction, in degrees, the menu slides out to
+               deployed,      // 0.0=closed, 1.0=completely open
+               floatingIndex, // index of the selected element, used for scroll bar
+               scrollCursor,  // element animation cursor for scrolling: -1.0 to 1.0
+               numElements,   // number of elements
+               circleSegments,// number of polygon segments
+               selectFromScroll,
+               elementCoords, // Relative coordinates of Menu elements
+               w2h,           // width to height ratio
+               index,
+               MenuNormal->coordCache
+         );
+
+         prevDep = deployed;
+         prevDir = direction;
+         prevScr = scrollCursor;
+         prevFlc = floatingIndex;
+         prevSelectFromScroll = selectFromScroll;
+         MenuNormal->updateCoordCache();
+      } else {
+		   float* glCoords = new float[(numElements+1)*3];
+		   defineElementCoords(
+		      direction,
+		      deployed,
+		      floatingIndex,
+		      scrollCursor,
+		      numElements,
+		      1,
+		      numElements,
+		      selectFromScroll,
+		      glCoords,
+		      elementCoords
+		      );
+		      }
+
+      if (  MenuNormal->colorsChanged ){
+         GLuint index = 0;
+         index = updateMenuNormalColors(
+            numElements,   // number of listings to display
+            circleSegments,
+            faceColor,     // Main color for the body of the menu
+            detailColor,   // scroll bar, 
+            index,
+            MenuNormal->colorCache
+            );
+         MenuNormal->updateColorCache();
+      }
+
+      MenuNormal->updateMVP(gx, gy, scale, scale, -direction, w2h);
+      MenuNormal->draw();
+   }
+   // Draw Menu Body w/ elements+scrollbar when open
+   else if (   numElements > 3            ||
+               numElements > numListings  ){
+
       MenuOverflow->setNumColors(2);
       MenuOverflow->setColorQuartet(0, faceColor);
       MenuOverflow->setColorQuartet(1, detailColor);
 
-      if (  MenuOverflow->numVerts == 0   
-            ||
-            prevNumListings != numListings
-            ){
+      if (  MenuOverflow->numVerts == 0      ||
+            prevNumListings != numListings   ){
 
          vector<GLfloat> verts;
          vector<GLfloat> colrs;
@@ -258,6 +328,7 @@ void drawMenu(
          prevDep = deployed;
          prevScr = scrollCursor;
          prevFlc = floatingIndex;
+         prevNumElements   = numElements;
          prevMenuLayout    = menuLayout;
          prevNumListings   = numListings;
          prevIndexDraw     = drawIndex;
@@ -273,18 +344,18 @@ void drawMenu(
             prevSelectFromScroll != selectFromScroll  ){
          GLuint index = 0;
          index = updateMenuOverflowGeometry(
-               direction,     // Direction, in degrees, the menu slides out to
-               deployed,      // 0.0=closed, 1.0=completely open
-               floatingIndex, // index of the selected element, used for scroll bar
-               scrollCursor,  // element animation cursor for scrolling: -1.0 to 1.0
-               numElements,   // number of elements
-               menuLayout,      // 0=carousel w/ rollover, 1=terminated linear strip
-               circleSegments,// number of polygon segments
-               numListings,   // number of listings to display
-               drawIndex,     // whether or not to draw the index over the number of elements
-               selectFromScroll,
-               elementCoords, // Relative coordinates of Menu elements
-               w2h,           // width to height ratio
+               direction,        // Direction, in degrees, the menu slides out to
+               deployed,         // 0.0=closed, 1.0=completely open
+               floatingIndex,    // index of the selected element, used for scroll bar
+               scrollCursor,     // element animation cursor for scrolling: -1.0 to 1.0
+               numElements,      // number of elements
+               menuLayout,       // 0=carousel w/ rollover, 1=terminated linear strip
+               circleSegments,   // number of polygon segments
+               numListings,      // number of listings to display
+               drawIndex,        // whether or not to draw the index over the number of elements
+               selectFromScroll, // whether or not elements are selected by scrolling to them
+               elementCoords,    // Relative coordinates of Menu elements
+               w2h,              // width to height ratio
                index,
                MenuOverflow->coordCache
          );
@@ -293,8 +364,8 @@ void drawMenu(
          prevDir = direction;
          prevScr = scrollCursor;
          prevFlc = floatingIndex;
+         prevMenuLayout       = menuLayout;
          prevSelectFromScroll = selectFromScroll;
-         prevMenuLayout = menuLayout;
          MenuOverflow->updateCoordCache();
       } else {
          float* tml = new float[(numListings+1)*3];
@@ -337,7 +408,7 @@ void drawMenu(
          deployed > 0.0f   ){
       float tma = (float)degToRad(direction),
             textDPIscalar = 32.0f/(float)tmAt->faceSize,
-            tmx = scale*(6.75f*cos(tma)+0.5f*sin(-tma))*deployed,   // text location, X
+            tmx = scale*(6.75f*cos(tma)+0.5f*sin(-tma))*deployed,                         // text location, X
             tmy = scale*(6.75f*sin(tma)+0.5f*cos(-tma)+0.25f*(float)overFlow)*deployed;   // text location, Y
       if (w2h < 1.0f)
          tmy *= w2h;
@@ -345,7 +416,6 @@ void drawMenu(
          tmx /= w2h;
       int tme = constrain(numElements, 0, 999);
 
-      //std::string inputString = std::to_string(constrain((int)round(floatingIndex+1.0f), 0, tme));
       std::string inputString = std::to_string(1+selectedElement);
       drawText(
             inputString,               // string to render
@@ -361,7 +431,7 @@ void drawMenu(
             MenuIndex                  // drawCall to write to
             );
 
-      tmx = scale*(6.75f*cos(tma)-0.5f*sin(-tma))*deployed;   // text location, X
+      tmx = scale*(6.75f*cos(tma)-0.5f*sin(-tma))*deployed;                         // text location, X
       tmy = scale*(6.75f*sin(tma)-0.5f*cos(-tma)+0.25f*(float)overFlow)*deployed;   // text location, Y
       if (w2h < 1.0f)
          tmy *= w2h;
