@@ -413,6 +413,9 @@ class UIparam:
         return self.targetReached
 
     # Set Target Value for the Current Value to transition to
+    def setTarget(self, target):
+        return self.setTargetVal(target)
+
     def setTargetVal(self, target):
         self.cursor         = 0.0
         self.previousVal    = self.currentVal
@@ -442,6 +445,7 @@ class UIparam:
     # Use sparringly
     def setValue(self, value):
         self.currentVal = float(value)
+        self.previousVal = float(value)
         return
 
     # Use to temporarily tune animation speed (multiplies tDiff)
