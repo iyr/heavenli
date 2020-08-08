@@ -32,7 +32,7 @@ def init():
 def framerate():
     global stateMach
     t = time.time()
-    stateMach['frames'] += 1.0
+    stateMach['glutFrames'] += 1.0
     seconds = t - stateMach['t0']
     if (seconds <= 0.0):
         seconds = 0.00000000001
@@ -41,30 +41,45 @@ def framerate():
         stateMach['someInc'] = -stateMach['someInc']
 
     try:
-        stateMach['fps'] = stateMach['frames']/seconds
+        stateMach['glutFreq'] = stateMach['glutFrames']/seconds
     except:
-        stateMach['fps'] = 60
+        stateMach['glutFreq'] = 60
         print("Too Fast, Too Quick!!")
 
+    if (t - stateMach['PLrefreshTimer'] >= (stateMach['baseFrequency']/66.0)*stateMach['baseTimestep']):
+        stateMach['PLrefreshTimer'] = t
+        stateMach['doPLrefresh'] = True
+
+    if (t - stateMach['GLrefreshTimer'] >= (stateMach['baseFrequency']/(stateMach['GLframelimit']*1.25))*stateMach['baseTimestep']):
+        stateMach['GLframes'] += 1
+        stateMach['GLrefreshTimer'] = t
+        stateMach['doGLrefresh'] = True
+
+    if (t - stateMach['SMrefreshTimer'] >= (stateMach['baseFrequency']/180.0)*stateMach['baseTimestep']):
+        stateMach['SMrefreshTimer'] = t
+        stateMach['doSMrefresh'] = True
+
     if t - stateMach['t1'] >= (0.0125):
-        #calcCursorVelocity(0)
+        calcCursorVelocity(0)
         stateMach['t1'] = t
 
     if t - stateMach['t0'] >= 1.0:
-        #print("%.0f frames in %3.1f seconds = %6.3f FPS" % (stateMach['frames'],seconds,stateMach['fps']))
-        stateMach['lamps']  = plugins.pluginLoader.getAllLamps()
-        stateMach['t0']     = t
-        stateMach['frames'] = 0
-        ct                  = datetime.datetime.now()
-        stateMach['second'] = ct.second
-        stateMach['minute'] = ct.minute + stateMach['second']*0.016666667
-        stateMach['hour']   = ct.hour + stateMach['minute']*0.016666667
+        #print("%.0f frames in %3.1f seconds = %6.3f FPS" % (stateMach['glutFrames'],seconds,stateMach['glutFreq']))
+        if (stateMach['doPLrefresh']): stateMach['lamps']  = plugins.pluginLoader.getAllLamps()
+        stateMach['t0']         = t
+        stateMach['glutFrames'] = 0
+        ct                      = datetime.datetime.now()
+        stateMach['GLfreq']     = stateMach['GLframes']/seconds
+        stateMach['GLframes']   = 0
+        stateMach['second']     = ct.second
+        stateMach['minute']     = ct.minute + stateMach['second']*0.016666667
+        stateMach['hour']       = ct.hour + stateMach['minute']*0.016666667
         if (stateMach['hour'] > 11):
             stateMach['hour'] -= 12
 
-    if stateMach['frameLimit'] and (stateMach['fps'] > 66):
+    if stateMach['frameLimit'] and (stateMach['glutFreq'] > stateMach['baseFrequency']):
         pass
-        time.sleep(0.016)
+        time.sleep(stateMach['baseTimestep'])
 
     return
 
@@ -1178,18 +1193,18 @@ def display():
 
     glClear(GL_COLOR_BUFFER_BIT)# | GL_DEPTH_BUFFER_BIT)
 
-    #stateMach['tDiff'] = 0.70568/stateMach['fps']
-    #stateMach['tDiff'] = 1.30568/stateMach['fps']
-    stateMach['tDiff'] = 2.0*(2.71828/stateMach['fps'])
-    #stateMach['tDiff'] = 3.14159/stateMach['fps']
-    #stateMach['tDiff'] = 6.28318/stateMach['fps']
+    #stateMach['tDiff'] = 0.70568/stateMach['baseFrequency']
+    #stateMach['tDiff'] = 1.30568/stateMach['baseFrequency']
+    stateMach['tDiff'] = 4.0*(2.71828/stateMach['baseFrequency'])
+    #stateMach['tDiff'] = 3.14159/stateMach['baseFrequency']
+    #stateMach['tDiff'] = 6.28318/stateMach['baseFrequency']
 
     drawTestObjects = False
-    #drawTestObjects = True
-    calcCursorVelocity(0)
+    drawTestObjects = True
+    #calcCursorVelocity(0)
 
     if (not drawTestObjects):
-        drawElements()
+        if (stateMach['doGLrefresh']): drawElements()
 
         if (stateMach['targetScreen'] == 0):
             watchHomeInput()
@@ -1197,7 +1212,7 @@ def display():
             watchColrSettingInput()
 
     else:
-        drawTest()
+        if (stateMach['doGLrefresh']): drawTest()
         watchTest()
     
     # Update animation speed of UI elements
@@ -1206,13 +1221,14 @@ def display():
     for key in stateMach['Menus']:
         stateMach['Menus'][key].setTimeSlice(stateMach['tDiff'])
 
-    # Update Colors of Lamps
-    for i in range(len(stateMach['lamps'])):
-        stateMach['lamps'][i].updateBulbs(stateMach['tDiff']*0.5)
+    if (stateMach['doSMrefresh']):
+        # Update Colors of Lamps
+        for i in range(len(stateMach['lamps'])):
+            stateMach['lamps'][i].updateBulbs(stateMach['tDiff']*0.5)
 
     # Draw info dialog
     if (stateMach['drawInfo']):
-        drawInfo(stateMach)
+        if (stateMach['doGLrefresh']): drawInfo(stateMach)
 
     if (stateMach['currentMouseButtonState'] != 0):
         stateMach['mouseButton'] = -1
@@ -1225,27 +1241,35 @@ def display():
     stateMach['CtrlActive']     = False
     stateMach['AltActive']      = False
 
-    # Update UI animation
-    for key in stateMach['UIelements']:
-        stateMach['UIelements'][key].updateParams()
+    if (stateMach['doSMrefresh']):
+        # Update UI animation
+        for key in stateMach['UIelements']:
+            stateMach['UIelements'][key].updateParams()
 
-    # Update Menu States
-    for key in stateMach['Menus']:
-        stateMach['Menus'][key].update(stateMach)
+        # Update Menu States
+        for key in stateMach['Menus']:
+            stateMach['Menus'][key].update(stateMach)
 
-    stateMach['windowPosX'] = glutGet(GLUT_WINDOW_X)
-    stateMach['windowPosY'] = glutGet(GLUT_WINDOW_Y)
-    glutSwapBuffers()
+        stateMach['windowPosX'] = glutGet(GLUT_WINDOW_X)
+        stateMach['windowPosY'] = glutGet(GLUT_WINDOW_Y)
+
+    if (stateMach['doGLrefresh']): glutSwapBuffers()
+    stateMach['doGLrefresh'] = False
+    stateMach['doSMrefresh'] = False
 
 def idleWindowOpen():
     framerate()
     glutPostRedisplay()
-    plugins.pluginLoader.updatePlugins()
+    if (stateMach['doPLrefresh']): 
+        plugins.pluginLoader.updatePlugins()
+        stateMach['doPLrefresh'] = False
     pass
 
 def idleWindowMinimized():
     framerate()
-    plugins.pluginLoader.updatePlugins()
+    if (stateMach['doPLrefresh']): 
+        plugins.pluginLoader.updatePlugins()
+        stateMach['doPLrefresh'] = False
     pass
 
 # Parse byte from glutGetModifiers()
@@ -1422,6 +1446,19 @@ if __name__ == '__main__':
     global stateMach
     stateMach = {}
     print("Initializing...")
+    stateMach['baseFrequency']      = 360.0
+    stateMach['baseTimestep']       = 1.0/stateMach['baseFrequency']
+    stateMach['glutFreq']           = 60
+    stateMach['glutFrames']         = 0
+    stateMach['GLframes']           = 0
+    stateMach['GLfreq']             = 60
+    stateMach['GLframelimit']       = 60
+    stateMach['doGLrefresh']        = True
+    stateMach['GLrefreshTimer']     = time.time()
+    stateMach['doSMrefresh']        = True
+    stateMach['SMrefreshTimer']     = time.time()
+    stateMach['doPLrefresh']        = True
+    stateMach['PLrefreshTimer']     = time.time()
     stateMach['textGlyphRes']       = 32                        # base vertical resolution in pixels of character glyphs
     stateMach['textDPIscalar']      = 1.0                       # scalar for adjusting text resolution with respect to screen resolution
     stateMach['textBaseScalar']     = 1.0                       # scalar for adjusting text size based on user-defined setting
@@ -1438,11 +1475,9 @@ if __name__ == '__main__':
     stateMach['t1']                 = time.time()
     stateMach['tCursor']            = time.time()
     stateMach['tPhys']              = time.time()
-    stateMach['frames']             = 0
     stateMach['lamps']              = []
     stateMach['screen']             = 0
     stateMach['masterSwitch']       = False
-    stateMach['fps']                = 60
     stateMach['windowPosX']         = 0                         # current position of the window on the desktop
     stateMach['windowPosY']         = 0                         # current position of the window on the desktop
     stateMach['prevWindowPosX']     = 0                         # previous position of the window on the desktop (for returning from fullscreen)
@@ -1499,7 +1534,6 @@ if __name__ == '__main__':
     stateMach['BallVelocity']       = (0.0, 0.0)
     stateMach['UIelements']         = {}                        # Dictionary of objects used for positioning/animating buttons and what-not
     stateMach['Menus']              = {}                        # Dictionary of objects for managing drop/slide menus
-
 
     stateMach['Colors'] = {}
     stateMach['Colors']['Black']    = (0.0, 0.0, 0.0, 1.0)

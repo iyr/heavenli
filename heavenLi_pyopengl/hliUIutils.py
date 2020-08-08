@@ -7,7 +7,8 @@ from hliImports import *
 def drawInfo(stateMach):
     w2h = stateMach['w2h']
     infoStr = "//~~~~~~~~~~~~~~~infoo debugeroo, eletric boogaloo~~~~~~~~~~~~~~~\\\\"
-    infoStr += "\nFPS: " + str(int(stateMach['fps']))
+    infoStr += "\nglutMainLoopFrequency (Hz): " + str(int(stateMach['glutFreq']))
+    infoStr += "\nOpenGL FPS (Hz): " + str(int(stateMach['GLfreq']))
     infoStr += "\nResolution: " + str(stateMach['windowDimW'])+", "+str(stateMach['windowDimH'])
     infoStr += "\nwidth to height: " + str(w2h)
     infoStr += "\nwindow position: " + str(stateMach['windowPosX'])+", "+str(stateMach['windowPosY'])
