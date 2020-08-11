@@ -162,6 +162,15 @@ def watchDot(px, py, pr, cxgl, cygl, w2h, drawInfo):
     else:
         return False
 
+# This class helps regulate how often functions are run
+# for efficiency or performance
+class UIrateRegulator:
+    def __init__(self):
+        self.frequency = UIparam()
+        self.minimizedFreq = 1.0
+        self.backgroundFreq = 2.0
+        self.foregroundFreq = 3.0
+
 # This class helps the management and animation of colors
 class UIcolor:
     def __init__(self):
@@ -388,9 +397,9 @@ class UIelement:
 class UIparam:
     def __init__(self):
         self.currentVal     = 0.0   # True value of the parameter
-        self.previousVal    = 0.0   # Parameter value before a new target value was set
+        self.previousVal    = 0.0   # used for calculating frame-to-frame changes
         self.targetVal      = 0.0   # Target Value that current value will 'drift' to
-        self.targetReached  = True
+        self.targetReached  = True  # True if current == target
         self.tDiff          = 1.0   # Time-slice for adjusting animation speed
         self.accel          = 1.0   # temporarily adjust tDiff until animation finishes
         self.curveBias      = 0.5
@@ -461,6 +470,7 @@ class UIparam:
         self.curve = curve
         return
 
+    # Calculate next val if current != taget
     def updateVal(self):
         if (self.cursor < 1.0):
             if (self.cursor < 0.0):

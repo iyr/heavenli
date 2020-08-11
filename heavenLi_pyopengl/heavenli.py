@@ -31,6 +31,7 @@ def init():
 # Throttle FPS and update timers
 def framerate():
     global stateMach
+    stateMach['baseTimestep'] = 1.0/stateMach['frequencies']['HLI'].getVal()
     t = time.time()
     stateMach['glutFrames'] += 1.0
     seconds = t - stateMach['t0']
@@ -46,16 +47,19 @@ def framerate():
         stateMach['glutFreq'] = 60
         print("Too Fast, Too Quick!!")
 
-    if (t - stateMach['PLrefreshTimer'] >= (stateMach['baseFrequency']/66.0)*stateMach['baseTimestep']):
+    if (t - stateMach['PLrefreshTimer'] >= (stateMach['frequencies']['HLI'].getTar()/stateMach['frequencies']['PL'].getVal())*stateMach['baseTimestep']):
+    #if (t - stateMach['PLrefreshTimer'] >= (7.0)*stateMach['baseTimestep']):
         stateMach['PLrefreshTimer'] = t
         stateMach['doPLrefresh'] = True
 
-    if (t - stateMach['GLrefreshTimer'] >= (stateMach['baseFrequency']/(stateMach['GLframelimit']*1.25))*stateMach['baseTimestep']):
+    if (t - stateMach['GLrefreshTimer'] >= (stateMach['frequencies']['HLI'].getTar()/(stateMach['frequencies']['GL'].getVal()*1.25))*stateMach['baseTimestep']):
+    #if (t - stateMach['GLrefreshTimer'] >= (11.0)*stateMach['baseTimestep']):
         stateMach['GLframes'] += 1
         stateMach['GLrefreshTimer'] = t
         stateMach['doGLrefresh'] = True
 
-    if (t - stateMach['SMrefreshTimer'] >= (stateMach['baseFrequency']/180.0)*stateMach['baseTimestep']):
+    if (t - stateMach['SMrefreshTimer'] >= (stateMach['frequencies']['HLI'].getTar()/stateMach['frequencies']['SM'].getVal())*stateMach['baseTimestep']):
+    #if (t - stateMach['SMrefreshTimer'] >= (3.0)*stateMach['baseTimestep']):
         stateMach['SMrefreshTimer'] = t
         stateMach['doSMrefresh'] = True
 
@@ -77,7 +81,7 @@ def framerate():
         if (stateMach['hour'] > 11):
             stateMach['hour'] -= 12
 
-    if stateMach['frameLimit'] and (stateMach['glutFreq'] > stateMach['baseFrequency']):
+    if stateMach['frameLimit'] and (stateMach['glutFreq'] > stateMach['frequencies']['HLI'].getVal()):
         pass
         time.sleep(stateMach['baseTimestep'])
 
@@ -1193,27 +1197,32 @@ def display():
 
     glClear(GL_COLOR_BUFFER_BIT)# | GL_DEPTH_BUFFER_BIT)
 
-    #stateMach['tDiff'] = 0.70568/stateMach['baseFrequency']
-    #stateMach['tDiff'] = 1.30568/stateMach['baseFrequency']
-    stateMach['tDiff'] = 4.0*(2.71828/stateMach['baseFrequency'])
-    #stateMach['tDiff'] = 3.14159/stateMach['baseFrequency']
-    #stateMach['tDiff'] = 6.28318/stateMach['baseFrequency']
+    #stateMach['tDiff'] = 0.70568/stateMach['GLframelimit']
+    #stateMach['tDiff'] = 1.30568/stateMach['GLframelimit']
+    #stateMach['tDiff'] = (2.71828/stateMach['GLfreq'])
+    stateMach['tDiff'] = (stateMach['foregroundGLfreq']/stateMach['frequencies']['GL'].getVal())*(2.0/(stateMach['GLfreq']))
+    #stateMach['tDiff'] = 3.14159/stateMach['GLframelimit']
+    #stateMach['tDiff'] = 6.28318/stateMach['GLframelimit']
+
+    for key in stateMach['frequencies']:
+        stateMach['frequencies'][key].setTimeSlice(0.01)
+        stateMach['frequencies'][key].updateVal()
 
     drawTestObjects = False
-    drawTestObjects = True
-    #calcCursorVelocity(0)
+    #drawTestObjects = True
 
     if (not drawTestObjects):
         if (stateMach['doGLrefresh']): drawElements()
 
-        if (stateMach['targetScreen'] == 0):
-            watchHomeInput()
-        elif (stateMach['targetScreen'] == 1):
-            watchColrSettingInput()
+        if (stateMach['mouseInWindow']):
+            if (stateMach['targetScreen'] == 0):
+                watchHomeInput()
+            elif (stateMach['targetScreen'] == 1):
+                watchColrSettingInput()
 
     else:
         if (stateMach['doGLrefresh']): drawTest()
-        watchTest()
+        if (stateMach['mouseInWindow']): watchTest()
     
     # Update animation speed of UI elements
     for key in stateMach['UIelements']:
@@ -1254,6 +1263,7 @@ def display():
         stateMach['windowPosY'] = glutGet(GLUT_WINDOW_Y)
 
     if (stateMach['doGLrefresh']): glutSwapBuffers()
+
     stateMach['doGLrefresh'] = False
     stateMach['doSMrefresh'] = False
 
@@ -1312,25 +1322,25 @@ def special(k, x, y):
             #stateMach['lamps'][Light].setAngle(stateMach['lamps'][Light].getAngle() - 5)
 
     elif k == GLUT_KEY_UP:
-        stateMach['textGlyphRes'] += 1
         
-        stateMach['testList'].append((
-            random.random(),
-            random.random(),
-            random.random(),
-            1.0
-            ))
-        #stateMach['textDPIscalar'] = 32.0/float(stateMach['textGlyphRes'])
-        #makeFont(fontFile="fonts/expressway_regular.ttf", numChars=128, size=stateMach['textGlyphRes'])
+        #stateMach['testList'].append((
+            #random.random(),
+            #random.random(),
+            #random.random(),
+            #1.0
+            #))
+        stateMach['textGlyphRes'] += 1
+        stateMach['textDPIscalar'] = 32.0/float(stateMach['textGlyphRes'])
+        makeFont(fontFile="fonts/expressway_regular.ttf", numChars=128, size=stateMach['textGlyphRes'])
         #if (len(stateMach['lamps']) > 0):
             #stateMach['lamps'][Light].setNumBulbs(stateMach['lamps'][Light].getNumBulbs()+1)
 
     elif k == GLUT_KEY_DOWN:
+        #if (len(stateMach['testList']) > 0):
+            #del stateMach['testList'][-1]
         stateMach['textGlyphRes'] -= 1
-        if (len(stateMach['testList']) > 0):
-            del stateMach['testList'][-1]
-        #stateMach['textDPIscalar'] = 32.0/float(stateMach['textGlyphRes'])
-        #makeFont(fontFile="fonts/expressway_regular.ttf", numChars=128, size=stateMach['textGlyphRes'])
+        stateMach['textDPIscalar'] = 32.0/float(stateMach['textGlyphRes'])
+        makeFont(fontFile="fonts/expressway_regular.ttf", numChars=128, size=stateMach['textGlyphRes'])
         #if (len(stateMach['lamps']) > 0):
             #stateMach['lamps'][Light].setNumBulbs(stateMach['lamps'][Light].getNumBulbs()-1)
 
@@ -1394,16 +1404,9 @@ def key(ch, x, y):
 
     if ch == as_8_bit('p'):
         print(stateMach)
-        #filename = "quack.sm"
-        #fileObj  = open(filename, 'wb')
-        ##pickle.dump(stateMach, fileObj)
-        #pickle.dump(stateMach['lamps'][0], fileObj)
-        #fileObj.close()
 
     if ch == as_8_bit('h'):
         goHome()
-        #stateMach['wereColorsTouched'] = False
-        #stateMach['targetScreen'] = 0
 
     if ch == as_8_bit(']'):
         stateMach['features'] += 1
@@ -1441,24 +1444,70 @@ def visible(vis):
     else:
         glutIdleFunc(idleWindowMinimized)
 
+# Throttle timers if window is in background
+def perfMode(state):
+    if (state == GLUT_LEFT):
+        stateMach['frequencies']['HLI'].setTarget(stateMach['backgroundHLIfreq'])
+        stateMach['frequencies']['GL'].setTarget(stateMach['backgroundGLfreq'])
+        stateMach['frequencies']['SM'].setTarget(stateMach['backgroundSMfreq'])
+        stateMach['mouseInWindow'] = False
+
+    if (state == GLUT_ENTERED):
+        stateMach['frequencies']['HLI'].setTarget(stateMach['foregroundHLIfreq'])
+        stateMach['frequencies']['GL'].setTarget(stateMach['foregroundGLfreq'])
+        stateMach['frequencies']['SM'].setTarget(stateMach['foregroundSMfreq'])
+        stateMach['frequencies']['HLI'].setValue(stateMach['foregroundHLIfreq'])
+        stateMach['frequencies']['GL'].setValue(stateMach['foregroundGLfreq'])
+        stateMach['frequencies']['SM'].setValue(stateMach['foregroundSMfreq'])
+        stateMach['mouseInWindow'] = True
+
+    print("Setting baseFrequency: " + str(stateMach['frequencies']['HLI'].getTar()))
+
 # Equivalent to "main()" in C/C++
 if __name__ == '__main__':
     global stateMach
     stateMach = {}
     print("Initializing...")
-    stateMach['baseFrequency']      = 360.0
-    stateMach['baseTimestep']       = 1.0/stateMach['baseFrequency']
-    stateMach['glutFreq']           = 60
+    stateMach['mouseInWindow']      = True
+    #stateMach['foregroundHLIfreq'] = 360.0
+    stateMach['foregroundHLIfreq']  = 720.0
+    stateMach['backgroundHLIfreq']  = 180.0
+    stateMach['foregroundGLfreq']   = 60.0
+    stateMach['backgroundGLfreq']   = 30.0
+    stateMach['foregroundSMfreq']   = 360.0
+    stateMach['backgroundSMfreq']   = 60.0
+    stateMach['foregroundPLfreq']   = 66.0
+    stateMach['backgroundPLfreq']   = 66.0
+
+    stateMach['glutFreq']           = 1
     stateMach['glutFrames']         = 0
     stateMach['GLframes']           = 0
-    stateMach['GLfreq']             = 60
-    stateMach['GLframelimit']       = 60
+    stateMach['GLfreq']             = 1
+
+    stateMach['frequencies']        = {}
+    stateMach['frequencies']['HLI'] = UIparam()
+    stateMach['frequencies']['HLI'].setValue(stateMach['foregroundHLIfreq'])
+    stateMach['frequencies']['HLI'].setTarget(stateMach['foregroundHLIfreq'])
+    stateMach['baseTimestep'] = 1.0/stateMach['frequencies']['HLI'].getTar()
+
+    stateMach['frequencies']['GL']  = UIparam()
+    stateMach['frequencies']['GL'].setValue(stateMach['backgroundGLfreq'])
+    stateMach['frequencies']['GL'].setTarget(stateMach['foregroundGLfreq'])
     stateMach['doGLrefresh']        = True
     stateMach['GLrefreshTimer']     = time.time()
+
+    stateMach['frequencies']['SM']  = UIparam()
+    stateMach['frequencies']['SM'].setValue(stateMach['backgroundSMfreq'])
+    stateMach['frequencies']['SM'].setTarget(stateMach['foregroundSMfreq'])
     stateMach['doSMrefresh']        = True
     stateMach['SMrefreshTimer']     = time.time()
+
+    stateMach['frequencies']['PL']  = UIparam()
+    stateMach['frequencies']['PL'].setValue(stateMach['backgroundPLfreq'])
+    stateMach['frequencies']['PL'].setTarget(stateMach['foregroundPLfreq'])
     stateMach['doPLrefresh']        = True
     stateMach['PLrefreshTimer']     = time.time()
+
     stateMach['textGlyphRes']       = 32                        # base vertical resolution in pixels of character glyphs
     stateMach['textDPIscalar']      = 1.0                       # scalar for adjusting text resolution with respect to screen resolution
     stateMach['textBaseScalar']     = 1.0                       # scalar for adjusting text size based on user-defined setting
@@ -1482,10 +1531,10 @@ if __name__ == '__main__':
     stateMach['windowPosY']         = 0                         # current position of the window on the desktop
     stateMach['prevWindowPosX']     = 0                         # previous position of the window on the desktop (for returning from fullscreen)
     stateMach['prevWindowPosY']     = 0                         # previous position of the window on the desktop (for returning from fullscreen)
-    stateMach['windowDimW']         = 800                       # current dimensions of the window
-    stateMach['windowDimH']         = 480                       # current dimensions of the window
-    stateMach['prevWindowDimW']     = 800                       # previous dimensions of the window (for returning from fullscreen)
-    stateMach['prevWindowDimH']     = 480                       # previous dimensions of the window (for returning from fullscreen)
+    stateMach['windowDimW']         = 450                       # current dimensions of the window
+    stateMach['windowDimH']         = 450                       # current dimensions of the window
+    stateMach['prevWindowDimW']     = 450                       # previous dimensions of the window (for returning from fullscreen)
+    stateMach['prevWindowDimH']     = 450                       # previous dimensions of the window (for returning from fullscreen)
     stateMach['cursorXgl']          = 0
     stateMach['cursorYgl']          = 0
     stateMach['cursorX']            = 0
@@ -1571,8 +1620,8 @@ if __name__ == '__main__':
     stateMach['Menus']['testMenu'].UIelement.setTarSize(0.15)
     #stateMach['Menus']['testMenu'].UIelement.setTarSize(0.2)
     stateMach['Menus']['testMenu'].UIelement.setAccel(0.125)
-    stateMach['Menus']['testMenu'].UIelement.setTarPosX(-0.775)
-    stateMach['Menus']['testMenu'].UIelement.setTarPosY(-0.775)
+    stateMach['Menus']['testMenu'].UIelement.setTarPosX(0.775)
+    stateMach['Menus']['testMenu'].UIelement.setTarPosY(-0.0)#775)
     #stateMach['Menus']['testMenu'].setData(stateMach['testList'])
     stateMach['Menus']['testMenu'].setData(stateMach['Colors'])
 
@@ -1640,13 +1689,6 @@ if __name__ == '__main__':
 
     glutInit(sys.argv)
 
-    # Disable anti-aliasing if running on a Raspberry Pi Zero
-    #if (machine() == "armv6l" or machine() == "armv7l"):
-        #print("Disabling Antialiasing")
-        #glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE)
-    #else:
-        #glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_MULTISAMPLE)# | GLUT_BORDERLESS)
-
     # Initialize glut display mode
     GLUT_INIT = GLUT_RGBA | GLUT_DOUBLE
 
@@ -1663,6 +1705,7 @@ if __name__ == '__main__':
     glutInitWindowSize(stateMach['windowDimW'], stateMach['windowDimH'])
 
     glutCreateWindow("HeavenLi")
+    glutEntryFunc(perfMode)
     glutMouseFunc(mouseInteraction)
     glutMotionFunc(mouseActive)
     glutPassiveMotionFunc(mousePassive)
