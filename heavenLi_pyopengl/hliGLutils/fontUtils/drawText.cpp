@@ -119,6 +119,7 @@ void drawText(
       ){
 
    //textAtlas* tmAt = &textFonts[selectedAtlas];
+   static GLuint  prevFaceSize;
    static GLfloat prevHoriAlignment,
                   prevVertAlignment;
    GLfloat ao=0.0f;
@@ -178,6 +179,7 @@ void drawText(
 
       prevHoriAlignment = horiAlignment;
       prevVertAlignment = vertAlignment;
+      prevFaceSize      = atlas->faceSize;
       textLine->text    = inputString;
       textLine->texID   = atlas->tex;
       textLine->buildCache(verts.size()/2, verts, texuv, colrs);
@@ -186,7 +188,8 @@ void drawText(
 
    if (  textLine->text.compare(inputString) != 0  ||
          prevVertAlignment != vertAlignment        ||
-         prevHoriAlignment != horiAlignment        ){
+         prevHoriAlignment != horiAlignment        ||
+         prevFaceSize      != atlas->faceSize      ){
 
       GLfloat minX = (GLfloat)NULL, minY = (GLfloat)NULL, maxX = (GLfloat)NULL, maxY = (GLfloat)NULL;
       const char* inputChars = inputString.c_str();
@@ -242,6 +245,7 @@ void drawText(
 
       prevHoriAlignment = horiAlignment;
       prevVertAlignment = vertAlignment;
+      prevFaceSize      = atlas->faceSize;
       textLine->updateTexUVCache();
       textLine->updateCoordCache();
       textBackdrop->updateCoordCache();
