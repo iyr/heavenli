@@ -43,7 +43,6 @@ class drawCall {
       GLfloat*    colorQuartets;    // Continuous array to store colorSet quartets
 
       GLboolean   firstRun;         // Determines if function is running for the first time (for VBO initialization)
-      GLboolean   usesTex;          // Determines whether or not geometry uses a texture
       GLenum      drawType;         // GL_TRIANGLE_STRIP / GL_LINE_STRIP
       GLuint      numColors;        // Number of colorSet quartets (R, G, B, A) to manage (min: 1, typ: 2)
 };
@@ -154,7 +153,6 @@ void drawCall::setColorQuartet(unsigned int setIndex, GLfloat* quartet) {
  * Builds cache from input vectors and writes to buffer object
  */
 void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vector<GLfloat> &texuv, std::vector<GLfloat> &colrs) {
-   this->usesTex  = true;
    this->numVerts = numVerts;
 
    GLuint congruentVertices = 0;
@@ -266,7 +264,9 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
  * Builds cache from input vectors and writes to buffer object
  */
 void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vector<GLfloat> &colrs) {
-   this->usesTex  = false;
+   //vector<GLfloat> texuv(numVerts, 0.0f);
+   //return;
+   ///*
    this->numVerts = numVerts;
    GLuint congruentVertices = 0;
 
@@ -367,7 +367,9 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
 
    // Unbind Buffer Object
    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
    return;
+   //*/
 };
 
 void drawCall::updateMVP(GLfloat gx, GLfloat gy, GLfloat sx, GLfloat sy, GLfloat rot, GLfloat w2h) {
