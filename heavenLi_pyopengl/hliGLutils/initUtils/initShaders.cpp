@@ -1,8 +1,9 @@
+#include <fstream>
 GLuint   shaderProgram;
 GLint    uniform_tex;
 extern GLuint     whiteTex;
 
-// Shader halper function
+// Shader helper function
 GLuint LoadShader(const GLchar *shadersrc, GLenum type) {
    GLuint shader;    // Output variable to store the compiled shader
    GLint compiled;   // Used to determine if compilation was successful
@@ -76,30 +77,31 @@ PyObject* initShaders_hliGLutils(PyObject* self, PyObject *args) {
 
    delete [] blankTexture;
 
-   const GLchar vertShaderSource[] = 
-      "#version 100			               \n"
-      "attribute  vec2 vertCoord;         \n"
-      "attribute  vec2 vertTexUV;         \n"
-      "attribute  vec4 vertColor;         \n"
-      "uniform    mat4 MVP;               \n"
+   std::ifstream vertShaderFile("hliGLutils/shaders/RGBAcolor_UVtexture.vert");
+   std::string vertShaderFileContents(
+         (std::istreambuf_iterator<char>(vertShaderFile)), 
+         std::istreambuf_iterator<char>()
+         );
 
-      "varying    vec4 color;             \n"
-      "varying    vec2 texCoord;          \n"
-      "void main() {                      \n"
-         "color = vertColor;              \n"
-         "gl_Position = MVP * vec4(vertCoord, 1, 1);  \n"
-         "texCoord = vertTexUV;           \n"
-      "}                                  \n";
+   const GLchar *vertShaderSource = vertShaderFileContents.c_str();
+   vertShaderFile.close();
 
-   const GLchar fragShaderSource[] = 
-      "#version 100			               \n"
-      "precision  mediump float;		      \n"
-      "varying    vec2 texCoord;          \n"
-      "varying    vec4 color;             \n"
-      "uniform    sampler2D tex;          \n"
-      "void main() {                      \n"
-         "gl_FragColor = texture2D(tex, texCoord)*color;           \n"
-      "}                                  \n";
+   /*
+   inputFile.open("hliGLutils/shaders/RGBAcolor_RGBAtexture.frag");
+   inputFileContents.assign(
+         (std::istreambuf_iterator<char>(inputFile)), 
+         std::istreambuf_iterator<char>()
+         );
+         */
+
+   std::ifstream fragShaderFile("hliGLutils/shaders/RGBAcolor_RGBAtexture.frag");
+   std::string fragShaderFileContents(
+         (std::istreambuf_iterator<char>(fragShaderFile)), 
+         std::istreambuf_iterator<char>()
+         );
+
+   const GLchar *fragShaderSource = fragShaderFileContents.c_str();
+   fragShaderFile.close();
 
    GLint linked;
    GLuint vertShader;
@@ -110,8 +112,7 @@ PyObject* initShaders_hliGLutils(PyObject* self, PyObject *args) {
 
    shaderProgram = glCreateProgram();
 
-   if (shaderProgram == 0)
-      return 0;
+   if (shaderProgram == 0) return 0;
 
    glAttachShader(shaderProgram, vertShader);
    glAttachShader(shaderProgram, fragShader);
