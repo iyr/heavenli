@@ -97,8 +97,11 @@ void MatrixFrustum(Matrix *Output, float left, float right, float bottom, float 
    float   deltaZ = farZ - nearZ;
    Matrix  frust;
 
-   if ( (nearZ <= 0.0f) || (farZ <= 0.0f) ||
-      (deltaX <= 0.0f) || (deltaY <= 0.0f) || (deltaZ <= 0.0f) )
+   if (  (nearZ <= 0.0f)   || 
+         (farZ <= 0.0f)    ||
+         (deltaX <= 0.0f)  || 
+         (deltaY <= 0.0f)  || 
+         (deltaZ <= 0.0f)  )
       return;
 
    frust.mat[0][0] = 2.0f * nearZ / deltaX;
@@ -107,8 +110,8 @@ void MatrixFrustum(Matrix *Output, float left, float right, float bottom, float 
    frust.mat[1][1] = 2.0f * nearZ / deltaY;
    frust.mat[1][0] = frust.mat[1][2] = frust.mat[1][3] = 0.0f;
 
-   frust.mat[2][0] = (right + left) / deltaX;
-   frust.mat[2][1] = (top + bottom) / deltaY;
+   frust.mat[2][0] =  (right + left) / deltaX;
+   frust.mat[2][1] =  (top + bottom) / deltaY;
    frust.mat[2][2] = -(nearZ + farZ) / deltaZ;
    frust.mat[2][3] = -1.0f;
 
