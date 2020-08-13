@@ -41,25 +41,34 @@ def framerate():
     if (stateMach['someVar'] > 100) or (stateMach['someVar'] < 0):
         stateMach['someInc'] = -stateMach['someInc']
 
-    try:
-        stateMach['glutFreq'] = stateMach['glutFrames']/seconds
-    except:
-        stateMach['glutFreq'] = 60
-        print("Too Fast, Too Quick!!")
-
-    if (t - stateMach['PLrefreshTimer'] >= (stateMach['frequencies']['HLI'].getTar()/stateMach['frequencies']['PL'].getVal())*stateMach['baseTimestep']):
-    #if (t - stateMach['PLrefreshTimer'] >= (7.0)*stateMach['baseTimestep']):
+    if (    (t - stateMach['PLrefreshTimer'])
+            >= 
+            1.0/stateMach['frequencies']['PL'].getVal()
+            ):
         stateMach['PLrefreshTimer'] = t
         stateMach['doPLrefresh'] = True
 
-    if (t - stateMach['GLrefreshTimer'] >= (stateMach['frequencies']['HLI'].getTar()/(stateMach['frequencies']['GL'].getVal()*1.25))*stateMach['baseTimestep']):
-    #if (t - stateMach['GLrefreshTimer'] >= (11.0)*stateMach['baseTimestep']):
+    if (    ( 
+                (t-stateMach['GLrefreshTimer']) >= 1.0/(stateMach['frequencies']['GL'].getVal()*1.25)
+                and
+                stateMach['VSyncLimit'] == 0 
+            )
+            or
+            ( 
+                stateMach['VSyncLimit'] > 0
+                and
+                1.0/stateMach['VSyncLimit'] <= (t-stateMach['GLrefreshTimer']) 
+            )
+            ):
         stateMach['GLframes'] += 1
         stateMach['GLrefreshTimer'] = t
         stateMach['doGLrefresh'] = True
 
-    if (t - stateMach['SMrefreshTimer'] >= (stateMach['frequencies']['HLI'].getTar()/stateMach['frequencies']['SM'].getVal())*stateMach['baseTimestep']):
-    #if (t - stateMach['SMrefreshTimer'] >= (3.0)*stateMach['baseTimestep']):
+    if (    (t - stateMach['SMrefreshTimer'])
+            >= 
+            1.0/stateMach['frequencies']['SM'].getVal()
+            ):
+        stateMach['SMframes'] += 1
         stateMach['SMrefreshTimer'] = t
         stateMach['doSMrefresh'] = True
 
@@ -67,17 +76,37 @@ def framerate():
         calcCursorVelocity(0)
         stateMach['t1'] = t
 
+    tmHz = 0.01667
+    try:
+        tmHz = 1.0/seconds
+    except:
+        print("Too Fast, Too Quick!!")
+
+    # Calculate measured update rates of different systems
+    stateMach['glutFreq'] = stateMach['glutFrames']*tmHz
+    if(stateMach['GLframes'] > 0): stateMach['GLfreq']   = stateMach['GLframes']*tmHz
+    if(stateMach['SMframes'] > 0): stateMach['SMfreq']   = stateMach['SMframes']*tmHz
+
     if t - stateMach['t0'] >= 1.0:
         #print("%.0f frames in %3.1f seconds = %6.3f FPS" % (stateMach['glutFrames'],seconds,stateMach['glutFreq']))
         if (stateMach['doPLrefresh']): stateMach['lamps']  = plugins.pluginLoader.getAllLamps()
         stateMach['t0']         = t
         stateMach['glutFrames'] = 0
         ct                      = datetime.datetime.now()
-        stateMach['GLfreq']     = stateMach['GLframes']/seconds
         stateMach['GLframes']   = 0
+        stateMach['SMframes']   = 0
         stateMach['second']     = ct.second
         stateMach['minute']     = ct.minute + stateMach['second']*0.016666667
         stateMach['hour']       = ct.hour + stateMach['minute']*0.016666667
+
+        if (    stateMach['glutFreq'] <= stateMach['GLfreq']
+                and
+                stateMach['glutFreq'] <= stateMach['SMfreq']
+                ):
+            #stateMach['VSyncLimit'] = floor(stateMach['glutFreq'])
+            #print("VSync detected: "+str(stateMach['VSyncLimit']))
+            pass
+
         if (stateMach['hour'] > 11):
             stateMach['hour'] -= 12
 
@@ -1200,7 +1229,9 @@ def display():
     #stateMach['tDiff'] = 0.70568/stateMach['GLframelimit']
     #stateMach['tDiff'] = 1.30568/stateMach['GLframelimit']
     #stateMach['tDiff'] = (2.71828/stateMach['GLfreq'])
-    stateMach['tDiff'] = (stateMach['foregroundGLfreq']/stateMach['frequencies']['GL'].getVal())*(2.0/(stateMach['GLfreq']))
+    #stateMach['tDiff'] = (stateMach['foregroundGLfreq']/stateMach['frequencies']['GL'].getVal())*(2.0/(stateMach['GLfreq']))
+    #if (stateMach['doSMrefresh']): 
+    stateMach['tDiff'] = 1.0*(1.0/stateMach['frequencies']['SM'].getVal())
     #stateMach['tDiff'] = 3.14159/stateMach['GLframelimit']
     #stateMach['tDiff'] = 6.28318/stateMach['GLframelimit']
 
@@ -1257,7 +1288,7 @@ def display():
 
         # Update Menu States
         for key in stateMach['Menus']:
-            stateMach['Menus'][key].update(stateMach)
+            stateMach['Menus'][key].update(stateMach['currentMouseButtonState'])
 
         stateMach['windowPosX'] = glutGet(GLUT_WINDOW_X)
         stateMach['windowPosY'] = glutGet(GLUT_WINDOW_Y)
@@ -1469,20 +1500,23 @@ if __name__ == '__main__':
     stateMach = {}
     print("Initializing...")
     stateMach['mouseInWindow']      = True
-    #stateMach['foregroundHLIfreq'] = 360.0
+    stateMach['VSyncLimit']         = 0
+    
     stateMach['foregroundHLIfreq']  = 720.0
     stateMach['backgroundHLIfreq']  = 180.0
-    stateMach['foregroundGLfreq']   = 60.0
+    stateMach['foregroundGLfreq']   = 240.0
     stateMach['backgroundGLfreq']   = 30.0
-    stateMach['foregroundSMfreq']   = 360.0
+    stateMach['foregroundSMfreq']   = 480.0
     stateMach['backgroundSMfreq']   = 60.0
     stateMach['foregroundPLfreq']   = 66.0
     stateMach['backgroundPLfreq']   = 66.0
 
-    stateMach['glutFreq']           = 1
     stateMach['glutFrames']         = 0
+    stateMach['glutFreq']           = 1
     stateMach['GLframes']           = 0
     stateMach['GLfreq']             = 1
+    stateMach['SMframes']           = 0
+    stateMach['SMfreq']             = 1
 
     stateMach['frequencies']        = {}
     stateMach['frequencies']['HLI'] = UIparam()
