@@ -574,7 +574,8 @@ class Menu:
         return self.deployed.getVal()
 
     # Update parameters n' stuff
-    def update(self, sm):
+    #def update(self, sm):
+    def update(self, currentMouseButtonState):
 
         # Set cursor acceleration + decay rate
         cDrag   = 1.0
@@ -584,7 +585,8 @@ class Menu:
         tDelta  = time.time()-self.tPhys
 
         # Idle, no input
-        if (sm['currentMouseButtonState'] == 1):
+        #if (sm['currentMouseButtonState'] == 1):
+        if (currentMouseButtonState == 1):
 
             # Update Cursor position
             tmp = self.selectionCursorPosition + 2.0*self.selectionCursorVelocity*tDelta + accel*pow(tDelta, 2.0)
