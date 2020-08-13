@@ -260,116 +260,14 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
    printf("Finished building buffers\n");
    return;
 };
+
 /*
  * Builds cache from input vectors and writes to buffer object
  */
 void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vector<GLfloat> &colrs) {
-   //vector<GLfloat> texuv(numVerts, 0.0f);
-   //return;
-   ///*
-   this->numVerts = numVerts;
-   GLuint congruentVertices = 0;
-
-   // Safely allocate cache arrays
-   if (this->coordCache == NULL) {
-      this->coordCache = new GLfloat[this->numVerts*2];
-   } else {
-      delete [] this->coordCache;
-      this->coordCache = new GLfloat[this->numVerts*2];
-   }
-
-   if (this->texuvCache == NULL) {
-      this->texuvCache = new GLfloat[this->numVerts*2];
-   } else {
-      delete [] this->texuvCache;
-      this->texuvCache = new GLfloat[this->numVerts*2];
-   }
-
-   if (this->colorCache == NULL) {
-      this->colorCache = new GLfloat[this->numVerts*4];
-   } else {
-      delete [] this->colorCache;
-      this->colorCache = new GLfloat[this->numVerts*4];
-   }
-
-   // Copy contents of input vectors to cache arrays
-   for (unsigned int i = 0; i < this->numVerts; i++) {
-      this->coordCache[i*2]   = verts[i*2];
-      this->coordCache[i*2+1] = verts[i*2+1];
-      this->texuvCache[i*2]   = 0.0f;
-      this->texuvCache[i*2+1] = 0.0f;
-
-      this->colorCache[i*4+0] = colrs[i*4+0];
-      this->colorCache[i*4+1] = colrs[i*4+1];
-      this->colorCache[i*4+2] = colrs[i*4+2];
-      this->colorCache[i*4+3] = colrs[i*4+3];
-
-      // Count congruent vertices
-      if ( i < this->numVerts-2)
-         if (  verts[i*2+0] == verts[(i+1)*2+0]  ||
-               verts[i*2+1] == verts[(i+1)*2+1]  )
-            congruentVertices++;
-   }
-
-   // Create buffer object if one does not exist, otherwise, delete and make a new one
-   // This cannot be done in the constructor for global object instances because OpenGL
-   // must be initialized before any GL functions are called. 
-   if (this->firstRun == GL_TRUE) {
-      this->firstRun = GL_FALSE;
-      if (this->texID == 0)
-         this->texID = whiteTex;
-      glGenBuffers(1, &this->VBO);
-   } else {
-      glDeleteBuffers(1, &this->VBO);
-      glGenBuffers(1, &this->VBO);
-   }
-
-   // Set active VBO
-   glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
-
-   // Allocate space to hold all vertex coordinate and color data
-   printf("Allocating Buffer, size: %d bytes, %d Total Vertices, %d Congruent Vertices.\n", int(8*sizeof(GLfloat)*this->numVerts), this->numVerts, congruentVertices);
-   //printf("Creating Buffer Object, size: %d bytes, %d Total Vertices.\n", 6*sizeof(GLfloat)*this->numVerts, this->numVerts);
-   glBufferData(GL_ARRAY_BUFFER, 8*sizeof(GLfloat)*this->numVerts, NULL, GL_STATIC_DRAW);
-
-   // Convenience variables
-   GLintptr offset = 0;
-   GLuint vertAttribCoord = glGetAttribLocation(shaderProgram, "vertCoord");
-   GLuint vertAttribTexUV = glGetAttribLocation(shaderProgram, "vertTexUV");
-   GLuint vertAttribColor = glGetAttribLocation(shaderProgram, "vertColor");
-
-   // Load Vertex coordinate data into VBO
-   glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*this->numVerts, this->coordCache);
-   // Define how the Vertex coordinate data is layed out in the buffer
-   glVertexAttribPointer(vertAttribCoord, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLintptr*)offset);
-   // Enable the vertex attribute
-   glEnableVertexAttribArray(vertAttribCoord);
-
-   // Update offset to begin storing data in latter part of the buffer
-   offset += 2*sizeof(GLfloat)*this->numVerts;
-
-   // Load Vertex coordinate data into VBO
-   glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*this->numVerts, this->texuvCache);
-   // Define how the Vertex coordinate data is layed out in the buffer
-   glVertexAttribPointer(vertAttribTexUV, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLintptr*)offset);
-   // Enable the vertex attribute
-   glEnableVertexAttribArray(vertAttribTexUV);
-
-   // Update offset to begin storing data in latter part of the buffer
-   offset += 2*sizeof(GLfloat)*this->numVerts;
-
-   // Load Vertex coordinate data into VBO
-   glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*4*this->numVerts, this->colorCache);
-   // Define how the Vertex color data is layed out in the buffer
-   glVertexAttribPointer(vertAttribColor, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (GLintptr*)offset);
-   // Enable the vertex attribute
-   glEnableVertexAttribArray(vertAttribColor);
-
-   // Unbind Buffer Object
-   glBindBuffer(GL_ARRAY_BUFFER, 0);
-
+   vector<GLfloat> texuv(numVerts*2, 0.0f);
+   this->buildCache(numVerts, verts, texuv, colrs);
    return;
-   //*/
 };
 
 void drawCall::updateMVP(GLfloat gx, GLfloat gy, GLfloat sx, GLfloat sy, GLfloat rot, GLfloat w2h) {
