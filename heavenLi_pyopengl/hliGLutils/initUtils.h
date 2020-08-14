@@ -1,6 +1,6 @@
 //#include "initUtils/initHLIobjects.cpp"   // initializes hli related global objects
 
-GLuint buildShader(const GLchar* vertexSource, const GLchar* fragmentSource);
+GLuint buildShader(const GLchar* vertexSourceFile, const GLchar* fragmentSourceFile);
 std::vector<std::string> drawQue;
 std::map<std::string, drawCall>     drawCalls;
 std::map<std::string, textAtlas>    textFonts;
