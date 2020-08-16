@@ -63,6 +63,7 @@ PyObject* drawHomeLinear_hliGLutils(PyObject *self, PyObject *args) {
    }
 
    homeLinear.setNumColors(numBulbs);
+   homeLinear.setShader("RGBAcolor_NoTexture");
    for (unsigned int i = 0; i < numBulbs; i++ ) {
       tmc[0] = bulbColors[i*3+0];
       tmc[1] = bulbColors[i*3+1];
@@ -250,6 +251,7 @@ void drawIconLinear(
       iconLinear.setColorQuartet(i, tmc);
    }
    iconLinear.setColorQuartet(numBulbs, detailColor);
+   iconLinear.setShader("RGBAcolor_NoTexture");
 
    // Allocate and Define Geometry/Color buffers
    if (  iconLinear.numVerts     == 0        ){

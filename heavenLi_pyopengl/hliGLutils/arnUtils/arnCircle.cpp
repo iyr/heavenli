@@ -61,6 +61,7 @@ PyObject* drawHomeCircle_hliGLutils(PyObject *self, PyObject *args) {
    }
 
    homeCircle.setNumColors(numBulbs);
+   homeCircle.setShader("RGBAcolor_NoTexture");
    for (unsigned int i = 0; i < numBulbs; i++ ) {
       tmc[0] = bulbColors[i*3+0];
       tmc[1] = bulbColors[i*3+1];
@@ -207,6 +208,7 @@ void drawIconCircle(
    unsigned int circleSegments = 60;
 
    iconCircle.setNumColors(numBulbs+1);
+   iconCircle.setShader("RGBAcolor_NoTexture");
 
    float tmc[4];
    for (unsigned int i = 0; i < numBulbs; i++) {
