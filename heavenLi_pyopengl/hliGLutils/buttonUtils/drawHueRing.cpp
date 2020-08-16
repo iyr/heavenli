@@ -46,6 +46,7 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
    if (drawCalls.count("hueRingButton") <= 0)
       drawCalls.insert(std::make_pair("hueRingButton", drawCall()));
    drawCall* hueRingButton = &drawCalls["hueRingButton"];
+   hueRingButton->setShader("RGBAcolor_NoTexture");
 
    ringColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(py_tuple, 0)));
    ringColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(py_tuple, 1)));

@@ -55,6 +55,7 @@ PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
    if (drawCalls.count("bulbButton") <= 0)
       drawCalls.insert(std::make_pair("bulbButton", drawCall()));
    drawCall* bulbButton = &drawCalls["bulbButton"];
+   bulbButton->setShader("RGBAcolor_NoTexture");
 
    // Parse array of tuples containing RGB Colors of bulbs
    bulbColors = new float[numBulbs*3];

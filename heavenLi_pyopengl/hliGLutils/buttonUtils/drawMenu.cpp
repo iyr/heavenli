@@ -55,18 +55,22 @@ PyObject* drawMenu_hliGLutils(PyObject* self, PyObject* args) {
    if (drawCalls.count("MenuIndex") <= 0)
       drawCalls.insert(std::make_pair("MenuIndex", drawCall()));
    drawCall* MenuIndex     = &drawCalls["MenuIndex"];
+   MenuIndex->setShader("RGBAcolor_Atexture");
 
    if (drawCalls.count("MenuOverflow") <= 0)
       drawCalls.insert(std::make_pair("MenuOverflow", drawCall()));
    drawCall* MenuOverflow  = &drawCalls["MenuOverflow"];
+   MenuOverflow->setShader("RGBAcolor_NoTexture");
 
    if (drawCalls.count("MenuNormal") <= 0)
       drawCalls.insert(std::make_pair("MenuNormal", drawCall()));
    drawCall* MenuNormal    = &drawCalls["MenuNormal"];
+   MenuNormal->setShader("RGBAcolor_NoTexture");
 
    if (drawCalls.count("MenuClosed") <= 0)
       drawCalls.insert(std::make_pair("MenuClosed", drawCall()));
    drawCall* MenuClosed    = &drawCalls["MenuClosed"];
+   MenuNormal->setShader("RGBAcolor_NoTexture");
 
    elementCoords = new GLfloat[3*(numListings+1)];
 

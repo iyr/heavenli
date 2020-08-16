@@ -75,6 +75,7 @@ void drawArrow(
    arrowButton->setColorQuartet(0, faceColor);
    arrowButton->setColorQuartet(1, extraColor);
    arrowButton->setColorQuartet(2, detailColor);
+   arrowButton->setShader("RGBAcolor_NoTexture");
 
    int circleSegments = 60;
    if (arrowButton->numVerts == 0){

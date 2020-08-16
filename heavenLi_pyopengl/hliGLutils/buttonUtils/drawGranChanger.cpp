@@ -52,6 +52,7 @@ PyObject* drawGranChanger_hliGLutils(PyObject *self, PyObject *args) {
    granChangerButton->setNumColors(2);
    granChangerButton->setColorQuartet(0, faceColor);
    granChangerButton->setColorQuartet(1, detailColor);
+   granChangerButton->setShader("RGBAcolor_NoTexture");
 
    // Allocate and Define Geometry/Color
    if (  granChangerButton->numVerts == 0 ) {

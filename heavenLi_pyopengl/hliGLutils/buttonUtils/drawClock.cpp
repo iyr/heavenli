@@ -75,6 +75,7 @@ void drawClock(
    clockButton->setNumColors(2);
    clockButton->setColorQuartet(0, faceColor);
    clockButton->setColorQuartet(1, detailColor);
+   clockButton->setShader("RGBAcolor_NoTexture");
    
    if (  clockButton->numVerts == 0  ){
       printf("Initializing Geometry for Clock Button\n");

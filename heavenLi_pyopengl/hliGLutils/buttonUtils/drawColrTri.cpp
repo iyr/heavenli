@@ -53,6 +53,7 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
    if (drawCalls.count("colrTriButton") <= 0)
       drawCalls.insert(std::make_pair("colrTriButton", drawCall()));
    drawCall* colrTriButton = &drawCalls["colrTriButton"];
+   colrTriButton->setShader("RGBAcolor_NoTexture");
 
    ringColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(py_tuple, 0)));
    ringColor[1] = float(PyFloat_AsDouble(PyTuple_GetItem(py_tuple, 1)));

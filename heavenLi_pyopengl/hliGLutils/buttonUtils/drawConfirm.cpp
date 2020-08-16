@@ -76,6 +76,7 @@ void drawConfirm(
    confirmButton->setColorQuartet(0, faceColor);
    confirmButton->setColorQuartet(1, extraColor);
    confirmButton->setColorQuartet(2, detailColor);
+   confirmButton->setShader("RGBAcolor_NoTexture");
 
    if (  confirmButton->numVerts == 0   ){
 
