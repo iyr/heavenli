@@ -4,6 +4,7 @@
 using namespace std;
 extern GLuint shaderProgram;
 extern GLuint whiteTex;
+extern std::map<std::string, GLuint> shaders;
 
 /*
  * Implements a helper class that wraps buffer object and transformation matrix functions
@@ -35,6 +36,7 @@ class drawCall {
       void setNumColors(unsigned int numColors);
       void setColorQuartet(unsigned int setIndex, GLfloat* quartet);
       void setDrawType(GLenum type);
+      void setShader(std::string shader);
       void setTex(GLuint TexID);
 
    private:
@@ -45,6 +47,8 @@ class drawCall {
       GLboolean   firstRun;         // Determines if function is running for the first time (for VBO initialization)
       GLenum      drawType;         // GL_TRIANGLE_STRIP / GL_LINE_STRIP
       GLuint      numColors;        // Number of colorSet quartets (R, G, B, A) to manage (min: 1, typ: 2)
+
+      std::string shader;        // Object shader
 };
 
 drawCall::drawCall(void) {
@@ -56,6 +60,7 @@ drawCall::drawCall(void) {
 
    // Used to setup GL objects 
    this->firstRun       = GL_TRUE;   
+   this->shader         = "Default";
 
    // Caches are empty
    this->numVerts       = 0;
@@ -82,6 +87,7 @@ drawCall::drawCall(unsigned int numColors) {
 
    // Used to setup GL objects 
    this->firstRun       = GL_TRUE;   
+   this->shader         = "Default";
 
    // Caches are empty
    this->numVerts       = 0;
@@ -126,6 +132,11 @@ void drawCall::setNumColors(unsigned int numColors) {
    }
 
    return;
+}
+
+void drawCall::setShader(std::string shader){
+   if (shaders.count(shader) <= 0) return;
+   this->shader = shader;
 }
 
 void drawCall::setColorQuartet(unsigned int setIndex, GLfloat* quartet) {
@@ -223,9 +234,9 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
 
    // Convenience variables
    GLintptr offset = 0;
-   GLuint vertAttribCoord = glGetAttribLocation(shaderProgram, "vertCoord");
-   GLuint vertAttribTexUV = glGetAttribLocation(shaderProgram, "vertTexUV");
-   GLuint vertAttribColor = glGetAttribLocation(shaderProgram, "vertColor");
+   GLuint vertAttribCoord = glGetAttribLocation(shaders[this->shader], "vertCoord");
+   GLuint vertAttribTexUV = glGetAttribLocation(shaders[this->shader], "vertTexUV");
+   GLuint vertAttribColor = glGetAttribLocation(shaders[this->shader], "vertColor");
 
    // Load Vertex coordinate data into VBO
    glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*this->numVerts, this->coordCache);
@@ -311,6 +322,10 @@ void drawCall::updateMVP(GLfloat gx, GLfloat gy, GLfloat sx, GLfloat sy, GLfloat
  * the vertex buffer is selected and mapped out
  */
 void drawCall::draw(void) {
+
+   // Set desired shader program
+   glUseProgram(shaders[this->shader]);
+
    // Pass Transformation Matrix to shader
    glUniformMatrix4fv( 0, 1, GL_FALSE, &this->MVP.mat[0][0] );
 
@@ -329,11 +344,13 @@ void drawCall::draw(void) {
 
    //glEnableVertexAttribArray(0);
    //glEnableVertexAttribArray(1);
-
+   
    glDrawArrays(this->drawType, 0, this->numVerts);
 
    // Unbind Buffer Object
    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+   //glUseProgram(0);
    return;
 }
 
