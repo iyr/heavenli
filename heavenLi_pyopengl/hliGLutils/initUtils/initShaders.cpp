@@ -2,6 +2,7 @@
 GLuint   shaderProgram;
 GLint    uniform_tex;
 extern GLuint     whiteTex;
+extern std::map<std::string, GLuint> shaders;
 
 // Shader helper function
 GLuint LoadShader(const GLchar *shadersrc, GLenum type) {
@@ -49,6 +50,75 @@ GLuint LoadShader(const GLchar *shadersrc, GLenum type) {
    return shader;
 }
 
+GLuint buildShader(
+      const GLchar* vertexSourceFile,
+      const GLchar* fragmentSourceFile
+      ){
+   GLuint shaderID;
+
+   std::ifstream vertShaderFile(vertexSourceFile);
+   std::string vertShaderFileContents(
+         (std::istreambuf_iterator<char>(vertShaderFile)), 
+         std::istreambuf_iterator<char>()
+         );
+
+   const GLchar *vertShaderSource = vertShaderFileContents.c_str();
+   vertShaderFile.close();
+
+   std::ifstream fragShaderFile(fragmentSourceFile);
+   std::string fragShaderFileContents(
+         (std::istreambuf_iterator<char>(fragShaderFile)), 
+         std::istreambuf_iterator<char>()
+         );
+
+   const GLchar *fragShaderSource = fragShaderFileContents.c_str();
+   fragShaderFile.close();
+
+   GLint linked;
+   GLuint vertShader;
+   GLuint fragShader;
+
+   vertShader = LoadShader(vertShaderSource, GL_VERTEX_SHADER);
+   fragShader = LoadShader(fragShaderSource, GL_FRAGMENT_SHADER);
+
+   shaderID = glCreateProgram();
+
+   if (shaderID == 0) return 0;
+
+   glAttachShader(shaderID, vertShader);
+   glAttachShader(shaderID, fragShader);
+
+   glBindAttribLocation(shaderID, 0, "vertCoord");
+   glBindAttribLocation(shaderID, 1, "vertTexUV");
+   glBindAttribLocation(shaderID, 2, "vertColor");
+
+   glLinkProgram(shaderID);
+
+   glGetProgramiv(shaderID, GL_LINK_STATUS, &linked);
+   
+   if (!linked) 
+   {
+      GLint infoLen = 0;
+
+      glGetProgramiv(shaderID, GL_INFO_LOG_LENGTH, &infoLen);
+      
+      if (infoLen > 1) {
+         char *infoLog = new char[infoLen];
+
+         glGetShaderInfoLog(shaderID, infoLen, NULL, infoLog);
+         printf("Shader Program Linking Failed :(  \n%s\n", infoLog);
+         delete [] infoLog;
+      }
+
+      glDeleteProgram(shaderID);
+      return 0;
+   }
+
+   printf("shaderProgram ID: %i\n", shaderID);
+
+   return shaderID;
+}
+
 PyObject* initShaders_hliGLutils(PyObject* self, PyObject *args) {
 
    //Generate plain white texture for drawing solid color objects
@@ -77,75 +147,46 @@ PyObject* initShaders_hliGLutils(PyObject* self, PyObject *args) {
 
    delete [] blankTexture;
 
-   std::ifstream vertShaderFile("hliGLutils/shaders/RGBAcolor_UVtexture.vert");
-   std::string vertShaderFileContents(
-         (std::istreambuf_iterator<char>(vertShaderFile)), 
-         std::istreambuf_iterator<char>()
-         );
+   if (shaders.count("RGBAcolor_RGBAtexture") <= 0)
+      shaders.insert(
+            std::make_pair(
+               "RGBAcolor_RGBAtexture", 
+               buildShader(
+                  "hliGLutils/shaders/RGBAcolor_UVtexture.vert",
+                  "hliGLutils/shaders/RGBAcolor_RGBAtexture.frag"
+                  )
+               )
+            );
+   if (shaders.count("Default") <= 0)
+      shaders.insert(
+            std::make_pair(
+               "Default", 
+               shaders["RGBAcolor_RGBAtexture"]
+               )
+            );
+   if (shaders.count("RGBAcolor_Atexture") <= 0)
+      shaders.insert(
+            std::make_pair(
+               "RGBAcolor_Atexture", 
+               buildShader(
+                  "hliGLutils/shaders/RGBAcolor_UVtexture.vert",
+                  "hliGLutils/shaders/RGBAcolor_Atexture.frag"
+                  )
+               )
+            );
+   if (shaders.count("RGBAcolor_NoTexture") <= 0)
+      shaders.insert(
+            std::make_pair(
+               "RGBAcolor_NoTexture", 
+               buildShader(
+                  "hliGLutils/shaders/RGBAcolor_NoTexture.vert",
+                  "hliGLutils/shaders/RGBAcolor_NoTexture.frag"
+                  )
+               )
+            );
 
-   const GLchar *vertShaderSource = vertShaderFileContents.c_str();
-   vertShaderFile.close();
-
-   /*
-   inputFile.open("hliGLutils/shaders/RGBAcolor_RGBAtexture.frag");
-   inputFileContents.assign(
-         (std::istreambuf_iterator<char>(inputFile)), 
-         std::istreambuf_iterator<char>()
-         );
-         */
-
-   std::ifstream fragShaderFile("hliGLutils/shaders/RGBAcolor_RGBAtexture.frag");
-   std::string fragShaderFileContents(
-         (std::istreambuf_iterator<char>(fragShaderFile)), 
-         std::istreambuf_iterator<char>()
-         );
-
-   const GLchar *fragShaderSource = fragShaderFileContents.c_str();
-   fragShaderFile.close();
-
-   GLint linked;
-   GLuint vertShader;
-   GLuint fragShader;
-
-   vertShader = LoadShader(vertShaderSource, GL_VERTEX_SHADER);
-   fragShader = LoadShader(fragShaderSource, GL_FRAGMENT_SHADER);
-
-   shaderProgram = glCreateProgram();
-
-   if (shaderProgram == 0) return 0;
-
-   glAttachShader(shaderProgram, vertShader);
-   glAttachShader(shaderProgram, fragShader);
-
-   glBindAttribLocation(shaderProgram, 0, "vertCoord");
-   glBindAttribLocation(shaderProgram, 1, "vertTexUV");
-   glBindAttribLocation(shaderProgram, 2, "vertColor");
-
-   glLinkProgram(shaderProgram);
-
-   glGetProgramiv(shaderProgram, GL_LINK_STATUS, &linked);
-   
-   if (!linked) 
-   {
-      GLint infoLen = 0;
-
-      glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &infoLen);
-      
-      if (infoLen > 1) {
-         char *infoLog = new char[infoLen];
-
-         glGetShaderInfoLog(shaderProgram, infoLen, NULL, infoLog);
-         printf("Shader Program Linking Failed :(  \n%s\n", infoLog);
-         delete [] infoLog;
-      }
-
-      glDeleteProgram(shaderProgram);
-      return 0;
-   }
-
-   printf("shaderProgram ID: %i\n", shaderProgram);
-
-   glUseProgram(shaderProgram);
+   //shaderProgram = shaders["Default"];
+   //glUseProgram(shaderProgram);
    glEnableVertexAttribArray(0);
    glEnableVertexAttribArray(1);
    glEnableVertexAttribArray(2);
