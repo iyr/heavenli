@@ -66,10 +66,10 @@ PyObject* buildAtlas_hliGLutils(PyObject* self, PyObject *args) {
       glyphData[c].advanceY      = (GLfloat)PyFloat_AsDouble(PyAttr);
 
       PyAttr = PyObject_GetAttrString(PyChar, "bearingX");
-      glyphData[c].bearingX      = (GLfloat)PyFloat_AsDouble(PyAttr);//+2.0f;
+      glyphData[c].bearingX      = (GLfloat)PyFloat_AsDouble(PyAttr);
 
       PyAttr = PyObject_GetAttrString(PyChar, "bearingY");
-      glyphData[c].bearingY      = (GLfloat)PyFloat_AsDouble(PyAttr);//+2.0f;
+      glyphData[c].bearingY      = (GLfloat)PyFloat_AsDouble(PyAttr);
 
       PyAttr = PyObject_GetAttrString(PyChar, "bearingTop");
       glyphData[c].bearingTop    = (GLfloat)PyFloat_AsDouble(PyAttr);
@@ -79,16 +79,13 @@ PyObject* buildAtlas_hliGLutils(PyObject* self, PyObject *args) {
 
       PyBitmap = PyObject_GetAttrString(PyChar, "bitmap");
       unsigned int bufferLength;
-      //bufferLength = PyList_Size(PyBitmap);
+
       bufferLength = (unsigned int)(glyphData[c].bearingX*glyphData[c].bearingY);
-      GLubyte* tmb = new GLubyte[bufferLength*4];
+      GLubyte* tmb = new GLubyte[bufferLength];
 
       for (unsigned int i = 0; i < bufferLength; i++) {
-         tmb[i*4+0] = 255;
-         tmb[i*4+1] = 255;
-         tmb[i*4+2] = 255;
          PyAttr = PyList_GetItem(PyBitmap, i);
-         tmb[i*4+3] = GLubyte(PyLong_AsLong(PyAttr));
+         tmb[i] = GLubyte(PyLong_AsLong(PyAttr));
       }
       
       glyphData[c].bitmap = tmb;      
