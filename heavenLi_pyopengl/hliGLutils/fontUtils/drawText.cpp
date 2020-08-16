@@ -124,8 +124,12 @@ void drawText(
                   prevVertAlignment;
    GLfloat ao=0.0f;
    textLine->setDrawType(GL_TRIANGLES);
+   //textLine->setDrawType(GL_LINE_STRIP);
    textLine->setNumColors(1);
+   textLine->setShader("RGBAcolor_Atexture");
+
    textBackdrop->setNumColors(1);
+   textBackdrop->setShader("RGBAcolor_NoTexture");
 
    GLuint stringLen = inputString.size();
 
@@ -294,6 +298,7 @@ void drawText(
    GLfloat ao=0.0f;
    textLine->setDrawType(GL_TRIANGLES);
    textLine->setNumColors(1);
+   textLine->setShader("RGBAcolor_Atexture");
 
    static GLfloat prevHoriAlignment = -1.0f,
                   prevVertAlignment = -1.0f;
