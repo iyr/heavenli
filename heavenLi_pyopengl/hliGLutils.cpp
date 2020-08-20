@@ -19,6 +19,10 @@
 #include <map>
 #include <iterator>
 
+using namespace std;
+
+#include "hliGLutils/vertAttribStruct.h"     // Helper struct for managing shader data
+#include "hliGLutils/shaderProgramClass.h"   // Helper class for building/managing shaders
 #include "hliGLutils/matrixUtils.c"    // Minimal Matrix math library for basic 2D graphics
 #include "hliGLutils/Params.h"         // Caches Matrix Transformation Calculations
 #include "hliGLutils/drawCallClass.h"  // Helper class that abstracts VBO, Matrix Ops, etc.
