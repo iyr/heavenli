@@ -1,10 +1,9 @@
 #ifndef drawCallClass
 #define drawCallClass
 
-using namespace std;
-extern GLuint shaderProgram;
 extern GLuint whiteTex;
-extern std::map<std::string, GLuint> shaders;
+extern map<string, GLuint> shaders;
+extern map<string, shaderProg> shaderPrograms;
 
 /*
  * Implements a helper class that wraps buffer object and transformation matrix functions
@@ -15,28 +14,30 @@ class drawCall {
       GLfloat*    coordCache;    // Array of Vertex coordinate data (X, Y).
       GLfloat*    texuvCache;    // Array of Vertex Texture coordinates data (U, V).
       GLfloat*    colorCache;    // Array of Vertex color data (R, G, B, A)
+      GLfloat*    normCache;     // Array of Vertex normals, for 3D use (X, Y, Z)
 
       GLuint      texID;         // OpenGL texture ID, defaults to plain white texture for drawing solid objects
       GLuint      numVerts;      // number of Vertices (not length of cache arrays)
       GLuint      VBO;           // Buffer Object for OpenGL to store data in graphics memory
       Matrix      MVP;           // Model-View-Projection Matrix for storing transformations
       GLboolean   colorsChanged; // Determines whether color-buffer should be updated
-      std::string text;          // Object text
+      string text;          // Object text
 
       drawCall(void);
-      drawCall(unsigned int numColors);
       ~drawCall(void);
-      void buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vector<GLfloat> &colrs);
-      void buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vector<GLfloat> &texuv, std::vector<GLfloat> &colrs);
+      void buildCache(GLuint numVerts, vector<GLfloat> &verts, vector<GLfloat> &colrs);
+      void buildCache(GLuint numVerts, vector<GLfloat> &verts, vector<GLfloat> &texuv, vector<GLfloat> &colrs);
       void updateMVP(GLfloat gx, GLfloat gy, GLfloat sx, GLfloat sy, GLfloat rot, GLfloat w2h);
+      void setMVP(Matrix newMVP);
       void draw(void);
       void updateCoordCache(void);
       void updateTexUVCache(void);
       void updateColorCache(void);
+      void updateNormVCache(void);
       void setNumColors(unsigned int numColors);
       void setColorQuartet(unsigned int setIndex, GLfloat* quartet);
       void setDrawType(GLenum type);
-      void setShader(std::string shader);
+      void setShader(string shader);
       void setTex(GLuint TexID);
 
    private:
@@ -48,7 +49,7 @@ class drawCall {
       GLenum      drawType;         // GL_TRIANGLE_STRIP / GL_LINE_STRIP
       GLuint      numColors;        // Number of colorSet quartets (R, G, B, A) to manage (min: 1, typ: 2)
 
-      std::string shader;        // Object shader
+      string shader;        // Object shader
 };
 
 drawCall::drawCall(void) {
@@ -57,6 +58,7 @@ drawCall::drawCall(void) {
    this->coordCache     = NULL;
    this->texuvCache     = NULL;
    this->colorCache     = NULL;
+   this->normCache      = NULL;
 
    // Used to setup GL objects 
    this->firstRun       = GL_TRUE;   
@@ -78,37 +80,12 @@ drawCall::drawCall(void) {
    return;
 };
 
-drawCall::drawCall(unsigned int numColors) {
-   printf("Building drawCall Object...\n");
-   // Initialize Caches
-   this->coordCache     = NULL;
-   this->texuvCache     = NULL;
-   this->colorCache     = NULL;
-
-   // Used to setup GL objects 
-   this->firstRun       = GL_TRUE;   
-   this->shader         = "Default";
-
-   // Caches are empty
-   this->numVerts       = 0;
-
-   this->numColors      = numColors;
-
-   this->colorQuartets  = new GLfloat[this->numColors*4];
-
-   this->colorsChanged  = GL_FALSE;
-
-   this->drawType       = GL_TRIANGLE_STRIP;
-
-   this->texID          = 0;
-   return;
-};
-
 drawCall::~drawCall(void){
    // Deallocate caches
    delete [] this->coordCache;
    delete [] this->texuvCache;
    delete [] this->colorCache;
+   delete [] this->normCache;
    //glDeleteBuffers(1, &this->VBO);
    return;
 };
@@ -134,11 +111,18 @@ void drawCall::setNumColors(unsigned int numColors) {
    return;
 }
 
-void drawCall::setShader(std::string shader){
-   if (shaders.count(shader) <= 0) return;
+/*
+ * choose material shader for the draw call
+ */
+void drawCall::setShader(string shader){
+   //if (shaders.count(shader) <= 0) return;
+   if (shaderPrograms.count(shader) <= 0) return;
    this->shader = shader;
 }
 
+/*
+ * Set RGBA values at Index
+ */
 void drawCall::setColorQuartet(unsigned int setIndex, GLfloat* quartet) {
 
    // Saftey check
@@ -163,7 +147,7 @@ void drawCall::setColorQuartet(unsigned int setIndex, GLfloat* quartet) {
 /*
  * Builds cache from input vectors and writes to buffer object
  */
-void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vector<GLfloat> &texuv, std::vector<GLfloat> &colrs) {
+void drawCall::buildCache(GLuint numVerts, vector<GLfloat> &verts, vector<GLfloat> &texuv, vector<GLfloat> &colrs) {
    this->numVerts = numVerts;
 
    GLuint congruentVertices = 0;
@@ -228,6 +212,40 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
 
    // Allocate space to hold all vertex coordinate and color data
    printf("Allocating Buffer, size: %d bytes, %d Total Vertices, %d Congruent Vertices.\n", int(8*sizeof(GLfloat)*this->numVerts), this->numVerts, congruentVertices);
+
+   GLuint   totalVecWidth  = shaderPrograms[this->shader].getVertexVectorWidth(),
+            vecSize        = 0;
+   GLintptr offset         = 0;
+   GLubyte  numAttribs     = shaderPrograms[this->shader].getNumAttribs();
+
+   glBufferData(GL_ARRAY_BUFFER, totalVecWidth*sizeof(GLfloat)*this->numVerts, NULL, GL_STATIC_DRAW);
+
+   for (GLubyte i = 0; i < numAttribs; i++){
+      vecSize = shaderPrograms[this->shader].vertexAttribs[i].vectorSize;
+
+      if (shaderPrograms[this->shader].vertexAttribs[i].locationString.compare("vertCoord") == 0)
+         glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*vecSize*this->numVerts, this->coordCache);
+
+      if (shaderPrograms[this->shader].vertexAttribs[i].locationString.compare("vertTexUV") == 0)
+         glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*vecSize*this->numVerts, this->texuvCache);
+
+      if (shaderPrograms[this->shader].vertexAttribs[i].locationString.compare("vertColor") == 0)
+         glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*vecSize*this->numVerts, this->colorCache);
+
+      glVertexAttribPointer(
+            i,
+            vecSize,
+            GL_FLOAT,
+            GL_FALSE,
+            vecSize*sizeof(GLfloat),
+            (GLintptr*)offset
+            );
+      glEnableVertexAttribArray(i);
+
+      offset += vecSize*sizeof(GLfloat)*this->numVerts;
+   }
+
+   /*
    glBufferData(GL_ARRAY_BUFFER, 8*sizeof(GLfloat)*this->numVerts, NULL, GL_STATIC_DRAW);
    //glBufferData(GL_ARRAY_BUFFER, 8*sizeof(GLfloat)*this->numVerts, NULL, GL_DYNAMIC_DRAW);
    //glBufferData(GL_ARRAY_BUFFER, 8*sizeof(GLfloat)*this->numVerts, NULL, GL_STREAM_DRAW);
@@ -264,6 +282,7 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
    glVertexAttribPointer(vertAttribColor, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (GLintptr*)offset);
    // Enable the vertex attribute
    glEnableVertexAttribArray(vertAttribColor);
+   */
 
    // Unbind Buffer Object
    glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -275,12 +294,23 @@ void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vec
 /*
  * Builds cache from input vectors and writes to buffer object
  */
-void drawCall::buildCache(GLuint numVerts, std::vector<GLfloat> &verts, std::vector<GLfloat> &colrs) {
+void drawCall::buildCache(GLuint numVerts, vector<GLfloat> &verts, vector<GLfloat> &colrs) {
    vector<GLfloat> texuv(numVerts*2, 0.0f);
    this->buildCache(numVerts, verts, texuv, colrs);
    return;
 };
 
+/*
+ * Method for manually assigning a precomputed matrix
+ */
+void drawCall::setMVP(Matrix newMVP){
+   this->MVP = newMVP;
+   return;
+};
+
+/*
+ * Method for computing/cache transform matrix for 2D elements
+ */
 void drawCall::updateMVP(GLfloat gx, GLfloat gy, GLfloat sx, GLfloat sy, GLfloat rot, GLfloat w2h) {
    Matrix Ortho;
    Matrix ModelView;
@@ -324,7 +354,8 @@ void drawCall::updateMVP(GLfloat gx, GLfloat gy, GLfloat sx, GLfloat sy, GLfloat
 void drawCall::draw(void) {
 
    // Set desired shader program
-   glUseProgram(shaders[this->shader]);
+   //glUseProgram(shaders[this->shader]);
+   glUseProgram(shaderPrograms[this->shader].getID());
 
    // Pass Transformation Matrix to shader
    glUniformMatrix4fv( 0, 1, GL_FALSE, &this->MVP.mat[0][0] );
@@ -335,16 +366,22 @@ void drawCall::draw(void) {
    // Bind Object texture
    glBindTexture(GL_TEXTURE_2D, this->texID);
 
-   // Define how the Vertex coordinate data is layed out in the buffer
-   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
-   // Define how the Vertex Texture UV data is layed out in the buffer
-   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)*this->numVerts));
-   // Define how the Vertex color data is layed out in the buffer
-   glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (void*)(4*sizeof(GLfloat)*this->numVerts));
+   GLubyte  tmNumAttribs = shaderPrograms[this->shader].getNumAttribs();
+   GLuint   vecSize  = 0, 
+            offset   = 0;
+   for (GLubyte i = 0; i < tmNumAttribs; i++) {
+      vecSize = shaderPrograms[this->shader].vertexAttribs[i].vectorSize;
+      glVertexAttribPointer(
+            i,
+            vecSize,
+            GL_FLOAT,
+            GL_FALSE,
+            vecSize*sizeof(GLfloat),
+            (void*)(offset*sizeof(GLfloat)*this->numVerts)
+            );
+      offset += vecSize;
+   }
 
-   //glEnableVertexAttribArray(0);
-   //glEnableVertexAttribArray(1);
-   
    glDrawArrays(this->drawType, 0, this->numVerts);
 
    // Unbind Buffer Object
@@ -362,11 +399,16 @@ void drawCall::updateColorCache(void) {
    // Set active VBO
    glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
 
+   shaderProg* tmsh = &shaderPrograms[this->shader];
+
    // Initialize offset to begin storing data in latter part of the buffer
-   GLintptr offset = 4*sizeof(GLfloat)*this->numVerts;
+   GLubyte  attInd   = (GLubyte)tmsh->getAttribInd("vertColor");
+   GLubyte  vecSize  = tmsh->vertexAttribs[attInd].vectorSize;
+   GLubyte  vecOffset= tmsh->vertexAttribs[attInd].vectorOffset;
+   GLintptr offset   = vecOffset*sizeof(GLfloat)*this->numVerts;
 
    // Load Vertex coordinate data into VBO
-   glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*4*this->numVerts, this->colorCache);
+   glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*vecSize*this->numVerts, this->colorCache);
 
    // Unbind Buffer Object
    glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -383,11 +425,16 @@ void drawCall::updateCoordCache(void) {
    // Set active VBO
    glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
 
-   // Convenience variables
-   GLintptr offset = 0;
+   shaderProg* tmsh = &shaderPrograms[this->shader];
+
+   // Initialize offset to begin storing data in latter part of the buffer
+   GLubyte  attInd   = (GLubyte)tmsh->getAttribInd("vertCoord");
+   GLubyte  vecSize  = tmsh->vertexAttribs[attInd].vectorSize;
+   GLubyte  vecOffset= tmsh->vertexAttribs[attInd].vectorOffset;
+   GLintptr offset   = vecOffset*sizeof(GLfloat)*this->numVerts;
 
    // Load Vertex coordinate data into VBO
-   glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*this->numVerts, this->coordCache);
+   glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*vecSize*this->numVerts, this->coordCache);
 
    // Unbind Buffer Object
    glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -402,11 +449,16 @@ void drawCall::updateTexUVCache(void) {
    // Set active VBO
    glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
 
+   shaderProg* tmsh = &shaderPrograms[this->shader];
+
    // Initialize offset to begin storing data in latter part of the buffer
-   GLintptr offset = 2*sizeof(GLfloat)*this->numVerts;
+   GLubyte  attInd   = (GLubyte)tmsh->getAttribInd("vertTexUV");
+   GLubyte  vecSize  = tmsh->vertexAttribs[attInd].vectorSize;
+   GLubyte  vecOffset= tmsh->vertexAttribs[attInd].vectorOffset;
+   GLintptr offset   = vecOffset*sizeof(GLfloat)*this->numVerts;
 
    // Load Vertex coordinate data into VBO
-   glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*2*this->numVerts, this->texuvCache);
+   glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(GLfloat)*vecSize*this->numVerts, this->texuvCache);
 
    // Unbind Buffer Object
    glBindBuffer(GL_ARRAY_BUFFER, 0);
