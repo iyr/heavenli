@@ -10,6 +10,6 @@ varying    vec2 texCoord;
 
 void main() {
    color = vertColor;
-   gl_Position = MVP * vec4(vertCoord, 1, 1);
+   gl_Position = MVP * vec4(vertCoord, -1, 1);
    texCoord = vertTexUV;
 }

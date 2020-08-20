@@ -8,5 +8,5 @@ varying    vec4 color;
 
 void main() {
    color = vertColor;
-   gl_Position = MVP * vec4(vertCoord, 1, 1);
+   gl_Position = MVP * vec4(vertCoord, -1, 1);
 }
