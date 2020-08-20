@@ -154,16 +154,16 @@ def drawTest():
                 tmc
                 )
 
-        #drawImage(
-            #'joystick.jpg',
-            #0.0, 0.0,
-            #0.0,
-            #0.75,
-            #w2h,
-            #"circle",
-            #(1.0, (stateMach['someVar']/100), 1.0, 0.5),
-            #False
-            #)
+        drawImage(
+            'joystick.jpg',
+            0.0, 0.0,
+            0.0,
+            0.75,
+            w2h,
+            "circle",
+            (1.0, (stateMach['someVar']/100), 1.0, 0.5),
+            False
+            )
 
         cDrag  = 1.0
         accelX = -stateMach['BallVelocity'][0]*cDrag
@@ -1224,14 +1224,14 @@ def calcCursorVelocity(millis):
 def display():
     global stateMach
 
-    glClear(GL_COLOR_BUFFER_BIT)# | GL_DEPTH_BUFFER_BIT)
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
     #stateMach['tDiff'] = 0.70568/stateMach['GLframelimit']
     #stateMach['tDiff'] = 1.30568/stateMach['GLframelimit']
     #stateMach['tDiff'] = (2.71828/stateMach['GLfreq'])
     #stateMach['tDiff'] = (stateMach['foregroundGLfreq']/stateMach['frequencies']['GL'].getVal())*(2.0/(stateMach['GLfreq']))
     #if (stateMach['doSMrefresh']): 
-    stateMach['tDiff'] = 1.0*(1.0/stateMach['frequencies']['SM'].getVal())
+    stateMach['tDiff'] = 3.14159*(1.0/stateMach['frequencies']['SM'].getVal())
     #stateMach['tDiff'] = 3.14159/stateMach['GLframelimit']
     #stateMach['tDiff'] = 6.28318/stateMach['GLframelimit']
 
@@ -1743,8 +1743,8 @@ if __name__ == '__main__':
     glutMouseFunc(mouseInteraction)
     glutMotionFunc(mouseActive)
     glutPassiveMotionFunc(mousePassive)
-    glEnable(GL_LINE_SMOOTH)# | GL_DEPTH_TEST)
-    #glDepthFunc(GL_EQUAL);
+    glEnable(GL_LINE_SMOOTH | GL_DEPTH_TEST)
+    glDepthFunc(GL_LEQUAL);
 
     init()
 
