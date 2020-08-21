@@ -273,21 +273,21 @@ class UIelement:
         return
 
     # General-purpose setter
-    def setTarget(self, key, val):
+    def setParamTarget(self, key, val):
         self.params[key].setTargetVal(val)
         return
 
     # General-purpose getter
-    def getTarget(self, key):
+    def getParamTarget(self, key):
         return self.params[key].getTar()
 
     # General-purpose setter
-    def setValue(self, key, val):
+    def setParamValue(self, key, val):
         self.params[key].setValue(val)
         return
 
     # General-purpose getter
-    def getValue(self, key):
+    def getParamValue(self, key):
         return self.params[key].getVal()
 
     # Manually set size, use sparringly
@@ -337,6 +337,13 @@ class UIelement:
         return self.params['detCol'].getColor()
 
     # Useful overloads for base parameters
+    def setTarXYS(self, vals):
+        self.params["coordX"].setTargetVal(vals[0])
+        self.params["coordY"].setTargetVal(vals[1])
+        self.params["scaleX"].setTargetVal(vals[2])
+        self.params["scaleY"].setTargetVal(vals[2])
+        return
+
     def setTarPosX(self, val):
         self.params["coordX"].setTargetVal(val)
         return
@@ -407,6 +414,39 @@ class UIparam:
         self.prevDeltaSign  = None
         self.cursor         = 1.0
         self.curve          = "Default"
+        self._easings = {
+                "Default": pytweening.easeOutQuint,
+                "easeInQuad": pytweening.easeInQuad,
+                "easeOutQuad": pytweening.easeOutQuad,
+                "easeInOutQuad": pytweening.easeInOutQuad,
+                "easeInQuart": pytweening.easeInQuart,
+                "easeOutQuart": pytweening.easeOutQuart,
+                "easeInOutQuart": pytweening.easeInOutQuart,
+                "easeInQuint": pytweening.easeInQuint,
+                "easeOutQuint": pytweening.easeOutQuint,
+                "easeInOutQuint": pytweening.easeInOutQuint,
+                "easeInSine": pytweening.easeInSine,
+                "easeOutSine": pytweening.easeOutSine,
+                "easeInOutSine": pytweening.easeInOutSine,
+                "easeInExpo": pytweening.easeInExpo,
+                "easeOutExpo": pytweening.easeOutExpo,
+                "easeInOutExpo": pytweening.easeInOutExpo,
+                "easeInCirc": pytweening.easeInCirc,
+                "easeOutCirc": pytweening.easeOutCirc,
+                "easeInOutCirc": pytweening.easeInOutCirc,
+                "easeInElastic": pytweening.easeInElastic,
+                "easeOutElastic": pytweening.easeOutElastic,
+                "easeInOutElastic": pytweening.easeInOutElastic,
+                "easeInBack": pytweening.easeInBack,
+                "easeOutBack": pytweening.easeOutBack,
+                "easeInOutBack": pytweening.easeInOutBack,
+                "easeInBounce": pytweening.easeInBounce,
+                "easeOutBounce": pytweening.easeOutBounce,
+                "easeInOutBounce": pytweening.easeInOutBounce,
+                "easeInCubic": pytweening.easeInCubic,
+                "easeOutCubic": pytweening.easeOutCubic,
+                "easeInOutCubic": pytweening.easeInOutCubic
+                }
         return
 
     # Returns true if values are animating
@@ -486,103 +526,11 @@ class UIparam:
 
         return
 
+    # Calculate value of selected animation curve
     def _curve(self, x):
-        if self.curve is "Default":
-            return pytweening.easeOutQuint(x)
+        return self._easings[self.curve](x)
 
-        elif self.curve is "easeInQuad":
-            return pytweening.easeInQuad(x)
-
-        elif self.curve is "easeOutQuade":
-            return pytweening.easeOutQuade(x)
-
-        elif self.curve is "easeInOutQuad":
-            return pytweening.easeInOutQuad(x)
-
-        elif self.curve is "easeInQubic":
-            return pytweening.easeInQubic(x)
-
-        elif self.curve is "easeOutQubic":
-            return pytweening.easeOutQubic(x)
-
-        elif self.curve is "easeInOutQubic":
-            return pytweening.easeInOutQubic(x)
-
-        elif self.curve is "easeInQuart":
-            return pytweening.easeInQuart(x)
-
-        elif self.curve is "easeOutQuart":
-            return pytweening.easeOutQuart(x)
-
-        elif self.curve is "easeInOutQuart":
-            return pytweening.easeInOutQuart(x)
-
-        elif self.curve is "easeInQuint":
-            return pytweening.easeInQuint(x)
-
-        elif self.curve is "easeOutQuint":
-            return pytweening.easeOutQuint(x)
-
-        elif self.curve is "easeInOutQuint":
-            return pytweening.easeInOutQuint(x)
-
-        elif self.curve is "easeInSine":
-            return pytweening.easeInSine(x)
-
-        elif self.curve is "easeOutSine":
-            return pytweening.easeOutSine(x)
-
-        elif self.curve is "easeInOutSine":
-            return pytweening.easeInOutSine(x)
-
-        elif self.curve is "easeInExpo":
-            return pytweening.easeInExpo(x)
-
-        elif self.curve is "easeOutExpo":
-            return pytweening.easeOutExpo(x)
-
-        elif self.curve is "easeInOutExpo":
-            return pytweening.easeInOutExpo(x)
-
-        elif self.curve is "easeInCirc":
-            return pytweening.easeInCirc(x)
-
-        elif self.curve is "easeOutCirc":
-            return pytweening.easeOutCirc(x)
-
-        elif self.curve is "easeInOutCirc":
-            return pytweening.easeInOutCirc(x)
-
-        elif self.curve is "easeInElastic":
-            return pytweening.easeInElastic(x)
-
-        elif self.curve is "easeOutElastic":
-            return pytweening.easeOutElastic(x)
-
-        elif self.curve is "easeInOutElastic":
-            return pytweening.easeInOutElastic(x)
-
-        elif self.curve is "easeInBack":
-            return pytweening.easeInBack(x)
-
-        elif self.curve is "easeOutBack":
-            return pytweening.easeOutBack(x)
-
-        elif self.curve is "easeInOutBack":
-            return pytweening.easeInOutBack(x)
-
-        elif self.curve is "easeInBounce":
-            return pytweening.easeInBounce(x)
-
-        elif self.curve is "easeOutBounce":
-            return pytweening.easeOutBounce(x)
-
-        elif self.curve is "easeInOutBounce":
-            return pytweening.easeInOutBounce(x)
-
-        else:
-            return pytweening.easeOutCirc(x)
-
+# Helper to simplify drawing images from disk 
 def drawImage(
         imagePath,
         gx,
