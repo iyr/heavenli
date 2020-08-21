@@ -570,39 +570,33 @@ def goHome(xOrigin=0.0, yOrigin=0.0):
 # Sets UI elements for color picker screen
 def engageColorPicker(xOrigin=0.0, yOrigin=0.0):
     stateMach['targetScreen'] = 1
-    stateMach['UIelements']['MasterSwitch'].setTarSize(1.75)
-    stateMach['UIelements']['MasterSwitch'].setTargetFaceColor((0.0, 0.0, 0.0, 1.0))
-    stateMach['UIelements']['MasterSwitch'].setTargetDetailColor((0.0, 0.0, 0.0, 0.0))
-    stateMach['UIelements']['AllSetButton'].setTarSize(0.0)
-    stateMach['UIelements']['BulbButtons'].setTarSize(0.0)
 
-    stateMach['UIelements']['ColorTriangle'].setTarSize(1.0)
-    stateMach['UIelements']['ColorTriangle'].setValue("coordX", xOrigin)
-    stateMach['UIelements']['ColorTriangle'].setValue("coordY", yOrigin)
-    stateMach['UIelements']['ColorTriangle'].setTarPosX(0.0)
-    stateMach['UIelements']['ColorTriangle'].setTarPosY(0.0)
+    UIelements = stateMach['UIelements']
+    UIelements['MasterSwitch'].setTarSize(1.75)
+    UIelements['MasterSwitch'].setTargetFaceColor((0.0, 0.0, 0.0, 1.0))
+    UIelements['MasterSwitch'].setTargetDetailColor((0.0, 0.0, 0.0, 0.0))
+    UIelements['AllSetButton'].setTarSize(0.0)
+    UIelements['BulbButtons'].setTarSize(0.0)
 
-    stateMach['UIelements']['HueRing'].setSize(0.0)
-    stateMach['UIelements']['HueRing'].setTarSize(1.0)
-    stateMach['UIelements']['HueRing'].setValue("coordX", xOrigin)
-    stateMach['UIelements']['HueRing'].setValue("coordY", yOrigin)
-    stateMach['UIelements']['HueRing'].setTarPosX(0.0)
-    stateMach['UIelements']['HueRing'].setTarPosY(0.0)
+    UIelements['ColorTriangle'].setParamValue("coordX", xOrigin)
+    UIelements['ColorTriangle'].setParamValue("coordY", yOrigin)
+    UIelements['ColorTriangle'].setTarXYS((0.0, 0.0, 1.0))
 
-    stateMach['UIelements']['BackButton'].setTarSize(0.2)
-    stateMach['UIelements']['BackButton'].setValue("coordX", xOrigin)
-    stateMach['UIelements']['BackButton'].setValue("coordY", yOrigin)
-    stateMach['UIelements']['BackButton'].setTarPosX(-0.75)
-    stateMach['UIelements']['BackButton'].setTarPosY(-0.75)
+    UIelements['HueRing'].setSize(0.0)
+    UIelements['HueRing'].setParamValue("coordX", xOrigin)
+    UIelements['HueRing'].setParamValue("coordY", yOrigin)
+    UIelements['HueRing'].setTarXYS((0.0, 0.0, 1.0))
 
-    stateMach['UIelements']['ConfirmButton'].setTarSize( 0.2)
-    stateMach['UIelements']['ConfirmButton'].setValue("coordX", xOrigin)
-    stateMach['UIelements']['ConfirmButton'].setValue("coordY", yOrigin)
-    stateMach['UIelements']['ConfirmButton'].setTarPosX( 0.75)
-    stateMach['UIelements']['ConfirmButton'].setTarPosY(-0.75)
+    UIelements['BackButton'].setParamValue("coordX", xOrigin)
+    UIelements['BackButton'].setParamValue("coordY", yOrigin)
+    UIelements['BackButton'].setTarXYS((-0.75, -0.75, 0.2))
 
-    stateMach['UIelements']['GranChanger'].setTarSize(0.3)
-    stateMach['UIelements']['GranChanger'].setTarPosY(-0.91)
+    UIelements['ConfirmButton'].setParamValue("coordX", xOrigin)
+    UIelements['ConfirmButton'].setParamValue("coordY", yOrigin)
+    UIelements['ConfirmButton'].setTarXYS((0.75, -0.75, 0.2))
+
+    UIelements['GranChanger'].setTarSize(0.3)
+    UIelements['GranChanger'].setTarPosY(-0.91)
     return
 
 # Watch Home Screen for inputs
