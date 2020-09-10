@@ -2,4 +2,4 @@
 clear
 rm *.so
 python3 setup.py build_ext -i -f
-python3 heavenli.py
+python3 -q -X faulthandler heavenli.py
