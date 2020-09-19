@@ -1,6 +1,6 @@
 using namespace std;
 
-extern std::map<std::string, drawCall> drawCalls;
+extern map<string, drawCall> drawCalls;
 
 PyObject* doesDrawCallExist_hliGLutils(PyObject* self, PyObject* args) {
    PyObject* drawcallPyString;
@@ -16,7 +16,7 @@ PyObject* doesDrawCallExist_hliGLutils(PyObject* self, PyObject* args) {
 
    // Parse image name
    const char* NameChars = PyUnicode_AsUTF8(drawcallPyString);
-   std::string NameString = NameChars;
+   string NameString = NameChars;
 
    if (doesDrawCallExist(NameString))
       Py_RETURN_TRUE;
@@ -25,12 +25,7 @@ PyObject* doesDrawCallExist_hliGLutils(PyObject* self, PyObject* args) {
 
 }
 
-bool doesDrawCallExist(
-      std::string drawcall
-      ){
-   if (drawCalls.count(drawcall) > 0){
-      return true;
-   } else {
-      return false;
-   }
+bool doesDrawCallExist(string drawcall){
+   if (drawCalls.count(drawcall) > 0) return true;
+   else return false;
 }
