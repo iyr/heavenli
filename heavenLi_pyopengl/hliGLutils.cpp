@@ -19,9 +19,43 @@
 #include <map>
 #include <iterator>
 
+#define GET_VARIABLE_NAME(Variable) (#Variable)
+#define GET_CLASS_NAME(ClassName) (#ClassName)
+
 using namespace std;
 
+// Helper function for allocating memory based on datatype as argument
+GLuint GLsizeof(GLenum type) {
+   switch(type) {
+      case GL_TRUE:
+      case GL_FALSE:
+         return sizeof(GLboolean); // Usually 1 byte, usually...
+
+      case GL_BYTE:
+      case GL_UNSIGNED_BYTE:
+         return 1;
+
+      case GL_SHORT:
+      case GL_UNSIGNED_SHORT:
+      case GL_HALF_FLOAT:
+         return 2;
+
+      case GL_INT:
+      case GL_UNSIGNED_INT:
+      case GL_FIXED:
+      case GL_FLOAT:
+         return 4;
+
+      case GL_DOUBLE:
+         return 8;
+   }
+
+   return 0;
+}
+
+#include "hliGLutils/vertexAttribStrings.h"  // Struct of strings to map data buffers to vertex shader attribs
 #include "hliGLutils/vertAttribStruct.h"     // Helper struct for managing shader data
+#include "hliGLutils/attribCacheClass.h"     // Derived class for caching vert data per attribute
 #include "hliGLutils/shaderProgramClass.h"   // Helper class for building/managing shaders
 #include "hliGLutils/matrixUtils.c"    // Minimal Matrix math library for basic 2D graphics
 #include "hliGLutils/Params.h"         // Caches Matrix Transformation Calculations
@@ -33,11 +67,6 @@ using namespace std;
 
 #include "hliGLutils/buttonUtils.h"    // Utilities for drawing UI elements
 #include "hliGLutils/arnUtils.h"       // Dynamic iconography draw code
-
-/*
- * Sets up shaders for OpenGL
- */
-//#include "hliGLutils/initShaders.cpp"    // Code that builds a shaderProgram (vert+frag) from source
 
 /* END OF INCLUDES   */
 
@@ -74,13 +103,13 @@ PyObject* drawHueRing_hliGLutils    (PyObject* self, PyObject* args);
 PyObject* drawPrim_hliGLutils       (PyObject* self, PyObject* args);
 
 PyObject* doesDrawCallExist_hliGLutils(PyObject* self, PyObject* args);
+PyObject* printDrawCalls_hliGLutils  (PyObject* self, PyObject* args);
 
 /*
  * Python Method Definitions
  */
-
 static PyMethodDef hliGLutils_methods[] = {
-   { "initShaders", (PyCFunction)initShaders_hliGLutils, METH_NOARGS },
+   { "initShaders",     (PyCFunction)initShaders_hliGLutils,      METH_NOARGS },
 
    { "drawText",        (PyCFunction)drawText_hliGLutils,         METH_VARARGS },
    { "buildAtlas",      (PyCFunction)buildAtlas_hliGLutils,       METH_VARARGS },
@@ -110,6 +139,7 @@ static PyMethodDef hliGLutils_methods[] = {
    { "drawPrim",        (PyCFunction)drawPrim_hliGLutils,         METH_VARARGS },
 
    { "doesDrawCallExist",(PyCFunction)doesDrawCallExist_hliGLutils, METH_VARARGS},
+   { "printDrawCalls",  (PyCFunction)printDrawCalls_hliGLutils,   METH_VARARGS },
 
    { NULL, NULL, 0, NULL}
 };
