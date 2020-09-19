@@ -1,6 +1,7 @@
 using namespace std;
 
 extern std::map<std::string, drawCall> drawCalls;
+extern VertexAttributeStrings VAS;
 
 void drawPill(
       GLfloat     px, 
@@ -113,7 +114,12 @@ void drawPill(
       prevQy   = qy;
       prevRad  = radius;
 
-      pillButton->buildCache(pillVerts, verts, colrs);
+      map<string, attribCache> attributeData;
+      attributeData[VAS.coordData] = attribCache(VAS.coordData, 2, 0, 0);
+      attributeData[VAS.colorData] = attribCache(VAS.colorData, 4, 2, 1);
+      attributeData[VAS.coordData].writeCache(verts.data(), verts.size());
+      attributeData[VAS.colorData].writeCache(colrs.data(), colrs.size());
+      pillButton->buildCache(pillVerts, attributeData);
    }
 
    if (  prevPx   != px    ||
@@ -130,7 +136,7 @@ void drawPill(
             radius,
             circleSegments,
             index,
-            pillButton->coordCache
+            (GLfloat *)pillButton->getAttribCache(VAS.coordData)
             );
 
       prevPx   = px;
@@ -139,7 +145,7 @@ void drawPill(
       prevQy   = qy;
       prevRad  = radius;
 
-      pillButton->updateCoordCache();
+      pillButton->updateBuffer(VAS.coordData);
    }
 
    if (pillButton->colorsChanged) {
@@ -150,9 +156,9 @@ void drawPill(
             pColor,
             qColor,
             index, 
-            pillButton->colorCache);
+            (GLfloat *)pillButton->getAttribCache(VAS.colorData));
 
-      pillButton->updateColorCache();
+      pillButton->updateBuffer(VAS.colorData);
    }
 
    float gx=0.0f, 

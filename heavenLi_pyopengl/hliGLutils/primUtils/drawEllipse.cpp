@@ -1,6 +1,7 @@
 using namespace std;
 
 extern std::map<std::string, drawCall> drawCalls;
+extern VertexAttributeStrings VAS;
 
 void drawEllipse(
       GLfloat     gx, 
@@ -88,8 +89,13 @@ void drawEllipse(
             verts, colrs);
 
       ellipseVerts = verts.size()/2;
+      map<string, attribCache> attributeData;
+      attributeData[VAS.coordData] = attribCache(VAS.coordData, 2, 0, 0);
+      attributeData[VAS.colorData] = attribCache(VAS.colorData, 4, 2, 1);
+      attributeData[VAS.coordData].writeCache(verts.data(), verts.size());
+      attributeData[VAS.colorData].writeCache(colrs.data(), colrs.size());
 
-      ellipseButton->buildCache(ellipseVerts, verts, colrs);
+      ellipseButton->buildCache(ellipseVerts, attributeData);
    }
 
    if (  prevGx   != gx ||
@@ -104,7 +110,7 @@ void drawEllipse(
             sx, sy,
             circleSegments,
             index,
-            ellipseButton->coordCache
+            (GLfloat *)ellipseButton->getAttribCache(VAS.coordData)
             );
 
       prevGx   = gx;
@@ -112,7 +118,7 @@ void drawEllipse(
       prevSx   = sx;
       prevSy   = sy;
 
-      ellipseButton->updateCoordCache();
+      ellipseButton->updateBuffer(VAS.coordData);
    }
 
    if (ellipseButton->colorsChanged) {
@@ -122,9 +128,9 @@ void drawEllipse(
             circleSegments,
             faceColor,
             index, 
-            ellipseButton->colorCache);
+            (GLfloat *)ellipseButton->getAttribCache(VAS.colorData));
 
-      ellipseButton->updateColorCache();
+      ellipseButton->updateBuffer(VAS.colorData);
    }
 
    //ellipseButton->updateMVP(gx, gy, sx, sy, 0.0f, w2h);

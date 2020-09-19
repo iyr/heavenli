@@ -3,10 +3,9 @@
 /*
  * Heavenli opengl drawcode for linear arrangments (backgroun+iconography)
  */
-using namespace std;
-extern float offScreen;
+extern map<string, drawCall> drawCalls;
+extern VertexAttributeStrings VAS;
 
-drawCall homeLinear;
 GLuint   prevHomeLinearNumBulbs;
 GLfloat  prevHomeLinearAO,
          sxCorrected;
@@ -62,18 +61,22 @@ PyObject* drawHomeLinear_hliGLutils(PyObject *self, PyObject *args) {
       }
    }
 
-   homeLinear.setNumColors(numBulbs);
-   homeLinear.setShader("RGBAcolor_NoTexture");
+   if (drawCalls.count("homeLinear") <= 0)
+      drawCalls.insert(std::make_pair("homeLinear", drawCall()));
+   drawCall* homeLinear = &drawCalls["homeLinear"];
+
+   homeLinear->setNumColors(numBulbs);
+   homeLinear->setShader("RGBAcolor_NoTexture");
    for (unsigned int i = 0; i < numBulbs; i++ ) {
       tmc[0] = bulbColors[i*3+0];
       tmc[1] = bulbColors[i*3+1];
       tmc[2] = bulbColors[i*3+2];
       tmc[3] = alpha;
-      homeLinear.setColorQuartet(i, tmc);
+      homeLinear->setColorQuartet(i, tmc);
    }
 
    // Allocate and Define Geometry/Color buffers
-   if (  homeLinear.numVerts     == 0        ||
+   if (  homeLinear->numVerts     == 0        ||
          prevHomeLinearNumBulbs  != numBulbs ){
 
       //printf("Generating geometry for homeLinear\n");
@@ -82,7 +85,7 @@ PyObject* drawHomeLinear_hliGLutils(PyObject *self, PyObject *args) {
 
       float TLx, TRx, BLx, BRx, TLy, TRy, BLy, BRy;
 
-      homeLinear.setNumColors(numBulbs);
+      homeLinear->setNumColors(numBulbs);
       for (unsigned int j = 0; j < numBulbs; j++) {
          tmc[0] = float(bulbColors[j*3+0]);
          tmc[1] = float(bulbColors[j*3+1]);
@@ -122,11 +125,16 @@ PyObject* drawHomeLinear_hliGLutils(PyObject *self, PyObject *args) {
 
       //printf("homeLinear vertexBuffer length: %d, Number of vertices: %d, tris: %d\n", verts.size()*8, verts.size(), verts.size()/6);
       prevHomeLinearNumBulbs = numBulbs;
-      homeLinear.buildCache(verts.size()/2, verts, colrs);
+      map<string, attribCache> attributeData;
+      attributeData[VAS.coordData] = attribCache(VAS.coordData, 2, 0, 0);
+      attributeData[VAS.colorData] = attribCache(VAS.colorData, 4, 2, 1);
+      attributeData[VAS.coordData].writeCache(verts.data(), verts.size());
+      attributeData[VAS.colorData].writeCache(colrs.data(), colrs.size());
+      homeLinear->buildCache(verts.size()/2, attributeData);
    } 
 
    // Geometry already calculated, check if any colors need to be updated.
-   if (  homeLinear.colorsChanged               ){
+   if (  homeLinear->colorsChanged               ){
 
       unsigned int index = 0;
 
@@ -139,11 +147,11 @@ PyObject* drawHomeLinear_hliGLutils(PyObject *self, PyObject *args) {
          index = updateQuadColor(
                tmc,
                index,
-               homeLinear.colorCache
+               (GLfloat *)homeLinear->getAttribCache(VAS.colorData)
                );
          }
 
-      homeLinear.updateColorCache();
+      homeLinear->updateBuffer(VAS.colorData);
    }
 
    if (prevHomeLinearAO != ao) {
@@ -151,8 +159,8 @@ PyObject* drawHomeLinear_hliGLutils(PyObject *self, PyObject *args) {
       prevHomeLinearAO = ao;
    }
 
-   homeLinear.updateMVP(gx, gy, sxCorrected, 0.50f, ao, 1.0f);
-   homeLinear.draw();
+   homeLinear->updateMVP(gx, gy, sxCorrected, 0.50f, ao, 1.0f);
+   homeLinear->draw();
 
    delete [] bulbColors;
    Py_RETURN_NONE;
@@ -167,7 +175,6 @@ PyObject* drawHomeLinear_hliGLutils(PyObject *self, PyObject *args) {
  * <= 4: color representation + outline + bulb markers + bulb marker halos + grand halo
  */
 
-drawCall iconLinear;
 GLuint   prevIconLinearNumBulbs;
 GLuint   prevIconLinearFeatures;
 
@@ -242,24 +249,29 @@ void drawIconLinear(
 
    GLuint iconLinearVerts, circleSegments = 20;
 
+   if (drawCalls.count("iconLinear") <= 0)
+      drawCalls.insert(std::make_pair("iconLinear", drawCall()));
+   drawCall* iconLinear = &drawCalls["iconLinear"];
+
    float tmc[4];
    for (unsigned int i = 0; i < numBulbs; i++) {
       tmc[0] = bulbColors[i*3+0];
       tmc[1] = bulbColors[i*3+1];
       tmc[2] = bulbColors[i*3+2];
       tmc[3] = detailColor[3];
-      iconLinear.setColorQuartet(i, tmc);
+      iconLinear->setColorQuartet(i, tmc);
    }
-   iconLinear.setColorQuartet(numBulbs, detailColor);
-   iconLinear.setShader("RGBAcolor_NoTexture");
+
+   iconLinear->setColorQuartet(numBulbs, detailColor);
+   iconLinear->setShader("RGBAcolor_NoTexture");
 
    // Allocate and Define Geometry/Color buffers
-   if (  iconLinear.numVerts     == 0        ){
+   if (  iconLinear->numVerts     == 0        ){
 
       printf("Generating geometry for iconLinear\n");
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
-      iconLinear.setNumColors(numBulbs+1);
+      iconLinear->setNumColors(numBulbs+1);
 
       // Define Square of Stripes with Rounded Corners
       defineIconLinear(
@@ -280,7 +292,12 @@ void drawIconLinear(
       prevIconLinearNumBulbs = numBulbs;
       prevIconLinearFeatures = features;
 
-      iconLinear.buildCache(iconLinearVerts, verts, colrs);
+      map<string, attribCache> attributeData;
+      attributeData[VAS.coordData] = attribCache(VAS.coordData, 2, 0, 0);
+      attributeData[VAS.colorData] = attribCache(VAS.colorData, 4, 2, 1);
+      attributeData[VAS.coordData].writeCache(verts.data(), verts.size());
+      attributeData[VAS.colorData].writeCache(colrs.data(), colrs.size());
+      iconLinear->buildCache(iconLinearVerts, attributeData);
    } 
 
    // Update features
@@ -291,38 +308,38 @@ void drawIconLinear(
 
       // Changes in bulb quantity necessitate color update
       if (  prevIconLinearNumBulbs  != numBulbs ){
-         iconLinear.setNumColors(numBulbs+1);
-         iconLinear.setColorQuartet(numBulbs, detailColor);
+         iconLinear->setNumColors(numBulbs+1);
+         iconLinear->setColorQuartet(numBulbs, detailColor);
          float tmc[4];
          for (unsigned int i = 0; i < numBulbs; i++) {
             tmc[0] = bulbColors[i*3+0];
             tmc[1] = bulbColors[i*3+1];
             tmc[2] = bulbColors[i*3+2];
             tmc[3] = detailColor[3];
-	    iconLinear.setColorQuartet(i, tmc);
+	    iconLinear->setColorQuartet(i, tmc);
          }
 
          //updateIconLinearColor();
-         updateIconLinearColor(circleSegments, numBulbs, 1.0f, bulbColors, detailColor, index, iconLinear.colorCache);
-         iconLinear.updateColorCache();
+         updateIconLinearColor(circleSegments, numBulbs, 1.0f, bulbColors, detailColor, index, (GLfloat *)iconLinear->getAttribCache(VAS.colorData));
+         iconLinear->updateBuffer(VAS.colorData);
          index = 0;
       }
 
-      updateIconLinearGeometry(0.0f, 0.0f, 1.0f, features, circleSegments, numBulbs, index, iconLinear.coordCache);
-      iconLinear.updateCoordCache();
+      updateIconLinearGeometry(0.0f, 0.0f, 1.0f, features, circleSegments, numBulbs, index, (GLfloat *)iconLinear->getAttribCache(VAS.coordData));
+      iconLinear->updateBuffer(VAS.coordData);
       prevIconLinearNumBulbs = numBulbs;
       prevIconLinearFeatures = features;
    }
 
    // Geometry allocated/calculated, check if colors need to be updated
-   if (  iconLinear.colorsChanged   ){
+   if (  iconLinear->colorsChanged   ){
       unsigned int index = 0;
-      updateIconLinearColor(circleSegments, numBulbs, 1.0f, bulbColors, detailColor, index, iconLinear.colorCache);
-      iconLinear.updateColorCache();
+      updateIconLinearColor(circleSegments, numBulbs, 1.0f, bulbColors, detailColor, index, (GLfloat *)iconLinear->getAttribCache(VAS.colorData));
+      iconLinear->updateBuffer(VAS.colorData);
    }
 
-   iconLinear.updateMVP(gx, gy, -scale, scale, ao, w2h);
-   iconLinear.draw();
+   iconLinear->updateMVP(gx, gy, -scale, scale, ao, w2h);
+   iconLinear->draw();
 
    return;
 }

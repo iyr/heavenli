@@ -4,9 +4,8 @@
  * Heavenli opengl drawcode for circular arrangments (backgroun+iconography)
  */
 using namespace std;
-extern float offScreen;
+extern std::map<std::string, drawCall> drawCalls;
 
-drawCall homeCircle;
 GLuint   prevHomeCircleNumBulbs;
 
 void drawIconCircle(
@@ -59,35 +58,43 @@ PyObject* drawHomeCircle_hliGLutils(PyObject *self, PyObject *args) {
          bulbColors[i*3+j] = float(PyFloat_AsDouble(py_float));
       }
    }
+   if (drawCalls.count("homeCircle") <= 0)
+      drawCalls.insert(std::make_pair("homeCircle", drawCall()));
+   drawCall* homeCircle = &drawCalls["homeCircle"];
 
-   homeCircle.setNumColors(numBulbs);
-   homeCircle.setShader("RGBAcolor_NoTexture");
+   homeCircle->setNumColors(numBulbs);
+   homeCircle->setShader("RGBAcolor_NoTexture");
    for (unsigned int i = 0; i < numBulbs; i++ ) {
       tmc[0] = bulbColors[i*3+0];
       tmc[1] = bulbColors[i*3+1];
       tmc[2] = bulbColors[i*3+2];
       tmc[3] = alpha;
-      homeCircle.setColorQuartet(i, tmc);
+      homeCircle->setColorQuartet(i, tmc);
    }
 
 
-   if (  homeCircle.numVerts     == 0        ){
+   if (  homeCircle->numVerts     == 0        ){
 
       printf("Initializing Geometry for Circular Background\n");
       GLuint circleSegments = 60;
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
 
-      homeCircle.setNumColors(numBulbs);
+      homeCircle->setNumColors(numBulbs);
       defineColorWheel(0.0f, 0.0f, 10.0f, circleSegments, 180.0f, numBulbs, 1.0f, bulbColors, verts, colrs);
       printf("homeCircle vertexBuffer length: %d, Number of vertices: %d, tris: %d\n", (int)verts.size()*8, (int)verts.size(), (int)verts.size()/6);
 
       prevHomeCircleNumBulbs = numBulbs;
-      homeCircle.buildCache(verts.size()/2, verts, colrs);
+      map<string, attribCache> attributeData;
+      attributeData[VAS.coordData] = attribCache(VAS.coordData, 2, 0, 0);
+      attributeData[VAS.colorData] = attribCache(VAS.colorData, 4, 2, 1);
+      attributeData[VAS.coordData].writeCache(verts.data(), verts.size());
+      attributeData[VAS.colorData].writeCache(colrs.data(), colrs.size());
+      homeCircle->buildCache(verts.size()/2, attributeData);
    }
 
    // Update Colors, if necessary
-   if (  homeCircle.colorsChanged               ||
+   if (  homeCircle->colorsChanged               ||
          prevHomeCircleNumBulbs     != numBulbs ){
 
       unsigned int index = 0;
@@ -95,28 +102,28 @@ PyObject* drawHomeCircle_hliGLutils(PyObject *self, PyObject *args) {
 
       // Changes in bulb quantity necessitate color update
       if (  prevHomeCircleNumBulbs  != numBulbs ){
-         homeCircle.setNumColors(numBulbs);
+         homeCircle->setNumColors(numBulbs);
          float tmc[4];
          for (unsigned int i = 0; i < numBulbs; i++) {
             tmc[0] = bulbColors[i*3+0];
             tmc[1] = bulbColors[i*3+1];
             tmc[2] = bulbColors[i*3+2];
             tmc[3] = alpha;
-            homeCircle.setColorQuartet(i, tmc);
+            homeCircle->setColorQuartet(i, tmc);
          }
 
-         updateColorWheelColor(circleSegments, numBulbs, 1.0f, bulbColors, index, homeCircle.colorCache);
-         homeCircle.updateColorCache();
+         updateColorWheelColor(circleSegments, numBulbs, 1.0f, bulbColors, index, (GLfloat *)homeCircle->getAttribCache(VAS.colorData));
+         homeCircle->updateBuffer(VAS.colorData);
          index = 0;
          prevHomeCircleNumBulbs = numBulbs;
       }
 
-      updateColorWheelColor(circleSegments, numBulbs, 1.0f, bulbColors, index, homeCircle.colorCache);
-      homeCircle.updateColorCache();
+      updateColorWheelColor(circleSegments, numBulbs, 1.0f, bulbColors, index, (GLfloat *)homeCircle->getAttribCache(VAS.colorData));
+      homeCircle->updateBuffer(VAS.colorData);
    }
 
-   homeCircle.updateMVP(gx, gy, 1.0f, 1.0f, -ao, 1.0f);
-   homeCircle.draw();
+   homeCircle->updateMVP(gx, gy, 1.0f, 1.0f, -ao, 1.0f);
+   homeCircle->draw();
 
    delete [] bulbColors;
    Py_RETURN_NONE;
@@ -131,7 +138,6 @@ PyObject* drawHomeCircle_hliGLutils(PyObject *self, PyObject *args) {
  * <= 3: color representation + outline + bulb markers + bulb marker halos
  * <= 4: color representation + outline + bulb markers + bulb marker halos + grand halo
  */
-drawCall iconCircle;
 GLuint   prevIconCircleNumBulbs;
 GLuint   prevIconCircleFeatures;
 
@@ -207,8 +213,12 @@ void drawIconCircle(
 
    unsigned int circleSegments = 60;
 
-   iconCircle.setNumColors(numBulbs+1);
-   iconCircle.setShader("RGBAcolor_NoTexture");
+   if (drawCalls.count("iconCircle") <= 0)
+      drawCalls.insert(std::make_pair("iconCircle", drawCall()));
+   drawCall* iconCircle = &drawCalls["iconCircle"];
+
+   iconCircle->setNumColors(numBulbs+1);
+   iconCircle->setShader("RGBAcolor_NoTexture");
 
    float tmc[4];
    for (unsigned int i = 0; i < numBulbs; i++) {
@@ -216,17 +226,17 @@ void drawIconCircle(
       tmc[1] = bulbColors[i*3+1];
       tmc[2] = bulbColors[i*3+2];
       tmc[3] = detailColor[3];
-      iconCircle.setColorQuartet(i, tmc);
+      iconCircle->setColorQuartet(i, tmc);
    }
-   iconCircle.setColorQuartet(numBulbs, detailColor);
+   iconCircle->setColorQuartet(numBulbs, detailColor);
 
    // Allocate and Define Geometry/Color buffers
-   if (  iconCircle.numVerts     == 0  ){
+   if (  iconCircle->numVerts     == 0  ){
 
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
 
-      iconCircle.setNumColors(numBulbs+1);
+      iconCircle->setNumColors(numBulbs+1);
 
       defineIconCircle(
             0.0f, 0.0f,       // pos (X, Y)
@@ -240,7 +250,12 @@ void drawIconCircle(
             verts, colrs);
 
       prevIconCircleNumBulbs = numBulbs;
-      iconCircle.buildCache(verts.size()/2, verts, colrs);
+      map<string, attribCache> attributeData;
+      attributeData[VAS.coordData] = attribCache(VAS.coordData, 2, 0, 0);
+      attributeData[VAS.colorData] = attribCache(VAS.colorData, 4, 2, 1);
+      attributeData[VAS.coordData].writeCache(verts.data(), verts.size());
+      attributeData[VAS.colorData].writeCache(colrs.data(), colrs.size());
+      iconCircle->buildCache(verts.size()/2, attributeData);
    }
 
    // Update Geometry, if necessary
@@ -251,36 +266,36 @@ void drawIconCircle(
 
       // Changes in bulb quantity necessitate color update
       if (  prevIconCircleNumBulbs  != numBulbs ){
-         iconCircle.setNumColors(numBulbs+1);
-         iconCircle.setColorQuartet(numBulbs, detailColor);
+         iconCircle->setNumColors(numBulbs+1);
+         iconCircle->setColorQuartet(numBulbs, detailColor);
          float tmc[4];
          for (unsigned int i = 0; i < numBulbs; i++) {
             tmc[0] = bulbColors[i*3+0];
             tmc[1] = bulbColors[i*3+1];
             tmc[2] = bulbColors[i*3+2];
             tmc[3] = detailColor[3];
-            iconCircle.setColorQuartet(i, tmc);
+            iconCircle->setColorQuartet(i, tmc);
          }
 
-         updateIconCircleColor(circleSegments, numBulbs, 1.0f, bulbColors, detailColor, index, iconCircle.colorCache);
-         iconCircle.updateColorCache();
+         updateIconCircleColor(circleSegments, numBulbs, 1.0f, bulbColors, detailColor, index, (GLfloat *)iconCircle->getAttribCache(VAS.colorData));
+         iconCircle->updateBuffer(VAS.colorData);
          index = 0;
       }
 
-      updateIconCircleGeometry(0.0f, 0.0f, 1.0f, features, circleSegments, numBulbs, index, iconCircle.coordCache);
-      iconCircle.updateCoordCache();
+      updateIconCircleGeometry(0.0f, 0.0f, 1.0f, features, circleSegments, numBulbs, index, (GLfloat *)iconCircle->getAttribCache(VAS.coordData));
+      iconCircle->updateBuffer(VAS.coordData);
       prevIconCircleNumBulbs = numBulbs;
       prevIconCircleFeatures = features;
    }
 
    // Update Colors, if necessary
-   if (  iconCircle.colorsChanged   ){
+   if (  iconCircle->colorsChanged   ){
       unsigned int index = 0;
-      updateIconCircleColor(circleSegments, numBulbs, 1.0f, bulbColors, detailColor, index, iconCircle.colorCache);
-      iconCircle.updateColorCache();
+      updateIconCircleColor(circleSegments, numBulbs, 1.0f, bulbColors, detailColor, index, (GLfloat *)iconCircle->getAttribCache(VAS.colorData));
+      iconCircle->updateBuffer(VAS.colorData);
    }
 
-   iconCircle.updateMVP(gx, gy, scale, scale, -ao, w2h);
-   iconCircle.draw();
+   iconCircle->updateMVP(gx, gy, scale, scale, -ao, w2h);
+   iconCircle->draw();
    return;
 }

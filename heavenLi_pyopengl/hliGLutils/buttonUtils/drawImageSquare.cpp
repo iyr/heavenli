@@ -132,14 +132,21 @@ void drawImageSquare(
             color,
             verts, texuv, colrs
             );
-
-      image->buildCache(imageVerts, verts, texuv, colrs);
+      map<string, attribCache> attributeData;
+      // Define vertex attributes, initialize caches
+      attributeData[VAS.coordData] = attribCache(VAS.coordData, 2, 0, 0);
+      attributeData[VAS.texuvData] = attribCache(VAS.texuvData, 2, 2, 1);
+      attributeData[VAS.colorData] = attribCache(VAS.colorData, 4, 4, 2);
+      attributeData[VAS.coordData].writeCache(verts.data(), verts.size());
+      attributeData[VAS.texuvData].writeCache(texuv.data(), texuv.size());
+      attributeData[VAS.colorData].writeCache(colrs.data(), colrs.size());
+      image->buildCache(imageVerts, attributeData);
    }
 
    if (image->colorsChanged){
       GLuint index = 0;
-      index = updateQuadColor(color, index, image->colorCache);
-      image->updateColorCache();
+      index = updateQuadColor(color, index, (GLfloat *)image->getAttribCache(VAS.colorData));
+      image->updateBuffer(VAS.colorData);
    }
 
    image->updateMVP(gx, gy, scale, -scale, ao, w2h);

@@ -1,6 +1,7 @@
 using namespace std;
 
 extern std::map<std::string, drawCall> drawCalls;
+extern VertexAttributeStrings VAS;
 
 PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
 {
@@ -168,7 +169,12 @@ PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
       prevArn              = arn;
       prevBulbButtonScale  = buttonScale;
 
-      bulbButton->buildCache(bulbButtonVerts, verts, colrs);
+      map<string, attribCache> attributeData;
+      attributeData[VAS.coordData] = attribCache(VAS.coordData, 2, 0, 0);
+      attributeData[VAS.colorData] = attribCache(VAS.colorData, 4, 2, 1);
+      attributeData[VAS.coordData].writeCache(verts.data(), verts.size());
+      attributeData[VAS.colorData].writeCache(colrs.data(), colrs.size());
+      bulbButton->buildCache(bulbButtonVerts, attributeData);
    } 
 
    // Recalculate vertex geometry without expensive vertex/array reallocation
@@ -213,8 +219,8 @@ PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
          buttonCoords[j*2+0] = tmx;
          buttonCoords[j*2+1] = tmy;
 
-         index = updateEllipseGeometry(tmx, tmy, 0.4f*buttonScale, 0.4f*buttonScale, circleSegments, index, bulbButton->coordCache);
-         index = updateBulbGeometry(tmx, tmy+0.115f*buttonScale, 0.175f*buttonScale, circleSegments, index, bulbButton->coordCache);
+         index = updateEllipseGeometry(tmx, tmy, 0.4f*buttonScale, 0.4f*buttonScale, circleSegments, index, (GLfloat *)bulbButton->getAttribCache(VAS.coordData));
+         index = updateBulbGeometry(tmx, tmy+0.115f*buttonScale, 0.175f*buttonScale, circleSegments, index, (GLfloat *)bulbButton->getAttribCache(VAS.coordData));
       }
 
       // Update Statemachine Variables
@@ -224,22 +230,22 @@ PyObject* drawBulbButton_hliGLutils(PyObject *self, PyObject *args)
       prevArn = arn;
       prevBulbButtonScale = buttonScale;
 
-      bulbButton->updateCoordCache();
+      bulbButton->updateBuffer(VAS.coordData);
    }
 
    // Vertices / Geometry already calculated
    // Check if colors need to be updated
    int index = 0;
    for (int j = 0; j < numBulbs; j++) {
-      index = updateEllipseColor(circleSegments, faceColor, index, bulbButton->colorCache);
+      index = updateEllipseColor(circleSegments, faceColor, index, (GLfloat *)bulbButton->getAttribCache(VAS.colorData));
       float tmbc[4];
       tmbc[0] = bulbColors[j*3+0];
       tmbc[1] = bulbColors[j*3+1];
       tmbc[2] = bulbColors[j*3+2];
       tmbc[3] = 1.0;
-      index = updateBulbColor(circleSegments, tmbc, detailColor, index, bulbButton->colorCache);
+      index = updateBulbColor(circleSegments, tmbc, detailColor, index, (GLfloat *)bulbButton->getAttribCache(VAS.colorData));
    }
-   bulbButton->updateColorCache();
+   bulbButton->updateBuffer(VAS.colorData);
 
    //PyList_ClearFreeList();
    py_list = PyList_New(numBulbs);

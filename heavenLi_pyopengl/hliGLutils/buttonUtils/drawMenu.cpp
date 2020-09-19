@@ -3,6 +3,7 @@ using namespace std;
 extern std::map<std::string, drawCall> drawCalls;
 extern std::map<std::string, textAtlas> textFonts;
 extern std::string selectedAtlas;
+extern VertexAttributeStrings VAS;
 
 PyObject* drawMenu_hliGLutils(PyObject* self, PyObject* args) {
    PyObject*   faceColorPyTup;
@@ -176,7 +177,12 @@ void drawMenu(
 
          prevDir = direction;
          prevDep = deployed;
-         MenuClosed->buildCache(verts.size()/2, verts, colrs);
+         map<string, attribCache> attributeData;
+         attributeData[VAS.coordData] = attribCache(VAS.coordData, 2, 0, 0);
+         attributeData[VAS.colorData] = attribCache(VAS.colorData, 4, 2, 1);
+         attributeData[VAS.coordData].writeCache(verts.data(), verts.size());
+         attributeData[VAS.colorData].writeCache(colrs.data(), colrs.size());
+         MenuClosed->buildCache(verts.size()/2, attributeData);
       }
 
       if (  MenuClosed->colorsChanged  ){
@@ -185,10 +191,10 @@ void drawMenu(
                circleSegments,
                faceColor,
                index,
-               MenuClosed->colorCache
+               (GLfloat *)MenuClosed->getAttribCache(VAS.colorData)
                );
 
-         MenuClosed->updateColorCache();
+         MenuClosed->updateBuffer(VAS.colorData);
       }
 
       // Set element diamond coordinates/sizes
@@ -234,7 +240,12 @@ void drawMenu(
          prevScr = scrollCursor;
          prevFlc = floatingIndex;
          prevNumElements = numElements;
-         MenuNormal->buildCache(verts.size()/2, verts, colrs);
+         map<string, attribCache> attributeData;
+         attributeData[VAS.coordData] = attribCache(VAS.coordData, 2, 0, 0);
+         attributeData[VAS.colorData] = attribCache(VAS.colorData, 4, 2, 1);
+         attributeData[VAS.coordData].writeCache(verts.data(), verts.size());
+         attributeData[VAS.colorData].writeCache(colrs.data(), colrs.size());
+         MenuNormal->buildCache(verts.size()/2, attributeData);
       }
 
       if (  prevDep        != deployed       ||
@@ -254,7 +265,7 @@ void drawMenu(
                elementCoords, // Relative coordinates of Menu elements
                w2h,           // width to height ratio
                index,
-               MenuNormal->coordCache
+               (GLfloat *)MenuNormal->getAttribCache(VAS.coordData)
          );
 
          prevDep = deployed;
@@ -262,7 +273,7 @@ void drawMenu(
          prevScr = scrollCursor;
          prevFlc = floatingIndex;
          prevSelectFromScroll = selectFromScroll;
-         MenuNormal->updateCoordCache();
+         MenuNormal->updateBuffer(VAS.coordData);
       } else {
 		   float* glCoords = new float[(numElements+1)*3];
 		   defineElementCoords(
@@ -287,9 +298,9 @@ void drawMenu(
             faceColor,     // Main color for the body of the menu
             detailColor,   // scroll bar, 
             index,
-            MenuNormal->colorCache
+            (GLfloat *)MenuNormal->getAttribCache(VAS.colorData)
             );
-         MenuNormal->updateColorCache();
+         MenuNormal->updateBuffer(VAS.colorData);
       }
 
       MenuNormal->updateMVP(gx, gy, scale, scale, -direction, w2h);
@@ -336,7 +347,12 @@ void drawMenu(
          prevMenuLayout    = menuLayout;
          prevNumListings   = numListings;
          prevIndexDraw     = drawIndex;
-         MenuOverflow->buildCache(verts.size()/2, verts, colrs);
+         map<string, attribCache> attributeData;
+         attributeData[VAS.coordData] = attribCache(VAS.coordData, 2, 0, 0);
+         attributeData[VAS.colorData] = attribCache(VAS.colorData, 4, 2, 1);
+         attributeData[VAS.coordData].writeCache(verts.data(), verts.size());
+         attributeData[VAS.colorData].writeCache(colrs.data(), colrs.size());
+         MenuOverflow->buildCache(verts.size()/2, attributeData);
       }
 
       if (  prevDep        != deployed       ||
@@ -361,7 +377,7 @@ void drawMenu(
                elementCoords,    // Relative coordinates of Menu elements
                w2h,              // width to height ratio
                index,
-               MenuOverflow->coordCache
+               (GLfloat *)MenuNormal->getAttribCache(VAS.coordData)
          );
 
          prevDep = deployed;
@@ -370,7 +386,7 @@ void drawMenu(
          prevFlc = floatingIndex;
          prevMenuLayout       = menuLayout;
          prevSelectFromScroll = selectFromScroll;
-         MenuOverflow->updateCoordCache();
+         MenuOverflow->updateBuffer(VAS.coordData);
       } else {
          float* tml = new float[(numListings+1)*3];
          defineElementCoords(
@@ -397,10 +413,10 @@ void drawMenu(
             faceColor,     // Main color for the body of the menu
             detailColor,   // scroll bar, 
             index,
-            MenuOverflow->colorCache
+            (GLfloat *)MenuOverflow->getAttribCache(VAS.colorData)
             );
          prevIndexDraw = drawIndex;
-         MenuOverflow->updateColorCache();
+         MenuOverflow->updateBuffer(VAS.colorData);
       }
 
       MenuOverflow->updateMVP(gx, gy, scale, scale, -direction, w2h);

@@ -1,7 +1,6 @@
-using namespace std;
 
-//drawCall    colrTriButton;
-extern std::map<std::string, drawCall> drawCalls;
+extern map<string, drawCall> drawCalls;
+extern VertexAttributeStrings VAS;
 
 GLfloat     *triButtonData       = NULL;  // Stores data (X, Y, sat, val) for each button dot
 GLfloat     prevTriX             = 0.0f;  // Used for animating granularity changes
@@ -177,7 +176,12 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
       colrTriVerts = verts.size()/2;
 
       // Build coordinate and color caches
-      colrTriButton->buildCache(colrTriVerts, verts, colrs);
+      map<string, attribCache> attributeData;
+      attributeData[VAS.coordData] = attribCache(VAS.coordData, 2, 0, 0);
+      attributeData[VAS.colorData] = attribCache(VAS.colorData, 4, 2, 1);
+      attributeData[VAS.coordData].writeCache(verts.data(), verts.size());
+      attributeData[VAS.colorData].writeCache(colrs.data(), colrs.size());
+      colrTriButton->buildCache(colrTriVerts, attributeData);
 
       // Update State Machine variables
       prevTriHue     = currentTriHue;
@@ -249,7 +253,8 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
                   tmr, tmr,
                   circleSegments, 
                   index, 
-                  colrTriButton->coordCache);
+                  (GLfloat *)colrTriButton->getAttribCache(VAS.coordData)
+                  );
 
             // Determine which button dot represents the currently selected saturation and value
             if (  abs(currentTriSat - saturation) <= 1.0f / float(numLevels) &&
@@ -270,9 +275,10 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
             0.03f,
             circleSegments,
             index,
-            colrTriButton->coordCache);
+            (GLfloat *)colrTriButton->getAttribCache(VAS.coordData)
+            );
 
-      colrTriButton->updateCoordCache();
+      colrTriButton->updateBuffer(VAS.coordData);
 
    } else {
       prevTriX = triX;
@@ -359,9 +365,10 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
             0.03f,
             circleSegments,
             colrTriDotsVerts,
-            colrTriButton->coordCache);
+            (GLfloat *)colrTriButton->getAttribCache(VAS.coordData)
+            );
 
-      colrTriButton->updateCoordCache();
+      colrTriButton->updateBuffer(VAS.coordData);
    }
 
    prevTriSatSel = currentTriSat;
@@ -394,7 +401,7 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
                   circleSegments, 
                   colors,
                   colrIndex, 
-                  colrTriButton->colorCache);
+                  (GLfloat *)colrTriButton->getAttribCache(VAS.colorData));
          }
       }
       prevTriHue = currentTriHue;
@@ -403,11 +410,12 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
    }
 
    // Check if selection Ring Color needs to be updated
+   GLfloat * tmAttrib = (GLfloat *)colrTriButton->getAttribCache(VAS.colorData);
    for (int i = 0; i < 4; i++) {
-      if ( (colrTriButton->colorCache[colrTriDotsVerts*4+i] != ringColor[i])   && 
+      if ( (tmAttrib[colrTriDotsVerts*4+i] != ringColor[i])   && 
            (prevColrTriNumLevels == numLevels)                                   ){
          for (unsigned int k = colrTriDotsVerts; k < colrTriButton->numVerts; k++) {
-            colrTriButton->colorCache[k*4+i] = ringColor[i];
+            tmAttrib[k*4+i] = ringColor[i];
          }
 
          updateCache = GL_TRUE;
@@ -416,7 +424,7 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
 
    // Update colors, if needed
    if ( updateCache ){
-      colrTriButton->updateColorCache();
+      colrTriButton->updateBuffer(VAS.colorData);
    }
 
    // Create a Python List of tuples containing data of each button dot

@@ -135,7 +135,12 @@ PyObject* drawGranChanger_hliGLutils(PyObject *self, PyObject *args) {
             colrs);
 
       granChangerVerts = verts.size()/2;
-      granChangerButton->buildCache(granChangerVerts, verts, colrs);
+      map<string, attribCache> attributeData;
+      attributeData[VAS.coordData] = attribCache(VAS.coordData, 2, 0, 0);
+      attributeData[VAS.colorData] = attribCache(VAS.colorData, 4, 2, 1);
+      attributeData[VAS.coordData].writeCache(verts.data(), verts.size());
+      attributeData[VAS.colorData].writeCache(colrs.data(), colrs.size());
+      granChangerButton->buildCache(granChangerVerts, attributeData);
    }
 
    if (granChangerButton->colorsChanged) {
@@ -145,54 +150,54 @@ PyObject* drawGranChanger_hliGLutils(PyObject *self, PyObject *args) {
       //index = updateQuadColor(
             //black,
             //index, 
-            //granChangerButton->colorCache);
+            //granChangerButton->getAttribCache(VAS.colorData));
 
       // Lower Background Mask (Pill)
       index = updatePillColor(
              circleSegments,
              black,              // Color 
              index, 
-             granChangerButton->colorCache);
+             (GLfloat *)granChangerButton->getAttribCache(VAS.colorData));
 
       // Left (Minus) Button
       index = updateCircleColor(
              circleSegments,        // Number of Circle Triangles 
              faceColor,             // Colors 
              index,
-             granChangerButton->colorCache);
+             (GLfloat *)granChangerButton->getAttribCache(VAS.colorData));
 
       // Right (Plus) Button
       index = updateCircleColor(
              circleSegments,        // Number of Circle Triangles 
              faceColor,             // Colors 
              index,
-             granChangerButton->colorCache);
+             (GLfloat *)granChangerButton->getAttribCache(VAS.colorData));
 
       // Iconography
-      index = updateCircleColor( circleSegments, white, index, granChangerButton->colorCache);
-      index = updateCircleColor( circleSegments, white, index, granChangerButton->colorCache);
-      index = updateCircleColor( circleSegments, white, index, granChangerButton->colorCache);
+      index = updateCircleColor( circleSegments, white, index, (GLfloat *)granChangerButton->getAttribCache(VAS.colorData));
+      index = updateCircleColor( circleSegments, white, index, (GLfloat *)granChangerButton->getAttribCache(VAS.colorData));
+      index = updateCircleColor( circleSegments, white, index, (GLfloat *)granChangerButton->getAttribCache(VAS.colorData));
 
       // Minus Symbol
       index = updatePillColor(
             circleSegments,
             detailColor,                              // Color 
             index,
-            granChangerButton->colorCache);
+            (GLfloat *)granChangerButton->getAttribCache(VAS.colorData));
 
       // Plus Symbol
       index = updatePillColor(
             circleSegments,
             detailColor,                              // Color 
             index,
-            granChangerButton->colorCache);
+            (GLfloat *)granChangerButton->getAttribCache(VAS.colorData));
       index = updatePillColor(
             circleSegments,
             detailColor,                        // Color 
             index,
-            granChangerButton->colorCache);
+            (GLfloat *)granChangerButton->getAttribCache(VAS.colorData));
 
-      granChangerButton->updateColorCache();
+      granChangerButton->updateBuffer(VAS.colorData);
    }
 
    granChangerButton->updateMVP(gx, gy, scale, scale, ao, w2h);

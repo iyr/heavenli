@@ -5,6 +5,7 @@ using namespace std;
 extern std::map<std::string, drawCall> drawCalls;
 extern std::map<std::string, textAtlas> textFonts;
 extern std::string selectedAtlas;
+extern VertexAttributeStrings VAS;
 
 // Python 3 function for drawing text
 PyObject* drawText_hliGLutils(PyObject* self, PyObject* args) {
@@ -119,10 +120,13 @@ void drawText(
       ){
 
    //textAtlas* tmAt = &textFonts[selectedAtlas];
+   
    static GLuint  prevFaceSize;
    static GLfloat prevHoriAlignment,
                   prevVertAlignment;
-   GLfloat ao=0.0f;
+   GLfloat  ao=0.0f;
+   GLuint   numTextVerts = 0,
+            numBakgVerts = 0;
    textLine->setDrawType(GL_TRIANGLES);
    //textLine->setDrawType(GL_LINE_STRIP);
    textLine->setNumColors(1);
@@ -181,13 +185,31 @@ void drawText(
             bgverts,
             bgcolrs);
 
+      numTextVerts = verts.size()/2;
+      numBakgVerts = bgverts.size()/2;
       prevHoriAlignment = horiAlignment;
       prevVertAlignment = vertAlignment;
       prevFaceSize      = atlas->faceSize;
       textLine->text    = inputString;
       textLine->texID   = atlas->tex;
-      textLine->buildCache(verts.size()/2, verts, texuv, colrs);
-      textBackdrop->buildCache(bgverts.size()/2, bgverts, bgcolrs);
+
+      map<string, attribCache> attributeData;
+      // Define vertex attributes, initialize caches
+      attributeData[VAS.coordData] = attribCache(VAS.coordData, 2, 0, 0);
+      attributeData[VAS.texuvData] = attribCache(VAS.texuvData, 2, 2, 1);
+      attributeData[VAS.colorData] = attribCache(VAS.colorData, 4, 4, 2);
+      attributeData[VAS.coordData].writeCache(verts.data(), verts.size());
+      attributeData[VAS.texuvData].writeCache(texuv.data(), texuv.size());
+      attributeData[VAS.colorData].writeCache(colrs.data(), colrs.size());
+      textLine->buildCache(numTextVerts, attributeData);
+
+      //textBackdrop->buildCache(bgverts.size()/2, bgverts, bgcolrs);
+      attributeData.clear();
+      attributeData[VAS.coordData] = attribCache(VAS.coordData, 2, 0, 0);
+      attributeData[VAS.colorData] = attribCache(VAS.colorData, 4, 2, 1);
+      attributeData[VAS.coordData].writeCache(bgverts.data(), bgverts.size());
+      attributeData[VAS.colorData].writeCache(bgcolrs.data(), bgcolrs.size());
+      textBackdrop->buildCache(numBakgVerts, attributeData);
    }
 
    if (  textLine->text.compare(inputString) != 0  ||
@@ -199,10 +221,10 @@ void drawText(
       const char* inputChars = inputString.c_str();
 
       for (unsigned int i = stringLen*6; i < textLine->text.size()*6; i++){
-         textLine->coordCache[i*2+0] = 0.0f;
-         textLine->coordCache[i*2+1] = 0.0f;
-         textLine->texuvCache[i*2+0] = 0.0f;
-         textLine->texuvCache[i*2+1] = 0.0f;
+         ((GLfloat *)textLine->getAttribCache(VAS.coordData))[i*2+0] = 0.0f;
+         ((GLfloat *)textLine->getAttribCache(VAS.coordData))[i*2+1] = 0.0f;
+         ((GLfloat *)textLine->getAttribCache(VAS.texuvData))[i*2+0] = 0.0f;
+         ((GLfloat *)textLine->getAttribCache(VAS.texuvData))[i*2+1] = 0.0f;
       }
 
       GLuint index = 0;
@@ -214,28 +236,41 @@ void drawText(
             vertAlignment,
             atlas,
             index,
-            textLine->coordCache,
-            textLine->texuvCache);
+            (GLfloat *)textLine->getAttribCache(VAS.coordData),
+            (GLfloat *)textLine->getAttribCache(VAS.texuvData));
 
       index = 0;
 
       for (unsigned int i = 0; i < textLine->text.size(); i++)
-         index = updateQuadColor(textColor, index, textLine->colorCache);
-      textLine->updateColorCache();
+         index = updateQuadColor(textColor, index, (GLfloat *)textLine->getAttribCache(VAS.colorData));
+      textLine->updateBuffer(VAS.colorData);
 
+      GLfloat* tmAttCache = (GLfloat *)textLine->getAttribCache(VAS.coordData);
       for (unsigned int i = 0; i < stringLen*6; i++){
 
          // only update extrema for characters with metrics
          if (inputChars[i/6] > 32) {
-            if (textLine->coordCache[i*2] < minX)
-               minX = textLine->coordCache[i*2];
-            if (textLine->coordCache[i*2] > maxX)
-               maxX = textLine->coordCache[i*2];
-            if (textLine->coordCache[i*2+1] < minY)
-               minY = textLine->coordCache[i*2+1];
-            if (textLine->coordCache[i*2+1] > maxY)
-               maxY = textLine->coordCache[i*2+1];
+            if (tmAttCache[i*2] < minX)
+               minX = tmAttCache[i*2];
+            if (tmAttCache[i*2] > maxX)
+               maxX = tmAttCache[i*2];
+            if (tmAttCache[i*2+1] < minY)
+               minY = tmAttCache[i*2+1];
+            if (tmAttCache[i*2+1] > maxY)
+               maxY = tmAttCache[i*2+1];
          }
+         /*
+         if (inputChars[i/6] > 32) {
+            if ((GLfloat *)textLine->getAttribCache(VAS.coordData)[i*2] < minX)
+               minX = (GLfloat *)textLine->getAttribCache(VAS.coordData)[i*2];
+            if ((GLfloat *)textLine->getAttribCache(VAS.coordData)[i*2] > maxX)
+               maxX = (GLfloat *)textLine->getAttribCache(VAS.coordData)[i*2];
+            if ((GLfloat *)textLine->getAttribCache(VAS.coordData)[i*2+1] < minY)
+               minY = (GLfloat *)textLine->getAttribCache(VAS.coordData)[i*2+1];
+            if ((GLfloat *)textLine->getAttribCache(VAS.coordData)[i*2+1] > maxY)
+               maxY = (GLfloat *)textLine->getAttribCache(VAS.coordData)[i*2+1];
+         }
+         */
       }
 
       index = 0;
@@ -245,14 +280,14 @@ void drawText(
             10.5f,
             15,
             index,
-            textBackdrop->coordCache);
+            (GLfloat *)textBackdrop->getAttribCache(VAS.coordData));
 
       prevHoriAlignment = horiAlignment;
       prevVertAlignment = vertAlignment;
       prevFaceSize      = atlas->faceSize;
-      textLine->updateTexUVCache();
-      textLine->updateCoordCache();
-      textBackdrop->updateCoordCache();
+      textLine->updateBuffer(VAS.texuvData);
+      textLine->updateBuffer(VAS.coordData);
+      textBackdrop->updateBuffer(VAS.coordData);
       textLine->text = inputString;
    }
 
@@ -261,13 +296,13 @@ void drawText(
 
       GLuint index = 0;
       for (unsigned int i = 0; i < textLine->text.size(); i++)
-         index = updateQuadColor(textColor, index, textLine->colorCache);
+         index = updateQuadColor(textColor, index, (GLfloat *)textLine->getAttribCache(VAS.colorData));
 
       index = 0;
-      index = updateRoundRect(15, faceColor, index, textBackdrop->colorCache);
+      index = updateRoundRect(15, faceColor, index, (GLfloat *)textBackdrop->getAttribCache(VAS.colorData));
 
-      textLine->updateColorCache();
-      textBackdrop->updateColorCache();
+      textLine->updateBuffer(VAS.colorData);
+      textBackdrop->updateBuffer(VAS.colorData);
    }
 
    textLine->updateMVP(gx, gy, sx*0.007f, sy*0.007f, ao, w2h);
@@ -333,7 +368,17 @@ void drawText(
       prevVertAlignment = vertAlignment;
       textLine->text    = inputString;
       textLine->texID   = atlas->tex;
-      textLine->buildCache(verts.size()/2, verts, texuv, colrs);
+      //textLine->buildCache(verts.size()/2, verts, texuv, colrs);
+
+      map<string, attribCache> attributeData;
+      // Define vertex attributes, initialize caches
+      attributeData[VAS.coordData] = attribCache(VAS.coordData, 2, 0, 0);
+      attributeData[VAS.texuvData] = attribCache(VAS.texuvData, 2, 2, 1);
+      attributeData[VAS.colorData] = attribCache(VAS.colorData, 4, 4, 2);
+      attributeData[VAS.coordData].writeCache(verts.data(), verts.size());
+      attributeData[VAS.texuvData].writeCache(texuv.data(), texuv.size());
+      attributeData[VAS.colorData].writeCache(colrs.data(), colrs.size());
+      textLine->buildCache(verts.size()/2, attributeData);
    }
 
    if (  textLine->text.compare(inputString) != 0  ||
@@ -341,10 +386,10 @@ void drawText(
          prevHoriAlignment != horiAlignment        ){
 
       for (unsigned int i = stringLen*6; i < textLine->text.size()*6; i++){
-         textLine->coordCache[i*2+0] = 0.0f;
-         textLine->coordCache[i*2+1] = 0.0f;
-         textLine->texuvCache[i*2+0] = 0.0f;
-         textLine->texuvCache[i*2+1] = 0.0f;
+         ((GLfloat *)textLine->getAttribCache(VAS.coordData))[i*2+0] = 0.0f;
+         ((GLfloat *)textLine->getAttribCache(VAS.coordData))[i*2+1] = 0.0f;
+         ((GLfloat *)textLine->getAttribCache(VAS.texuvData))[i*2+0] = 0.0f;
+         ((GLfloat *)textLine->getAttribCache(VAS.texuvData))[i*2+1] = 0.0f;
       }
 
       GLuint index = 0;
@@ -356,29 +401,29 @@ void drawText(
             vertAlignment,
             atlas,
             index,
-            textLine->coordCache,
-            textLine->texuvCache);
+            (GLfloat *)textLine->getAttribCache(VAS.coordData),
+            (GLfloat *)textLine->getAttribCache(VAS.texuvData));
 
       index = 0;
       prevHoriAlignment = horiAlignment;
       prevVertAlignment = vertAlignment;
 
-      textLine->updateTexUVCache();
-      textLine->updateCoordCache();
+      textLine->updateBuffer(VAS.texuvData);
+      textLine->updateBuffer(VAS.coordData);
       textLine->text = inputString;
       for (unsigned int i = 0; i < textLine->text.size(); i++)
-         index = updateQuadColor(textColor, index, textLine->colorCache);
+         index = updateQuadColor(textColor, index, (GLfloat *)textLine->getAttribCache(VAS.colorData));
 
-      textLine->updateColorCache();
+      textLine->updateBuffer(VAS.colorData);
    }
 
    if (textLine->colorsChanged){
 
       GLuint index = 0;
       for (unsigned int i = 0; i < textLine->text.size(); i++)
-         index = updateQuadColor(textColor, index, textLine->colorCache);
+         index = updateQuadColor(textColor, index, (GLfloat *)textLine->getAttribCache(VAS.colorData));
 
-      textLine->updateColorCache();
+      textLine->updateBuffer(VAS.colorData);
    }
 
    textLine->updateMVP(gx, gy, sx*0.007f, sy*0.007f, ao, w2h);

@@ -1,6 +1,7 @@
 using namespace std;
 
 extern std::map<std::string, drawCall> drawCalls;
+extern VertexAttributeStrings VAS;
 
 void drawArch(
          GLfloat     gx, 
@@ -113,7 +114,13 @@ void drawArch(
       prevEnd     = end;
       prevRs      = rs;
 
-      archButton->buildCache(archVerts, verts, colrs);
+      map<string, attribCache> attributeData;
+      attributeData[VAS.coordData] = attribCache(VAS.coordData, 2, 0, 0);
+      attributeData[VAS.colorData] = attribCache(VAS.colorData, 4, 2, 1);
+      attributeData[VAS.coordData].writeCache(verts.data(), verts.size());
+      attributeData[VAS.colorData].writeCache(colrs.data(), colrs.size());
+
+      archButton->buildCache(archVerts, attributeData);
    }
 
    if (  prevGx      != gx    ||
@@ -134,7 +141,7 @@ void drawArch(
             rs,
             circleSegments,
             index,
-            archButton->coordCache
+            (GLfloat *)archButton->getAttribCache(VAS.coordData)
             );
 
       prevGx      = gx;
@@ -145,7 +152,7 @@ void drawArch(
       prevEnd     = end;
       prevRs      = rs;
 
-      archButton->updateCoordCache();
+      archButton->updateBuffer(VAS.coordData);
    }
 
    if (archButton->colorsChanged) {
@@ -155,9 +162,9 @@ void drawArch(
             circleSegments,
             faceColor,
             index, 
-            archButton->colorCache);
+            (GLfloat *)archButton->getAttribCache(VAS.colorData));
 
-      archButton->updateColorCache();
+      archButton->updateBuffer(VAS.colorData);
    }
 
    //archButton->updateMVP(gx, gy, sx, sy, 0.0f, w2h);

@@ -1,6 +1,7 @@
 using namespace std;
 
 extern std::map<std::string, drawCall> drawCalls;
+extern VertexAttributeStrings VAS;
 
 PyObject* drawArrow_hliGLutils(PyObject* self, PyObject *args) {
    PyObject *faceColorPyTup;
@@ -137,7 +138,12 @@ void drawArrow(
 
       arrowVerts = verts.size()/2;
 
-      arrowButton->buildCache(arrowVerts, verts, colrs);
+      map<string, attribCache> attributeData;
+      attributeData[VAS.coordData] = attribCache(VAS.coordData, 2, 0, 0);
+      attributeData[VAS.colorData] = attribCache(VAS.colorData, 4, 2, 1);
+      attributeData[VAS.coordData].writeCache(verts.data(), verts.size());
+      attributeData[VAS.colorData].writeCache(colrs.data(), colrs.size());
+      arrowButton->buildCache(arrowVerts, attributeData);
    }
 
    if (arrowButton->colorsChanged) {
@@ -147,35 +153,35 @@ void drawArrow(
             circleSegments,
             faceColor,
             index, 
-            arrowButton->colorCache);
+            (GLfloat *)arrowButton->getAttribCache(VAS.colorData));
 
       // Draw check-mark base
       index = updatePillColor(
             circleSegments/2,
             detailColor,
             index, 
-            arrowButton->colorCache);
+            (GLfloat *)arrowButton->getAttribCache(VAS.colorData));
 
       index = updatePillColor(
             circleSegments/2,
             detailColor, 
             index, 
-            arrowButton->colorCache);
+            (GLfloat *)arrowButton->getAttribCache(VAS.colorData));
 
       // Draw check-mark infill
       index = updatePillColor(
             circleSegments/2,
             extraColor,
             index, 
-            arrowButton->colorCache);
+            (GLfloat *)arrowButton->getAttribCache(VAS.colorData));
 
       index = updatePillColor(
             circleSegments/2,
             extraColor,
             index, 
-            arrowButton->colorCache);
+            (GLfloat *)arrowButton->getAttribCache(VAS.colorData));
 
-      arrowButton->updateColorCache();
+      arrowButton->updateBuffer(VAS.colorData);
    }
 
    arrowButton->updateMVP(gx, gy, scale, scale, ao, w2h);

@@ -1,7 +1,8 @@
 using namespace std;
 
 extern std::map<std::string, drawCall> drawCalls;
-//drawCall clockButton;
+extern VertexAttributeStrings VAS;
+
 GLfloat  prevClockHour;    // Used for animated hour hand
 GLfloat  prevClockMinute;  // Used for animated minute hand
 GLuint   clockVerts;       // Total number of vertices
@@ -106,7 +107,12 @@ void drawClock(
 
       clockVerts = verts.size()/2;
 
-      clockButton->buildCache(clockVerts, verts, colrs);
+      map<string, attribCache> attributeData;
+      attributeData[VAS.coordData] = attribCache(VAS.coordData, 2, 0, 0);
+      attributeData[VAS.colorData] = attribCache(VAS.colorData, 4, 2, 1);
+      attributeData[VAS.coordData].writeCache(verts.data(), verts.size());
+      attributeData[VAS.colorData].writeCache(colrs.data(), colrs.size());
+      clockButton->buildCache(clockVerts, attributeData);
    } 
 
    // Animate Clock Hands
@@ -125,7 +131,8 @@ void drawClock(
             radius,
             circleSegments/4,
             faceVerts,
-            clockButton->coordCache);
+            (GLfloat *)clockButton->getAttribCache(VAS.coordData)
+            );
 
       qx = float(0.4*cos(degToRad(90-360*(minute/60.0))));
       qy = float(0.4*sin(degToRad(90-360*(minute/60.0))));
@@ -136,12 +143,13 @@ void drawClock(
             radius,
             circleSegments/4,
             tmp,
-            clockButton->coordCache);
+            (GLfloat *)clockButton->getAttribCache(VAS.coordData)
+            );
 
       prevClockHour     = hour;
       prevClockMinute   = minute;
 
-      clockButton->updateCoordCache();
+      clockButton->updateBuffer(VAS.coordData);
    }
 
    if (clockButton->colorsChanged) {
@@ -151,13 +159,13 @@ void drawClock(
             circleSegments,
             faceColor,
             index,
-            clockButton->colorCache);
+            (GLfloat *)clockButton->getAttribCache(VAS.colorData));
 
-      index = updatePillColor(circleSegments/4, detailColor, index, clockButton->colorCache);
+      index = updatePillColor(circleSegments/4, detailColor, index, (GLfloat *)clockButton->getAttribCache(VAS.colorData));
 
-      index = updatePillColor(circleSegments/4, detailColor, index, clockButton->colorCache);
+      index = updatePillColor(circleSegments/4, detailColor, index, (GLfloat *)clockButton->getAttribCache(VAS.colorData));
 
-      clockButton->updateColorCache();
+      clockButton->updateBuffer(VAS.colorData);
    }
 
    clockButton->updateMVP(gx, gy, scale, scale, ao, w2h);

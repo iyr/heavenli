@@ -1,6 +1,5 @@
 using namespace std;
 
-//drawCall    confirmButton;       // drawCall object
 extern std::map<std::string, drawCall> drawCalls;
 
 PyObject* drawConfirm_hliGLutils(PyObject* self, PyObject* args) {
@@ -137,7 +136,12 @@ void drawConfirm(
 
       confirmVerts = verts.size()/2;
 
-      confirmButton->buildCache(confirmVerts, verts, colrs);
+      map<string, attribCache> attributeData;
+      attributeData[VAS.coordData] = attribCache(VAS.coordData, 2, 0, 0);
+      attributeData[VAS.colorData] = attribCache(VAS.colorData, 4, 2, 1);
+      attributeData[VAS.coordData].writeCache(verts.data(), verts.size());
+      attributeData[VAS.colorData].writeCache(colrs.data(), colrs.size());
+      confirmButton->buildCache(confirmVerts, attributeData);
    }
 
    if ( confirmButton->colorsChanged ) {
@@ -148,34 +152,34 @@ void drawConfirm(
             circleSegments,
             faceColor,
             index, 
-            confirmButton->colorCache
+            (GLfloat *)confirmButton->getAttribCache(VAS.colorData)
             );
 
       index = updatePillColor(
             circleSegments/2,
             detailColor,
             index, 
-            confirmButton->colorCache);
+            (GLfloat *)confirmButton->getAttribCache(VAS.colorData));
 
       index = updatePillColor(
             circleSegments/2,
             detailColor, 
             index, 
-            confirmButton->colorCache);
+            (GLfloat *)confirmButton->getAttribCache(VAS.colorData));
 
       index = updatePillColor(
             circleSegments/2,
             extraColor,
             index, 
-            confirmButton->colorCache);
+            (GLfloat *)confirmButton->getAttribCache(VAS.colorData));
 
       index = updatePillColor(
             circleSegments/2,
             extraColor,
             index, 
-            confirmButton->colorCache);
+            (GLfloat *)confirmButton->getAttribCache(VAS.colorData));
 
-      confirmButton->updateColorCache();
+      confirmButton->updateBuffer(VAS.colorData);
    }
 
    confirmButton->updateMVP(gx, gy, scale, scale, ao, w2h);
