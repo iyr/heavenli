@@ -14,11 +14,14 @@ class shaderProg {
       string fragShaderSourcePath;  // File path for fragment shader source code
       vector<vertAttribMetadata>  vertexAttribs;   // structs contain attrib metadata
 
+      vertAttribMetadata* getAttrib(const GLuint index);
+      vertAttribMetadata* getAttrib(string name);
+
       shaderProg(void);
       shaderProg(const GLchar* vertSourceFilePath, const GLchar* fragSourceFilePath);
       ~shaderProg(void);
 
-      GLbyte   getAttribInd(const char* attribName);
+      GLbyte   getAttribInd(string attribName);
 
       GLubyte  getNumAttribs(void);
       GLubyte  getNumAttributes(void);
@@ -57,6 +60,19 @@ shaderProg::~shaderProg(void){
    return;
 };
 
+vertAttribMetadata* shaderProg::getAttrib(const GLuint index){
+   if (index < this->getNumAttribs()) return &this->vertexAttribs[index];
+   return NULL;
+};
+
+vertAttribMetadata* shaderProg::getAttrib(string name){
+   //if (index < this->getNumAttribs()) return &this->vertexAttribs[index];
+   for (GLubyte i = 0; i < this->getNumAttribs(); i++)
+      if (name.compare(this->vertexAttribs[i].getLocationString()) == 0)
+         return &this->vertexAttribs[i];
+   return NULL;
+};
+
 /*
  * Get total number of vector components of all attributes
  */
@@ -79,7 +95,7 @@ GLuint shaderProg::getProgramID(void)  {return this->programID;};
  * Get the index of the attribute with specified name
  * returns -1 if no such attribute exists
  */
-GLbyte shaderProg::getAttribInd(const char* attribName){
+GLbyte shaderProg::getAttribInd(string attribName){
    GLbyte tmn = this->numAttributes;
 
    for (GLbyte i = 0; i < tmn; i++)
@@ -110,12 +126,12 @@ GLuint shaderProg::parseVertAttribs(void){
       //printf("Found Attribute: ");
 
       vertAttribMetadata attributeInfo;
-      attributeInfo.attribIndex = this->numAttributes;
+      attributeInfo.setAttribIndex(this->numAttributes);
 
       // Determine number of vector components
       attIndex = vert_src.find("vec", attIndex);
       GLubyte vectorSize = vert_src[attIndex+3]-'0'; 
-      attributeInfo.vectorSize = vectorSize;
+      attributeInfo.setVectorSize(vectorSize);
       attIndex += 4;
 
       // Skip over spaces to start of variable name
@@ -132,8 +148,23 @@ GLuint shaderProg::parseVertAttribs(void){
       while (vert_src[attIndex-1] == ' ')
          attIndex--;
       
-      // Get Variable name
+      // Get Variable name and check it's validity
       string tmn = vert_src.substr(tms, attIndex-tms);      
+      GLboolean locStringExists = false;
+      for (GLuint i = 0; i < VAS.AttribStrings.size(); i++)
+         if (VAS.AttribStrings[i].compare(tmn) == 0)
+            locStringExists = true;
+
+      if (!locStringExists) {
+         printf(  "WARNING: Shader Attribute String mismatch (misspelled variable?), overallocating for safety. \nUnknown Attribute String: %s\n",
+                  tmn.c_str());
+
+         printf("Available Attribute Strings: \n");
+         for (GLuint i = 0; i<VAS.AttribStrings.size(); i++)
+            printf("%d: %s\n", i, VAS.AttribStrings[i].c_str());
+         attributeInfo.setVectorSize(4);
+      }
+            
       attributeInfo.locationString = tmn;
 
       // Look for next attribute, if any
@@ -148,8 +179,8 @@ GLuint shaderProg::parseVertAttribs(void){
    // Get total number of vector components
    GLuint totalVecLength = 0;
    for (GLuint i = 0; i < this->numAttributes; i++){
-      this->vertexAttribs[i].vectorOffset = totalVecLength;
-      totalVecLength += this->vertexAttribs[i].vectorSize;
+      this->vertexAttribs[i].setVectorOffset(totalVecLength);
+      totalVecLength += this->vertexAttribs[i].getVectorSize();
    }
 
    this->vertexVectorWidth = totalVecLength;
