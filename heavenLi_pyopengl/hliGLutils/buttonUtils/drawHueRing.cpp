@@ -19,15 +19,16 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
    unsigned char  numHues = 12;
    GLuint         hueRingVerts;                 // Total number of vertices
 
-   static GLuint      hueDotsVerts;                // Used for updating only a portion of the color cache
-   static GLubyte     prevHueRingNumHues;          // Used for updating Granularity changes
-   static GLfloat     prevHueDotScale     = 0.0;   // Used for animating granularity changes
-   static GLfloat     prevHueDotDist      = 0.0;   // Used for animating granularity changes
-   static GLfloat     prevHueRingAng      = 0.0;   // Used for animating selection ring
-   static GLfloat     prevHueRingAni      = 0.0;   // resolve edge-case bug for animating selection ring
-   static GLfloat     prevHueRingSel      = 0.0;   // resolve edge-case bug for animating selection ring
-   static GLfloat     *hueButtonData      = NULL;  /* X, Y, hue per button */
+   static GLuint      hueDotsVerts;             // Used for updating only a portion of the color cache
+   static GLubyte    prevHueRingNumHues;        // Used for updating Granularity changes
+   static GLfloat    prevHueDotScale   = 0.0;   // Used for animating granularity changes
+   static GLfloat    prevHueDotDist    = 0.0;   // Used for animating granularity changes
+   static GLfloat    prevHueRingAng    = 0.0;   // Used for animating selection ring
+   static GLfloat    prevHueRingAni    = 0.0;   // resolve edge-case bug for animating selection ring
+   static GLfloat    prevHueRingSel    = 0.0;   // resolve edge-case bug for animating selection ring
+   static GLfloat    *hueButtonData    = NULL;  /* X, Y, hue per button */
 
+   GLboolean         updateColorCache  = GL_FALSE;
 
    // Parse Inputs
    if (!PyArg_ParseTuple(args,
@@ -141,7 +142,7 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
       attributeData[VAS.coordData].writeCache(verts.data(), verts.size());
       attributeData[VAS.colorData].writeCache(colrs.data(), colrs.size());
       hueRingButton->buildCache(hueRingVerts, attributeData);
-
+      updateColorCache = GL_TRUE;
    }
 
    // Resolve an edge case where the selection ring can sometimes get stuck
@@ -278,8 +279,18 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
       prevHueDotDist    = hueDotDist;
    }
 
-   GLboolean updateCache = GL_FALSE;
    // Check if selection Ring Color needs to be updated
+   //GLfloat * tmAttrib = (GLfloat *)hueRingButton->getAttribCache(VAS.colorData);
+   //for (int i = 0; i < 4; i++) {
+      //if (tmAttrib[hueDotsVerts*4+i] != ringColor[i]) {
+         //for (unsigned int k = hueDotsVerts; k < hueRingButton->numVerts; k++) {
+            //tmAttrib[k*4+i] = ringColor[i];
+         //}
+
+         //updateColorCache = GL_TRUE;
+      //}
+   //}
+
    GLfloat * tmAttrib = (GLfloat *)hueRingButton->getAttribCache(VAS.colorData);
    for (int i = 0; i < 4; i++) {
       if (tmAttrib[hueDotsVerts*4+i] != ringColor[i]) {
@@ -287,12 +298,13 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
             tmAttrib[k*4+i] = ringColor[i];
          }
 
-         updateCache = GL_TRUE;
+         updateColorCache = GL_TRUE;
       }
    }
 
    // Update colors, if needed
-   if ( updateCache ){
+   if ( updateColorCache ){
+      printf("quack\n");
       hueRingButton->updateBuffer(VAS.colorData);
    }
          
