@@ -33,6 +33,9 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
    long        numLevels = 6;
    GLuint      colrTriVerts;                 // Total number of vertices
 
+   GLboolean updateColorCache = GL_FALSE;
+
+
    // Parse Inputs
    if (!PyArg_ParseTuple(args,
             "fffffflOff",
@@ -182,6 +185,7 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
       attributeData[VAS.coordData].writeCache(verts.data(), verts.size());
       attributeData[VAS.colorData].writeCache(colrs.data(), colrs.size());
       colrTriButton->buildCache(colrTriVerts, attributeData);
+      updateColorCache              = GL_TRUE;
 
       // Update State Machine variables
       prevTriHue     = currentTriHue;
@@ -374,8 +378,6 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
    prevTriSatSel = currentTriSat;
    prevTriValSel = currentTriVal;
 
-   GLboolean updateCache = GL_FALSE;
-
    // Update colors if current Hue has changed
    if ( (prevTriHue != currentTriHue)        &&
         (prevColrTriNumLevels == numLevels)  ){
@@ -406,7 +408,7 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
       }
       prevTriHue = currentTriHue;
 
-      updateCache = GL_TRUE;
+      updateColorCache = GL_TRUE;
    }
 
    // Check if selection Ring Color needs to be updated
@@ -418,12 +420,12 @@ PyObject* drawColrTri_hliGLutils(PyObject *self, PyObject *args) {
             tmAttrib[k*4+i] = ringColor[i];
          }
 
-         updateCache = GL_TRUE;
+         updateColorCache = GL_TRUE;
       }
    }
 
    // Update colors, if needed
-   if ( updateCache ){
+   if ( updateColorCache ){
       colrTriButton->updateBuffer(VAS.colorData);
    }
 
