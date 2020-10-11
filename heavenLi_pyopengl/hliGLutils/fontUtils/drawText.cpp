@@ -124,18 +124,20 @@ void drawText(
    static GLuint  prevFaceSize;
    static GLfloat prevHoriAlignment,
                   prevVertAlignment;
-   GLfloat  ao=0.0f;
-   GLuint   numTextVerts = 0,
-            numBakgVerts = 0;
+   GLfloat     ao             = 0.0f;
+   GLuint      numTextVerts   = 0,
+               numBakgVerts   = 0;
+   GLboolean   updateCaches   = GL_FALSE;
+   GLuint      stringLen      = inputString.size();
+
    textLine->setDrawType(GL_TRIANGLES);
+
    //textLine->setDrawType(GL_LINE_STRIP);
    textLine->setNumColors(1);
    textLine->setShader("RGBAcolor_Atexture");
 
    textBackdrop->setNumColors(1);
    textBackdrop->setShader("RGBAcolor_NoTexture");
-
-   GLuint stringLen = inputString.size();
 
    textLine->setColorQuartet(0, textColor);
    textBackdrop->setColorQuartet(0, faceColor);
@@ -185,13 +187,14 @@ void drawText(
             bgverts,
             bgcolrs);
 
-      numTextVerts = verts.size()/2;
-      numBakgVerts = bgverts.size()/2;
+      numTextVerts      = verts.size()/2;
+      numBakgVerts      = bgverts.size()/2;
       prevHoriAlignment = horiAlignment;
       prevVertAlignment = vertAlignment;
       prevFaceSize      = atlas->faceSize;
       textLine->text    = inputString;
       textLine->texID   = atlas->tex;
+      updateCaches      = GL_TRUE;
 
       map<string, attribCache> attributeData;
       // Define vertex attributes, initialize caches
@@ -213,6 +216,7 @@ void drawText(
    }
 
    if (  textLine->text.compare(inputString) != 0  ||
+         updateCaches                              ||
          prevVertAlignment != vertAlignment        ||
          prevHoriAlignment != horiAlignment        ||
          prevFaceSize      != atlas->faceSize      ){
@@ -292,6 +296,7 @@ void drawText(
    }
 
    if (  textLine->colorsChanged     ||
+         updateCaches                ||
          textBackdrop->colorsChanged ){
 
       GLuint index = 0;
@@ -339,6 +344,8 @@ void drawText(
                   prevVertAlignment = -1.0f;
    static GLuint  prevStringLen  =  0;
 
+   GLboolean      updateCaches   = GL_FALSE;
+
    GLuint stringLen = inputString.size();
 
    textLine->setColorQuartet(0, textColor);
@@ -379,9 +386,11 @@ void drawText(
       attributeData[VAS.texuvData].writeCache(texuv.data(), texuv.size());
       attributeData[VAS.colorData].writeCache(colrs.data(), colrs.size());
       textLine->buildCache(verts.size()/2, attributeData);
+      updateCaches = GL_TRUE;
    }
 
    if (  textLine->text.compare(inputString) != 0  ||
+         updateCaches                              ||
          prevVertAlignment != vertAlignment        ||
          prevHoriAlignment != horiAlignment        ){
 
@@ -417,7 +426,8 @@ void drawText(
       textLine->updateBuffer(VAS.colorData);
    }
 
-   if (textLine->colorsChanged){
+   if (  textLine->colorsChanged ||
+         updateCaches            ){
 
       GLuint index = 0;
       for (unsigned int i = 0; i < textLine->text.size(); i++)
