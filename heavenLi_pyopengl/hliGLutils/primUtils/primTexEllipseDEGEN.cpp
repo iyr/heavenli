@@ -87,7 +87,7 @@ unsigned int defineTexEllipse(
       std::vector<float> &texuv,    // Input Vector of u,v texture coordina
       std::vector<float> &colrs     // Input Vector of r,g,b values
       ){
-   return defineEllipse(bx, by, bs, bs, circleSegments, color, verts, colrs);
+   return defineTexEllipse(bx, by, bs, bs, circleSegments, color, verts, texuv, colrs);
 }
 
 // Useful pseudo-overload
@@ -98,9 +98,10 @@ unsigned int defineTexCircle(
       unsigned int circleSegments,  // Number of sides
       float *color,                 // Polygon Color
       std::vector<float> &verts,    // Input Vector of x,y coordinates
+      std::vector<float> &texuv,    // Input Vector of u,v texture coordina
       std::vector<float> &colrs     // Input Vector of r,g,b values
       ){
-   return defineEllipse(bx, by, bs, bs, circleSegments, color, verts, colrs);
+   return defineTexEllipse(bx, by, bs, bs, circleSegments, color, verts, texuv, colrs);
 }
 
 /*
