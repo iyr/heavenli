@@ -5,6 +5,34 @@
 #include <math.h>
 
 #define PI 3.14159265358979f
+void MatrixPrint(Matrix *Target)
+{
+   printf("%.8f, %.8f, %.8f, %.8f\n", 
+         Target->mat[0][0],
+         Target->mat[0][1],
+         Target->mat[0][2],
+         Target->mat[0][3]
+         );
+   printf("%.8f, %.8f, %.8f, %.8f\n", 
+         Target->mat[1][0],
+         Target->mat[1][1],
+         Target->mat[1][2],
+         Target->mat[1][3]
+         );
+   printf("%.8f, %.8f, %.8f, %.8f\n", 
+         Target->mat[2][0],
+         Target->mat[2][1],
+         Target->mat[2][2],
+         Target->mat[2][3]
+         );
+   printf("%.8f, %.8f, %.8f, %.8f\n", 
+         Target->mat[3][0],
+         Target->mat[3][1],
+         Target->mat[3][2],
+         Target->mat[3][3]
+         );
+   return;
+}
 
 void MatrixScale(Matrix *Output, float ScaleX, float ScaleY, float ScaleZ)
 {
@@ -135,25 +163,25 @@ void MatrixPerspective(Matrix *Output, float fovy, float aspect, float nearZ, fl
 // Construct Orthogonal Projection Matrix
 void MatrixOrtho(Matrix *Output, float left, float right, float bottom, float top, float nearZ, float farZ)
 {
-    float   deltaX = right - left;
-    float   deltaY = top - bottom;
-    float   deltaZ = farZ - nearZ;
-    Matrix  ortho;
+   float   deltaX = right - left;
+   float   deltaY = top - bottom;
+   float   deltaZ = farZ - nearZ;
+   Matrix  ortho;
 
-    // Sanity Check
-    if ( (deltaX == 0.0f) || (deltaY == 0.0f) || (deltaZ == 0.0f) )
-        return;
+   // Sanity Check
+   if ( (deltaX == 0.0f) || (deltaY == 0.0f) || (deltaZ == 0.0f) )
+      return;
 
-    MatrixLoadIdentity(&ortho);
+   MatrixLoadIdentity(&ortho);
 
-    ortho.mat[0][0] =  2.0f / deltaX;
-    ortho.mat[1][1] =  2.0f / deltaY;
-    ortho.mat[2][2] = -2.0f / deltaZ;
-    ortho.mat[3][0] = -(right + left) / deltaX;
-    ortho.mat[3][1] = -(top + bottom) / deltaY;
-    ortho.mat[3][2] = -(nearZ + farZ) / deltaZ;
+   ortho.mat[0][0] =  2.0f / deltaX;
+   ortho.mat[1][1] =  2.0f / deltaY;
+   ortho.mat[2][2] = -2.0f / deltaZ;
+   ortho.mat[3][0] = -(right + left) / deltaX;
+   ortho.mat[3][1] = -(top + bottom) / deltaY;
+   ortho.mat[3][2] = -(nearZ + farZ) / deltaZ;
 
-    MatrixMultiply(Output, &ortho, Output);
+   MatrixMultiply(Output, &ortho, Output);
 }
 
 void MatrixMultiply(Matrix *Output, Matrix *InputA, Matrix *InputB)
@@ -196,7 +224,7 @@ void MatrixLoadIdentity(Matrix *Output)
    // Initialize Empty 4x4 Matrix of zeroes
    memset(Output, 0x0, sizeof(Matrix));
 
-   // Set Diagonals to 1.0f to make identitf matrix
+   // Set Diagonals to 1.0f to make identity matrix
    Output->mat[0][0] = 1.0f;
    Output->mat[1][1] = 1.0f;
    Output->mat[2][2] = 1.0f;

@@ -7,6 +7,9 @@ typedef struct
    float mat[4][4];
 } Matrix;
 
+// Simple utility to print to the command line
+void MatrixPrint(Matrix *Target);
+
 // Perform linear algebra matrix operations for scaling
 void MatrixScale(Matrix *Output, float ScaleX, float ScaleY, float ScaleZ);
 
