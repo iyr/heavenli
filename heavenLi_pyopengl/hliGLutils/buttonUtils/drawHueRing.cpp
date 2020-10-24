@@ -142,7 +142,6 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
       attributeData[VAS.coordData].writeCache(verts.data(), verts.size());
       attributeData[VAS.colorData].writeCache(colrs.data(), colrs.size());
       hueRingButton->buildCache(hueRingVerts, attributeData);
-      updateColorCache = GL_TRUE;
    }
 
    // Resolve an edge case where the selection ring can sometimes get stuck
