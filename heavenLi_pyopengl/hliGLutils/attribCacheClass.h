@@ -46,12 +46,13 @@ class attribCache: public vertAttribMetadata {
 };
 
 void attribCache::copy(attribCache &VAC){
+   printf("copying attribute...\n");
    this->setAttribIndex    (VAC.getAttribIndex());
    this->setLocationString (VAC.getLocationString());
    this->setVectorSize     (VAC.getVectorSize());
    this->setVectorOffset   (VAC.getVectorOffset());
    this->setGLtype         (VAC.getGLtype());
-   this->writeCache        (VAC.getCachePtr(), VAC.getNumVerts()*this->vectorSize);
+   this->writeCache        (VAC.getCachePtr(), VAC.getNumVerts()*(GLuint)this->vectorSize);
    return;
 };
 
@@ -165,6 +166,7 @@ void attribCache::writeCache(const GLvoid* buffer, size_t numElements) {
 
    // copy data from buffer to cache
    memcpy(this->cache, buffer, numElements*GLsizeof(this->datatype));
+
    return;
 };
 
