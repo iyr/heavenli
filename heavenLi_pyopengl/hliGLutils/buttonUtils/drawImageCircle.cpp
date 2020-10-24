@@ -38,13 +38,13 @@ PyObject* drawImageCircle_hliGLutils(PyObject* self, PyObject* args) {
    // Parse image name
    const char* imgNameChars = PyUnicode_AsUTF8(imageName);
    std::string imgNameString = imgNameChars;
-   //printf("quack\n");
 
    if (drawCalls.count(imgNameString) <= 0){
       drawCalls.insert(std::make_pair(imgNameString, drawCall()));
       copyBuffer = true;
    }
    drawCall* image = &drawCalls[imgNameString];
+   image->setShader("RGBAcolor_RGBAtexture");
 
    if (copyBuffer) {
       printf("building image texture...\n");

@@ -45,6 +45,7 @@ PyObject* drawImageSquare_hliGLutils(PyObject* self, PyObject* args) {
       copyBuffer = true;
    }
    drawCall* image = &drawCalls[imgNameString];
+   image->setShader("RGBAcolor_RGBAtexture");
 
    if (copyBuffer) {
       printf("building image texture...\n");
