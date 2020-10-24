@@ -29,6 +29,8 @@ GLuint definePill(
       ang = float(atan(slope));
    }
 
+   if ( slope != slope ) slope = 0.0f;
+
    pR = pColor[0];
    pG = pColor[1];
    pB = pColor[2];
@@ -89,6 +91,7 @@ GLuint definePill(
       slope = (py-qy)/(px-qx);
       ang = float(degToRad(180)+atan(slope));
    }
+   if ( slope != slope ) slope = 0.0f;
    for (GLuint i = 1; i < circleSegments/2; i++ ) {
       /* qX */ verts.push_back(float(qx + radius*cos(ang+degToRad(-(GLint)(circleSegments/2-i)*degSegment))));
       /* qY */ verts.push_back(float(qy + radius*sin(ang+degToRad(-(GLint)(circleSegments/2-i)*degSegment))));
@@ -124,15 +127,15 @@ GLuint definePill(
 
 /* useful overload */
 GLuint definePill(
-      float px,                  /* x-coordinate of Point P */
-      float py,                  /* y-coordinate of Point P */
-      float qx,                  /* x-coordinate of Point Q */
-      float qy,                  /* y-coordinate of Point Q */
-      float radius,              /* Radius/Thickness of pill */
-      GLuint circleSegments,       /* Number of sides */
-      float *Color,              /* RGB values of Pill */
-      std::vector<float> &verts, /* Input Vector of x,y coordinates */
-      std::vector<float> &colrs  /* Input Vector of r,g,b values */
+      float px,                  // x-coordinate of Point P
+      float py,                  // y-coordinate of Point P
+      float qx,                  // x-coordinate of Point Q
+      float qy,                  // y-coordinate of Point Q
+      float radius,              // Radius/Thickness of pill
+      GLuint circleSegments,     // Number of sides
+      float *Color,              // RGB values of Pill
+      std::vector<float> &verts, // Input Vector of x,y coordinates
+      std::vector<float> &colrs  // Input Vector of r,g,b values
       ){
    return definePill(px, py, qx, qy, radius, circleSegments, Color, Color, verts, colrs);
 }
