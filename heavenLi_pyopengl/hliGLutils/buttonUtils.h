@@ -94,3 +94,12 @@ void drawImageCircle(
       drawCall*   image
       );
 #include "buttonUtils/drawImageCircle.cpp"
+
+void drawWFobject(
+      string      filepath,
+      GLdouble*   MVP,
+      GLfloat     w2h,
+      GLfloat*    color,
+      drawCall*   object
+      );
+#include "buttonUtils/drawWavefrontObject.cpp"
