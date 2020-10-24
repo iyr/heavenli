@@ -3,6 +3,13 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Vim temp files
+*.swp
+*.swo
+
+# Valgrind memory dumps
+vgcore.*
+
 # C extensions
 *.so
 
