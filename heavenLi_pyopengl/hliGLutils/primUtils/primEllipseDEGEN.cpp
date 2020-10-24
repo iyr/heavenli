@@ -174,4 +174,3 @@ unsigned int updateCircleColor(
       ){
    return updateEllipseColor(circleSegments, color, index, colrs);
 }
- 
