@@ -79,6 +79,8 @@ float rangeShift(
 #include "primUtils/drawEllipse.cpp"
 #include "primUtils/drawPill.cpp"
 
+#include "primUtils/primObjTRIG.cpp"
+
 #include "primUtils/hsv2rgb.cpp"
 #include "primUtils/rgb2hsv.cpp"
 
