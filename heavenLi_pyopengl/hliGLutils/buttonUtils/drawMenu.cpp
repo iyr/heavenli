@@ -71,7 +71,7 @@ PyObject* drawMenu_hliGLutils(PyObject* self, PyObject* args) {
    if (drawCalls.count("MenuClosed") <= 0)
       drawCalls.insert(std::make_pair("MenuClosed", drawCall()));
    drawCall* MenuClosed    = &drawCalls["MenuClosed"];
-   MenuNormal->setShader("RGBAcolor_NoTexture");
+   MenuClosed->setShader("RGBAcolor_NoTexture");
 
    elementCoords = new GLfloat[3*(numListings+1)];
 
@@ -377,7 +377,7 @@ void drawMenu(
                elementCoords,    // Relative coordinates of Menu elements
                w2h,              // width to height ratio
                index,
-               (GLfloat *)MenuNormal->getAttribCache(VAS.coordData)
+               (GLfloat *)MenuOverflow->getAttribCache(VAS.coordData)
          );
 
          prevDep = deployed;
