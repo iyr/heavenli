@@ -1,5 +1,6 @@
 from distutils.core import setup, Extension
 from platform import system, machine
+import numpy
 print("Building for", system(), machine())
 
 if (system() == 'Windows'):
@@ -18,7 +19,8 @@ else:
 
 setup(name='hliGLutils', version = '0.2',
         description = 'HeavenLi OpenGL utility set',
-        ext_modules = [hliGLutils_sfc_module]
+        ext_modules = [hliGLutils_sfc_module],
+        include_dirs= [numpy.get_include()]
         )
 
 #setup(name='animUtils', version = '0.1',
