@@ -44,6 +44,7 @@ PyObject* drawArch_hliGLutils(PyObject* self, PyObject *args) {
    if (drawCalls.count("archButton") <= 0)
       drawCalls.insert(std::make_pair("archButton", drawCall()));
    drawCall* archButton = &drawCalls["archButton"];
+   archButton->setShader("RGBAcolor_NoTexture");
 
    drawArch(
          gx, 

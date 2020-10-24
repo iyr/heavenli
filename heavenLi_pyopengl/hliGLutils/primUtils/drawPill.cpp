@@ -49,6 +49,7 @@ PyObject* drawPill_hliGLutils(PyObject* self, PyObject *args) {
    if (drawCalls.count("pillButton") <= 0)
       drawCalls.insert(std::make_pair("pillButton", drawCall()));
    drawCall* pillButton = &drawCalls["pillButton"];
+   pillButton->setShader("RGBAcolor_NoTexture");
 
    drawPill(
          px, 

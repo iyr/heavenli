@@ -38,6 +38,7 @@ PyObject* drawEllipse_hliGLutils(PyObject* self, PyObject *args) {
    if (drawCalls.count("ellipseButton") <= 0)
       drawCalls.insert(std::make_pair("ellipseButton", drawCall()));
    drawCall* ellipseButton = &drawCalls["ellipseButton"];
+   ellipseButton->setShader("RGBAcolor_NoTexture");
 
    drawEllipse(
          gx, 
@@ -98,7 +99,8 @@ void drawEllipse(
       ellipseButton->buildCache(ellipseVerts, attributeData);
    }
 
-   if (  prevGx   != gx ||
+   if (  true ||
+         prevGx   != gx ||
          prevGy   != gy ||
          prevSx   != sx ||
          prevSy   != sy ){
@@ -121,7 +123,8 @@ void drawEllipse(
       ellipseButton->updateBuffer(VAS.coordData);
    }
 
-   if (ellipseButton->colorsChanged) {
+   if (true ||
+         ellipseButton->colorsChanged) {
       unsigned int index = 0;
       // Draw button face
       index = updateEllipseColor(
