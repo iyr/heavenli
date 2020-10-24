@@ -36,6 +36,19 @@ PyObject* initShaders_hliGLutils(PyObject* self, PyObject *args) {
    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxTexSize);
    printf("Platform Maximum number of shader attributes: %d\n", maxTexSize);
 
+   if (shaderPrograms.count("3DRGBA_color_texture") <= 0)
+      shaderPrograms.insert(
+            make_pair(
+               "3DRGBA_color_texture",
+               shaderProg(
+                  "hliGLutils/shaders/3DRGBAcolor_UVtexture_Normal_TODO_better_shader_naming_scheme.vert",
+                  "hliGLutils/shaders/RGBAcolor_RGBAtexture.frag"
+                  )
+               )
+            );
+   shaderPrograms["3DRGBA_color_texture"].buildShader();
+
+   // Standard 2D full-color texture shader
    if (shaderPrograms.count("RGBAcolor_RGBAtexture") <= 0)
       shaderPrograms.insert(
             make_pair(
@@ -56,6 +69,7 @@ PyObject* initShaders_hliGLutils(PyObject* self, PyObject *args) {
                )
             );
 
+   // 2D alpha-transparent texture shader
    if (shaderPrograms.count("RGBAcolor_Atexture") <= 0)
       shaderPrograms.insert(
             make_pair(
@@ -68,6 +82,7 @@ PyObject* initShaders_hliGLutils(PyObject* self, PyObject *args) {
             );
    shaderPrograms["RGBAcolor_Atexture"].buildShader();
 
+   // 2D geometry/color only, no texture shader
    if (shaderPrograms.count("RGBAcolor_NoTexture") <= 0)
       shaderPrograms.insert(
             make_pair(
