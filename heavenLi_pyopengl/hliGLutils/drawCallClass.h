@@ -34,11 +34,11 @@ class drawCall {
 
       drawCall(void);
       ~drawCall(void);
-      //void buildCache(GLuint numVerts, vector<GLfloat> &verts, vector<GLfloat> &colrs);
-      //void buildCache(GLuint numVerts, vector<GLfloat> &verts, vector<GLfloat> &texuv, vector<GLfloat> &colrs);
       void buildCache(GLuint numVerts, map<string, attribCache> &attributeData);
       void updateMVP(GLfloat gx, GLfloat gy, GLfloat sx, GLfloat sy, GLfloat rot, GLfloat w2h);
       void setMVP(Matrix newMVP);
+      void setMVP(GLfloat* newMVP);
+      void setMVP(GLdouble* newMVP);
       void draw(void);
       void updateBuffer(string vertAttrib);
       void setNumColors(unsigned int numColors);
@@ -119,9 +119,11 @@ void drawCall::setNumColors(unsigned int numColors) {
       // Safely (re)allocate array that contains color quartets
       if (  this->colorQuartets == NULL) {
          this->colorQuartets = new GLfloat[this->numColors*4];
+         for (GLuint i = 0; i < numColors*4; i++) this->colorQuartets[i] = 0.0f;
       } else {
          delete [] this->colorQuartets;
          this->colorQuartets = new GLfloat[this->numColors*4];
+         for (GLuint i = 0; i < numColors*4; i++) this->colorQuartets[i] = 0.0f;
       }
    }
 
@@ -204,10 +206,15 @@ void drawCall::buildCache(const GLuint numVerts, map<string, attribCache> &attri
 
    glBufferData(GL_ARRAY_BUFFER, totalVectorSize*sizeof(GLfloat)*this->numVerts, NULL, GL_STATIC_DRAW);
 
+   GLuint vertsBytes = 0;
    for (iter = this->vertCaches->begin(); iter != this->vertCaches->end(); iter++){
+      // Number of bytes per vert times number of verts
+      // NOT total number of bytes (mult by vec size)
+      // Convenience variable
+      vertsBytes = GLsizeof(iter->second.getGLtype())*numVerts;
       glBufferSubData(GL_ARRAY_BUFFER,
-         iter->second.getVectorOffset(),
-         sizeof(iter->second.getGLtype())*iter->second.getVectorSize()*numVerts,
+         iter->second.getVectorOffset()*vertsBytes,
+         iter->second.getVectorSize()*vertsBytes,
          iter->second.getCachePtr()
          );
       glVertexAttribPointer(
@@ -215,13 +222,13 @@ void drawCall::buildCache(const GLuint numVerts, map<string, attribCache> &attri
             iter->second.getVectorSize(),
             iter->second.getGLtype(),
             GL_FALSE,
-            iter->second.getVectorSize()*sizeof(iter->second.getGLtype()),
+            iter->second.getVectorSize()*GLsizeof(iter->second.getGLtype()),
             (GLintptr*)offset
             );
 
       glEnableVertexAttribArray(iter->second.getAttribIndex());
 
-      offset += iter->second.getVectorSize()*sizeof(iter->second.getGLtype())*numVerts;
+      offset += iter->second.getVectorSize()*GLsizeof(iter->second.getGLtype())*numVerts;
    }
 
    return;
@@ -232,6 +239,61 @@ void drawCall::buildCache(const GLuint numVerts, map<string, attribCache> &attri
  */
 void drawCall::setMVP(Matrix newMVP){
    this->MVP = newMVP;
+   return;
+};
+
+/*
+ * Method for manually assigning a precomputed matrix from a contiguous C-Array
+ */
+void drawCall::setMVP(GLfloat* newMVP){
+   Matrix* tmp = &this->MVP;
+   tmp->mat[0][0] = newMVP[0*4+0];
+   tmp->mat[0][1] = newMVP[0*4+1];
+   tmp->mat[0][2] = newMVP[0*4+2];
+   tmp->mat[0][3] = newMVP[0*4+3];
+
+   tmp->mat[1][0] = newMVP[1*4+0];
+   tmp->mat[1][1] = newMVP[1*4+1];
+   tmp->mat[1][2] = newMVP[1*4+2];
+   tmp->mat[1][3] = newMVP[1*4+3];
+
+   tmp->mat[2][0] = newMVP[2*4+0];
+   tmp->mat[2][1] = newMVP[2*4+1];
+   tmp->mat[2][2] = newMVP[2*4+2];
+   tmp->mat[2][3] = newMVP[2*4+3];
+
+   tmp->mat[3][0] = newMVP[3*4+0];
+   tmp->mat[3][1] = newMVP[3*4+1];
+   tmp->mat[3][2] = newMVP[3*4+2];
+   tmp->mat[3][3] = newMVP[3*4+3];
+
+   return;
+};
+
+/*
+ * Method for manually assigning a precomputed matrix from a contiguous C-Array
+ */
+void drawCall::setMVP(GLdouble* newMVP){
+   this->MVP.mat[0][0] = (GLfloat)newMVP[0*4+0];
+   this->MVP.mat[0][1] = (GLfloat)newMVP[0*4+1];
+   this->MVP.mat[0][2] = (GLfloat)newMVP[0*4+2];
+   this->MVP.mat[0][3] = (GLfloat)newMVP[0*4+3];
+
+   this->MVP.mat[1][0] = (GLfloat)newMVP[1*4+0];
+   this->MVP.mat[1][1] = (GLfloat)newMVP[1*4+1];
+   this->MVP.mat[1][2] = (GLfloat)newMVP[1*4+2];
+   this->MVP.mat[1][3] = (GLfloat)newMVP[1*4+3];
+
+   this->MVP.mat[2][0] = (GLfloat)newMVP[2*4+0];
+   this->MVP.mat[2][1] = (GLfloat)newMVP[2*4+1];
+   this->MVP.mat[2][2] = (GLfloat)newMVP[2*4+2];
+   this->MVP.mat[2][3] = (GLfloat)newMVP[2*4+3];
+
+   this->MVP.mat[3][0] = (GLfloat)newMVP[3*4+0];
+   this->MVP.mat[3][1] = (GLfloat)newMVP[3*4+1];
+   this->MVP.mat[3][2] = (GLfloat)newMVP[3*4+2];
+   this->MVP.mat[3][3] = (GLfloat)newMVP[3*4+3];
+
    return;
 };
 
@@ -298,7 +360,7 @@ void drawCall::draw(void) {
    for (GLubyte i = 0; i < tmNumAttribs; i++) {
       vecSize = shaderPrograms[this->shader].vertexAttribs[i].getVectorSize();
       glVertexAttribPointer(
-            i,
+            shaderPrograms[this->shader].vertexAttribs[i].getAttribIndex(),
             vecSize,
             GL_FLOAT,
             GL_FALSE,
