@@ -36,15 +36,16 @@ unsigned int defineChar(
    texWidth    = (float)atlas->textureWidth;
    texHeight   = (float)atlas->textureHeight;
 
-   // P
-   verts.push_back( x2);
-   verts.push_back(-y2);
-   // Q
-   verts.push_back( x2 + w);
-   verts.push_back(-y2);
    // R
    verts.push_back( x2);
    verts.push_back(-y2 - h);
+   // Q
+   verts.push_back( x2 + w);
+   verts.push_back(-y2);
+   // P
+   verts.push_back( x2);
+   verts.push_back(-y2);
+
    // Q
    verts.push_back( x2 + w);
    verts.push_back(-y2);
@@ -60,15 +61,16 @@ unsigned int defineChar(
          wRatio      = w/texWidth,
          hRatio      = h/texHeight;
 
-   // P
-   texuv.push_back(texOffsetX + xTexOffset);
-   texuv.push_back(texOffsetY + yTexOffset);
-   // Q
-   texuv.push_back(texOffsetX - xTexOffset + wRatio);
-   texuv.push_back(texOffsetY + yTexOffset);
    // R
    texuv.push_back(texOffsetX + xTexOffset);
    texuv.push_back(texOffsetY - yTexOffset + hRatio);
+   // Q
+   texuv.push_back(texOffsetX - xTexOffset + wRatio);
+   texuv.push_back(texOffsetY + yTexOffset);
+   // P
+   texuv.push_back(texOffsetX + xTexOffset);
+   texuv.push_back(texOffsetY + yTexOffset);
+
    // Q
    texuv.push_back(texOffsetX - xTexOffset + wRatio);
    texuv.push_back(texOffsetY + yTexOffset);
@@ -122,15 +124,16 @@ unsigned int updateChar(
    texWidth    = (float)atlas->textureWidth;
    texHeight   = (float)atlas->textureHeight;
 
-   // P
+   // R
    verts[vertIndex+0]   =  x2;
-   verts[vertIndex+1]   = -y2;
+   verts[vertIndex+1]   = -y2 - h;
    // Q
    verts[vertIndex+2]   =  x2 + w;
    verts[vertIndex+3]   = -y2;
-   // R
+   // P
    verts[vertIndex+4]   =  x2;
-   verts[vertIndex+5]   = -y2 - h;
+   verts[vertIndex+5]   = -y2;
+   
    // Q
    verts[vertIndex+6]   =  x2 + w;
    verts[vertIndex+7]   = -y2;
@@ -146,15 +149,16 @@ unsigned int updateChar(
          wRatio      = w/texWidth,
          hRatio      = h/texHeight;
 
-   // P
+   // R
    texuv[vertIndex+0]   = texOffsetX + xTexOffset;
-   texuv[vertIndex+1]   = texOffsetY + yTexOffset;
+   texuv[vertIndex+1]   = texOffsetY - yTexOffset + hRatio;
    // Q
    texuv[vertIndex+2]   = texOffsetX - xTexOffset + wRatio;
    texuv[vertIndex+3]   = texOffsetY + yTexOffset;
-   // R
+   // P
    texuv[vertIndex+4]   = texOffsetX + xTexOffset;
-   texuv[vertIndex+5]   = texOffsetY - yTexOffset + hRatio;
+   texuv[vertIndex+5]   = texOffsetY + yTexOffset;
+
    // Q
    texuv[vertIndex+6]   = texOffsetX - xTexOffset + wRatio;
    texuv[vertIndex+7]   = texOffsetY + yTexOffset;
