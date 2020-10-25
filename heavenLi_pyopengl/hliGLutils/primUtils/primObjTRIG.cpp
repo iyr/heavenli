@@ -44,8 +44,6 @@ unsigned int defineObjTrig(
          normals.push_back(z);
          normals.push_back(w);
       } else if (strcmp(lineBuff, "f") == 0) {
-         //static bool flipTri = false;
-         static bool flipTri = true;
          int vertInd[3], uvInd[3], nrmInd[3];
          int matches = fscanf(obj, "%d/%d/%d %d/%d/%d %d/%d/%d\n",
                &vertInd[0],
