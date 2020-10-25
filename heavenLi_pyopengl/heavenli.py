@@ -134,13 +134,13 @@ def drawTest():
             tmx /= w2h
             tmy /= w2h
 
-        drawEllipse(
-                tmx,
-                tmy,
-                10.1, 10.1,
-                w2h,
-                (0.1, 0.1, 0.1, 1.0)
-                )
+        #drawEllipse(
+                #tmx,
+                #tmy,
+                #10.1, 10.1,
+                #w2h,
+                #(1.0, 1.0, 1.0, 1.0)
+                #)
 
         # Draw Purple Ball
         tmc = stateMach['Menus']['testMenu'].getSelectedElement()
@@ -154,16 +154,47 @@ def drawTest():
                 tmc
                 )
 
-        drawImage(
-            'joystick.jpg',
-            0.0, 0.0,
-            0.0,
-            0.75,
-            w2h,
-            "circle",
-            (1.0, (stateMach['someVar']/100), 1.0, 0.5),
-            False
-            )
+        model = np.identity(4)
+        persp = np.identity(4)
+
+        #persp = ndOrtho(-w2h, w2h, -1.0, 1.0, 0.001, 1000.0)
+        persp = ndPerspective( 90, w2h, 0.1, 60.0)
+        #print("Projection Matrix:")
+        #ndPrintMatrix(persp)
+        model = ndScale(model, 0.05, 0.05, 0.05)
+        model = ndTranslate(model, 0.0, 0.0, -30.0)
+        #model = ndTranslate(model, 0.0, (stateMach['someVar']-50)/4.0, -10.0)
+        model = ndRotate(model, stateMach['someVar']*3.6, 0.0, 1.0, 0.0)
+        #model = ndTranslate(model, 0.0, 0.0, 20.0)
+        #model = ndScale(model, 0.05, 0.05, 0.05)
+        #model = ndRotate(model, 37.0, 1.0, 0.0, 0.0)
+        #print("modelview Matrix:")
+        #ndPrintMatrix(model)
+        #model = ndRotate(model, stateMach['someVar'], 0.1, 0.1, 0.1)
+        #MVP   = np.matmul(persp, model)
+        MVP   = np.matmul(model, persp)
+        #print("MVP matrix:")
+        #ndPrintMatrix(MVP)
+        #print(MVP)
+
+        drawWFobject(
+                'cube.obj',
+                #'untitled.obj',
+                MVP,
+                w2h,
+                (1.0, 1.0, 1.0, 1.0)
+                )
+        #drawImage(
+            #'joystick.jpg',
+            #0.0, 0.0,
+            #0.0,
+            #10.0,
+            ##0.75,
+            #w2h,
+            #"square",
+            #(1.0, 1.0, 1.0, 1.0),
+            #False
+            #)
 
         cDrag  = 1.0
         accelX = -stateMach['BallVelocity'][0]*cDrag
@@ -1379,6 +1410,21 @@ def special(k, x, y):
     elif k == GLUT_KEY_F3:
         stateMach['drawInfo'] = not stateMach['drawInfo']
 
+    elif k == GLUT_KEY_F6:
+        stateMach['frontFaceCCW'] = not stateMach['frontFaceCCW']
+
+        print("frontFaceCCW is now: " + str(stateMach['frontFaceCCW']))
+        if (stateMach['frontFaceCCW']):
+            #glDisable(GL_CULL_FACE)
+            glCullFace(GL_BACK)
+            #glFrontFace(GL_CCW)
+        else:
+            #glEnable(GL_CULL_FACE)
+            glCullFace(GL_FRONT)
+            #glFrontFace(GL_CW)
+
+        print(glIsEnabled(GL_CULL_FACE))
+
     elif k == GLUT_KEY_F10:
         makeFont()
 
@@ -1495,6 +1541,7 @@ if __name__ == '__main__':
     print("Initializing...")
     stateMach['mouseInWindow']      = True
     stateMach['VSyncLimit']         = 0
+    stateMach['frontFaceCCW']       = True
     
     stateMach['foregroundHLIfreq']  = 720.0
     stateMach['backgroundHLIfreq']  = 180.0
@@ -1737,10 +1784,10 @@ if __name__ == '__main__':
     glutMouseFunc(mouseInteraction)
     glutMotionFunc(mouseActive)
     glutPassiveMotionFunc(mousePassive)
-    glEnable(GL_LINE_SMOOTH | GL_DEPTH_TEST)
-    glDepthFunc(GL_LEQUAL);
-
     init()
+    glDepthFunc(GL_LEQUAL)
+    glEnable(GL_LINE_SMOOTH | GL_DEPTH_TEST)
+    #glEnable(GL_CULL_FACE)
 
     glutDisplayFunc(display)
     glutReshapeFunc(reshape)
