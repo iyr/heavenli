@@ -80,6 +80,7 @@ drawCall::drawCall(void) {
    this->numColors      = 1;
 
    this->colorQuartets  = new GLfloat[this->numColors*4];
+   memset(this->colorQuartets, 0.0f, this->numColors*4*sizeof(GLfloat));
 
    this->colorsChanged  = GL_FALSE;
 
