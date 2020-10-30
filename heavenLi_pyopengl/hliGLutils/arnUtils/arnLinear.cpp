@@ -334,11 +334,18 @@ void drawIconLinear(
    // Geometry allocated/calculated, check if colors need to be updated
    if (  iconLinear->colorsChanged   ){
       unsigned int index = 0;
-      updateIconLinearColor(circleSegments, numBulbs, 1.0f, bulbColors, detailColor, index, (GLfloat *)iconLinear->getAttribCache(VAS.colorData));
+      updateIconLinearColor(
+            circleSegments, 
+            numBulbs, 
+            1.0f, 
+            bulbColors, 
+            detailColor, 
+            index, 
+            (GLfloat *)iconLinear->getAttribCache(VAS.colorData));
       iconLinear->updateBuffer(VAS.colorData);
    }
 
-   iconLinear->updateMVP(gx, gy, -scale, scale, ao, w2h);
+   iconLinear->updateMVP(gx, gy, scale, scale, ao, w2h);
    iconLinear->draw();
 
    return;
