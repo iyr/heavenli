@@ -105,15 +105,15 @@ unsigned int defineQuad2pt(
    colrs.push_back(B);
    colrs.push_back(A);
 
-   verts.push_back(px);
-   verts.push_back(qy);
+   verts.push_back(qx);
+   verts.push_back(py);
    colrs.push_back(R);
    colrs.push_back(G);
    colrs.push_back(B);
    colrs.push_back(A);
 
-   verts.push_back(qx);
-   verts.push_back(py);
+   verts.push_back(px);
+   verts.push_back(qy);
    colrs.push_back(R);
    colrs.push_back(G);
    colrs.push_back(B);
@@ -264,11 +264,11 @@ unsigned int updateQuad2ptGeometry(
    verts[vertIndex++] = px;
    verts[vertIndex++] = py;
 
-   verts[vertIndex++] = px;
-   verts[vertIndex++] = qy;
-
    verts[vertIndex++] = qx;
    verts[vertIndex++] = py;
+
+   verts[vertIndex++] = px;
+   verts[vertIndex++] = qy;
 
    verts[vertIndex++] = qx;
    verts[vertIndex++] = qy;
