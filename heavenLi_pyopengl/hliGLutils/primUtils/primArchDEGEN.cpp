@@ -36,8 +36,8 @@ unsigned int defineArch(
    // Prepend Degenerate Vertex
    tma = float(degToRad(begin));
 
-   verts.push_back(float(bx+cos(tma)*rx));   // X
-   verts.push_back(float(by+sin(tma)*ry));   // Y
+   verts.push_back(float(bx+cos(tma)*(rx+rs))); // X
+   verts.push_back(float(by+sin(tma)*(ry+rs))); // Y
    colrs.push_back(R);   
    colrs.push_back(G);   
    colrs.push_back(B);
@@ -46,15 +46,15 @@ unsigned int defineArch(
    for (unsigned int i = 0; i < circleSegments+1; i ++ ) {
       tma = float(degToRad(begin+i*degSegment));
 
-      verts.push_back(float(bx+cos(tma)*rx));   // X
-      verts.push_back(float(by+sin(tma)*ry));   // Y
+      verts.push_back(float(bx+cos(tma)*(rx+rs))); // X
+      verts.push_back(float(by+sin(tma)*(ry+rs))); // Y
       colrs.push_back(R);   
       colrs.push_back(G);   
       colrs.push_back(B);
       colrs.push_back(A);
 
-      verts.push_back(float(bx+cos(tma)*(rx+rs))); // X
-      verts.push_back(float(by+sin(tma)*(ry+rs))); // Y
+      verts.push_back(float(bx+cos(tma)*rx));   // X
+      verts.push_back(float(by+sin(tma)*ry));   // Y
       colrs.push_back(R);   
       colrs.push_back(G);   
       colrs.push_back(B);
@@ -63,8 +63,8 @@ unsigned int defineArch(
 
    tma = float(degToRad(begin+(circleSegments)*degSegment));
 
-   verts.push_back(float(bx+cos(tma)*(rx+rs))); // X
-   verts.push_back(float(by+sin(tma)*(ry+rs))); // Y
+   verts.push_back(float(bx+cos(tma)*rx));   // X
+   verts.push_back(float(by+sin(tma)*ry));   // Y
    colrs.push_back(R);   
    colrs.push_back(G);   
    colrs.push_back(B);
@@ -100,20 +100,20 @@ unsigned int updateArchGeometry(
 
    // Prepend Degenerate Vertex
    tma = float(degToRad(begin));
-   verts[vertIndex++] = (float)(bx+cos(tma)*rx);  // X
-   verts[vertIndex++] = (float)(by+sin(tma)*ry);  // Y
+   verts[vertIndex++] = (float)(bx+cos(tma)*(rx+rs));   // X
+   verts[vertIndex++] = (float)(by+sin(tma)*(ry+rs));   // Y
 
    for (unsigned int i = 0; i < circleSegments+1; i ++ ) {
       tma = float(degToRad(begin+i*degSegment));
-      verts[vertIndex++] = (float)(bx+cos(tma)*rx);  // X
-      verts[vertIndex++] = (float)(by+sin(tma)*ry);  // Y
       verts[vertIndex++] = (float)(bx+cos(tma)*(rx+rs));   // X
       verts[vertIndex++] = (float)(by+sin(tma)*(ry+rs));   // Y
+      verts[vertIndex++] = (float)(bx+cos(tma)*rx);  // X
+      verts[vertIndex++] = (float)(by+sin(tma)*ry);  // Y
    }
 
    tma = float(degToRad(begin+(circleSegments)*degSegment));
-   verts[vertIndex++] = (float)(bx+cos(tma)*(rx+rs));   // X
-   verts[vertIndex++] = (float)(by+sin(tma)*(ry+rs));   // Y
+   verts[vertIndex++] = (float)(bx+cos(tma)*rx);  // X
+   verts[vertIndex++] = (float)(by+sin(tma)*ry);  // Y
 
    return vertIndex/2;
 }
