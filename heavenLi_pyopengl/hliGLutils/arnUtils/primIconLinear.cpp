@@ -43,10 +43,10 @@ unsigned int defineIconLinear(
             BRy = -1.00f;
 
             defineQuad4pt(
-                  TLx, TLy,
-                  BLx, BLy,
                   TRx, TRy,
                   BRx, BRy,
+                  TLx, TLy,
+                  BLx, BLy,
                   tmc,           // Quad color
                   verts, colrs); // Input Vectors
          }
@@ -128,10 +128,10 @@ unsigned int defineIconLinear(
             detailColor,      // Quad Color
             verts, colrs);    // Input Vectors
       defineQuad4pt(
-            -featScale, 0.75f,
-            -featScale, -0.75f,
             -1.0f, 0.75f,
             -1.0f, -0.75f,
+            -featScale, 0.75f,
+            -featScale, -0.75f,
             detailColor,      // Quad Color
             verts, colrs);    // Input Vectors
       defineQuad4pt(
@@ -142,10 +142,10 @@ unsigned int defineIconLinear(
             detailColor,      // Quad Color
             verts, colrs);    // Input Vectors
       defineQuad4pt(
-            -0.75f, -featScale,
-            0.75f, -featScale, 
             -0.75f, -1.0f,
             0.75f, -1.0f, 
+            -0.75f, -featScale,
+            0.75f, -featScale, 
             detailColor,      // Quad Color
             verts, colrs);    // Input Vectors
 
@@ -289,17 +289,17 @@ unsigned int defineIconLinear(
             detailColor,
             verts, colrs);
       defineQuad4pt(
-            -0.75f*featScale, -(17.0f/16.0f + 13.0f/60.0f)*featScale,
-            -0.75f*featScale, -(17.0f/16.0f + 18.0f/60.0f)*featScale,
             +0.75f*featScale, -(17.0f/16.0f + 13.0f/60.0f)*featScale,
             +0.75f*featScale, -(17.0f/16.0f + 18.0f/60.0f)*featScale,
+            -0.75f*featScale, -(17.0f/16.0f + 13.0f/60.0f)*featScale,
+            -0.75f*featScale, -(17.0f/16.0f + 18.0f/60.0f)*featScale,
             detailColor,
             verts, colrs);
       defineQuad4pt(
-            (17.0f/16.0f + 13.0f/60.0f)*featScale, -0.75f*featScale,
-            (17.0f/16.0f + 18.0f/60.0f)*featScale, -0.75f*featScale,
             (17.0f/16.0f + 13.0f/60.0f)*featScale, +0.75f*featScale,
             (17.0f/16.0f + 18.0f/60.0f)*featScale, +0.75f*featScale,
+            (17.0f/16.0f + 13.0f/60.0f)*featScale, -0.75f*featScale,
+            (17.0f/16.0f + 18.0f/60.0f)*featScale, -0.75f*featScale,
             detailColor,
             verts, colrs);
       defineQuad4pt(
@@ -384,10 +384,10 @@ unsigned int updateIconLinearGeometry(
             BRy = -1.00f;
 
             subIndex = updateQuad4ptGeometry(
-                  TLx, TLy,
-                  BLx, BLy,
                   TRx, TRy,
                   BRx, BRy,
+                  TLx, TLy,
+                  BLx, BLy,
                   subIndex,
                   verts); // Input Array
          }
@@ -461,10 +461,10 @@ unsigned int updateIconLinearGeometry(
             subIndex,   // Index of where to start writing
             verts);     // Input Array
       subIndex = updateQuad4ptGeometry(
-            -featScale, 0.75f,
-            -featScale, -0.75f,
             -1.0f, 0.75f,
             -1.0f, -0.75f,
+            -featScale, 0.75f,
+            -featScale, -0.75f,
             subIndex,   // Index of where to start writing
             verts);     // Input Array
       subIndex = updateQuad4ptGeometry(
@@ -475,10 +475,10 @@ unsigned int updateIconLinearGeometry(
             subIndex,   // Index of where to start writing
             verts);     // Input Array
       subIndex = updateQuad4ptGeometry(
-            -0.75f, -featScale,
-            0.75f, -featScale, 
             -0.75f, -1.0f,
             0.75f, -1.0f, 
+            -0.75f, -featScale,
+            0.75f, -featScale, 
             subIndex,   // Index of where to start writing
             verts);     // Input Array
 
@@ -620,17 +620,17 @@ unsigned int updateIconLinearGeometry(
             subIndex,   // Index of where to start writing
             verts);     // Input Array
       subIndex = updateQuad4ptGeometry(
-            -0.75f*featScale, -(17.0f/16.0f + 13.0f/60.0f)*featScale,
-            -0.75f*featScale, -(17.0f/16.0f + 18.0f/60.0f)*featScale,
             +0.75f*featScale, -(17.0f/16.0f + 13.0f/60.0f)*featScale,
             +0.75f*featScale, -(17.0f/16.0f + 18.0f/60.0f)*featScale,
+            -0.75f*featScale, -(17.0f/16.0f + 13.0f/60.0f)*featScale,
+            -0.75f*featScale, -(17.0f/16.0f + 18.0f/60.0f)*featScale,
             subIndex,   // Index of where to start writing
             verts);     // Input Array
       subIndex = updateQuad4ptGeometry(
-            (17.0f/16.0f + 13.0f/60.0f)*featScale, -0.75f*featScale,
-            (17.0f/16.0f + 18.0f/60.0f)*featScale, -0.75f*featScale,
             (17.0f/16.0f + 13.0f/60.0f)*featScale, +0.75f*featScale,
             (17.0f/16.0f + 18.0f/60.0f)*featScale, +0.75f*featScale,
+            (17.0f/16.0f + 13.0f/60.0f)*featScale, -0.75f*featScale,
+            (17.0f/16.0f + 18.0f/60.0f)*featScale, -0.75f*featScale,
             subIndex,   // Index of where to start writing
             verts);     // Input Array
       subIndex = updateQuad4ptGeometry(
