@@ -17,7 +17,7 @@ PyObject* drawGranChanger_hliGLutils(PyObject *self, PyObject *args) {
    GLfloat     detailColor[4];
    GLfloat     black[4] = {0.0, 0.0, 0.0, 1.0};
    GLfloat     white[4] = {1.0, 1.0, 1.0, 1.0};
-   char        circleSegments = 45;
+   const char  circleSegments = 45;
    GLuint      granChangerVerts;
 
    // Parse Inputs
@@ -38,6 +38,7 @@ PyObject* drawGranChanger_hliGLutils(PyObject *self, PyObject *args) {
    if (drawCalls.count("granChangerButton") <= 0)
       drawCalls.insert(std::make_pair("granChangerButton", drawCall()));
    drawCall* granChangerButton = &drawCalls["granChangerButton"];
+   granChangerButton->setShader("RGBAcolor_NoTexture");
 
    // Parse Colors
    faceColor[0] = float(PyFloat_AsDouble(PyTuple_GetItem(py_faceColor, 0)));
@@ -52,25 +53,14 @@ PyObject* drawGranChanger_hliGLutils(PyObject *self, PyObject *args) {
    granChangerButton->setNumColors(2);
    granChangerButton->setColorQuartet(0, faceColor);
    granChangerButton->setColorQuartet(1, detailColor);
-   granChangerButton->setShader("RGBAcolor_NoTexture");
 
    // Allocate and Define Geometry/Color
    if (  granChangerButton->numVerts == 0 ) {
       printf("Initializing Geometry for Granularity Rocker\n");
-      float unit = float(1.0/36.0);
-      float buttonSize = 0.8f;
+      float unit        = 1.0f/36.0f;
+      float buttonSize  = 0.8f;
       vector<GLfloat> verts;
       vector<GLfloat> colrs;
-
-      // Upper Background Mask (quad)
-      //defineQuad4pt(
-            //-1.0, 1.0,
-            //-1.0, 0.0,
-            //+1.0, 1.0,
-            //+1.0, 0.0,
-            //black,
-            //verts, 
-            //colrs);
 
       // Lower Background Mask (Pill)
       definePill(
@@ -118,16 +108,16 @@ PyObject* drawGranChanger_hliGLutils(PyObject *self, PyObject *args) {
 
       // Plus Symbol
       definePill(
-            32.0f*unit - tmo*unit*buttonSize, 0.0f,   // X, Y 
             16.0f*unit + tmo*unit*buttonSize, 0.0f,   // X, Y 
+            32.0f*unit - tmo*unit*buttonSize, 0.0f,   // X, Y 
             2.0f*unit*buttonSize,                     // Radius 
             circleSegments,
             detailColor,                              // Color 
             verts,
             colrs);
       definePill(
-            24.0f*unit,  8.0f*unit*buttonSize,  // X, Y 
             24.0f*unit, -8.0f*unit*buttonSize,  // X, Y 
+            24.0f*unit,  8.0f*unit*buttonSize,  // X, Y 
             2.0f*unit*buttonSize,               // Radius 
             circleSegments,
             detailColor,                        // Color 
@@ -145,12 +135,6 @@ PyObject* drawGranChanger_hliGLutils(PyObject *self, PyObject *args) {
 
    if (granChangerButton->colorsChanged) {
       unsigned int index = 0;
-
-      // Upper Background Mask (quad)
-      //index = updateQuadColor(
-            //black,
-            //index, 
-            //granChangerButton->getAttribCache(VAS.colorData));
 
       // Lower Background Mask (Pill)
       index = updatePillColor(
@@ -181,26 +165,26 @@ PyObject* drawGranChanger_hliGLutils(PyObject *self, PyObject *args) {
       // Minus Symbol
       index = updatePillColor(
             circleSegments,
-            detailColor,                              // Color 
+            detailColor,
             index,
             (GLfloat *)granChangerButton->getAttribCache(VAS.colorData));
 
       // Plus Symbol
       index = updatePillColor(
             circleSegments,
-            detailColor,                              // Color 
+            detailColor,
             index,
             (GLfloat *)granChangerButton->getAttribCache(VAS.colorData));
       index = updatePillColor(
             circleSegments,
-            detailColor,                        // Color 
+            detailColor,
             index,
             (GLfloat *)granChangerButton->getAttribCache(VAS.colorData));
 
       granChangerButton->updateBuffer(VAS.colorData);
    }
 
-   granChangerButton->updateMVP(gx, gy, scale, scale, ao, w2h);
+   granChangerButton->updateMVP(gx, gy, scale, scale, ao, -w2h);
    granChangerButton->draw();
    Py_RETURN_NONE;
 }

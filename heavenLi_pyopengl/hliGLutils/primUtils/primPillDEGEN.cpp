@@ -1,10 +1,6 @@
 /*
- *  Defines an efficient pill for TRIANGLE_STRIP with degenerate vertices
+ *  Defines an efficientish pill for TRIANGLE_STRIP with degenerate vertices
  */
-
-//#include <math.h>
-//#include <vector>
-//using namespace std;
 
 // Append to input vectors
 GLuint definePill(
@@ -69,15 +65,15 @@ GLuint definePill(
    }
 
    for (GLuint i = 1; i < circleSegments/2; i++ ) {
-      verts.push_back(float(px + radius*cosf(ang+degToRad(i*degSegment)))); // pX
-      verts.push_back(float(py + radius*sinf(ang+degToRad(i*degSegment)))); // pY
+      verts.push_back(float(px + radius*cosf(ang+degToRad(-(GLint)i*degSegment))));  // pX
+      verts.push_back(float(py + radius*sinf(ang+degToRad(-(GLint)i*degSegment))));  // pY
       colrs.push_back( pR );
       colrs.push_back( pG );
       colrs.push_back( pB );
       colrs.push_back( pA );
 
-      verts.push_back(float(px + radius*cosf(ang+degToRad(-(GLint)i*degSegment))));  // pX
-      verts.push_back(float(py + radius*sinf(ang+degToRad(-(GLint)i*degSegment))));  // pY
+      verts.push_back(float(px + radius*cosf(ang+degToRad(i*degSegment)))); // pX
+      verts.push_back(float(py + radius*sinf(ang+degToRad(i*degSegment)))); // pY
       colrs.push_back( pR );
       colrs.push_back( pG );
       colrs.push_back( pB );
@@ -93,15 +89,15 @@ GLuint definePill(
    }
    if ( slope != slope ) slope = 0.0f;
    for (GLuint i = 1; i < circleSegments/2; i++ ) {
-      verts.push_back(float(qx + radius*cosf(ang+degToRad(-(GLint)(circleSegments/2-i)*degSegment)))); // qX
-      verts.push_back(float(qy + radius*sinf(ang+degToRad(-(GLint)(circleSegments/2-i)*degSegment)))); // qY
+      verts.push_back(float(qx + radius*cosf(ang+degToRad((circleSegments/2-i)*degSegment))));   // qX
+      verts.push_back(float(qy + radius*sinf(ang+degToRad((circleSegments/2-i)*degSegment))));   // qY
       colrs.push_back( qR );
       colrs.push_back( qG );
       colrs.push_back( qB );
       colrs.push_back( qA );
 
-      verts.push_back(float(qx + radius*cosf(ang+degToRad((circleSegments/2-i)*degSegment))));   // qX
-      verts.push_back(float(qy + radius*sinf(ang+degToRad((circleSegments/2-i)*degSegment))));   // qY
+      verts.push_back(float(qx + radius*cosf(ang+degToRad(-(GLint)(circleSegments/2-i)*degSegment)))); // qX
+      verts.push_back(float(qy + radius*sinf(ang+degToRad(-(GLint)(circleSegments/2-i)*degSegment)))); // qY
       colrs.push_back( qR );
       colrs.push_back( qG );
       colrs.push_back( qB );
@@ -210,10 +206,10 @@ GLuint updatePillGeometry(
    }
 
    for (GLuint i = 1; i < circleSegments/2; i++ ) {
-      verts[vertIndex++] = px + radius*cosf(ang+degToRad(i*degSegment)); // pX
-      verts[vertIndex++] = py + radius*sinf(ang+degToRad(i*degSegment)); // pY
       verts[vertIndex++] = px + radius*cosf(ang+degToRad(-(GLint)i*degSegment));  // pX
       verts[vertIndex++] = py + radius*sinf(ang+degToRad(-(GLint)i*degSegment));  // pY
+      verts[vertIndex++] = px + radius*cosf(ang+degToRad(i*degSegment)); // pX
+      verts[vertIndex++] = py + radius*sinf(ang+degToRad(i*degSegment)); // pY
    }
 
    if (qx >= px) {
@@ -224,10 +220,10 @@ GLuint updatePillGeometry(
       ang = float(degToRad(180)+atan(slope));
    }
    for (GLuint i = 1; i < circleSegments/2; i++ ) {
-      verts[vertIndex++] = qx + radius*cosf(ang+degToRad(-(GLint)(circleSegments/2-(GLint)i)*degSegment));   // qX
-      verts[vertIndex++] = qy + radius*sinf(ang+degToRad(-(GLint)(circleSegments/2-(GLint)i)*degSegment));   // qY
       verts[vertIndex++] = qx + radius*cosf(ang+degToRad((circleSegments/2-i)*degSegment));   // qX
       verts[vertIndex++] = qy + radius*sinf(ang+degToRad((circleSegments/2-i)*degSegment));   // qY
+      verts[vertIndex++] = qx + radius*cosf(ang+degToRad(-(GLint)(circleSegments/2-(GLint)i)*degSegment));   // qX
+      verts[vertIndex++] = qy + radius*sinf(ang+degToRad(-(GLint)(circleSegments/2-(GLint)i)*degSegment));   // qY
    }
 
    verts[vertIndex++] = qx + radius*cosf(ang+degToRad(0.0f));   // qX
