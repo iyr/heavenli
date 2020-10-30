@@ -46,42 +46,42 @@ GLuint definePill(
 
    // Prepend degenerate vertex iff not the first primitive in the vector
    if (verts.size() == 0) {
-      /* pX */ verts.push_back(float(px + radius*cos(ang)));
-      /* pY */ verts.push_back(float(py + radius*sin(ang)));
-      /* pR */ colrs.push_back(pR);  
-      /* pG */ colrs.push_back(pG);  
-      /* pB */ colrs.push_back(pB);
-      /* pA */ colrs.push_back(pA);
+      verts.push_back(float(px + radius*cos(ang)));   // pX
+      verts.push_back(float(py + radius*sin(ang)));   // pY
+      colrs.push_back( pR );
+      colrs.push_back( pG );
+      colrs.push_back( pB );
+      colrs.push_back( pA );
    } else {
-      /* pX */ verts.push_back(float(px + radius*cos(ang)));
-      /* pY */ verts.push_back(float(py + radius*sin(ang)));
-      /* pR */ colrs.push_back(pR);  
-      /* pG */ colrs.push_back(pG);  
-      /* pB */ colrs.push_back(pB);
-      /* pA */ colrs.push_back(pA);
+      verts.push_back(float(px + radius*cos(ang)));   // pX
+      verts.push_back(float(py + radius*sin(ang)));   // pY
+      colrs.push_back( pR );
+      colrs.push_back( pG );
+      colrs.push_back( pB );
+      colrs.push_back( pA );
 
-      /* pX */ verts.push_back(float(px + radius*cos(ang)));
-      /* pY */ verts.push_back(float(py + radius*sin(ang)));
-      /* pR */ colrs.push_back(pR);  
-      /* pG */ colrs.push_back(pG);  
-      /* pB */ colrs.push_back(pB);
-      /* pA */ colrs.push_back(pA);
+      verts.push_back(float(px + radius*cos(ang)));   // pX
+      verts.push_back(float(py + radius*sin(ang)));   // pY
+      colrs.push_back( pR );
+      colrs.push_back( pG );
+      colrs.push_back( pB );
+      colrs.push_back( pA );
    }
 
    for (GLuint i = 1; i < circleSegments/2; i++ ) {
-      /* pX */ verts.push_back(float(px + radius*cos(ang+degToRad(i*degSegment))));
-      /* pY */ verts.push_back(float(py + radius*sin(ang+degToRad(i*degSegment))));
-      /* pR */ colrs.push_back(pR);  
-      /* pG */ colrs.push_back(pG);  
-      /* pB */ colrs.push_back(pB);
-      /* pA */ colrs.push_back(pA);
+      verts.push_back(float(px + radius*cos(ang+degToRad(i*degSegment)))); // pX
+      verts.push_back(float(py + radius*sin(ang+degToRad(i*degSegment)))); // pY
+      colrs.push_back( pR );
+      colrs.push_back( pG );
+      colrs.push_back( pB );
+      colrs.push_back( pA );
 
-      /* pX */ verts.push_back(float(px + radius*cos(ang+degToRad(-(GLint)i*degSegment))));
-      /* pY */ verts.push_back(float(py + radius*sin(ang+degToRad(-(GLint)i*degSegment))));
-      /* pR */ colrs.push_back(pR);  
-      /* pG */ colrs.push_back(pG);  
-      /* pB */ colrs.push_back(pB);
-      /* pA */ colrs.push_back(pA);
+      verts.push_back(float(px + radius*cos(ang+degToRad(-(GLint)i*degSegment))));  // pX
+      verts.push_back(float(py + radius*sin(ang+degToRad(-(GLint)i*degSegment))));  // pY
+      colrs.push_back( pR );
+      colrs.push_back( pG );
+      colrs.push_back( pB );
+      colrs.push_back( pA );
    }
 
    if (qx >= px) {
@@ -93,34 +93,34 @@ GLuint definePill(
    }
    if ( slope != slope ) slope = 0.0f;
    for (GLuint i = 1; i < circleSegments/2; i++ ) {
-      /* qX */ verts.push_back(float(qx + radius*cos(ang+degToRad(-(GLint)(circleSegments/2-i)*degSegment))));
-      /* qY */ verts.push_back(float(qy + radius*sin(ang+degToRad(-(GLint)(circleSegments/2-i)*degSegment))));
-      /* qR */ colrs.push_back(qR);  
-      /* qG */ colrs.push_back(qG);  
-      /* qB */ colrs.push_back(qB);
-      /* qA */ colrs.push_back(qA);
+      verts.push_back(float(qx + radius*cos(ang+degToRad(-(GLint)(circleSegments/2-i)*degSegment)))); // qX
+      verts.push_back(float(qy + radius*sin(ang+degToRad(-(GLint)(circleSegments/2-i)*degSegment)))); // qY
+      colrs.push_back( qR );
+      colrs.push_back( qG );
+      colrs.push_back( qB );
+      colrs.push_back( qA );
 
-      /* qX */ verts.push_back(float(qx + radius*cos(ang+degToRad((circleSegments/2-i)*degSegment))));
-      /* qY */ verts.push_back(float(qy + radius*sin(ang+degToRad((circleSegments/2-i)*degSegment))));
-      /* qR */ colrs.push_back(qR);  
-      /* qG */ colrs.push_back(qG);  
-      /* qB */ colrs.push_back(qB);
-      /* qA */ colrs.push_back(qA);
+      verts.push_back(float(qx + radius*cos(ang+degToRad((circleSegments/2-i)*degSegment))));   // qX
+      verts.push_back(float(qy + radius*sin(ang+degToRad((circleSegments/2-i)*degSegment))));   // qY
+      colrs.push_back( qR );
+      colrs.push_back( qG );
+      colrs.push_back( qB );
+      colrs.push_back( qA );
    }
 
-   /* qX */ verts.push_back(float(qx + radius*cos(ang+degToRad(0.0f))));
-   /* qY */ verts.push_back(float(qy + radius*sin(ang+degToRad(0.0f))));
-   /* qR */ colrs.push_back(qR);  
-   /* qG */ colrs.push_back(qG);  
-   /* qB */ colrs.push_back(qB);
-   /* qA */ colrs.push_back(qA);
+   verts.push_back(float(qx + radius*cos(ang+degToRad(0.0f))));   // qX
+   verts.push_back(float(qy + radius*sin(ang+degToRad(0.0f))));   // qY
+   colrs.push_back( qR );
+   colrs.push_back( qG );
+   colrs.push_back( qB );
+   colrs.push_back( qA );
 
-   /* qX */ verts.push_back(float(qx + radius*cos(ang+degToRad(0.0f))));
-   /* qY */ verts.push_back(float(qy + radius*sin(ang+degToRad(0.0f))));
-   /* qR */ colrs.push_back(qR);  
-   /* qG */ colrs.push_back(qG);  
-   /* qB */ colrs.push_back(qB);
-   /* qA */ colrs.push_back(qA);
+   verts.push_back(float(qx + radius*cos(ang+degToRad(0.0f))));   // qX
+   verts.push_back(float(qy + radius*sin(ang+degToRad(0.0f))));   // qY
+   colrs.push_back( qR );
+   colrs.push_back( qG );
+   colrs.push_back( qB );
+   colrs.push_back( qA );
 
    return verts.size()/2;
 }
@@ -200,20 +200,20 @@ GLuint updatePillGeometry(
 
    // Prepend degenerate vertex iff not the first primitive in the vector
    if (vertIndex == 0) {
-      /* pX */ verts[vertIndex++] = (float(px + radius*cos(ang)));
-      /* pY */ verts[vertIndex++] = (float(py + radius*sin(ang)));
+      verts[vertIndex++] = (float(px + radius*cos(ang)));   // pX
+      verts[vertIndex++] = (float(py + radius*sin(ang)));   // pY
    } else {
-      /* pX */ verts[vertIndex++] = (float(px + radius*cos(ang)));
-      /* pY */ verts[vertIndex++] = (float(py + radius*sin(ang)));
-      /* pX */ verts[vertIndex++] = (float(px + radius*cos(ang)));
-      /* pY */ verts[vertIndex++] = (float(py + radius*sin(ang)));
+      verts[vertIndex++] = (float(px + radius*cos(ang)));   // pX
+      verts[vertIndex++] = (float(py + radius*sin(ang)));   // pY
+      verts[vertIndex++] = (float(px + radius*cos(ang)));   // pX
+      verts[vertIndex++] = (float(py + radius*sin(ang)));   // pY
    }
 
    for (GLuint i = 1; i < circleSegments/2; i++ ) {
-      /* pX */ verts[vertIndex++] = (float(px + radius*cos(ang+degToRad(i*degSegment))));
-      /* pY */ verts[vertIndex++] = (float(py + radius*sin(ang+degToRad(i*degSegment))));
-      /* pX */ verts[vertIndex++] = (float(px + radius*cos(ang+degToRad(-(GLint)i*degSegment))));
-      /* pY */ verts[vertIndex++] = (float(py + radius*sin(ang+degToRad(-(GLint)i*degSegment))));
+      verts[vertIndex++] = (float(px + radius*cos(ang+degToRad(i*degSegment)))); // pX
+      verts[vertIndex++] = (float(py + radius*sin(ang+degToRad(i*degSegment)))); // pY
+      verts[vertIndex++] = (float(px + radius*cos(ang+degToRad(-(GLint)i*degSegment))));  // pX
+      verts[vertIndex++] = (float(py + radius*sin(ang+degToRad(-(GLint)i*degSegment))));  // pY
    }
 
    if (qx >= px) {
@@ -224,16 +224,16 @@ GLuint updatePillGeometry(
       ang = float(degToRad(180)+atan(slope));
    }
    for (GLuint i = 1; i < circleSegments/2; i++ ) {
-      /* qX */ verts[vertIndex++] = (float(qx + radius*cos(ang+degToRad(-(GLint)(circleSegments/2-(GLint)i)*degSegment))));
-      /* qY */ verts[vertIndex++] = (float(qy + radius*sin(ang+degToRad(-(GLint)(circleSegments/2-(GLint)i)*degSegment))));
-      /* qX */ verts[vertIndex++] = (float(qx + radius*cos(ang+degToRad((circleSegments/2-i)*degSegment))));
-      /* qY */ verts[vertIndex++] = (float(qy + radius*sin(ang+degToRad((circleSegments/2-i)*degSegment))));
+      verts[vertIndex++] = (float(qx + radius*cos(ang+degToRad(-(GLint)(circleSegments/2-(GLint)i)*degSegment))));   // qX
+      verts[vertIndex++] = (float(qy + radius*sin(ang+degToRad(-(GLint)(circleSegments/2-(GLint)i)*degSegment))));   // qY
+      verts[vertIndex++] = (float(qx + radius*cos(ang+degToRad((circleSegments/2-i)*degSegment))));   // qX
+      verts[vertIndex++] = (float(qy + radius*sin(ang+degToRad((circleSegments/2-i)*degSegment))));   // qY
    }
 
-   /* qX */ verts[vertIndex++] = (float(qx + radius*cos(ang+degToRad(0.0f))));
-   /* qY */ verts[vertIndex++] = (float(qy + radius*sin(ang+degToRad(0.0f))));
-   /* qX */ verts[vertIndex++] = (float(qx + radius*cos(ang+degToRad(0.0f))));
-   /* qY */ verts[vertIndex++] = (float(qy + radius*sin(ang+degToRad(0.0f))));
+   verts[vertIndex++] = (float(qx + radius*cos(ang+degToRad(0.0f))));   // qX
+   verts[vertIndex++] = (float(qy + radius*sin(ang+degToRad(0.0f))));   // qY
+   verts[vertIndex++] = (float(qx + radius*cos(ang+degToRad(0.0f))));   // qX
+   verts[vertIndex++] = (float(qy + radius*sin(ang+degToRad(0.0f))));   // qY
 
    return vertIndex/2;
 }
@@ -260,60 +260,60 @@ GLuint updatePillColor(
 
    // Prepend degenerate vertex iff not the first primitive in the vector
    if (colrIndex == 0) {
-      /* pR */ colrs[colrIndex+0] = pR;
-      /* pG */ colrs[colrIndex+1] = pG;
-      /* pB */ colrs[colrIndex+2] = pB;
-      /* pA */ colrs[colrIndex+3] = pA;
+      colrs[colrIndex+0] = pR;
+      colrs[colrIndex+1] = pG;
+      colrs[colrIndex+2] = pB;
+      colrs[colrIndex+3] = pA;
 
       colrIndex += 4;
    } else {
-      /* pR */ colrs[colrIndex+4] = pR;
-      /* pG */ colrs[colrIndex+5] = pG;
-      /* pB */ colrs[colrIndex+6] = pB;
-      /* pA */ colrs[colrIndex+7] = pA;
+      colrs[colrIndex+4] = pR;
+      colrs[colrIndex+5] = pG;
+      colrs[colrIndex+6] = pB;
+      colrs[colrIndex+7] = pA;
 
-      /* pR */ colrs[colrIndex+8] = pR;
-      /* pG */ colrs[colrIndex+9] = pG;
-      /* pB */ colrs[colrIndex+10] = pB;
-      /* pA */ colrs[colrIndex+11] = pA;
+      colrs[colrIndex+8] = pR;
+      colrs[colrIndex+9] = pG;
+      colrs[colrIndex+10] = pB;
+      colrs[colrIndex+11] = pA;
       colrIndex += 8;
    }
 
    for (GLuint i = 1; i < circleSegments/2; i++ ) {
-      /* pR */ colrs[colrIndex+0] = pR;
-      /* pG */ colrs[colrIndex+1] = pG;
-      /* pB */ colrs[colrIndex+2] = pB;
-      /* pA */ colrs[colrIndex+3] = pA;
+      colrs[colrIndex+0] = pR;
+      colrs[colrIndex+1] = pG;
+      colrs[colrIndex+2] = pB;
+      colrs[colrIndex+3] = pA;
 
-      /* pR */ colrs[colrIndex+4] = pR;
-      /* pG */ colrs[colrIndex+5] = pG;
-      /* pB */ colrs[colrIndex+6] = pB;
-      /* pA */ colrs[colrIndex+7] = pA;
+      colrs[colrIndex+4] = pR;
+      colrs[colrIndex+5] = pG;
+      colrs[colrIndex+6] = pB;
+      colrs[colrIndex+7] = pA;
       colrIndex += 8;
    }
 
    for (GLuint i = 1; i < circleSegments/2; i++ ) {
-      /* qR */ colrs[colrIndex+0] = qR;
-      /* qG */ colrs[colrIndex+1] = qG;
-      /* qB */ colrs[colrIndex+2] = qB;
-      /* qA */ colrs[colrIndex+3] = qA;
+      colrs[colrIndex+0] = qR;
+      colrs[colrIndex+1] = qG;
+      colrs[colrIndex+2] = qB;
+      colrs[colrIndex+3] = qA;
 
-      /* qR */ colrs[colrIndex+4] = qR;
-      /* qG */ colrs[colrIndex+5] = qG;
-      /* qB */ colrs[colrIndex+6] = qB;
-      /* qA */ colrs[colrIndex+7] = qA;
+      colrs[colrIndex+4] = qR;
+      colrs[colrIndex+5] = qG;
+      colrs[colrIndex+6] = qB;
+      colrs[colrIndex+7] = qA;
       colrIndex += 8;
    }
 
-   /* qR */ colrs[colrIndex+0] = qR;
-   /* qG */ colrs[colrIndex+1] = qG;
-   /* qB */ colrs[colrIndex+2] = qB;
-   /* qA */ colrs[colrIndex+3] = qA;
+   colrs[colrIndex+0] = qR;
+   colrs[colrIndex+1] = qG;
+   colrs[colrIndex+2] = qB;
+   colrs[colrIndex+3] = qA;
 
-   /* qR */ colrs[colrIndex+4] = qR;
-   /* qG */ colrs[colrIndex+5] = qG;
-   /* qB */ colrs[colrIndex+6] = qB;
-   /* qA */ colrs[colrIndex+7] = qA;
+   colrs[colrIndex+4] = qR;
+   colrs[colrIndex+5] = qG;
+   colrs[colrIndex+6] = qB;
+   colrs[colrIndex+7] = qA;
    colrIndex += 8;
 
    return colrIndex/4;
