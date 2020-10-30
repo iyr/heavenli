@@ -2,22 +2,22 @@
  *  Defines an efficient pill for TRIANGLE_STRIP with degenerate vertices
  */
 
-#include <math.h>
-#include <vector>
-using namespace std;
+//#include <math.h>
+//#include <vector>
+//using namespace std;
 
 // Append to input vectors
 GLuint definePill(
-      float px,                  /* x-coordinate of Point P */
-      float py,                  /* y-coordinate of Point P */
-      float qx,                  /* x-coordinate of Point Q */
-      float qy,                  /* y-coordinate of Point Q */
-      float radius,              /* Radius/Thickness of pill */
-      GLuint circleSegments,       /* Number of sides */
-      float *pColor,             /* RGB values of P */
-      float *qColor,             /* RGB values of Q */
-      std::vector<float> &verts, /* Input Vector of x,y coordinates */
-      std::vector<float> &colrs  /* Input Vector of r,g,b values */
+      float px,                  // x-coordinate of Point P
+      float py,                  // y-coordinate of Point P
+      float qx,                  // x-coordinate of Point Q
+      float qy,                  // y-coordinate of Point Q
+      float radius,              // Radius/Thickness of pill
+      GLuint circleSegments,     // Number of sides
+      float *pColor,             // RGB values of P
+      float *qColor,             // RGB values of Q
+      std::vector<float> &verts, // Input Vector of x,y coordinates
+      std::vector<float> &colrs  // Input Vector of r,g,b values
       ){
    float slope, pR, pG, pB, pA, qR, qG, qB, qA, ang;
 
@@ -46,22 +46,22 @@ GLuint definePill(
 
    // Prepend degenerate vertex iff not the first primitive in the vector
    if (verts.size() == 0) {
-      verts.push_back(float(px + radius*cos(ang)));   // pX
-      verts.push_back(float(py + radius*sin(ang)));   // pY
+      verts.push_back(float(px + radius*cosf(ang)));   // pX
+      verts.push_back(float(py + radius*sinf(ang)));   // pY
       colrs.push_back( pR );
       colrs.push_back( pG );
       colrs.push_back( pB );
       colrs.push_back( pA );
    } else {
-      verts.push_back(float(px + radius*cos(ang)));   // pX
-      verts.push_back(float(py + radius*sin(ang)));   // pY
+      verts.push_back(float(px + radius*cosf(ang)));   // pX
+      verts.push_back(float(py + radius*sinf(ang)));   // pY
       colrs.push_back( pR );
       colrs.push_back( pG );
       colrs.push_back( pB );
       colrs.push_back( pA );
 
-      verts.push_back(float(px + radius*cos(ang)));   // pX
-      verts.push_back(float(py + radius*sin(ang)));   // pY
+      verts.push_back(float(px + radius*cosf(ang)));   // pX
+      verts.push_back(float(py + radius*sinf(ang)));   // pY
       colrs.push_back( pR );
       colrs.push_back( pG );
       colrs.push_back( pB );
@@ -69,15 +69,15 @@ GLuint definePill(
    }
 
    for (GLuint i = 1; i < circleSegments/2; i++ ) {
-      verts.push_back(float(px + radius*cos(ang+degToRad(i*degSegment)))); // pX
-      verts.push_back(float(py + radius*sin(ang+degToRad(i*degSegment)))); // pY
+      verts.push_back(float(px + radius*cosf(ang+degToRad(i*degSegment)))); // pX
+      verts.push_back(float(py + radius*sinf(ang+degToRad(i*degSegment)))); // pY
       colrs.push_back( pR );
       colrs.push_back( pG );
       colrs.push_back( pB );
       colrs.push_back( pA );
 
-      verts.push_back(float(px + radius*cos(ang+degToRad(-(GLint)i*degSegment))));  // pX
-      verts.push_back(float(py + radius*sin(ang+degToRad(-(GLint)i*degSegment))));  // pY
+      verts.push_back(float(px + radius*cosf(ang+degToRad(-(GLint)i*degSegment))));  // pX
+      verts.push_back(float(py + radius*sinf(ang+degToRad(-(GLint)i*degSegment))));  // pY
       colrs.push_back( pR );
       colrs.push_back( pG );
       colrs.push_back( pB );
@@ -93,30 +93,30 @@ GLuint definePill(
    }
    if ( slope != slope ) slope = 0.0f;
    for (GLuint i = 1; i < circleSegments/2; i++ ) {
-      verts.push_back(float(qx + radius*cos(ang+degToRad(-(GLint)(circleSegments/2-i)*degSegment)))); // qX
-      verts.push_back(float(qy + radius*sin(ang+degToRad(-(GLint)(circleSegments/2-i)*degSegment)))); // qY
+      verts.push_back(float(qx + radius*cosf(ang+degToRad(-(GLint)(circleSegments/2-i)*degSegment)))); // qX
+      verts.push_back(float(qy + radius*sinf(ang+degToRad(-(GLint)(circleSegments/2-i)*degSegment)))); // qY
       colrs.push_back( qR );
       colrs.push_back( qG );
       colrs.push_back( qB );
       colrs.push_back( qA );
 
-      verts.push_back(float(qx + radius*cos(ang+degToRad((circleSegments/2-i)*degSegment))));   // qX
-      verts.push_back(float(qy + radius*sin(ang+degToRad((circleSegments/2-i)*degSegment))));   // qY
+      verts.push_back(float(qx + radius*cosf(ang+degToRad((circleSegments/2-i)*degSegment))));   // qX
+      verts.push_back(float(qy + radius*sinf(ang+degToRad((circleSegments/2-i)*degSegment))));   // qY
       colrs.push_back( qR );
       colrs.push_back( qG );
       colrs.push_back( qB );
       colrs.push_back( qA );
    }
 
-   verts.push_back(float(qx + radius*cos(ang+degToRad(0.0f))));   // qX
-   verts.push_back(float(qy + radius*sin(ang+degToRad(0.0f))));   // qY
+   verts.push_back(float(qx + radius*cosf(ang+degToRad(0.0f))));   // qX
+   verts.push_back(float(qy + radius*sinf(ang+degToRad(0.0f))));   // qY
    colrs.push_back( qR );
    colrs.push_back( qG );
    colrs.push_back( qB );
    colrs.push_back( qA );
 
-   verts.push_back(float(qx + radius*cos(ang+degToRad(0.0f))));   // qX
-   verts.push_back(float(qy + radius*sin(ang+degToRad(0.0f))));   // qY
+   verts.push_back(float(qx + radius*cosf(ang+degToRad(0.0f))));   // qX
+   verts.push_back(float(qy + radius*sinf(ang+degToRad(0.0f))));   // qY
    colrs.push_back( qR );
    colrs.push_back( qG );
    colrs.push_back( qB );
@@ -200,20 +200,20 @@ GLuint updatePillGeometry(
 
    // Prepend degenerate vertex iff not the first primitive in the vector
    if (vertIndex == 0) {
-      verts[vertIndex++] = (float(px + radius*cos(ang)));   // pX
-      verts[vertIndex++] = (float(py + radius*sin(ang)));   // pY
+      verts[vertIndex++] = px + radius*cosf(ang);   // pX
+      verts[vertIndex++] = py + radius*sinf(ang);   // pY
    } else {
-      verts[vertIndex++] = (float(px + radius*cos(ang)));   // pX
-      verts[vertIndex++] = (float(py + radius*sin(ang)));   // pY
-      verts[vertIndex++] = (float(px + radius*cos(ang)));   // pX
-      verts[vertIndex++] = (float(py + radius*sin(ang)));   // pY
+      verts[vertIndex++] = px + radius*cosf(ang);   // pX
+      verts[vertIndex++] = py + radius*sinf(ang);   // pY
+      verts[vertIndex++] = px + radius*cosf(ang);   // pX
+      verts[vertIndex++] = py + radius*sinf(ang);   // pY
    }
 
    for (GLuint i = 1; i < circleSegments/2; i++ ) {
-      verts[vertIndex++] = (float(px + radius*cos(ang+degToRad(i*degSegment)))); // pX
-      verts[vertIndex++] = (float(py + radius*sin(ang+degToRad(i*degSegment)))); // pY
-      verts[vertIndex++] = (float(px + radius*cos(ang+degToRad(-(GLint)i*degSegment))));  // pX
-      verts[vertIndex++] = (float(py + radius*sin(ang+degToRad(-(GLint)i*degSegment))));  // pY
+      verts[vertIndex++] = px + radius*cosf(ang+degToRad(i*degSegment)); // pX
+      verts[vertIndex++] = py + radius*sinf(ang+degToRad(i*degSegment)); // pY
+      verts[vertIndex++] = px + radius*cosf(ang+degToRad(-(GLint)i*degSegment));  // pX
+      verts[vertIndex++] = py + radius*sinf(ang+degToRad(-(GLint)i*degSegment));  // pY
    }
 
    if (qx >= px) {
@@ -224,39 +224,39 @@ GLuint updatePillGeometry(
       ang = float(degToRad(180)+atan(slope));
    }
    for (GLuint i = 1; i < circleSegments/2; i++ ) {
-      verts[vertIndex++] = (float(qx + radius*cos(ang+degToRad(-(GLint)(circleSegments/2-(GLint)i)*degSegment))));   // qX
-      verts[vertIndex++] = (float(qy + radius*sin(ang+degToRad(-(GLint)(circleSegments/2-(GLint)i)*degSegment))));   // qY
-      verts[vertIndex++] = (float(qx + radius*cos(ang+degToRad((circleSegments/2-i)*degSegment))));   // qX
-      verts[vertIndex++] = (float(qy + radius*sin(ang+degToRad((circleSegments/2-i)*degSegment))));   // qY
+      verts[vertIndex++] = qx + radius*cosf(ang+degToRad(-(GLint)(circleSegments/2-(GLint)i)*degSegment));   // qX
+      verts[vertIndex++] = qy + radius*sinf(ang+degToRad(-(GLint)(circleSegments/2-(GLint)i)*degSegment));   // qY
+      verts[vertIndex++] = qx + radius*cosf(ang+degToRad((circleSegments/2-i)*degSegment));   // qX
+      verts[vertIndex++] = qy + radius*sinf(ang+degToRad((circleSegments/2-i)*degSegment));   // qY
    }
 
-   verts[vertIndex++] = (float(qx + radius*cos(ang+degToRad(0.0f))));   // qX
-   verts[vertIndex++] = (float(qy + radius*sin(ang+degToRad(0.0f))));   // qY
-   verts[vertIndex++] = (float(qx + radius*cos(ang+degToRad(0.0f))));   // qX
-   verts[vertIndex++] = (float(qy + radius*sin(ang+degToRad(0.0f))));   // qY
+   verts[vertIndex++] = qx + radius*cosf(ang+degToRad(0.0f));   // qX
+   verts[vertIndex++] = qy + radius*sinf(ang+degToRad(0.0f));   // qY
+   verts[vertIndex++] = qx + radius*cosf(ang+degToRad(0.0f));   // qX
+   verts[vertIndex++] = qy + radius*sinf(ang+degToRad(0.0f));   // qY
 
    return vertIndex/2;
 }
 
 GLuint updatePillColor(
-      GLuint circleSegments, /* Number of sides */
-      float *pColor,       /* RGB values of P */
-      float *qColor,       /* RGB values of Q */
-      GLuint index,           /* Index of where to start writing */
-      float *colrs         /* Input Vector of r,g,b values */
+      GLuint circleSegments,  // Number of sides
+      float *pColor,          // RGB values of P
+      float *qColor,          // RGB values of Q
+      GLuint index,           // Index of where to start writing
+      float *colrs            // Input Vector of r,g,b values
       ){
    float pR, pG, pB, pA, qR, qG, qB, qA;
    GLuint colrIndex = index*4;
 
-   pR = float(pColor[0]);
-   pG = float(pColor[1]);
-   pB = float(pColor[2]);
-   pA = float(pColor[3]);
+   pR = pColor[0];
+   pG = pColor[1];
+   pB = pColor[2];
+   pA = pColor[3];
 
-   qR = float(qColor[0]);
-   qG = float(qColor[1]);
-   qB = float(qColor[2]);
-   qA = float(qColor[3]);
+   qR = qColor[0];
+   qG = qColor[1];
+   qB = qColor[2];
+   qA = qColor[3];
 
    // Prepend degenerate vertex iff not the first primitive in the vector
    if (colrIndex == 0) {
