@@ -6,7 +6,7 @@ from hliImports import *
 # function for printing statemachine information
 def drawInfo(stateMach):
     w2h = stateMach['w2h']
-    infoStr = "//~~~~~~~~~~~~~~~infoo debugeroo, eletric boogaloo~~~~~~~~~~~~~~~\\\\"
+    infoStr = "//~~~~~~~~~~~~~~~statemachine shenanigans~~~~~~~~~~~~~~~\\\\"
     infoStr += "\nglutMainLoopFrequency (Hz): " + str(int(stateMach['glutFreq']))
     infoStr += "\nUI Engine FPS (Hz): " + str(int(stateMach['SMfreq']))
     infoStr += "\nOpenGL FPS (Hz): " + str(int(stateMach['GLfreq']))
@@ -83,7 +83,7 @@ def watchPolygon(cxgl, cygl, polygon, w2h, drawInfo):#, point):
 
     return inside
 
-# Check if user is over a box
+# Check if user cursor is over a box
 def watchBox(px, py, qx, qy, cxgl, cygl, w2h, drawInfo):
     col = (1.0, 0.0, 1.0, 1.0)
     if (drawInfo and abs(qx-px) > 0.0 and abs(qy-py)):
