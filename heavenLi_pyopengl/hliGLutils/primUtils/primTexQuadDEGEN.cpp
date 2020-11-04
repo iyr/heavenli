@@ -50,15 +50,6 @@ unsigned int defineTexQuad(
    texuv.push_back(0.0f);
    texuv.push_back(0.0f);
 
-   verts.push_back(px);
-   verts.push_back(qy);
-   colrs.push_back(R);
-   colrs.push_back(G);
-   colrs.push_back(B);
-   colrs.push_back(A);
-   texuv.push_back(0.0f);
-   texuv.push_back(1.0f);
-
    verts.push_back(qx);
    verts.push_back(py);
    colrs.push_back(R);
@@ -67,6 +58,15 @@ unsigned int defineTexQuad(
    colrs.push_back(A);
    texuv.push_back(1.0f);
    texuv.push_back(0.0f);
+
+   verts.push_back(px);
+   verts.push_back(qy);
+   colrs.push_back(R);
+   colrs.push_back(G);
+   colrs.push_back(B);
+   colrs.push_back(A);
+   texuv.push_back(0.0f);
+   texuv.push_back(1.0f);
 
    verts.push_back(qx);
    verts.push_back(qy);
