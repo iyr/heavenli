@@ -303,7 +303,7 @@ void drawMenu(
          MenuNormal->updateBuffer(VAS.colorData);
       }
 
-      MenuNormal->updateMVP(gx, gy, scale, scale, -direction, w2h);
+      MenuNormal->updateMVP(gx, gy, scale, -scale, 180.0f+direction, w2h);
       MenuNormal->draw();
    }
    // Draw Menu Body w/ elements+scrollbar when open
@@ -447,7 +447,6 @@ void drawMenu(
       int tme = constrain(numElements, 0, 999);
 
       std::string inputString = std::to_string(1+selectedElement);
-
       drawText(
             inputString,               // string to render
             float(-cosf(tma)/2.0f+0.5f),                      // Horizontal Alignment
