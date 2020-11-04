@@ -98,7 +98,6 @@ unsigned int defineMenuNormal(
       //}
    //}
 
-   if (numElements < 4) tmo -= 1.75f;
    // Flip selection arrow
    float mirror = 1.0f;
          //theta0 = 270.0f,
@@ -272,8 +271,6 @@ unsigned int updateMenuNormalGeometry(
          //tmo = 3.75f;
       //}
    //}
-
-   if (numElements < 4) tmo -= 1.75f;
 
    // Flip selection arrow, scrollbar based on direction of menu
    float mirror = 1.0f;
