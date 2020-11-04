@@ -28,10 +28,14 @@ void defineElementCoords(
 
    direction += 180.0f;
 
-   while (direction >= 360.0f)
-      direction -= 360.0f;
-   while (direction < 0.0f)
-      direction += 360.0f;
+   if (direction > 360.0f)
+       direction = float(((direction/360.0f)-floor(direction/360.0f))*360.0f);
+   if (direction < 360.0f)
+       direction = float(((direction/360.0f)-floor(direction/360.0f))*360.0f);
+   //while (direction >= 360.0f)
+      //direction -= 360.0f;
+   //while (direction < 0.0f)
+      //direction += 360.0f;
 
    // Flip selection arrow, scrollbar based on direction of menu
    float mirror = 1.0f;
