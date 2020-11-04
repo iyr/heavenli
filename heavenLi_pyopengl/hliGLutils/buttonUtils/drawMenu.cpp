@@ -471,7 +471,6 @@ void drawMenu(
       inputString = std::to_string(tme);
       drawText(
             inputString,               // string to render
-            //0.5f,                      // Horizontal Alignment
             float(-cosf(tma)/2.0f+0.5f),                      // Horizontal Alignment
             float(-sinf(tma)/2.0f+1.0f),                      // Vertical Alignment
             gx+tmx, gy+tmy,            // Text position
