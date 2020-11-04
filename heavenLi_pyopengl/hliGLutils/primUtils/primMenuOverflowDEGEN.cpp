@@ -165,21 +165,39 @@ unsigned int defineMenuOverflow(
          colrs
          );
 
+   float tmy1 = mirror*(my - 0.5f*deployed),  // y-position
+         tmy2 = mirror*(my-1.125f*deployed),  // y-position
+         tmyy = 0.0f;
+
+   if (mirror < 0.0f) {
+      tmyy = tmy1;
+      tmy1 = tmy2;
+      tmy2 = tmyy;
+   }
+
    defineQuad2pt(
          (mx+1.25f*deployed-0.125f),   // x-position
-         mirror*(my-1.125f*deployed),  // y-position
+         tmy1,                         // y-position
          (mx+6.25f*deployed+0.125f),   // x-position
-         mirror*(my - 0.5f*deployed),  // y-position
+         tmy2,                         // y-position
          faceColor,
          verts,
          colrs
          );
 
+   tmy1 = mirror*(my-1.125f*deployed);  // y-position
+   tmy2 = mirror*(my-1.250f*deployed);  // y-position
+   if (mirror < 0.0f) {
+      tmyy = tmy1;
+      tmy1 = tmy2;
+      tmy2 = tmyy;
+   }
+
    defineQuad2pt(
          (mx+1.25f*deployed),          // x-position
-         mirror*(my-1.125f*deployed),  // y-position
+         tmy1,                         // y-position
          (mx+6.25f*deployed),          // x-position
-         mirror*(my-1.250f*deployed),  // y-position
+         tmy2,                         // y-position
          faceColor,
          verts,
          colrs
@@ -505,21 +523,39 @@ unsigned int updateMenuOverflowGeometry(
          subIndex,
          verts
          );
+   
+   float tmy1 = mirror*(my - 0.5f*deployed),  // y-position
+         tmy2 = mirror*(my-1.125f*deployed),  // y-position
+         tmyy = 0.0f;
+
+   if (mirror < 0.0f) {
+      tmyy = tmy1;
+      tmy1 = tmy2;
+      tmy2 = tmyy;
+   }
 
    subIndex = updateQuad2ptGeometry(
          (mx+1.25f*deployed-0.125f),   // x-position
-         mirror*(my-1.125f*deployed),  // y-position
+         tmy1,                         // y-position
          (mx+6.25f*deployed+0.125f),   // x-position
-         mirror*(my - 0.5f*deployed),  // y-position
+         tmy2,                         // y-position
          subIndex,
          verts
          );
 
+   tmy1 = mirror*(my-1.125f*deployed);  // y-position
+   tmy2 = mirror*(my-1.250f*deployed);  // y-position
+   if (mirror < 0.0f) {
+      tmyy = tmy1;
+      tmy1 = tmy2;
+      tmy2 = tmyy;
+   }
+
    subIndex = updateQuad2ptGeometry(
          (mx+1.25f*deployed),          // x-position
-         mirror*(my-1.125f*deployed),  // y-position
+         tmy1,                         // y-position
          (mx+6.25f*deployed),          // x-position
-         mirror*(my-1.250f*deployed),  // y-position
+         tmy2,                         // y-position
          subIndex,
          verts
          );
