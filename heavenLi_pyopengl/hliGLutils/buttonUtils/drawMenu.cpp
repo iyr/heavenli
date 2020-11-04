@@ -203,7 +203,7 @@ void drawMenu(
          elementCoords[i*3+1] = 0.0f;
          elementCoords[i*3+2] = 0.0f;
       }
-      MenuClosed->updateMVP(gx, gy, scale, scale, -direction, w2h);
+      MenuClosed->updateMVP(gx, gy, scale, scale, direction, w2h);
       MenuClosed->draw();
    } 
    // Draw Menu Body w/ just elements
@@ -419,17 +419,27 @@ void drawMenu(
          MenuOverflow->updateBuffer(VAS.colorData);
       }
 
-      MenuOverflow->updateMVP(gx, gy, scale, scale, -direction, w2h);
+      MenuOverflow->updateMVP(gx, gy, scale, -scale, 180.0f+direction, w2h);
       MenuOverflow->draw();
    }
 
    // Draw text objects indicating floatingIndex, numElements
    if (  drawIndex         && 
          deployed > 0.0f   ){
-      float tma = (float)degToRad(direction),
+      float mirror = -1.0f;
+      if (  (direction <= 135.0f && direction >= -1.0f)
+            ||
+            (direction <= 361.0f && direction >= 315.0f)
+         )
+      {
+         mirror = -1.0f;
+      } else {
+         mirror = 1.0f;
+      }
+      float tma = (float)degToRad(180.0f+direction),
             textDPIscalar = 32.0f/(float)tmAt->faceSize,
-            tmx = scale*(6.75f*cos(tma)+0.5f*sin(-tma))*deployed,                         // text location, X
-            tmy = scale*(6.75f*sin(tma)+0.5f*cos(-tma)+0.25f*(float)overFlow)*deployed;   // text location, Y
+            tmx = scale*(6.75f*cos(tma)+0.5f*sin(-tma)*mirror)*deployed,                         // text location, X
+            tmy = scale*(6.75f*sin(tma)+0.5f*cos(-tma)*mirror+0.25f*(float)overFlow)*deployed;   // text location, Y
       if (w2h < 1.0f)
          tmy *= w2h;
       else
@@ -437,10 +447,11 @@ void drawMenu(
       int tme = constrain(numElements, 0, 999);
 
       std::string inputString = std::to_string(1+selectedElement);
+
       drawText(
             inputString,               // string to render
-            0.5f,                      // Horizontal Alignment
-            0.5f,                      // Vertical Alignment
+            float(-cosf(tma)/2.0f+0.5f),                      // Horizontal Alignment
+            float(-sinf(tma)/2.0f+1.0f),                      // Vertical Alignment
             gx+tmx, gy+tmy,            // Text position
             3.0f*scale*textDPIscalar, 
             3.0f*scale*textDPIscalar,  // Text scale
@@ -451,8 +462,8 @@ void drawMenu(
             MenuIndex                  // drawCall to write to
             );
 
-      tmx = scale*(6.75f*cos(tma)-0.5f*sin(-tma))*deployed;                         // text location, X
-      tmy = scale*(6.75f*sin(tma)-0.5f*cos(-tma)+0.25f*(float)overFlow)*deployed;   // text location, Y
+      tmx = scale*(6.75f*cos(tma)-0.5f*sin(-tma)*mirror)*deployed;                         // text location, X
+      tmy = scale*(6.75f*sin(tma)-0.5f*cos(-tma)*mirror+0.25f*(float)overFlow)*deployed;   // text location, Y
       if (w2h < 1.0f)
          tmy *= w2h;
       else
@@ -460,8 +471,9 @@ void drawMenu(
       inputString = std::to_string(tme);
       drawText(
             inputString,               // string to render
-            0.5f,                      // Horizontal Alignment
-            0.5f,                      // Vertical Alignment
+            //0.5f,                      // Horizontal Alignment
+            float(-cosf(tma)/2.0f+0.5f),                      // Horizontal Alignment
+            float(-sinf(tma)/2.0f+1.0f),                      // Vertical Alignment
             gx+tmx, gy+tmy,            // Text position
             3.0f*scale*textDPIscalar, 
             3.0f*scale*textDPIscalar,  // Text scale
