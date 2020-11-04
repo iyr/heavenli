@@ -1,4 +1,4 @@
-from hliUIutils import UIparam, UIelement, watchDot, watchBox, watchPolygon
+from hliUI import UIparam, UIelement, watchDot, watchBox, watchPolygon
 from hliGLutils import drawMenu
 from rangeUtils import *
 from math import degrees, atan, sin, cos, sqrt, radians, hypot
@@ -294,8 +294,8 @@ class Menu:
 
         # Convenience Variables
         ang     = self.getAng()
-        ofax    = cos(radians(ang))
-        ofay    = sin(radians(ang))
+        ofax    = cos(radians(ang+180))
+        ofay    = sin(radians(ang+180))
         ofx     = self.UIelement.getTarPosX()
         ofy     = self.UIelement.getTarPosY()
         thr     = 0.1*self.UIelement.getSize()
@@ -385,10 +385,10 @@ class Menu:
         radx = radius*self.UIelement.getTarSize()
         rady = radius*tms
 
-        tmr = radians(ang+45)
+        tmr = radians(ang+45.0+180.0)
         polygon.append( (ofwx+cos(tmr)*radx, ofy+sin(tmr)*rady) )
 
-        tmr = radians(ang-45)
+        tmr = radians(ang-45.0+180.0)
         polygon.append( (ofwx+cos(tmr)*radx, ofy+sin(tmr)*rady) )
 
         # Distil Box Corners
@@ -396,10 +396,10 @@ class Menu:
         radx    = radius*self.UIelement.getTarSize()
         rady    = radius*tms
 
-        tmr = radians(ang-da)
+        tmr = radians(ang-da+180.0)
         polygon.append( (ofwx+cos(tmr)*radx, ofy+sin(tmr)*rady) )
 
-        tmr = radians(ang+da)
+        tmr = radians(ang+da+180.0)
         polygon.append( (ofwx+cos(tmr)*radx, ofy+sin(tmr)*rady) )
         
         # Aspect correct radius for watchdot
@@ -535,7 +535,12 @@ class Menu:
 
     # Set the deployment slide-out angle
     def setAng(self, angle):
-        self.angle = float(angle)
+        if (angle > 360.0):
+            angle = float(((angle/360.0)-floor(angle/360.0))*360.0)
+        if (angle < 360.0):
+            angle = float(((angle/360.0)-floor(angle/360.0))*360.0)
+
+        self.angle = angle
         return
 
     # Returns True if menu is fully deployed and ready to use
