@@ -26,6 +26,13 @@ void defineElementCoords(
    else                 elementSpacing = (6.0f-1.5f-endOffset*2.0f)/(float)(numListings-1);
    if (numElements < 4) menuLayout = 1;
 
+   direction += 180.0f;
+
+   while (direction >= 360.0f)
+      direction -= 360.0f;
+   while (direction < 0.0f)
+      direction += 360.0f;
+
    // Flip selection arrow, scrollbar based on direction of menu
    float mirror = 1.0f;
    if (  (  
