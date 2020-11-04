@@ -327,7 +327,7 @@ unsigned int defineMenuOverflow(
 
    if (drawIndex) {
       float tmx = 6.75f*deployed+0.25f,   // text location, X
-            tmy = -0.5f*deployed;         // text location, Y
+            tmy = -0.5f*deployed*mirror;  // text location, Y
       defineEllipse(
             tmx, tmy,
             0.45f, 0.45f,
@@ -659,7 +659,7 @@ unsigned int updateMenuOverflowGeometry(
 
    if (drawIndex) {
       float tmx = 6.75f*deployed+0.25f,   // text location, X
-            tmy = -0.5f*deployed;         // text location, Y
+            tmy = -0.5f*deployed*mirror;  // text location, Y
       subIndex = updateEllipseGeometry(
             tmx, tmy,
             0.45f, 0.45f,
