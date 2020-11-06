@@ -303,7 +303,6 @@ PyObject* drawHueRing_hliGLutils(PyObject *self, PyObject *args) {
 
    // Update colors, if needed
    if ( updateColorCache ){
-      printf("quack\n");
       hueRingButton->updateBuffer(VAS.colorData);
    }
          
