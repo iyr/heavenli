@@ -66,10 +66,10 @@ PyObject* buildAtlas_hliGLutils(PyObject* self, PyObject *args) {
       glyphData[c].advanceY      = (GLfloat)PyFloat_AsDouble(PyAttr);
 
       PyAttr = PyObject_GetAttrString(PyChar, "bearingX");
-      glyphData[c].bearingX      = (GLfloat)PyFloat_AsDouble(PyAttr);
+      glyphData[c].bearingX      = (GLfloat)PyFloat_AsDouble(PyAttr)+2.0f;
 
       PyAttr = PyObject_GetAttrString(PyChar, "bearingY");
-      glyphData[c].bearingY      = (GLfloat)PyFloat_AsDouble(PyAttr);
+      glyphData[c].bearingY      = (GLfloat)PyFloat_AsDouble(PyAttr)+2.0f;
 
       PyAttr = PyObject_GetAttrString(PyChar, "bearingTop");
       glyphData[c].bearingTop    = (GLfloat)PyFloat_AsDouble(PyAttr);
@@ -78,15 +78,39 @@ PyObject* buildAtlas_hliGLutils(PyObject* self, PyObject *args) {
       glyphData[c].bearingLeft   = (GLfloat)PyFloat_AsDouble(PyAttr);
 
       PyBitmap = PyObject_GetAttrString(PyChar, "bitmap");
-      unsigned int bufferLength;
 
+      unsigned int bufferLength, bx, by;
+      bx = (unsigned int)glyphData[c].bearingX;
+      by = (unsigned int)glyphData[c].bearingY;
       bufferLength = (unsigned int)(glyphData[c].bearingX*glyphData[c].bearingY);
       GLubyte* tmb = new GLubyte[bufferLength];
+      memset(tmb, 0, bufferLength);
 
+      // Add 1-pixel border to all sides of bitmap
+      for (unsigned int i = 1; i < by-1; i++) {
+         for (unsigned int j = 1; j < bx-1; j++) {
+            PyAttr = PyList_GetItem(PyBitmap, (i-1)*(bx-2) + (j-1));
+            tmb[i*bx + j] = GLubyte(PyLong_AsLong(PyAttr));
+         }
+      }
+
+      // Add 1-pixel border to right and bottom sides of glyph bitmap
+      /*
+      for (unsigned int i = 0; i < by-1; i++) {
+         for (unsigned int j = 0; j < bx-1; j++) {
+            PyAttr = PyList_GetItem(PyBitmap, i*(bx-1) + j);
+            tmb[i*bx + j] = GLubyte(PyLong_AsLong(PyAttr));
+         }
+      }
+      */
+
+      // basic copy of freetype character glyph image buffer
+      /*
       for (unsigned int i = 0; i < bufferLength; i++) {
          PyAttr = PyList_GetItem(PyBitmap, i);
          tmb[i] = GLubyte(PyLong_AsLong(PyAttr));
       }
+      */
       
       glyphData[c].bitmap = tmb;      
    }
