@@ -8,6 +8,8 @@ unsigned int defineChar(
       float       x,             // x-postion
       float       y,             // y-postion
       int         c,             // index of the character
+      float       hCrop,         // (-1 to +1) 0.0: no crop, >0: from right, <0: from left
+      float       vCrop,         // (-1 to +1) 0.0: no crop, >0: from bottom, <0: from top
       textAtlas*  atlas,         // texture atlas to draw characters from
       float*      color,         // Polygon Color                                         
       std::vector<float> &verts, // Input Vector of x,y coordinates                       
@@ -36,50 +38,66 @@ unsigned int defineChar(
    texWidth    = (float)atlas->textureWidth;
    texHeight   = (float)atlas->textureHeight;
 
+   // Convenience Variables for vertical cropping of vertex height
+   float v1    = (vCrop >= 0.0f ?  h*vCrop : 0.0f),
+         v2    = (vCrop <  0.0f ?  h*vCrop : 0.0f);
+   // Convenience Variables for horizontal cropping of vertex height
+   float h1    = (hCrop >= 0.0f ? -w*hCrop : 0.0f),
+         h2    = (hCrop <  0.0f ? -w*hCrop : 0.0f);
+   texWidth    = (float)atlas->textureWidth;
+   texHeight   = (float)atlas->textureHeight;
+
    // R
-   verts.push_back( x2);
-   verts.push_back(-y2 - h);
+   verts.push_back( x2 + h2);
+   verts.push_back(-y2 - h + v1);
    // Q
-   verts.push_back( x2 + w);
-   verts.push_back(-y2);
+   verts.push_back( x2 + w + h1);
+   verts.push_back(-y2 + v2);
    // P
-   verts.push_back( x2);
-   verts.push_back(-y2);
+   verts.push_back( x2 + h2);
+   verts.push_back(-y2 + v2);
 
    // Q
-   verts.push_back( x2 + w);
-   verts.push_back(-y2);
+   verts.push_back( x2 + w + h1);
+   verts.push_back(-y2 + v2);
    // R
-   verts.push_back( x2);
-   verts.push_back(-y2 - h);
+   verts.push_back( x2 + h2);
+   verts.push_back(-y2 - h + v1);
    // S
-   verts.push_back( x2 + w);
-   verts.push_back(-y2 - h);
+   verts.push_back( x2 + w + h1);
+   verts.push_back(-y2 - h + v1);
 
    float xTexOffset  = 1.0f/(2.0f*texWidth),
          yTexOffset  = 1.0f/(2.0f*texHeight),
          wRatio      = w/texWidth,
          hRatio      = h/texHeight;
 
+   // Convenience Variables for vertical cropping of texture coordinate
+   v1 = (vCrop >= 0.0f ? vCrop*(hRatio+yTexOffset) : 0.0f);
+   v2 = (vCrop <  0.0f ? vCrop*(hRatio+yTexOffset) : 0.0f);
+   // Convenience Variables for horizontal cropping of textured coordinate
+   h1 = (hCrop >= 0.0f ? hCrop*(wRatio+xTexOffset) : 0.0f);
+   h2 = (hCrop <  0.0f ? hCrop*(wRatio+xTexOffset) : 0.0f);
+
    // R
-   texuv.push_back(texOffsetX + xTexOffset);
-   texuv.push_back(texOffsetY - yTexOffset + hRatio);
+   texuv.push_back(texOffsetX + xTexOffset - h2);
+   texuv.push_back(texOffsetY - yTexOffset + hRatio - v1);
    // Q
-   texuv.push_back(texOffsetX - xTexOffset + wRatio);
-   texuv.push_back(texOffsetY + yTexOffset);
+   texuv.push_back(texOffsetX - xTexOffset + wRatio - h1);
+   texuv.push_back(texOffsetY + yTexOffset - v2);
    // P
-   texuv.push_back(texOffsetX + xTexOffset);
-   texuv.push_back(texOffsetY + yTexOffset);
+   texuv.push_back(texOffsetX + xTexOffset - h2);
+   texuv.push_back(texOffsetY + yTexOffset - v2);
 
    // Q
-   texuv.push_back(texOffsetX - xTexOffset + wRatio);
-   texuv.push_back(texOffsetY + yTexOffset);
+   texuv.push_back(texOffsetX - xTexOffset + wRatio - h1);
+   texuv.push_back(texOffsetY + yTexOffset - v2);
    // R
-   texuv.push_back(texOffsetX + xTexOffset);
-   texuv.push_back(texOffsetY - yTexOffset + hRatio);
+   texuv.push_back(texOffsetX + xTexOffset - h2);
+   texuv.push_back(texOffsetY - yTexOffset + hRatio - v1);
    // S
-   texuv.push_back(texOffsetX - xTexOffset + wRatio);
-   texuv.push_back(texOffsetY - yTexOffset + hRatio);
+   texuv.push_back(texOffsetX - xTexOffset + wRatio - h1);
+   texuv.push_back(texOffsetY - yTexOffset + hRatio - v1);
 
    colrs.push_back(color[0]);   colrs.push_back(color[1]);   colrs.push_back(color[2]);   colrs.push_back(color[3]);
    colrs.push_back(color[0]);   colrs.push_back(color[1]);   colrs.push_back(color[2]);   colrs.push_back(color[3]);
@@ -95,6 +113,8 @@ unsigned int updateChar(
       float       x,       // x-postion
       float       y,       // y-postion
       GLuint      c,       // index of the character
+      float       hCrop,   // (-1 to +1) 0.0: no crop, >0: from right, <0: from left
+      float       vCrop,   // (-1 to +1) 0.0: no crop, >0: from bottom, <0: from top
       textAtlas*  atlas,   // texture atlas to draw characters from
       GLuint      index,   // Index of where to start writing to input arrays
       float*      verts,   // Input Array of x,y coordinates
@@ -121,53 +141,68 @@ unsigned int updateChar(
       texOffsetX  = 0.0f;
       texOffsetY  = 0.0f;
    }
+
+   // Convenience Variables for vertical cropping of vertex height
+   float v1    = (vCrop >= 0.0f ?  h*vCrop : 0.0f),
+         v2    = (vCrop <  0.0f ?  h*vCrop : 0.0f);
+   // Convenience Variables for horizontal cropping of vertex height
+   float h1    = (hCrop >= 0.0f ? -w*hCrop : 0.0f),
+         h2    = (hCrop <  0.0f ? -w*hCrop : 0.0f);
    texWidth    = (float)atlas->textureWidth;
    texHeight   = (float)atlas->textureHeight;
 
    // R
-   verts[vertIndex+0]   =  x2;
-   verts[vertIndex+1]   = -y2 - h;
+   verts[vertIndex+0]   =  x2 + h2;
+   verts[vertIndex+1]   = -y2 - h + v1;
    // Q
-   verts[vertIndex+2]   =  x2 + w;
-   verts[vertIndex+3]   = -y2;
+   verts[vertIndex+2]   =  x2 + w + h1;
+   verts[vertIndex+3]   = -y2 + v2;
    // P
-   verts[vertIndex+4]   =  x2;
-   verts[vertIndex+5]   = -y2;
+   verts[vertIndex+4]   =  x2 + h2;
+   verts[vertIndex+5]   = -y2 + v2;
    
    // Q
-   verts[vertIndex+6]   =  x2 + w;
-   verts[vertIndex+7]   = -y2;
+   verts[vertIndex+6]   =  x2 + w + h1;
+   verts[vertIndex+7]   = -y2 + v2;
    // R
-   verts[vertIndex+8]   =  x2;
-   verts[vertIndex+9]   = -y2 - h;
+   verts[vertIndex+8]   =  x2 + h2;
+   verts[vertIndex+9]   = -y2 - h + v1;
    // S
-   verts[vertIndex+10]  =  x2 + w;
-   verts[vertIndex+11]  = -y2 - h;
+   verts[vertIndex+10]  =  x2 + w + h1;
+   verts[vertIndex+11]  = -y2 - h + v1;
 
    float xTexOffset  = 1.0f/(2.0f*texWidth),
          yTexOffset  = 1.0f/(2.0f*texHeight),
          wRatio      = w/texWidth,
          hRatio      = h/texHeight;
 
+
+   // Convenience Variables for vertical cropping of texture coordinate
+   v1 = (vCrop >= 0.0f ? vCrop*(hRatio+yTexOffset) : 0.0f);
+   v2 = (vCrop <  0.0f ? vCrop*(hRatio+yTexOffset) : 0.0f);
+   // Convenience Variables for horizontal cropping of textured coordinate
+   h1 = (hCrop >= 0.0f ? hCrop*(wRatio+xTexOffset) : 0.0f);
+   h2 = (hCrop <  0.0f ? hCrop*(wRatio+xTexOffset) : 0.0f);
+
    // R
-   texuv[vertIndex+0]   = texOffsetX + xTexOffset;
-   texuv[vertIndex+1]   = texOffsetY - yTexOffset + hRatio;
+   texuv[vertIndex+0]   = texOffsetX + xTexOffset - h2;
+   texuv[vertIndex+1]   = texOffsetY - yTexOffset + hRatio - v1;
    // Q
-   texuv[vertIndex+2]   = texOffsetX - xTexOffset + wRatio;
-   texuv[vertIndex+3]   = texOffsetY + yTexOffset;
+   texuv[vertIndex+2]   = texOffsetX - xTexOffset + wRatio - h1;
+   texuv[vertIndex+3]   = texOffsetY + yTexOffset - v2;
    // P
-   texuv[vertIndex+4]   = texOffsetX + xTexOffset;
-   texuv[vertIndex+5]   = texOffsetY + yTexOffset;
+   texuv[vertIndex+4]   = texOffsetX + xTexOffset - h2;
+   texuv[vertIndex+5]   = texOffsetY + yTexOffset - v2;
 
    // Q
-   texuv[vertIndex+6]   = texOffsetX - xTexOffset + wRatio;
-   texuv[vertIndex+7]   = texOffsetY + yTexOffset;
+   texuv[vertIndex+6]   = texOffsetX - xTexOffset + wRatio - h1;
+   texuv[vertIndex+7]   = texOffsetY + yTexOffset - v2;
    // R
-   texuv[vertIndex+8]   = texOffsetX + xTexOffset;
-   texuv[vertIndex+9]   = texOffsetY - yTexOffset + hRatio;
+   texuv[vertIndex+8]   = texOffsetX + xTexOffset - h2;
+   texuv[vertIndex+9]   = texOffsetY - yTexOffset + hRatio - v1;
    // S
-   texuv[vertIndex+10]  = texOffsetX - xTexOffset + wRatio;
-   texuv[vertIndex+11]  = texOffsetY - yTexOffset + hRatio;
+   texuv[vertIndex+10]  = texOffsetX - xTexOffset + wRatio - h1;
+   texuv[vertIndex+11]  = texOffsetY - yTexOffset + hRatio - v1;
 
    vertIndex += 12;
 
