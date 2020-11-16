@@ -189,7 +189,7 @@ PyMODINIT_FUNC PyInit_hliGLutils() {
    if (m == NULL) {
       return NULL;
    }
-   import_array()
+   import_array();
    return m;
 }
 
