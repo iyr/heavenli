@@ -40,6 +40,7 @@ unsigned int defineString(
       defineChar(
             x-ax, y, 
             c,
+            0.0f, 0.0f,
             atlas,
             textColor, 
             verts, texuv, colrs);
@@ -116,6 +117,7 @@ unsigned int updateString(
       index = updateChar(
             x-ax, y, 
             c,
+            0.0f, 0.0,
             atlas,
             index,
             verts, 
