@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 print("Now Loading...")
-from hliUIutils import *
+from hliUI import *
 from lampClass import *
 
 def init():
