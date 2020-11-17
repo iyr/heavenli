@@ -46,6 +46,7 @@ class Plugin():
         self.lamps = []
         self.clients = []
         self.devices = []
+        self.devicePorts = []
         self.getDevices()
         self.curTime = time.time()
         self.t0 = time.time()
@@ -58,12 +59,13 @@ class Plugin():
         if (time.time() - self.t0 > 0.01):#0.125):#0.005):
             pass
 
-            try:
-                # Iterate through all connected devices
-                for i in range(len(self.devices)):
+            # Iterate through all connected devices
+            for i in range(len(self.devices)):
+                try:
 
                     # Listen for data on known client devices
-                    if (self.devices[i].isClient == 1):
+                    #if (self.devices[i].isClient == 1):
+                    if (self.devices[i].connectionEstablished):
                         self.devices[i].listen()
                         if (time.time() - self.devices[i].statusDump > 1):
                             self.devices[i].upTime = time.time() - self.devices[i].startTime
@@ -96,10 +98,12 @@ class Plugin():
                         self.devices[i].establishConnection()
                         pass
 
-            except Exception as OOF:
-                print(traceback.format_exc())
-                print("Error:", OOF)
-                del self.devices[i]
+                except Exception as OOF:
+                    print(traceback.format_exc())
+                    print("Error:", OOF)
+                    self.devices[i].connectionEstablished = False
+                    self.devicePorts.remove(self.devices[i].port)
+                    del self.devices[i]
 
             self.t0 = time.time()
 
@@ -114,21 +118,30 @@ class Plugin():
         ports = getSerialPorts()
         if (len(ports) <= 0):
             pass
-            #print("No Serial devices available :(")
+            print("No Serial devices available :(")
         else:
 
-            # First call
-            if (len(self.devices) <= 0):
-                print("Found Serial devices on ports: " + str(ports))
-                for i in range(len(ports)):
+            for i in range(len(ports)):
+                if (    'ttyS' not in ports[i] and
+                        ports[i] not in self.devicePorts
+                        ):
+                    self.devicePorts.append(ports[i])
                     self.devices.append(self.Device(ports[i]))
+            ## First call
+            #if (len(self.devices) <= 0):
+                #print("Found Serial devices on ports: " + str(ports))
+                #for i in range(len(ports)):
+                    #if ('ttyS' not in ports[i]):
+                        #self.devices.append(self.Device(ports[i]))
 
-            # Successive calls
-            else:
-                for i in range(len(self.devices)):
-                    if (self.devices[i].port not in ports):
-                        print("Found Serial devices on port: " + str(ports))
-                        self.devices.append(self.Device(ports[i]))
+            ## Successive calls
+            #else:
+                #for i in range(len(self.devices)):
+                    #print(self.devices[i].port)
+                    #if (self.devices[i].port not in ports):
+                        #if ('ttyS' not in ports[i]):
+                            #print("Found Serial devices on port: " + str(ports))
+                            #self.devices.append(self.Device(ports[i]))
         #print("ARDUINO PLUGIN: number of devices: " + str(len(self.devices)))
         return
                     
@@ -209,7 +222,7 @@ class Plugin():
 
         def __del__(self):
             self.serialDevice.close()
-            print("Deleting Serial Device on ", self)
+            print("Deleting Serial Device " + self.serialDevice.port + " on ", self)
             del self.serialDevice
             pass
 
@@ -322,7 +335,7 @@ class Plugin():
                             #print("Received Lamp ID:", chr(ID_a), chr(ID_b))
                             if (len(self.connectedLamps) == 1):
                                 self.connectedLamps[0].setID([ID_a, ID_b])
-                                self.connectedLamps[0].setAlias("ArduinoLamp")
+                                self.connectedLamps[0].setAlias("Arduino\nLamp")
 
                                 # Parse Lamp number of bulbs from packet
                                 if ("NB!" in str(mess)):  
@@ -391,6 +404,8 @@ class Plugin():
         # This function performs the TCP-like three-way handshake
         # to connect to heavenli client devices
         def establishConnection(self):
+            if (not self.serialDevice.isOpen()):
+                return
             try:
                 bytesToRead = self.serialDevice.in_waiting
                 if (bytesToRead > 0):
@@ -441,6 +456,7 @@ class Plugin():
                     self.synackTimeout = time.time()
 
             except Exception as OOF:
+                print("Error Reading establishing connection on port: " + self.serialDevice.port)
                 self.synReceived = False
                 self.synackSent = False
                 self.connectionEstablished = False
