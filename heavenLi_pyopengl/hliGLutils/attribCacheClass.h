@@ -155,6 +155,7 @@ void attribCache::writeCache(const GLvoid* buffer, size_t numElements) {
    // Allocate memory if not allocated
    if (this->cache == NULL) {
       this->cache = malloc(numElements*GLsizeof(this->datatype));
+      /*
       printf("malloc'ing %d bytes for %s attrib (%dD): (%d verts, %d elements)\n",
             (unsigned int)numElements*GLsizeof(this->datatype),
             this->locationString.c_str(),
@@ -162,6 +163,7 @@ void attribCache::writeCache(const GLvoid* buffer, size_t numElements) {
             this->numVerts,
             (GLuint)numElements
             );
+            */
    }
 
    // copy data from buffer to cache
